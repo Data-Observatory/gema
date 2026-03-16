@@ -1,0 +1,16 @@
+{
+  "providers": {
+    "zai-coding-plan": {
+      "api_base": "https://api.z.ai/api/coding/paas/v4",
+      "api_key_env": "ZAI_API_KEY"
+    },
+    "openai": {
+      "api_base": null,
+      "api_key_env": "OPENAI_API_KEY"
+    },
+    "anthropic": {
+      "api_base": null,
+      "api_key_env": "ANTHROPIC_API_KEY"
+    }
+  }
+}

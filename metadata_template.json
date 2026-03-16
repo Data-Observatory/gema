@@ -1,0 +1,206 @@
+{
+    "attributes": {
+        "resource": {
+            "identifier": "",
+            "identifier_type": "",
+            "editor": "",
+            "maintainer": "",
+            "contact": "",
+            "producer": "",
+            "publication_year": "",
+            "resource_type": "",
+            "resource_type_general": "",
+            "version": "",
+            "thumbnail": "",
+            "language": ""
+        },
+        "alternate_identifiers": [
+            {
+                "alternate_name": "",            
+                "alternate_identifier": "",            
+                "alternate_identifier_type": ""
+            }            
+        ],
+        "audiences": [
+            {
+                "audience": "",
+                "mediator": "",
+                "education_level": "",
+                "instructional_method": ""
+            }
+        ],
+        "categories": [
+            {
+                "name": "",
+                "sub_category": ""
+            }
+        ],
+        "citations": [
+            {
+                "title": "",
+                "volume": "",
+                "issue": "",
+                "start_page": "",
+                "end_page": "",
+                "edition": "",
+                "conference_place": "",
+                "conference_date": ""
+            }
+        ],
+        "creators": [
+            {
+                "creator_name": "",
+                "creator_name_type": "",
+                "given_name": "",
+                "family_name": "",
+                "email": "",
+                "genre": "",
+                "type": "",
+                "contributor_type": "",
+                "name_identifiers": [
+                    {
+                        "name_identifier": "",
+                        "name_identifier_scheme": "",
+                        "scheme_uri": "",
+                    }
+                ],
+                "affiliations": [
+                    {
+                        "affiliation":"",
+                        "affiliation_identifier":"",
+                        "affiliation_identifier_scheme":""
+                    }
+                ]
+            }
+        ],
+        "dates": [
+            {
+                "date": "",
+                "date_type": "",
+                "date_information": ""
+            }
+        ],
+        "descriptions": [
+            {
+                "description": "",
+                "description_type": "",
+                "language": ""
+            }
+        ],
+        "funding_references": [
+            {
+                "funder_name": "",
+                "funding_stream": "",
+                "award_number": "",
+                "award_uri": "",
+                "award_title": "",
+                "funder_identifiers": [
+                    {
+                        "funder_identifier": "",
+                        "funder_identifier_type": "",
+                        "scheme_uri": ""
+                    }
+                ]
+            }
+        ],
+        "geo_locations": [
+            {
+                "geo_location_place": "",
+                "geo_location_point": "",
+                "geo_location_box": "",
+                "geo_location_polygon": "",
+                "geo_description": "",
+                "coverage": ""
+            }
+        ],
+        "languages": [
+            {
+                "lang_code": "",
+                "description": "",
+                "language": ""
+            }
+        ],
+        "media_files": [
+            {
+                "sizes": [
+                    {
+                        "size": "",
+                        "unit": ""
+                    }
+                ],
+                "physical_carrier": "",
+                "format": "",
+                "variable_measured": "",
+                "checksum": "",
+                "data_quality": "",
+                "measurement_technique": "",
+                "provenance": "",
+                "file_uri": "",
+                "temporal_resolution": "",
+                "Collections": [
+                    {
+                        "accrual_metod": "",
+                        "accrual_periodicity": "",
+                        "accrual_policy": ""
+                    }
+                ]
+            }
+        ],
+        "publishers": [
+            {
+                "publisher_name": "",
+                "publisher_identifier": "",
+                "publisher_identifier_scheme": "",
+                "publisher_scheme_uri": ""
+            }
+        ],
+        "related_identifiers": [
+            {
+                "related_identifier": "",
+                "related_identifier_type": "",
+                "relation_type": "",
+                "related_metadata_scheme": "",
+                "scheme_uri": "",
+                "scheme_type": "",
+                "resource_type_genereal": "",
+                "contact": ""
+            }
+        ],
+        "rights": [
+            {
+                "rights": "",
+                "start_date": "",
+                "rights_uri": "",
+                "rights_identifier": "",
+                "rights_identifier_scheme": "",
+                "scheme_uri": "",
+                "rights_condition": "",
+                "rights_holder": ""
+            }
+        ],
+        "subjects": [
+            {
+                "subject_name": "",
+                "subject_scheme": "",
+                "scheme_uri": "",
+                "value_uri": "",
+                "classification_code": ""
+            }
+        ],
+        "temporal_events": [
+            {
+                "start_date": "",
+                "frequency_number": "",
+                "frequency_type": "",
+                "description": ""
+            }
+        ],
+        "titles": [
+            {
+                "name": "",
+                "title_type": "",
+                "language": ""
+            }
+        ]
+    }
+}
