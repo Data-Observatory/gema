@@ -22,8 +22,9 @@ class AgentRegistry:
 
     def _load_config(self) -> None:
         """Load agent configuration from JSON file."""
-        with open(self.config_path) as f:
+        with open(self.config_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+
 
         self._config = AgentsConfig(**data)
 

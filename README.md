@@ -119,7 +119,7 @@ La salida se guardará en `output/` con un archivo resumen `_batch_summary.json`
 ### Ubicación de salida personalizada
 
 ```bash
-uv run python metadata_enricher.py --input examples/sample_input.json --output mis_resultados/
+uv run python metadata_enricher.py --input examples/sample_input.json --output mis_resultados.json
 ```
 
 ---

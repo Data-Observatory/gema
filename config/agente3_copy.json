@@ -1,0 +1,203 @@
+{
+  "agents": [
+    {
+      "id": "resource",
+      "name": "Resource Metadata Extractor",
+      "description": "Extrae y estructura la información básica del recurso (identificadores, editores, años, tipos, versiones)",
+      "output_fields": ["resource"],
+      "prompt_template": "Extrae la metadata del recurso siguiendo estas reglas:\n\nREGLAS:\n- NO eliminar campos, NO inventar datos. Si no hay info → \"\"\n- Devolver SOLO JSON válido con todos los campos\n\nCAMPOS:\n- identifier (obligatorio): Usar DOI si existe, si no → URL persistente. NUNCA texto plano\n- identifier_type (obligatorio): \"DOI\" o \"URL\" según identifier\n- editor (obligatorio): Entidad que publica/conserva el recurso (para citas)\n- maintainer: Quien mantiene actualizado el dataset\n- contact: Email o contacto para consultas\n- producer: Entidad que generó el contenido\n- publication_year (obligatorio): Año en formato AAAA\n- resource_type (obligatorio): Tipo específico (ej: \"Census Data\", \"Financial Data\")\n- resource_type_general (obligatorio): Dataset, Software, Image, Text, Sound, Collection, Other\n- version: Número de versión (ej: \"1.0\", \"2.1\")\n- thumbnail: URL de miniatura si existe\n- language: Código ISO 639-1 (ej: \"es\", \"en\"). Por defecto \"es\"\n\nFORMATO:\n{\n  \"identifier\": \"\",\n  \"identifier_type\": \"\",\n  \"editor\": \"\",\n  \"maintainer\": \"\",\n  \"contact\": \"\",\n  \"producer\": \"\",\n  \"publication_year\": \"\",\n  \"resource_type\": \"\",\n  \"resource_type_general\": \"\",\n  \"version\": \"\",\n  \"thumbnail\": \"\",\n  \"language\": \"\"\n}\n\nDevuelve solo el JSON.",
+      "depends_on": [],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "alternate_identifiers",
+      "name": "",
+      "description": "Alternate identifiers",
+      "output_fields": ["alternate_identifiers"],
+      "prompt_template": "Completa alternate_identifiers según DataCite.\n\nEstructura EXACTA:\n{\n  \"alternate_identifiers\": [\n    {\n      \"alternate_name\": \"\",\n      \"alternate_identifier\": \"\",\n      \"alternate_identifier_type\": \"\"\n    }\n  ]\n}\n\nReglas:\n- TODOS los campos siempre presentes\n- alternate_identifier y alternate_identifier_type van juntos\n- Si no hay info → []\n- NO inventar\n\nCampos:\n- alternate_name: título alternativo, abreviatura, nombre corto\n- alternate_identifier: ID local, número de serie, número de inventario\n- alternate_identifier_type: tipo del identificador (\"Local accession number\", \"Internal ID\", \"Inventory number\")\n\nEjemplo:\n{\n  \"alternate_identifiers\": [\n    {\n      \"alternate_name\": \"\",\n      \"alternate_identifier\": \"E-GEOD-34814\",\n      \"alternate_identifier_type\": \"Local accession number\"\n    }\n  ]\n}\n\nSin información:\n{\"alternate_identifiers\": []}\n\nDevuelve solo JSON.",
+      "depends_on": ["resource"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "audiences",
+      "name": "Audiences",
+      "description": "",
+      "output_fields": ["audiences"],
+      "prompt_template": "Genera audiences basado en descriptions. Completa TODOS los campos posibles.\n\nFormato:\n{\n  \"audiences\": [\n    {\n      \"audience\": \"tipo\",\n      \"mediator\": \"quién facilita el acceso\",\n      \"education_level\": \"nivel educativo si aplica\",\n      \"instructional_method\": \"método de instrucción si aplica\"\n    }\n  ]\n}\n\nReglas:\n- CADA audiencia en objeto SEPARADO (NO agrupar)\n- Inferir mediator del publicador o contexto\n- Inferir education_level si es contenido educativo\n- Inferir instructional_method si hay componente formativo\n- Campos sin info → \"\"\n- Si no hay audiencias → []\n\nEjemplo:\nDataset municipal → audience: \"Administrators\", mediator: \"Autoridades municipales\"\nDataset educativo → audience: \"Students\", education_level: \"Secundaria\", instructional_method: \"Autoaprendizaje\"\n\nDevuelve solo JSON.",
+      "depends_on": ["descriptions"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "categories",
+      "name": "Categories",
+      "description": "",
+      "output_fields": ["categories"],
+      "prompt_template": "Clasifica el recurso en categories usando titles y descriptions.\n\nReglas:\n- NO eliminar campos\n- NO inventar\n- NO crear categorías o subcategorías que no estén en la lista predefinida\n- Si no hay info suficiente → dejar como \"\"\n- Usar SOLO las categorías y subcategorías de la siguiente lista:\n\nCATEGORÍAS Y SUBCATEGORÍAS VÁLIDAS:\n\nCiencias Naturales y Exactas:\n- Matemáticas\n- Ciencias de la computación e información\n- Ciencias físicas\n- Astronomía y astrofísica\n- Ciencias químicas\n- Ciencias de la Tierra\n- Ciencias medioambientales\n- Ciencias biológicas\n- Otras ciencias naturales\n\nIngeniería y Tecnología:\n- Ingeniería civil y estructuras\n- Ingeniería eléctrica y electrónica\n- Ingeniería de la información\n- Ingeniería mecánica\n- Ingeniería química\n- Ingeniería de los materiales\n- Ingeniería médica\n- Ingeniería medioambiental\n- Biotecnología medioambiental\n- Biotecnología industrial\n- Nanotecnología\n- Otras ingenierías y tecnologías\n\nCiencias Médicas y de la Salud:\n- Medicina básica\n- Medicina clínica\n- Ciencias de la salud\n- Biotecnología de la salud\n- Otras ciencias médicas\n\nCiencias Agrícolas:\n- Agricultura, silvicultura y pesca\n- Ciencia animal y lechería\n- Ciencias veterinarias\n- Biotecnología agropecuaria\n- Otras ciencias agrícolas\n\nCiencias Sociales:\n- Psicología\n- Economía y negocios\n- Ciencias de la educación\n- Sociología\n- Derecho\n- Ciencias políticas\n- Geografía económica y social\n- Comunicación y medios\n- Otras ciencias sociales\n\nHumanidades:\n- Historia y arqueología\n- Idiomas y literatura\n- Filosofía, ética y religión\n- Arte, música y diseño\n- Otras humanidades\n\nInstrucciones:\n1. Analiza titles y descriptions para determinar la categoría y subcategoría adecuadas\n2. La categoría \"name\" debe ser exactamente una de las categorías principales listadas\n3. La \"sub_category\" debe ser exactamente una de las subcategorías listadas bajo esa categoría\n4. Si el recurso abarca múltiples categorías, selecciona la más relevante\n5. Si no hay suficiente información para clasificar, dejar ambos campos como \"\"\n\nDevuelve JSON válido.",
+      "depends_on": ["descriptions", "titles"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "citations",
+      "name": "Citacions",
+      "description": "",
+      "output_fields": ["citations"],
+      "prompt_template": "Genera citations usando titles, creators y dates.\n\nReglas:\n- NO eliminar campos\n- NO inventar datos\n- Completar solo si existe info\n- Si no → \"\"\n\nDevuelve JSON válido.",
+      "depends_on": ["titles", "creators", "dates"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+      
+    },
+    { 
+      "id": "creators",
+      "name": "Creators y afiliation",
+      "description": "Genera creators con sus datos básicos, identificadores y afiliaciones",
+      "output_fields": ["creators", "name_identifier", "affiliations"],
+      "prompt_template": "Genera creators desde resource y descriptions.\n\nREGLAS:\n- NO eliminar campos\n- NO inventar información\n- Si no hay info → dejar como \"\" (string) o [] (array)\n- DEBES incluir TODOS los campos\n\nESTRUCTURA EXACTA A DEVOLVER:\n{\n  \"creator_name\": \"\",\n  \"creator_name_type\": \"\",\n  \"given_name\": \"\",\n  \"family_name\": \"\",\n  \"email\": \"\",\n  \"genre\": \"\",\n  \"type\": \"Creator\",\n  \"contributor_type\": \"\",\n  \"name_identifiers\": [],\n  \"affiliations\": []\n}\n\nCAMPOS:\n- creator_name: Nombre completo (persona o institución)\n- creator_name_type: \"Personal\" o \"Organizational\"\n- given_name: Solo si es persona\n- family_name: Solo si es persona\n- email: Email de contacto si existe\n- genre: Dejar \"\"\n- type: Siempre \"Creator\"\n- contributor_type: Siempre \"\"\n\nname_identifiers (array):\n  Si el creator es institución conocida, usar:\n  - Ministerio de Hacienda → [{\"name_identifier\": \"Ministerio de Hacienda\", \"name_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/isni/0000000106574353\"}]\n  - Universidad de Chile → [{\"name_identifier\": \"Universidad de Chile\", \"name_identifier_scheme\": \"ROR\", \"scheme_uri\": \"https://ror.org/01q8e9w22\"}]\n  - Si no es conocido → []\n\naffiliations (array):\n  Solo si creator_name_type es \"Personal\" y se conoce su institución:\n  [{\"affiliation\": \"Nombre institución\", \"affiliation_identifier\": \"\", \"affiliation_identifier_scheme\": \"\"}]\n  Si es institución o no hay info → []\n\nEJEMPLOS:\n\n1. Institución con identificador:\n{\n  \"creator_name\": \"Ministerio de Hacienda de Chile\",\n  \"creator_name_type\": \"Organizational\",\n  \"given_name\": \"\",\n  \"family_name\": \"\",\n  \"email\": \"\",\n  \"genre\": \"\",\n  \"type\": \"Creator\",\n  \"contributor_type\": \"\",\n  \"name_identifiers\": [{\"name_identifier\": \"Ministerio de Hacienda\", \"name_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/isni/0000000106574353\"}],\n  \"affiliations\": []\n}\n\n2. Persona con afiliación:\n{\n  \"creator_name\": \"Juan Pérez\",\n  \"creator_name_type\": \"Personal\",\n  \"given_name\": \"Juan\",\n  \"family_name\": \"Pérez\",\n  \"email\": \"\",\n  \"genre\": \"\",\n  \"type\": \"Creator\",\n  \"contributor_type\": \"\",\n  \"name_identifiers\": [],\n  \"affiliations\": [{\"affiliation\": \"Universidad de Chile\", \"affiliation_identifier\": \"\", \"affiliation_identifier_scheme\": \"\"}]\n}\n\n3. Sin datos:\n{\n  \"creator_name\": \"\",\n  \"creator_name_type\": \"\",\n  \"given_name\": \"\",\n  \"family_name\": \"\",\n  \"email\": \"\",\n  \"genre\": \"\",\n  \"type\": \"Creator\",\n  \"contributor_type\": \"\",\n  \"name_identifiers\": [],\n  \"affiliations\": []\n}\n\nDevuelve solo el JSON.",
+      "depends_on": ["resource", "descriptions"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "dates",
+      "name": "Dates",
+      "description": "",
+      "output_fields": ["dates"],
+      "prompt_template": "Extrae fechas. Devuelve array JSON.\n\nREGLAS:\n- Si no hay info → []\n- Si múltiples fechas (años fiscales) → todas individuales\n\nCAMPOS:\n- date: AAAA, AAAA-MM-DD, o AAAA-MM-DD/AAAA-MM-DD\n- date_type: Issued (publicación), Updated (actualización), Coverage (período), Collected (recolección)\n- date_information: texto libre opcional\n\nFORMATO:\n[{\"date\":\"\",\"date_type\":\"\",\"date_information\":\"\"}]\n\nEJEMPLOS:\n[{\"date\":\"2024-03-15\",\"date_type\":\"Issued\",\"date_information\":\"Publicación\"}]\n[{\"date\":\"2017-12-31\",\"date_type\":\"Issued\",\"date_information\":\"Año fiscal 2017\"},{\"date\":\"2018-12-31\",\"date_type\":\"Issued\",\"date_information\":\"Año fiscal 2018\"}]\n[{\"date\":\"2020-01-01/2024-12-31\",\"date_type\":\"Coverage\",\"date_information\":\"Período de datos\"}]\n[]\n\nDevuelve solo JSON.",
+      "depends_on": ["resource"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "descriptions",
+      "name": "Descriptions",
+      "description": "",
+      "output_fields": ["descriptions"],
+      "prompt_template": "Extrae la descripción del recurso.\n\nREGLAS:\n- NO inventar datos\n- Si no hay descripción → devolver array vacío []\n- description_type es OBLIGATORIO si hay description\n- Mantener idioma original\n\nCAMPOS:\n- description: Texto libre con la descripción del recurso\n- description_type: Abstract, Methods, SeriesInformation, TableOfContents, TechnicalInfo, Other\n- language: Código ISO 639-1 (ej: \"es\", \"en\")\n\nFORMATO (array):\n[\n  {\n    \"description\": \"\",\n    \"description_type\": \"\",\n    \"language\": \"\"\n  }\n]\n\nEJEMPLOS:\n\nDescripción normal:\n[\n  {\n    \"description\": \"Dataset con gastos municipales de Chile para el año 2024\",\n    \"description_type\": \"Abstract\",\n    \"language\": \"es\"\n  }\n]\n\nInformación técnica:\n[\n  {\n    \"description\": \"Los datos se recolectaron mensualmente desde fuentes oficiales\",\n    \"description_type\": \"TechnicalInfo\",\n    \"language\": \"es\"\n  }\n]\n\nSin descripción:\n[]\n\nDevuelve solo JSON array.",
+      "depends_on": [],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "funding_references",
+      "name": "Funding references",
+      "description": "Información sobre financiamiento del recurso",
+      "output_fields": ["funding_references", "funder_identifiers"],
+      "prompt_template": "Extrae información de financiamiento del recurso.\n\nREGLAS:\n- NO inventar datos. Si no hay info → devolver array vacío []\n- funder_name es OBLIGATORIO si hay funding\n- Si hay funder_identifier, funder_identifier_type es OBLIGATORIO\n\nCAMPOS:\n- funder_name: Nombre de la entidad que financia (obligatorio si hay funding)\n- funder_identifiers: Array de objetos con:\n    * funder_identifier: URI del identificador\n    * funder_identifier_type: Crossref Funder ID, GRID, ISNI, ROR, Other\n    * scheme_uri: URI del esquema (ej: \"https://ror.org/\")\n- award_number: Código del premio o grant\n- award_uri: URI con más información del award\n- award_title: Título legible del award\n- funding_stream: Programa o línea de financiamiento\n\nIDENTIFICADORES CONOCIDOS:\n| Funder | Identifier | Type | Scheme URI |\n|--------|------------|------|------------|\n| ANID | https://ror.org/04v0nnn25 | ROR | https://ror.org/ |\n| CONICYT | https://ror.org/04v0nnn25 | ROR | https://ror.org/ |\n| FONDECYT | - | - | - |\n\nFORMATO DE RESPUESTA (array):\n[\n  {\n    \"funder_name\": \"\",\n    \"funder_identifiers\": [\n      {\n        \"funder_identifier\": \"\",\n        \"funder_identifier_type\": \"\",\n        \"scheme_uri\": \"\"\n      }\n    ],\n    \"award_number\": \"\",\n    \"award_uri\": \"\",\n    \"award_title\": \"\",\n    \"funding_stream\": \"\"\n  }\n]\n\nEJEMPLOS:\n\nCon funding:\n[\n  {\n    \"funder_name\": \"ANID - Agencia Nacional de Investigación y Desarrollo\",\n    \"funder_identifiers\": [\n      {\n        \"funder_identifier\": \"https://ror.org/04v0nnn25\",\n        \"funder_identifier_type\": \"ROR\",\n        \"scheme_uri\": \"https://ror.org/\"\n      }\n    ],\n    \"award_number\": \"FONDECYT-1234567\",\n    \"award_uri\": \"\",\n    \"award_title\": \"Investigación sobre datos abiertos\",\n    \"funding_stream\": \"FONDECYT Regular\"\n  }\n]\n\nSin funding:\n[]\n\nDevuelve solo JSON array.Extrae información de financiamiento del recurso.\n\nREGLAS:\n- NO inventar datos. Si no hay info → devolver array vacío []\n- funder_name es OBLIGATORIO si hay funding\n- Si hay funder_identifier, funder_identifier_type es OBLIGATORIO\n\nCAMPOS:\n- funder_name: Nombre de la entidad que financia (obligatorio si hay funding)\n- funder_identifiers: Array de objetos con:\n    * funder_identifier: URI del identificador\n    * funder_identifier_type: Crossref Funder ID, GRID, ISNI, ROR, Other\n    * scheme_uri: URI del esquema (ej: \"https://ror.org/\")\n- award_number: Código del premio o grant\n- award_uri: URI con más información del award\n- award_title: Título legible del award\n- funding_stream: Programa o línea de financiamiento\n\nIDENTIFICADORES CONOCIDOS:\n| Funder | Identifier | Type | Scheme URI |\n|--------|------------|------|------------|\n| ANID | https://ror.org/04v0nnn25 | ROR | https://ror.org/ |\n| CONICYT | https://ror.org/04v0nnn25 | ROR | https://ror.org/ |\n| FONDECYT | - | - | - |\n\nFORMATO DE RESPUESTA (array):\n[\n  {\n    \"funder_name\": \"\",\n    \"funder_identifiers\": [\n      {\n        \"funder_identifier\": \"\",\n        \"funder_identifier_type\": \"\",\n        \"scheme_uri\": \"\"\n      }\n    ],\n    \"award_number\": \"\",\n    \"award_uri\": \"\",\n    \"award_title\": \"\",\n    \"funding_stream\": \"\"\n  }\n]\n\nEJEMPLOS:\n\nCon funding:\n[\n  {\n    \"funder_name\": \"ANID - Agencia Nacional de Investigación y Desarrollo\",\n    \"funder_identifiers\": [\n      {\n        \"funder_identifier\": \"https://ror.org/04v0nnn25\",\n        \"funder_identifier_type\": \"ROR\",\n        \"scheme_uri\": \"https://ror.org/\"\n      }\n    ],\n    \"award_number\": \"FONDECYT-1234567\",\n    \"award_uri\": \"\",\n    \"award_title\": \"Investigación sobre datos abiertos\",\n    \"funding_stream\": \"FONDECYT Regular\"\n  }\n]\n\nSin funding:\n[]\n\nDevuelve solo JSON valido",
+      "depends_on": ["descriptions", "creators"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "geo_locations",
+      "name": "Geo_Locations",
+      "description": "",
+      "output_fields": ["geo_locations"],
+      "prompt_template": "Extrae información geográfica del recurso.\n\nEstructura EXACTA:\n{\n  \"geo_locations\": [\n    {\n      \"geo_location_place\": \"\",\n      \"geo_location_point\": \"\",\n      \"geo_location_box\": \"\",\n      \"geo_location_polygon\": \"\",\n      \"geo_description\": \"\",\n      \"coverage\": \"\"\n    }\n  ]\n}\n\nReglas:\n- TODOS los campos siempre presentes\n- geo_location_place: país, región, ciudad\n- geo_description: descripción del alcance geográfico\n- coverage: cobertura detallada\n- Si hay múltiples ubicaciones → objetos separados\n- Si no hay info → []\n\nEjemplo:\n{\n  \"geo_locations\": [\n    {\n      \"geo_location_place\": \"Chile\",\n      \"geo_location_point\": \"\",\n      \"geo_location_box\": \"\",\n      \"geo_location_polygon\": \"\",\n      \"geo_description\": \"Alcance de la base de datos de Gastos municipales\",\n      \"coverage\": \"Cobertura nacional, desagregada por municipio\"\n    }\n  ]\n}\n\nDevuelve solo JSON.",
+      "depends_on": ["descriptions"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "languages",
+      "name": "",
+      "description": "",
+      "output_fields": ["languages"],
+      "prompt_template": "Identifica el idioma del recurso según IETF BCP 47.\n\nEstructura EXACTA:\n{\n  \"languages\": [\n    {\n      \"lang_code\": \"\",\n      \"language\": \"\",\n      \"description\": \"\"\n    }\n  ]\n}\n\nReglas:\n- TODOS los campos siempre presentes\n- Usar códigos IETF BCP 47: es, es-cl, en, en-us, pt, pt-br, etc.\n- language: nombre del idioma en inglés (Spanish, English, Portuguese)\n- description: variante regional (\"Chilean Spanish\", \"American English\", etc.)\n- Si no hay info → []\n\nEjemplos:\nChile: {\"lang_code\": \"es-cl\", \"language\": \"Spanish\", \"description\": \"Chilean Spanish\"}\nEspaña: {\"lang_code\": \"es-es\", \"language\": \"Spanish\", \"description\": \"European Spanish\"}\nGenérico: {\"lang_code\": \"es\", \"language\": \"Spanish\", \"description\": \"\"}\nInglés US: {\"lang_code\": \"en-us\", \"language\": \"English\", \"description\": \"American English\"}\n\nMúltiples idiomas:\n{\n  \"languages\": [\n    {\"lang_code\": \"es\", \"language\": \"Spanish\", \"description\": \"\"},\n    {\"lang_code\": \"en\", \"language\": \"English\", \"description\": \"\"}\n  ]\n}\n\nDevuelve solo JSON.",
+      "depends_on": [],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "media_files",
+      "name": "",
+      "description": "",
+      "output_fields": ["media_files", "sizes", "collections"],
+      "prompt_template": "Describe media_files del recurso.\n\nEstructura EXACTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 0, \"unit\": \"\"}],\n      \"physical_carrier\": \"\",\n      \"format\": \"\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"\",\n      \"file_uri\": \"\",\n      \"temporal_resolution\": \"\",\n      \"Collections\": []\n    }\n  ]\n}\n\nReglas:\n- TODOS los campos siempre presentes\n- sizes: array con objetos {size: número, unit: \"KB/MB/GB/pages/minutes\"}\n- Si no hay info de tamaño → sizes: []\n- Si no hay archivos → media_files: []\n- NO inventar información\n\nEjemplo:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 38.688, \"unit\": \"KB\"}],\n      \"physical_carrier\": \"\",\n      \"format\": \"application/gzip\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Información registrada por los municipios\",\n      \"file_uri\": \"https://api.presupuestoabierto.gob.cl/data/municipios-2018.gz\",\n      \"temporal_resolution\": \"\",\n      \"Collections\": []\n    }\n  ]\n}\n\nDevuelve solo JSON.",
+      "depends_on": ["resource"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "publishers",
+      "name": "",
+      "description": "",
+      "output_fields": ["publishers"],
+      "prompt_template": "Identifica el editor (publisher) del recurso.\n\nREGLAS:\n- publisher_name OBLIGATORIO. Si no hay editor, usar productor o creador\n- Si hay publisher_identifier, publisher_identifier_scheme es OBLIGATORIO\n- Si no hay info → campos vacíos \"\"\n\nCAMPOS:\n- publisher_name: Entidad que publica, archiva o distribuye. Ej: \"Ministerio de Hacienda de Chile\"\n- publisher_identifier: URI del identificador (ROR, ISNI, VIAF, Wikidata)\n- publisher_identifier_scheme: ROR, ISNI, VIAF, Wikidata (obligatorio si hay identifier)\n- publisher_scheme_uri: URI base del esquema. Ej: \"https://ror.org/\", \"https://isni.org/\"\n\nIDENTIFICADORES CONOCIDOS:\n| Institución | Identifier | Scheme |\n|-------------|------------|--------|\n| Ministerio de Hacienda | https://isni.org/isni/0000000106574353 | ISNI |\n| Universidad de Chile | https://ror.org/01q8e9w22 | ROR |\n| Pontificia Universidad Católica | https://ror.org/04teye511 | ROR |\n\nFORMATO:\n{\n  \"publisher_name\": \"\",\n  \"publisher_identifier\": \"\",\n  \"publisher_identifier_scheme\": \"\",\n  \"publisher_scheme_uri\": \"\"\n}\n\nEJEMPLOS:\n\nCon identificador:\n{\n  \"publisher_name\": \"Ministerio de Hacienda de Chile\",\n  \"publisher_identifier\": \"https://isni.org/isni/0000000106574353\",\n  \"publisher_identifier_scheme\": \"ISNI\",\n  \"publisher_scheme_uri\": \"https://isni.org/\"\n}\n\nSin identificador:\n{\n  \"publisher_name\": \"Municipalidad de Santiago\",\n  \"publisher_identifier\": \"\",\n  \"publisher_identifier_scheme\": \"\",\n  \"publisher_scheme_uri\": \"\"\n}\n\nDevuelve solo JSON.",
+      "depends_on": ["resource", "creators"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "related_identifiers",
+      "name": "",
+      "description": "",
+      "output_fields": ["related_identifier", "related_identifier_type", "relation_type", "related_metadata_scheme", "scheme_uri", "scheme_type", "resource_type_genereal", "contact"],
+      "prompt_template": "Extrae related_identifiers.\n\nReglas:\n- NO eliminar campos\n- NO inventar\n- Incluir DOIs o URLs si existen\n- Si no hay info → \"\"\n\nDevuelve JSON válido.",
+      "depends_on": ["resource"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    }, 
+    {
+      "id": "rights",
+      "name": "Rigths",
+      "description": "Licencias",
+      "output_fields": ["rights"],
+      "prompt_template": "Eres un analista de licencias. Tu tarea es analizar el recurso y determinar la licencia más adecuada para sus metadatos.\n\nCONTEXTO DEL RECURSO (proporcionado por otros agentes):\n- Títulos, descripciones, creadores (instituciones públicas/privadas), tipo de recurso (dataset, documento, software, etc.).\n\nREGLAS CRÍTICAS:\n- **NO inventes** información. Si no hay suficiente contexto, usa valores por defecto o déjalos vacíos (\"\").\n- **NO elimines campos**. Mantén la estructura exacta.\n- **Debes devolver un ARRAY** de objetos, aunque sea una sola licencia.\n- **Justifica tu elección**. Incluye una breve justificación en `rights_condition`.\n\nGUÍA PARA SELECCIONAR LICENCIA:\n1.  **Datos gubernamentales o públicos de Chile**: Considera \"Datos Abiertos del Estado de Chile\" (no tiene identificador SPDX/CC estándar).\n2.  **Datos abiertos en general**: Usa **CC0 1.0 Universal** (identificador `CC0-1.0`) para dominio público. Usa **CC BY 4.0** (`CC-BY-4.0`) para atribución requerida.\n3.  **Contenido educativo u obras culturales**: Licencias Creative Commons (`CC BY-SA 4.0`, `CC BY-NC 4.0`, etc.) según el nivel de apertura deseado.\n4.  **Software**: Usa licencias de SPDX (`MIT`, `Apache-2.0`, `GPL-3.0-or-later`).\n5.  **Documentación técnica**: Puede usar `GFDL-1.3-or-later` o `CC BY-SA 4.0`.\n\nFORMATO DE RESPUESTA (JSON array válido):\n[\n  {\n    \"rights\": \"Texto completo de la licencia o declaración (ej: 'Creative Commons Attribution 4.0 International')\",\n    \"start_date\": \"\",\n    \"rights_uri\": \"URL canónica de la licencia (ej: https://creativecommons.org/licenses/by/4.0/)\",\n    \"rights_identifier\": \"Identificador corto (ej: CC-BY-4.0, MIT)\",\n    \"rights_identifier_scheme\": \"SPDX\",\n    \"scheme_uri\": \"https://spdx.org/licenses/\",\n    \"rights_condition\": \"Justificación breve: 'Licencia sugerida porque el recurso es un dataset gubernamental sin restricciones de atribución.'\",\n    \"rights_holder\": \"Nombre del titular de los derechos (si se menciona en creators, sino '')\"\n  }\n]\n\n**EJEMPLOS DE IDENTIFICADORES Y URLs:**\n- CC0-1.0 → rights_uri: https://creativecommons.org/publicdomain/zero/1.0/, scheme: SPDX\n- CC-BY-4.0 → rights_uri: https://creativecommons.org/licenses/by/4.0/, scheme: SPDX\n- MIT → rights_uri: https://opensource.org/licenses/MIT, scheme: SPDX\n- Apache-2.0 → rights_uri: https://www.apache.org/licenses/LICENSE-2.0, scheme: SPDX\n- Datos Abiertos Chile (si no está en SPDX/CC):\n    rights: \"Datos Abiertos del Estado de Chile\"\n    rights_uri: \"https://datos.gob.cl/acerca-de/normativa-y-estandares\"\n    rights_identifier: \"Datos-Abiertos-Chile\"\n    rights_identifier_scheme: \"\"\n    scheme_uri: \"\"\n\nDevuelve solo el JSON array válido.",
+      "depends_on": ["resource", "publishers"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "subjects",
+      "name": "Subjects",
+      "description": "",
+      "output_fields": ["subjects"],
+      "prompt_template": "Genera subjects desde categories y descriptions.\n\nReglas:\n- NO eliminar campos\n- NO inventar información\n- Usar términos coherentes con el contenido\n- Si no hay info o no estás seguro de un campo → dejar como \"\"\n- NO generar ni inventar URIs (value_uri). Si no existe una URI explícita y verificable en los datos de entrada, dejarlo vacío.\n- El subject_name debe ser un término temático claro basado en categories y descriptions.\n- Ejemplo de formato (con URI real solo si se conoce con certeza):\n  {\n    \"subject_name\": \"Local finance -- Chile\",\n    \"subject_scheme\": \"Library of Congress Subject Headings (LCSH)\",\n    \"scheme_uri\": \"https://id.loc.gov/authorities/subjects.html\",\n    \"value_uri\": \"\",\n    \"classification_code\": \"\"\n  }\n\nDevuelve JSON válido.",
+      "depends_on": ["categories", "descriptions"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"
+    },
+    {
+      "id": "temporal_events",
+      "name": "",
+      "description": "",
+      "output_fields": ["temporal_events"],
+      "prompt_template": "Genera información temporal del recurso: período de cobertura, frecuencia de actualización y eventos relevantes.\n\nREGLAS:\n- NO inventar datos\n- Si no hay info → devolver array vacío []\n- Usar información de dates y descriptions para inferir\n\nCAMPOS:\n- start_date: Fecha de inicio del período que cubre el dataset (formato ISO 8601: AAAA-MM-DD)\n- frequency_number: Número que indica la frecuencia (ej: \"1\", \"2\", \"6\")\n- frequency_type: Tipo de frecuencia (daily, weekly, monthly, quarterly, yearly, biennial, irregular)\n- description: Texto libre describiendo el evento temporal o actualización\n\nFRECUENCIAS COMUNES:\n| Frecuencia real | frequency_number | frequency_type |\n|----------------|------------------|----------------|\n| Diario | \"1\" | daily |\n| Semanal | \"1\" | weekly |\n| Mensual | \"1\" | monthly |\n| Trimestral | \"3\" | quarterly |\n| Semestral | \"6\" | monthly |\n| Anual | \"1\" | yearly |\n| Bienal | \"2\" | yearly |\n\nFORMATO DE RESPUESTA (array):\n[\n  {\n    \"start_date\": \"\",\n    \"frequency_number\": \"\",\n    \"frequency_type\": \"\",\n    \"description\": \"\"\n  }\n]\n\nEJEMPLOS:\n\n1. Serie anual con cobertura desde 2017:\n[\n  {\n    \"start_date\": \"2017-01-01\",\n    \"frequency_number\": \"1\",\n    \"frequency_type\": \"yearly\",\n    \"description\": \"Serie anual de ejecución del gasto municipal en Chile, publicada a través del Portal de Presupuesto Abierto. Los datos están disponibles desde el año 2017 y se actualizan anualmente con la información consolidada de todos los municipios del país.\"\n  }\n]\n\n2. Actualización mensual:\n[\n  {\n    \"start_date\": \"2024-01-01\",\n    \"frequency_number\": \"1\",\n    \"frequency_type\": \"monthly\",\n    \"description\": \"Actualización mensual del dataset de indicadores económicos. Los datos se publican el primer día hábil de cada mes.\"\n  }\n]\n\n3. Sin información temporal:\n[]\n\nDevuelve solo JSON array.",
+      "depends_on": ["dates", "descriptions"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"   
+    },
+    {
+      "id": "titles",
+      "name": "",
+      "description": "",
+      "output_fields": ["titles"],
+      "prompt_template": "Extrae el título del recurso. Usa el campo 'title' del contexto.\n\nREGLAS OBLIGATORIAS:\n- NO eliminar campos\n- NO inventar información\n- Mantener el idioma original del título\n- Si no hay información, usar strings vacíos \"\"\n\nTITLE_TYPE debe ser EXACTAMENTE uno de estos valores controlados de DataCite:\n- \"AlternativeTitle\" (título alternativo)\n- \"Subtitle\" (subtítulo)\n- \"TranslatedTitle\" (título traducido)\n- \"Other\" (otro tipo de título)\n\nPara el título principal, NO incluyas el campo title_type o déjalo como \"\".\n\nFORMATO DE RESPUESTA EXACTO:\n{\n  \"name\": \"valor del título\",\n  \"title_type\": \"\",\n  \"language\": \"es\"\n}\n\nSi el título está en español, language = \"es\". Si está en inglés, language = \"en\".\n\nDevuelve solo el JSON, sin texto adicional.",
+      "depends_on": ["resource"],
+      "use_chain_of_thought": true,
+      "model": "glm-5",
+      "provider": "zai-coding-plan"   
+    }
+  ]
+}

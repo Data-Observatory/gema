@@ -14,6 +14,42 @@ from agents.registry import AgentRegistry
 from orchestrator import Orchestrator
 from merger import MetadataMerger
 
+import sys
+
+print("=== METADATA ENRICHER INICIADO ===", flush=True)
+print(f"Argumentos: {sys.argv}", flush=True)
+
+def normalize_creators_in_metadata(metadata):
+    """Asegura que todos los creators tengan todos los campos necesarios"""
+    # Buscar en la estructura correcta
+    target = metadata
+    
+    # Si hay attributes, trabajar dentro de attributes
+    if isinstance(metadata, dict) and "attributes" in metadata:
+        target = metadata["attributes"]   
+    # Normalizar creators
+    if isinstance(target, dict) and "creators" in target:
+        for creator in target["creators"]:
+            # Agregar campos faltantes
+            if "given_name" not in creator:
+                creator["given_name"] = ""
+            if "family_name" not in creator:
+                creator["family_name"] = ""
+            if "email" not in creator:
+                creator["email"] = ""
+            if "genre" not in creator:
+                creator["genre"] = ""
+            if "contributor_type" not in creator:
+                creator["contributor_type"] = ""
+            if "name_identifiers" not in creator:
+                creator["name_identifiers"] = []
+            if "affiliations" not in creator:
+                creator["affiliations"] = []
+            # Forzar type a "Creator"
+            if creator.get("type") != "Creator":
+                creator["type"] = "Creator"
+    
+    return metadata
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -119,26 +155,30 @@ def process_single_input(
     api_key: str,
     logger: logging.Logger,
 ) -> dict[str, Any]:
+    print(1)
     try:
         logger.info(f"Processing: {input_file}")
-
+        print(2)
         with open(input_file) as f:
             input_data = DatasetInput(**json.load(f))
+        print(3)
 
         settings = AppSettings(
             llm=LLMSettings(),
             context_strategy=strategy,
         )
+        print(4)
 
         logger.info(f"Loading agent registry from {config_path}")
         registry = AgentRegistry(config_path, api_key=api_key)
         logger.info(f"Loaded {len(registry.get_all_agent_ids())} agents")
+        print(5)
 
         logger.info("Starting execution")
         orchestrator = Orchestrator(registry, settings)
-
+        print(6)
         outputs = orchestrator.run(input_data)
-
+        print(7) 
         raw_lm_usage = orchestrator.get_lm_usage()
         raw_agent_usage = orchestrator.get_per_agent_usage()
         token_usage = format_token_usage(
@@ -147,16 +187,38 @@ def process_single_input(
                 "by_agent": raw_agent_usage,
             }
         )
+        print(8)  
 
         logger.info("Merging results")
         merger = MetadataMerger()
         result = merger.merge(outputs, input_data=input_data.model_dump())
+        print(9)
         warnings = merger.get_warnings()
         for w in warnings:
             logger.warning(f"Warning: {w}")
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         logger.info(f"Writing output to {output_file}")
+
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Writing output to {output_file}")
+
+        # ========== DEBUG Y NORMALIZACIÓN ==========
+        print("DEBUG - Tipo de result:", type(result))
+        print("DEBUG - Claves de result:", list(result.keys()) if isinstance(result, dict) else "no es dict")
+
+        if "metadata" in result:
+            print("DEBUG - Claves de metadata:", list(result["metadata"].keys()))
+            if "creators" in result["metadata"]:
+                print("DEBUG - Creators ANTES:", json.dumps(result["metadata"]["creators"], indent=2, ensure_ascii=False))
+            
+            result["metadata"] = normalize_creators_in_metadata(result["metadata"])
+            
+            if "creators" in result["metadata"]:
+                print("DEBUG - Creators DESPUES:", json.dumps(result["metadata"]["creators"], indent=2, ensure_ascii=False))
+        else:
+            result = normalize_creators_in_metadata(result)
+        # ==========================================
 
         final_output = {
             "metadata": result,
@@ -165,7 +227,7 @@ def process_single_input(
             "input_file": str(input_file),
         }
 
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(final_output, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Completed: {output_file}")

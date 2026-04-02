@@ -103,16 +103,43 @@ class MetadataMerger:
 
         return result
 
-    def _normalize_output(self, output: dict[str, Any]) -> dict[str, Any]:
-        """Normalize agent output to match metadata_template.json structure."""
+    def _normalize_output(self, output):
         normalized = {}
-
+        
+        # Manejar listas
+        if isinstance(output, list):
+            if len(output) > 0 and isinstance(output[0], dict):
+                output = output[0]
+            else:
+                return normalized
+        
+        if not isinstance(output, dict):
+            return normalized
+        
+        # ✅ NUEVO: Mover campos sueltos a "resource"
+        resource_fields = [
+            "identifier", "identifier_type", "editor", "maintainer", 
+            "contact", "producer", "publication_year", "resource_type",
+            "resource_type_general", "version", "thumbnail", "language"
+        ]
+        
+        resource_data = {}
+        for field in resource_fields:
+            if field in output:
+                resource_data[field] = output.pop(field)
+        
+        if resource_data:
+            if "resource" in output:
+                output["resource"].update(resource_data)
+            else:
+                output["resource"] = resource_data
+        
+        # Procesar campos
         for key, value in output.items():
             if value is None:
-                continue
-
+             continue
             normalized[key] = self._normalize_field(key, value)
-
+        
         return normalized
 
     def _normalize_field(self, field_name: str, value: Any) -> Any:
@@ -393,18 +420,18 @@ class MetadataMerger:
                         publishers.append(
                             {
                                 "publisher_name": str(first_val),
-                                "publisher_identifier": "",
-                                "publisher_identifier_scheme": "",
-                                "publisher_scheme_uri": "",
+                                "publisher_identifier": "publisher_identifier",
+                                "publisher_identifier_scheme": "publisher_identifier_scheme",
+                                "publisher_scheme_uri": "publisher_scheme_uri",
                             }
                         )
             elif isinstance(item, str) and item.strip():
                 publishers.append(
                     {
                         "publisher_name": item.strip(),
-                        "publisher_identifier": "",
-                        "publisher_identifier_scheme": "",
-                        "publisher_scheme_uri": "",
+                        "publisher_identifier": "publisher_identifier",
+                        "publisher_identifier_scheme": "publisher_identifier_scheme",
+                        "publisher_scheme_uri": "publisher_scheme_uri",
                     }
                 )
 
