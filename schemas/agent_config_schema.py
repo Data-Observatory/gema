@@ -4,9 +4,18 @@ import json
 import os
 from pathlib import Path
 
-from pydantic import BaseModel
+from typing import Any
+
+from pydantic import BaseModel, Field, model_validator
 
 DEFAULT_MODEL = "glm-5"
+
+
+class LLMConfig(BaseModel):
+    model: str = Field(default="glm-5")
+    provider: str | None = Field(default=None)
+    temperature: float | None = Field(default=0.1)
+    max_tokens: int | None = Field(default=None)
 
 
 class ProviderConfig(BaseModel):
@@ -42,8 +51,21 @@ class AgentConfig(BaseModel):
     prompt_template: str
     depends_on: list[str] = []
     use_chain_of_thought: bool = True
-    model: str = DEFAULT_MODEL
-    provider: str | None = None
+    llm_config: LLMConfig = LLMConfig()
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_flat_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "model" in data or "provider" in data:
+                data = data.copy()
+                llm_config = data.pop("llm_config", {})
+                if "model" in data:
+                    llm_config["model"] = data.pop("model")
+                if "provider" in data:
+                    llm_config["provider"] = data.pop("provider")
+                data["llm_config"] = llm_config
+        return data
 
 
 class AgentsConfig(BaseModel):

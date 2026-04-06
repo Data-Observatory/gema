@@ -8,8 +8,12 @@
       "prompt_template": "You are given a dataset context with fields: url, title, description, publisher, frequency, fetched_content.\n\nExtract metadata using this EXACT JSON structure:\n{\n  \"titles\": [{\"name\": \"value of title field\", \"title_type\": \"MainTitle\", \"language\": \"es\"}],\n  \"descriptions\": [{\"description\": \"value of description field\", \"description_type\": \"Abstract\", \"language\": \"es\"}],\n  \"languages\": [{\"lang_code\": \"es\", \"language\": \"Spanish\"}],\n  \"resource\": {\n    \"identifier\": \"value of url field\",\n    \"identifier_type\": \"URL\",\n    \"resource_type\": \"Dataset\",\n    \"resource_type_general\": \"Dataset\",\n    \"language\": \"es\"\n  }\n}\n\nCRITICAL RULES:\n- Use field name 'name' not 'title'\n- Use field name 'description' not 'text'  \n- Use field name 'lang_code' not 'code'\n- Put the url value into resource.identifier\n- Infer language from content (es for Spanish)\n- Omit any field where you have no data",
       "depends_on": [],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.1,
+        "max_tokens": null
+      }
     },
     {
       "id": "creator_publisher",
@@ -19,8 +23,12 @@
       "prompt_template": "Extract creator and publisher from context. Use the 'publisher' field value if available.\n\nEXACT JSON structure:\n{\n  \"creators\": [{\n    \"creator_name\": \"organization name from publisher field\",\n    \"creator_name_type\": \"Organizational\",\n    \"type\": \"Organization\"\n  }],\n  \"publishers\": [{\n    \"publisher_name\": \"value of publisher field\"\n  }]\n}\n\nCRITICAL: Use 'creator_name' not 'name'. Use 'publisher_name' not 'name'. Set creator_name_type to 'Organizational' for organizations. Do NOT invent identifiers.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.1,
+        "max_tokens": null
+      }
     },
     {
       "id": "subject",
@@ -30,8 +38,12 @@
       "prompt_template": "Extract subject keywords from title, description, and content.\n\nEXACT JSON structure:\n{\n  \"subjects\": [\n    {\"subject_name\": \"keyword1\"},\n    {\"subject_name\": \"keyword2\"}\n  ]\n}\n\nCRITICAL: Use 'subject_name' not 'subject' or 'name'. Extract 3-8 relevant keywords. Prefer Spanish terms if content is in Spanish. Omit scheme_uri and value_uri unless verified.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.3,
+        "max_tokens": null
+      }
     },
     {
       "id": "media_files",
@@ -41,8 +53,12 @@
       "prompt_template": "Extract file/media information if available.\n\nEXACT JSON structure:\n{\n  \"media_files\": [{\n    \"format\": \"application/json\",\n    \"file_uri\": \"download url if available\"\n  }]\n}\n\nIf no file info, return {\"media_files\": []}. Do NOT invent URLs.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     },
     {
       "id": "temporal_geo",
@@ -52,8 +68,12 @@
       "prompt_template": "Extract temporal and geographic info. Use 'frequency' field if available.\n\nEXACT JSON structure:\n{\n  \"dates\": [{\"date\": \"YYYY-MM-DD\", \"date_type\": \"Issued\"}],\n  \"temporal_events\": [{\"frequency_type\": \"monthly\", \"description\": \"update frequency\"}],\n  \"geo_locations\": [{\"geo_location_place\": \"country or region name\"}]\n}\n\nCRITICAL: Use 'geo_location_place' not 'place'. Use ISO 8601 dates (YYYY-MM-DD). Map frequency: Mensual=monthly, Diario=daily, Semanal=weekly, Anual=yearly. Extract geographic scope from content.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     },
     {
       "id": "rights",
@@ -63,8 +83,12 @@
       "prompt_template": "Extract rights and licensing information from context. Look for license, terms of use, copyright info.\n\nEXACT JSON structure:\n{\n  \"rights\": [{\n    \"rights\": \"license name or statement\",\n    \"rights_uri\": \"https://creativecommons.org/licenses/by/4.0/ if CC-BY\",\n    \"rights_identifier\": \"CC-BY-4.0\",\n    \"rights_identifier_scheme\": \"SPDX\"\n  }]\n}\n\nCRITICAL: Use 'rights' not 'license'. If open data/government data without explicit license, suggest: {\"rights\": \"Open Data\", \"rights_uri\": \"https://opendatacommons.org/licenses/by/\"}. Do NOT invent license info.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.1,
+        "max_tokens": null
+      }
     },
     {
       "id": "funding",
@@ -74,8 +98,12 @@
       "prompt_template": "Extract funding information from context. Look for grant numbers, funders, project names.\n\nEXACT JSON structure:\n{\n  \"funding_references\": [{\n    \"funder_name\": \"organization name\",\n    \"award_number\": \"grant number if found\",\n    \"award_title\": \"project title if found\"\n  }]\n}\n\nCRITICAL: Use 'funder_name' not 'name'. Government datasets often have no explicit funding - return {\"funding_references\": []} if none found. Do NOT invent funding info.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     },
     {
       "id": "related_ids",
@@ -85,8 +113,12 @@
       "prompt_template": "Extract related identifiers from context. Look for related datasets, API endpoints, documentation URLs.\n\nEXACT JSON structure:\n{\n  \"related_identifiers\": [{\n    \"related_identifier\": \"URL or DOI\",\n    \"related_identifier_type\": \"URL\",\n    \"relation_type\": \"IsPartOf\",\n    \"resource_type_general\": \"Dataset\"\n  }]\n}\n\nCRITICAL: Use 'related_identifier' not 'identifier'. Look for links to parent datasets or related resources. Return {\"related_identifiers\": []} if none found.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     },
     {
       "id": "alternate_ids",
@@ -96,8 +128,12 @@
       "prompt_template": "Extract alternate identifiers and names from context. Look for DOIs, internal IDs, alternate titles.\n\nEXACT JSON structure:\n{\n  \"alternate_identifiers\": [{\n    \"alternate_name\": \"alternate title or short name\",\n    \"alternate_identifier\": \"internal ID if found\",\n    \"alternate_identifier_type\": \"Local\"\n  }]\n}\n\nCRITICAL: Use 'alternate_name' not 'name'. Short titles or abbreviations can be alternate names. Return {\"alternate_identifiers\": []} if none found.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     },
     {
       "id": "audiences",
@@ -107,8 +143,12 @@
       "prompt_template": "Extract target audience from context. Infer from content type and purpose.\n\nEXACT JSON structure:\n{\n  \"audiences\": [{\n    \"audience\": \"Researchers\",\n    \"education_level\": \"Professional\"\n  }]\n}\n\nCRITICAL: Common audiences for government data: Researchers, Policymakers, General Public, Developers. Return {\"audiences\": []} if cannot determine.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.3,
+        "max_tokens": null
+      }
     },
     {
       "id": "categories",
@@ -118,8 +158,12 @@
       "prompt_template": "Extract categories from context. Infer from subject matter.\n\nEXACT JSON structure:\n{\n  \"categories\": [{\n    \"name\": \"Economy\",\n    \"sub_category\": \"Public Finance\"\n  }]\n}\n\nCRITICAL: Use 'name' for main category. Common categories: Economy, Government, Society, Environment. Return {\"categories\": []} if cannot determine.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.3,
+        "max_tokens": null
+      }
     },
     {
       "id": "citations",
@@ -129,8 +173,12 @@
       "prompt_template": "Extract citation info if available. Look for how to cite this dataset.\n\nEXACT JSON structure:\n{\n  \"citations\": [{\n    \"title\": \"dataset title for citation\",\n    \"conference_place\": \"\",\n    \"conference_date\": \"\"\n  }]\n}\n\nCRITICAL: Most open datasets have no formal citation. Return {\"citations\": []} if none found. Do NOT invent citation info.",
       "depends_on": ["explorer"],
       "use_chain_of_thought": true,
-      "model": "glm-5",
-      "provider": "zai-coding-plan"
+      "llm_config": {
+        "model": "glm-5",
+        "provider": "zai-coding-plan",
+        "temperature": 0.0,
+        "max_tokens": null
+      }
     }
   ]
 }

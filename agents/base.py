@@ -52,8 +52,9 @@ class BaseAgent(dspy.Module):
         return DynamicSignature
 
     def _create_lm(self) -> dspy.LM:
-        model = self.config.model
-        provider_name = self.config.provider
+        llm_config = self.config.llm_config
+        model = llm_config.model
+        provider_name = llm_config.provider
         lm_kwargs: dict[str, Any] = {"cache": False}
 
         if provider_name:
@@ -68,11 +69,17 @@ class BaseAgent(dspy.Module):
         else:
             lm_kwargs["api_key"] = self.api_key
 
+        # Add generation parameters if explicitly set
+        if llm_config.temperature is not None:
+            lm_kwargs["temperature"] = llm_config.temperature
+        if llm_config.max_tokens is not None:
+            lm_kwargs["max_tokens"] = llm_config.max_tokens
+
         return dspy.LM(model, **lm_kwargs)
 
     def forward(self, context: dict[str, Any]) -> dict[str, Any]:
         self.logger.info(
-            f"Agent '{self.config.id}' starting with model '{self.config.model}'"
+            f"Agent '{self.config.id}' starting with model '{self.config.llm_config.model}'"
         )
 
         context_str = json.dumps(context, ensure_ascii=False, default=str)
