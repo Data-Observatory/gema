@@ -10,6 +10,26 @@ class MetadataMerger:
     """Merges outputs from multiple agents into final DataCite metadata."""
 
     REQUIRED_FIELDS = ["titles"]
+    FIELD_ORDER = [
+        "resource",
+        "alternate_identifiers",
+        "audiences",
+        "categories",
+        "citations",
+        "creators",
+        "dates",
+        "descriptions",
+        "funding_references",
+        "geo_locations",
+        "languages",
+        "media_files",
+        "publishers",
+        "related_identifiers",
+        "rights",
+        "subjects",
+        "temporal_events",
+        "titles",
+    ]
 
     def __init__(self):
         self.warnings: list[str] = []
@@ -37,6 +57,7 @@ class MetadataMerger:
         for field in missing:
             self.warnings.append(f"Missing required field: {field}")
 
+        result = self._order_fields(result)
         result = self._clean_empty_fields(result)
         wrapped = {"attributes": result}
         return wrapped
@@ -105,41 +126,53 @@ class MetadataMerger:
 
     def _normalize_output(self, output):
         normalized = {}
-        
+
+        # Work on a copy to avoid mutating the original output dict
+        output = dict(output) if isinstance(output, dict) else output
+
         # Manejar listas
         if isinstance(output, list):
             if len(output) > 0 and isinstance(output[0], dict):
                 output = output[0]
             else:
                 return normalized
-        
+
         if not isinstance(output, dict):
             return normalized
-        
+
         # ✅ NUEVO: Mover campos sueltos a "resource"
         resource_fields = [
-            "identifier", "identifier_type", "editor", "maintainer", 
-            "contact", "producer", "publication_year", "resource_type",
-            "resource_type_general", "version", "thumbnail", "language"
+            "identifier",
+            "identifier_type",
+            "editor",
+            "maintainer",
+            "contact",
+            "producer",
+            "publication_year",
+            "resource_type",
+            "resource_type_general",
+            "version",
+            "thumbnail",
+            "language",
         ]
-        
+
         resource_data = {}
         for field in resource_fields:
             if field in output:
-                resource_data[field] = output.pop(field)
-        
+                resource_data[field] = output.get(field)
+
         if resource_data:
             if "resource" in output:
-                output["resource"].update(resource_data)
+                output["resource"] = self._deep_merge(output["resource"], resource_data)
             else:
                 output["resource"] = resource_data
-        
-        # Procesar campos
+
+        skip_fields = set(resource_fields)
         for key, value in output.items():
-            if value is None:
-             continue
+            if value is None or key in skip_fields:
+                continue
             normalized[key] = self._normalize_field(key, value)
-        
+
         return normalized
 
     def _normalize_field(self, field_name: str, value: Any) -> Any:
@@ -337,7 +370,21 @@ class MetadataMerger:
         for item in items:
             if isinstance(item, dict):
                 if "creator_name" in item:
-                    creators.append(item)
+                    creator = {
+                        "creator_name": item["creator_name"],
+                        "creator_name_type": item.get(
+                            "creator_name_type", "Organizational"
+                        ),
+                        "given_name": item.get("given_name", ""),
+                        "family_name": item.get("family_name", ""),
+                        "email": item.get("email", ""),
+                        "genre": item.get("genre", ""),
+                        "type": item.get("type", "Organization"),
+                        "contributor_type": item.get("contributor_type", ""),
+                        "name_identifiers": item.get("name_identifiers", []),
+                        "affiliations": item.get("affiliations", []),
+                    }
+                    creators.append(creator)
                 elif "name" in item:
                     creators.append(
                         {
@@ -695,7 +742,18 @@ class MetadataMerger:
                 if isinstance(result[key], dict) and isinstance(value, dict):
                     result[key] = self._deep_merge(result[key], value)
                 elif isinstance(result[key], list) and isinstance(value, list):
-                    result[key] = result[key] + value
+                    combined = result[key] + value
+                    seen = set()
+                    deduped = []
+                    for item in combined:
+                        if isinstance(item, dict):
+                            key_tuple = tuple(sorted(item.items()))
+                        else:
+                            key_tuple = (item,)
+                        if key_tuple not in seen:
+                            seen.add(key_tuple)
+                            deduped.append(item)
+                    result[key] = deduped
                 else:
                     result[key] = value
             else:
@@ -924,21 +982,29 @@ class MetadataMerger:
 
         return citations
 
+    def _order_fields(self, data: dict) -> dict:
+        ordered = {}
+        for field in self.FIELD_ORDER:
+            if field in data:
+                ordered[field] = data[field]
+        for field in data:
+            if field not in ordered:
+                ordered[field] = data[field]
+        return ordered
+
     def _clean_empty_fields(self, data: dict) -> dict:
         cleaned = {}
         for key, value in data.items():
             if isinstance(value, list):
-                if len(value) > 0:
-                    cleaned_list = []
-                    for item in value:
-                        if isinstance(item, dict):
-                            clean_item = self._clean_dict(item)
-                            if clean_item:
-                                cleaned_list.append(clean_item)
-                        elif item not in (None, "", [], {}):
-                            cleaned_list.append(item)
-                    if cleaned_list:
-                        cleaned[key] = cleaned_list
+                cleaned_list = []
+                for item in value:
+                    if isinstance(item, dict):
+                        clean_item = self._clean_dict(item)
+                        if clean_item:
+                            cleaned_list.append(clean_item)
+                    elif item not in (None, "", [], {}):
+                        cleaned_list.append(item)
+                cleaned[key] = cleaned_list
             elif isinstance(value, dict):
                 clean_dict = self._clean_dict(value)
                 if clean_dict:
@@ -955,17 +1021,15 @@ class MetadataMerger:
                 if clean_v:
                     cleaned[k] = clean_v
             elif isinstance(v, list):
-                if len(v) > 0:
-                    cleaned_list = []
-                    for item in v:
-                        if isinstance(item, dict):
-                            clean_item = self._clean_dict(item)
-                            if clean_item:
-                                cleaned_list.append(clean_item)
-                        elif item not in (None, "", [], {}):
-                            cleaned_list.append(item)
-                    if cleaned_list:
-                        cleaned[k] = cleaned_list
+                cleaned_list = []
+                for item in v:
+                    if isinstance(item, dict):
+                        clean_item = self._clean_dict(item)
+                        if clean_item:
+                            cleaned_list.append(clean_item)
+                    elif item not in (None, "", [], {}):
+                        cleaned_list.append(item)
+                cleaned[k] = cleaned_list
             elif v not in (None, ""):
                 cleaned[k] = v
         return cleaned
