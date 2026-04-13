@@ -2,6 +2,7 @@
 
 import logging
 import threading
+import time
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -18,6 +19,8 @@ _usage_lock = threading.Lock()
 class Orchestrator:
     """Manages parallel agent execution with dependency resolution and context strategy."""
 
+    RETRY_DELAYS: list[float] = [0.5, 1, 2, 3, 5, 7, 10]
+
     registry: AgentRegistry
     settings: AppSettings
     agents: dict[str, BaseAgent]
@@ -29,8 +32,8 @@ class Orchestrator:
         self._lm_usage: dict[str, dict[str, int]] = {}
         self._per_agent_usage: dict[str, dict[str, Any]] = {}
 
-    def run(self, input_data: DatasetInput) -> dict[str, dict[str, Any]]:
-        all_outputs: dict[str, dict[str, Any]] = {}
+    def run(self, input_data: DatasetInput) -> dict[str, Any]:
+        all_outputs: dict[str, Any] = {}
         initial_input = input_data.model_dump()
         execution_waves = self.registry.get_execution_order()
 
@@ -59,9 +62,9 @@ class Orchestrator:
         self,
         agent_ids: list[str],
         initial_input: dict[str, Any],
-        all_outputs: dict[str, dict[str, Any]],
-    ) -> dict[str, dict[str, Any]]:
-        wave_outputs: dict[str, dict[str, Any]] = {}
+        all_outputs: dict[str, Any],
+    ) -> dict[str, Any]:
+        wave_outputs: dict[str, Any] = {}
 
         with ThreadPoolExecutor(max_workers=len(agent_ids)) as executor:
             future_to_agent: dict[
@@ -89,16 +92,43 @@ class Orchestrator:
                     logger.info(f"Agent '{agent_id}' completed")
                 except Exception as e:
                     logger.error(f"Agent '{agent_id}' failed: {e}")
-                    raise
+                    wave_outputs[agent_id] = None
 
         return wave_outputs
 
     def _run_agent_with_usage(
         self, agent: BaseAgent, agent_id: str, context: dict[str, Any]
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        output = agent.forward(context)
-        usage = self._extract_usage_from_agent(agent)
-        return output, usage
+        last_exception: Exception | None = None
+        for attempt in range(len(self.RETRY_DELAYS) + 1):
+            try:
+                output = agent.forward(context)
+                usage = self._extract_usage_from_agent(agent)
+                if attempt > 0:
+                    logger.info(
+                        f"Agent '{agent_id}' succeeded on attempt {attempt + 1}"
+                    )
+                return output, usage
+            except Exception as e:
+                error_type = type(e).__name__
+                if error_type != "RateLimitError" and "RateLimitError" not in str(
+                    type(e)
+                ):
+                    raise
+                last_exception = e
+                if attempt < len(self.RETRY_DELAYS):
+                    delay = self.RETRY_DELAYS[attempt]
+                    logger.warning(
+                        f"Agent '{agent_id}' rate limited (attempt {attempt + 1}/{len(self.RETRY_DELAYS) + 1}), retrying in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                else:
+                    logger.error(
+                        f"Agent '{agent_id}' failed after {len(self.RETRY_DELAYS) + 1} attempts: {e}"
+                    )
+        if last_exception is None:
+            raise RuntimeError(f"Agent '{agent_id}' failed without captured exception")
+        raise last_exception
 
     def _extract_usage_from_agent(self, agent: BaseAgent) -> dict[str, Any]:
         try:

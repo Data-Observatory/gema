@@ -47,7 +47,7 @@ class MetadataMerger:
                 logger.warning(f"Agent '{agent_id}' produced no output")
                 continue
 
-            normalized = self._normalize_output(output)
+            normalized = self._normalize_output(output, agent_id=agent_id)
             result = self._deep_merge(result, normalized)
 
         if input_data:
@@ -124,15 +124,16 @@ class MetadataMerger:
 
         return result
 
-    def _normalize_output(self, output):
+    def _normalize_output(self, output, agent_id: str | None = None):
         normalized = {}
 
         # Work on a copy to avoid mutating the original output dict
         output = dict(output) if isinstance(output, dict) else output
 
-        # Manejar listas
         if isinstance(output, list):
-            if len(output) > 0 and isinstance(output[0], dict):
+            if agent_id:
+                output = {agent_id: output}
+            elif len(output) > 0 and isinstance(output[0], dict):
                 output = output[0]
             else:
                 return normalized

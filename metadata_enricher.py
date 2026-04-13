@@ -143,6 +143,9 @@ def process_single_input(
         if not input_data.fetched_content:
             logger.info(f"Fetching content from {input_data.url}")
             input_data.fetched_content = fetch_url_content(input_data.url)
+            with open(input_file, "w", encoding="utf-8") as f:
+                json.dump(input_data.model_dump(), f, indent=2, ensure_ascii=False)
+            logger.info("Updated input file with fetched content")
 
         settings = AppSettings(
             llm=LLMSettings(),
