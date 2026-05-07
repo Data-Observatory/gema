@@ -16,6 +16,7 @@ class LLMConfig(BaseModel):
     provider: str | None = Field(default=None)
     temperature: float | None = Field(default=0.1)
     max_tokens: int | None = Field(default=None)
+    timeout: int | None = Field(default=120)
 
 
 class ProviderConfig(BaseModel):

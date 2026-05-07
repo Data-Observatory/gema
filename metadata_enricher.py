@@ -2,10 +2,15 @@ import argparse
 import json
 import logging
 import os
+import time
 import glob as glob_module
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
 from typing import Any
+
+import requests
+from requests.adapters import HTTPAdapter
 
 from dotenv import load_dotenv
 from schemas.input_schema import DatasetInput
@@ -43,6 +48,27 @@ def parse_args():
         choices=["accumulative", "layered"],
         default="accumulative",
         help="Context passing strategy",
+    )
+    parser.add_argument(
+        "--timeout",
+        "-t",
+        type=int,
+        default=None,
+        help="LLM request timeout in seconds (default: 120)",
+    )
+    parser.add_argument(
+        "--concurrency",
+        "-j",
+        type=int,
+        default=1,
+        help="Number of input files to process in parallel (default: 1)",
+    )
+    parser.add_argument(
+        "--skip-validation",
+        "-S",
+        action="store_true",
+        default=False,
+        help="Skip pre-flight configuration validation",
     )
     return parser.parse_args()
 
@@ -111,16 +137,31 @@ def format_token_usage(usage: dict[str, Any]) -> dict[str, Any]:
     return formatted
 
 
+_requests_session: requests.Session | None = None
+
+
+def _get_requests_session() -> requests.Session:
+    """Get or create a shared requests session with connection pooling."""
+    global _requests_session
+    if _requests_session is None:
+        _requests_session = requests.Session()
+        _requests_session.headers.update(
+            {"User-Agent": "Mozilla/5.0 (compatible; metadata-enricher/1.0)"}
+        )
+        adapter = HTTPAdapter(
+            pool_connections=10,
+            pool_maxsize=10,
+        )
+        _requests_session.mount("https://", adapter)
+        _requests_session.mount("http://", adapter)
+    return _requests_session
+
+
 def fetch_url_content(url: str, timeout: int = 30) -> str:
     """Fetch HTML content from a URL for agent context."""
-    import requests
-
     try:
-        response = requests.get(
-            url,
-            timeout=timeout,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; metadata-enricher/1.0)"},
-        )
+        session = _get_requests_session()
+        response = session.get(url, timeout=timeout)
         response.raise_for_status()
         return response.text
     except requests.RequestException as e:
@@ -135,8 +176,11 @@ def process_single_input(
     strategy: ContextStrategy,
     api_key: str,
     logger: logging.Logger,
+    llm_timeout: int | None = None,
+    skip_validation: bool = False,
 ) -> dict[str, Any]:
     try:
+        t_start = time.perf_counter()
         logger.info(f"Processing: {input_file}")
         with open(input_file) as f:
             input_data = DatasetInput(**json.load(f))
@@ -150,11 +194,31 @@ def process_single_input(
         settings = AppSettings(
             llm=LLMSettings(),
             context_strategy=strategy,
+            llm_timeout=llm_timeout,
         )
 
         logger.info(f"Loading agent registry from {config_path}")
-        registry = AgentRegistry(config_path, api_key=api_key)
+        registry = AgentRegistry(
+            config_path,
+            api_key=api_key,
+            llm_timeout=settings.llm_timeout,
+            cache_enabled=settings.cache_enabled,
+        )
         logger.info(f"Loaded {len(registry.get_all_agent_ids())} agents")
+
+        # Pre-flight validation
+        if not skip_validation:
+            from agents.pre_flight import PreFlightValidator
+
+            validator = PreFlightValidator(registry._config, registry._providers_config)
+            errors, warnings = validator.validate()
+            validator.print_report()
+            if errors:
+                logger.error(f"Pre-flight validation failed with {len(errors)} errors")
+                raise ValueError(
+                    f"Fix {len(errors)} configuration errors before running. "
+                    "Use --skip-validation to bypass."
+                )
 
         logger.info("Starting execution")
         orchestrator = Orchestrator(registry, settings)
@@ -188,7 +252,8 @@ def process_single_input(
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(final_output, f, indent=2, ensure_ascii=False)
 
-        logger.info(f"Completed: {output_file}")
+        elapsed = time.perf_counter() - t_start
+        logger.info(f"Completed: {output_file} in {elapsed:.2f}s")
         return token_usage
 
     except FileNotFoundError as e:
@@ -224,51 +289,109 @@ def main():
 
     total_usage: dict[str, Any] = {}
     results_summary: list[dict[str, Any]] = []
-
     output_file = None
-    for idx, input_file in enumerate(input_files, 1):
-        if is_batch:
-            logger.info(
-                f"\n{'=' * 60}\nProcessing file {idx}/{len(input_files)}: {input_file}\n{'=' * 60}"
+
+    if args.concurrency > 1 and len(input_files) > 1:
+        logger.info(
+            f"Processing {len(input_files)} files with concurrency={args.concurrency}"
+        )
+        with ThreadPoolExecutor(max_workers=args.concurrency) as executor:
+            future_to_file: dict[Any, tuple[Path, Path]] = {}
+            for idx, input_file in enumerate(input_files, 1):
+                if is_batch:
+                    output_file = output_base / f"{input_file.stem}_enriched.json"
+                else:
+                    if args.output:
+                        output_file = output_base
+                    else:
+                        output_dir = Path(__file__).parent / "output"
+                        output_dir.mkdir(parents=True, exist_ok=True)
+                        output_file = output_dir / f"{input_file.stem}_enriched.json"
+
+                future = executor.submit(
+                    process_single_input,
+                    input_file=input_file,
+                    output_file=output_file,
+                    config_path=args.config,
+                    strategy=strategy,
+                    api_key=api_key,
+                    logger=logger,
+                    llm_timeout=args.timeout,
+                    skip_validation=args.skip_validation,
+                )
+                future_to_file[future] = (input_file, output_file)
+
+            for future in as_completed(future_to_file):
+                input_file, output_file = future_to_file[future]
+                try:
+                    token_usage = future.result()
+                    results_summary.append(
+                        {
+                            "input": str(input_file),
+                            "output": str(output_file),
+                            "tokens": token_usage["total"],
+                        }
+                    )
+                    for model, stats in token_usage["by_model"].items():
+                        if model not in total_usage:
+                            total_usage[model] = {
+                                "prompt_tokens": 0,
+                                "completion_tokens": 0,
+                                "total_tokens": 0,
+                            }
+                        total_usage[model]["prompt_tokens"] += stats["prompt_tokens"]
+                        total_usage[model]["completion_tokens"] += stats[
+                            "completion_tokens"
+                        ]
+                        total_usage[model]["total_tokens"] += stats["total_tokens"]
+                except Exception as e:
+                    logger.error(f"Failed to process {input_file}: {e}")
+    else:
+        for idx, input_file in enumerate(input_files, 1):
+            if is_batch:
+                logger.info(
+                    f"\n{'=' * 60}\nProcessing file {idx}/{len(input_files)}: {input_file}\n{'=' * 60}"
+                )
+
+            if is_batch:
+                output_file = output_base / f"{input_file.stem}_enriched.json"
+            else:
+                if args.output:
+                    output_file = output_base
+                else:
+                    output_dir = Path(__file__).parent / "output"
+                    output_dir.mkdir(parents=True, exist_ok=True)
+                    output_file = output_dir / f"{input_file.stem}_enriched.json"
+
+            token_usage = process_single_input(
+                input_file=input_file,
+                output_file=output_file,
+                config_path=args.config,
+                strategy=strategy,
+                api_key=api_key,
+                logger=logger,
+                llm_timeout=args.timeout,
+                skip_validation=args.skip_validation,
             )
 
-        if is_batch:
-            output_file = output_base / f"{input_file.stem}_enriched.json"
-        else:
-            if args.output:
-                output_file = output_base
-            else:
-                output_dir = Path(__file__).parent / "output"
-                output_dir.mkdir(parents=True, exist_ok=True)
-                output_file = output_dir / f"{input_file.stem}_enriched.json"
-
-        token_usage = process_single_input(
-            input_file=input_file,
-            output_file=output_file,
-            config_path=args.config,
-            strategy=strategy,
-            api_key=api_key,
-            logger=logger,
-        )
-
-        results_summary.append(
-            {
-                "input": str(input_file),
-                "output": str(output_file),
-                "tokens": token_usage["total"],
-            }
-        )
-
-        for model, stats in token_usage["by_model"].items():
-            if model not in total_usage:
-                total_usage[model] = {
-                    "prompt_tokens": 0,
-                    "completion_tokens": 0,
-                    "total_tokens": 0,
+            results_summary.append(
+                {
+                    "input": str(input_file),
+                    "output": str(output_file),
+                    "tokens": token_usage["total"],
                 }
-            total_usage[model]["prompt_tokens"] += stats["prompt_tokens"]
-            total_usage[model]["completion_tokens"] += stats["completion_tokens"]
-            total_usage[model]["total_tokens"] += stats["total_tokens"]
+            )
+
+            for model, stats in token_usage["by_model"].items():
+                if model not in total_usage:
+                    total_usage[model] = {
+                        "prompt_tokens": 0,
+                        "completion_tokens": 0,
+                        "total_tokens": 0,
+                    }
+                total_usage[model]["prompt_tokens"] += stats["prompt_tokens"]
+                total_usage[model]["completion_tokens"] += stats["completion_tokens"]
+                total_usage[model]["total_tokens"] += stats["total_tokens"]
 
     if is_batch:
         summary_file = output_base / "_batch_summary.json"
@@ -302,7 +425,8 @@ def main():
         logger.info(f"  - Completion tokens: {grand_total['completion_tokens']:,}")
         logger.info(f"Summary saved to: {summary_file}")
     else:
-        logger.info(f"\nToken usage saved in output file: {output_file}")
+        if output_file:
+            logger.info(f"\nToken usage saved in output file: {output_file}")
 
     logger.info("Pipeline completed successfully")
 

@@ -1,5 +1,6 @@
 """Merger for combining agent outputs into DataCite format."""
 
+import json
 import logging
 from typing import Any
 
@@ -748,7 +749,13 @@ class MetadataMerger:
                     deduped = []
                     for item in combined:
                         if isinstance(item, dict):
-                            key_tuple = tuple(sorted(item.items()))
+                            try:
+                                key_repr = json.dumps(
+                                    item, sort_keys=True, ensure_ascii=False
+                                )
+                            except (TypeError, ValueError):
+                                key_repr = str(item)
+                            key_tuple = (key_repr,)
                         else:
                             key_tuple = (item,)
                         if key_tuple not in seen:

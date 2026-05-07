@@ -40,16 +40,25 @@ class Orchestrator:
         self._lm_usage = {}
         self._per_agent_usage = {}
 
+        t_pipeline_start = time.perf_counter()
         logger.info(f"Starting execution with {len(execution_waves)} waves")
 
         for wave_idx, wave in enumerate(execution_waves):
+            t_wave_start = time.perf_counter()
             logger.info(f"Executing wave {wave_idx + 1}/{len(execution_waves)}: {wave}")
             wave_outputs = self._execute_wave(wave, initial_input, all_outputs)
             all_outputs.update(wave_outputs)
+            wave_elapsed = time.perf_counter() - t_wave_start
+            logger.info(
+                f"Wave {wave_idx + 1}/{len(execution_waves)} completed in {wave_elapsed:.2f}s"
+            )
 
         self._aggregate_usage()
 
-        logger.info(f"Execution complete. {len(all_outputs)} agents executed")
+        pipeline_elapsed = time.perf_counter() - t_pipeline_start
+        logger.info(
+            f"Execution complete. {len(all_outputs)} agents executed in {pipeline_elapsed:.2f}s"
+        )
         return all_outputs
 
     def get_lm_usage(self) -> dict[str, Any]:
@@ -102,7 +111,7 @@ class Orchestrator:
         last_exception: Exception | None = None
         for attempt in range(len(self.RETRY_DELAYS) + 1):
             try:
-                output = agent.forward(context)
+                output = agent(context)
                 usage = self._extract_usage_from_agent(agent)
                 if attempt > 0:
                     logger.info(

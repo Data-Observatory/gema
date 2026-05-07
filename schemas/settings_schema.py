@@ -28,6 +28,8 @@ class AppSettings(BaseModel):
     llm: LLMSettings = LLMSettings()
     context_strategy: ContextStrategy = ContextStrategy.ACCUMULATIVE
     output_path: str = "output.json"
+    llm_timeout: int | None = None
+    cache_enabled: bool = True
 
 
 def load_settings(config_path: Optional[Path] = None) -> AppSettings:

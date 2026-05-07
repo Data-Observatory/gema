@@ -13,18 +13,25 @@ logger = logging.getLogger(__name__)
 class AgentRegistry:
     """Registry for loading and managing agents from config."""
 
-    def __init__(self, config_path: str, api_key: str = ""):
+    def __init__(
+        self,
+        config_path: str,
+        api_key: str = "",
+        llm_timeout: int | None = None,
+        cache_enabled: bool = True,
+    ):
         self.config_path = Path(config_path)
         self.api_key = api_key
+        self.llm_timeout = llm_timeout
+        self.cache_enabled = cache_enabled
         self._config: AgentsConfig | None = None
         self._providers_config = ProvidersConfig.load()
         self._load_config()
 
     def _load_config(self) -> None:
         """Load agent configuration from JSON file."""
-        with open(self.config_path, 'r', encoding='utf-8') as f:
+        with open(self.config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-
 
         self._config = AgentsConfig(**data)
 
@@ -38,10 +45,19 @@ class AgentRegistry:
             raise ValueError("Config not loaded")
         self._agents = {}
         for agent_config in self._config.agents:
+            if self.llm_timeout is not None:
+                agent_config = agent_config.model_copy(
+                    update={
+                        "llm_config": agent_config.llm_config.model_copy(
+                            update={"timeout": self.llm_timeout}
+                        )
+                    }
+                )
             self._agents[agent_config.id] = BaseAgent(
                 config=agent_config,
                 api_key=self.api_key,
                 providers_config=self._providers_config,
+                cache_enabled=self.cache_enabled,
             )
         return self._agents
 
