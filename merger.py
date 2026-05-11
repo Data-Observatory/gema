@@ -1038,7 +1038,7 @@ class MetadataMerger:
                     elif item not in (None, "", [], {}):
                         cleaned_list.append(item)
                 cleaned[k] = cleaned_list
-            elif v not in (None, ""):
+            elif v is not None:
                 cleaned[k] = v
         return cleaned
 

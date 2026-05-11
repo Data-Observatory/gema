@@ -29,9 +29,17 @@ class LanguageOutput(BaseModel):
 class ResourceOutput(BaseModel):
     identifier: str = Field(default="", description="DOI, URL, or other identifier")
     identifier_type: str = Field(default="", description="DOI, URL, URI, etc.")
+    editor: str = Field(
+        default="", description="Entity that publishes/curates the resource"
+    )
+    maintainer: str = Field(default="", description="Who maintains the dataset")
+    contact: str = Field(default="", description="Contact email or info")
+    producer: str = Field(default="", description="Entity that generated the content")
     publication_year: str = Field(default="", description="Year of publication (YYYY)")
     resource_type: str = Field(default="", description="Dataset, Software, Text, etc.")
     resource_type_general: str = Field(default="", description="General resource type")
+    version: str = Field(default="", description="Version number (e.g., '1.0')")
+    thumbnail: str = Field(default="", description="URL of thumbnail image")
     language: str = Field(default="", description="ISO 639-1 language code")
 
 
