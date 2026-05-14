@@ -2,7 +2,11 @@
 
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
+
+from enrichers.country_extractor import CountryExtractor
+from enrichers.iana_normalizer import IANANormalizer
+from enrichers.ror_resolver import RORResolver
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +64,8 @@ class MetadataMerger:
 
         result = self._order_fields(result)
         result = self._clean_empty_fields(result)
+        result = self._enrich_media_types(result)
+        result = self._enrich_ror_ids(result, input_data)
         wrapped = {"attributes": result}
         return wrapped
 
@@ -1041,6 +1047,144 @@ class MetadataMerger:
             elif v is not None:
                 cleaned[k] = v
         return cleaned
+
+    def _enrich_media_types(self, result: dict) -> dict:
+        """Normalize media file format strings against the IANA registry."""
+        if not hasattr(self, "_iana_normalizer"):
+            self._iana_normalizer = IANANormalizer()
+
+        for item in result.get("media_files", []):
+            fmt = item.get("format", "")
+            if fmt:
+                item["format"] = self._iana_normalizer.normalize(fmt)
+
+        return result
+
+    def _enrich_ror_ids(self, result: dict, input_data: dict | None) -> dict:
+        """Resolve institution names to ROR IDs and inject into result.
+
+        Only fills empty/missing identifiers.  Never overwrites existing
+        values.  Gracefully degrades — if the ROR API is unavailable the
+        pipeline completes without ROR enrichment.
+        """
+        if not hasattr(self, "_country_extractor"):
+            self._country_extractor = CountryExtractor()
+        if not hasattr(self, "_ror_resolver"):
+            self._ror_resolver = RORResolver()
+
+        # --- 1. Detect country from HTML / URL --------------------------
+        country_code: Optional[str] = None
+        if input_data:
+            html_content = input_data.get("fetched_content")
+            url = input_data.get("url")
+            if html_content or url:
+                country_code = self._country_extractor.extract_country(
+                    html_content=html_content,
+                    url=url,
+                )
+
+        # --- 2. Collect institution names needing ROR lookup ------------
+        institutions: list[dict] = []
+
+        for creator in result.get("creators", []):
+            name_ids = creator.get("name_identifiers", [])
+            has_ror = any(
+                nid.get("name_identifier_scheme") == "ROR"
+                and nid.get("name_identifier")
+                for nid in name_ids
+            )
+            if not has_ror and creator.get("creator_name"):
+                institutions.append(
+                    {"name": creator["creator_name"], "type": "creator"}
+                )
+
+            for aff in creator.get("affiliations", []):
+                if not aff.get("affiliation_identifier") and aff.get("affiliation"):
+                    institutions.append(
+                        {"name": aff["affiliation"], "type": "affiliation"}
+                    )
+
+        for pub in result.get("publishers", []):
+            if not pub.get("publisher_identifier") and pub.get("publisher_name"):
+                institutions.append(
+                    {"name": pub["publisher_name"], "type": "publisher"}
+                )
+
+        for fref in result.get("funding_references", []):
+            funder_ids = fref.get("funder_identifiers", [])
+            has_ror = any(
+                fid.get("funder_identifier_type") == "ROR"
+                and fid.get("funder_identifier")
+                for fid in funder_ids
+            )
+            if not has_ror and fref.get("funder_name"):
+                institutions.append({"name": fref["funder_name"], "type": "funder"})
+
+        if not institutions:
+            return result
+
+        # --- 3. Batch resolve -------------------------------------------
+        try:
+            resolved = self._ror_resolver.resolve_batch(institutions, country_code)
+        except Exception:
+            logger.warning("ROR enrichment failed, skipping", exc_info=True)
+            return result
+
+        # --- 4. Inject resolved ROR IDs into result ---------------------
+        for creator in result.get("creators", []):
+            name_ids = creator.get("name_identifiers", [])
+            has_ror = any(
+                nid.get("name_identifier_scheme") == "ROR"
+                and nid.get("name_identifier")
+                for nid in name_ids
+            )
+            if not has_ror and creator.get("creator_name"):
+                match = resolved.get(creator["creator_name"])
+                if match and match.get("id"):
+                    name_ids.append(
+                        {
+                            "name_identifier": match["id"],
+                            "name_identifier_scheme": "ROR",
+                            "scheme_uri": "https://ror.org",
+                        }
+                    )
+                    creator["name_identifiers"] = name_ids
+
+            for aff in creator.get("affiliations", []):
+                if not aff.get("affiliation_identifier") and aff.get("affiliation"):
+                    match = resolved.get(aff["affiliation"])
+                    if match and match.get("id"):
+                        aff["affiliation_identifier"] = match["id"]
+                        aff["affiliation_identifier_scheme"] = "ROR"
+
+        for pub in result.get("publishers", []):
+            if not pub.get("publisher_identifier") and pub.get("publisher_name"):
+                match = resolved.get(pub["publisher_name"])
+                if match and match.get("id"):
+                    pub["publisher_identifier"] = match["id"]
+                    pub["publisher_identifier_scheme"] = "ROR"
+                    pub["publisher_scheme_uri"] = "https://ror.org"
+
+        for fref in result.get("funding_references", []):
+            funder_ids = fref.get("funder_identifiers", [])
+            has_ror = any(
+                fid.get("funder_identifier_type") == "ROR"
+                and fid.get("funder_identifier")
+                for fid in funder_ids
+            )
+            if not has_ror and fref.get("funder_name"):
+                match = resolved.get(fref["funder_name"])
+                if match and match.get("id"):
+                    funder_ids.append(
+                        {
+                            "funder_identifier": match["id"],
+                            "funder_identifier_type": "ROR",
+                            "scheme_uri": "https://ror.org",
+                        }
+                    )
+                    fref["funder_identifiers"] = funder_ids
+
+        return result
 
     def _validate_required_fields(self, result: dict[str, Any]) -> list[str]:
         missing = []
