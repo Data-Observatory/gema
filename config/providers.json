@@ -4,6 +4,10 @@
       "api_base": "https://api.z.ai/api/coding/paas/v4",
       "api_key_env": "ZAI_API_KEY"
     },
+    "opencode": {
+      "api_base": "https://opencode.ai/zen/go/v1",
+      "api_key_env": "OPENCODE_API_KEY"
+    },
     "openai": {
       "api_base": null,
       "api_key_env": "OPENAI_API_KEY"
