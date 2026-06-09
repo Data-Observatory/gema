@@ -6,7 +6,6 @@ from typing import Any, Optional
 
 from enrichers.country_extractor import CountryExtractor
 from enrichers.iana_normalizer import IANANormalizer
-from enrichers.ror_resolver import RORResolver
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +63,6 @@ class MetadataMerger:
 
         result = self._order_fields(result)
         result = self._clean_empty_fields(result)
-        result = self._enrich_media_types(result)
-        result = self._enrich_ror_ids(result, input_data)
         wrapped = {"attributes": result}
         return wrapped
 
@@ -1069,8 +1066,6 @@ class MetadataMerger:
         """
         if not hasattr(self, "_country_extractor"):
             self._country_extractor = CountryExtractor()
-        if not hasattr(self, "_ror_resolver"):
-            self._ror_resolver = RORResolver()
 
         # --- 1. Detect country from HTML / URL --------------------------
         country_code: Optional[str] = None
