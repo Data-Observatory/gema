@@ -20,7 +20,7 @@
       "llm_config": {
         "model": "glm-5-turbo",
         "provider": "zai-coding-plan",
-        "temperature": 0.2,
+        "temperature": 0.1,
         "max_tokens": null
       }
     },
@@ -61,7 +61,7 @@
       "llm_config": {
         "model": "glm-5",
         "provider": "zai-coding-plan",
-        "temperature": 0.0,
+        "temperature": 0.3,
         "max_tokens": null
       }
     },
@@ -80,7 +80,7 @@
       ],
       "use_chain_of_thought": true,
       "llm_config": {
-        "model": "glm-5",
+        "model": "glm-5-turbo",
         "provider": "zai-coding-plan",
         "temperature": 0.0,
         "max_tokens": null
@@ -95,13 +95,13 @@
       ],
       "prompt_template": "Eres un agente especializado en describir archivos multimedia y datasets asociados a un recurso. Debes seguir esta CADENA DE PENSAMIENTO paso a paso.\n\n=== CADENA DE PENSAMIENTO ===\n\nPaso 1: Lee el titulo, descripcion y metadata disponible del recurso.\n\nPaso 2: IDENTIFICA EL O LOS ARCHIVOS DESCARGABLES\n- Busca URLs de descarga (archivos, APIs, servicios web) en el texto\n- Para CADA URL, determina su formato IANA (tipo MIME) a partir de:\n  a) La extension del archivo en la URL (.kml, .kmz, .zip, .csv, .json, .tif, .pdf, etc.)\n  b) La descripcion explicita en el texto (ej: \"formato KML\", \"archivo CSV\")\n  c) El tipo MIME si esta escrito (ej: \"application/zip\", \"text/csv\")\n  d) El patron de la URL si corresponde a un servicio REST o OGC conocido:\n     - Si la URL contiene GetCapabilities → formato: \"application/xml\"\n     - Si la URL contiene /rest/services/ y termina en /MapServer, /FeatureServer o /ImageServer → servicio ArcGIS REST → formato: \"application/json\"\n     - Si la URL contiene /arcgis/rest/ → formato: \"application/json\"\n     - Si la URL contiene /wms o WMSServer → formato: \"image/png\"\n     - Si la URL contiene /wfs o WFSServer → formato: \"application/json\"\n  e) **REGLA POR DEFECTO: Si NO se puede determinar el formato por ninguna via anterior, usar \"application/zip\"**\n- Detecta si hay multiples archivos o un solo archivo\n\nPaso 3: OBTIENE EL PESO/TAMAÑO DEL ARCHIVO\n- Busca en el texto menciones de peso (ej: \"2.5 MB\", \"450 KB\", \"1.2 GB\")\n- Si NO se menciona el peso → sizes = []\n- Formato del peso: {\"size\": numero, \"unit\": \"bytes|KB|MB|GB\"}\n\nPaso 4: EXTRAE INFORMACION TECNICA DE CADA ARCHIVO\n- Checksum (MD5, SHA-1, SHA-256) si esta en el texto\n- Resolucion temporal (daily, monthly, yearly, hourly) si esta en el texto\n\nPaso 5: EXTRAE METADATOS DEL CONTENIDO\n- Variable medida: si esta en el texto\n- Tecnica de medicion: si esta en el texto\n- Calidad de los datos: si esta en el texto\n- Procedencia: si esta en el texto\n\nPaso 6: EXTRAE INFORMACION DE COLECCIONES (si aplica)\n- accrual_method: si esta en el texto\n- accrual_periodicity: si esta en el texto\n- accrual_policy: si esta en el texto\n\n=== REGLAS OBLIGATORIAS ===\n- **CAMPO OBLIGATORIO:** El campo \"media_files\" SIEMPRE debe existir en la salida JSON. NUNCA omitirlo.\n- NO inventar informacion\n- Si no hay archivos descargables → {\"media_files\": []}\n- Si un campo no tiene informacion en el texto → dejar \"\" (string vacio) o [] (array vacio)\n- Devolver SOLO JSON valido\n- Para cada URL de descarga encontrada, crear un objeto SEPARADO dentro del array media_files\n- physical_carrier SIEMPRE debe ser \"digital\"\n- Los nombres de los campos DEBEN ser EXACTAMENTE en minúsculas: \"collections\", NO \"Collections\"\n- SIEMPRE incluir todos los campos del formato de salida\n- El campo \"format\" debe usar el tipo MIME IANA que corresponda segun la extension, descripcion o patron de URL del archivo\n- **REGLA POR DEFECTO: Si no hay extension clara ni descripcion del formato ni patron reconocible, usar \"application/zip\"**\n\n=== FORMATO EXACTO DE SALIDA ===\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 0, \"unit\": \"\"}],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"\",\n      \"file_uri\": \"\",\n      \"temporal_resolution\": \"\",\n      \"collections\": [\n        {\n          \"accrual_method\": \"\",\n          \"accrual_periodicity\": \"\",\n          \"accrual_policy\": \"\",\n        }\n      ]\n    }\n  ]\n}\n\n=== EJEMPLOS ===\n\nEJEMPLO 1: Dataset en KML con peso\nContexto: \"Capa de concesiones. URL: https://datos.gob.cl/concesiones.kml. Peso 2.5 MB. Datos del Ministerio de Bienes Nacionales.\"\n\nRESPUESTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 2.5, \"unit\": \"MB\"}],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"application/vnd.google-earth.kml+xml\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Ministerio de Bienes Nacionales\",\n      \"file_uri\": \"https://datos.gob.cl/concesiones.kml\",\n      \"temporal_resolution\": \"\",\n      \"collections\": []\n    }\n  ]\n}\n\nEJEMPLO 2: Dataset en SHP (ZIP)\nContexto: \"Establecimientos de salud. URL: https://deis.minsal.cl/establecimientos.zip. Peso 1.2 MB. Datos del Ministerio de Salud.\"\n\nRESPUESTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 1.2, \"unit\": \"MB\"}],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"application/zip\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Ministerio de Salud\",\n      \"file_uri\": \"https://deis.minsal.cl/establecimientos.zip\",\n      \"temporal_resolution\": \"\",\n      \"collections\": []\n    }\n  ]\n}\n\nEJEMPLO 3: Servicio ArcGIS REST (MapServer)\nContexto: \"Visor de Obras MOP. URL: https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer. Fuente: Ministerio de Obras Publicas.\"\n\nRESPUESTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"application/json\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Ministerio de Obras Publicas\",\n      \"file_uri\": \"https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer\",\n      \"temporal_resolution\": \"\",\n      \"collections\": []\n    }\n  ]\n}\n\nEJEMPLO 4: Servicio WMS con GetCapabilities\nContexto: \"Plan Cuadrante Carabineros. URL: https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities. Fuente: Carabineros de Chile.\"\n\nRESPUESTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"application/xml\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Carabineros de Chile\",\n      \"file_uri\": \"https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities\",\n      \"temporal_resolution\": \"\",\n      \"collections\": []\n    }\n  ]\n}\n\nEJEMPLO 5: Formato no determinado (usa application/zip por defecto)\nContexto: \"Datos geográficos. URL de descarga: https://datos.gob.cl/recurso/descargar?id=12345. Peso 3.7 MB. Fuente: Ministerio de Obras Publicas.\"\n\nRESPUESTA:\n{\n  \"media_files\": [\n    {\n      \"sizes\": [{\"size\": 3.7, \"unit\": \"MB\"}],\n      \"physical_carrier\": \"digital\",\n      \"format\": \"application/zip\",\n      \"variable_measured\": \"\",\n      \"checksum\": \"\",\n      \"data_quality\": \"\",\n      \"measurement_technique\": \"\",\n      \"provenance\": \"Ministerio de Obras Publicas\",\n      \"file_uri\": \"https://datos.gob.cl/recurso/descargar?id=12345\",\n      \"temporal_resolution\": \"\",\n      \"collections\": []\n    }\n  ]\n}\n\nEJEMPLO 6: Sin archivos\nContexto: \"Pagina web informativa sin archivos descargables\"\n\nRESPUESTA:\n{\n  \"media_files\": []\n}\n\nDevuelve UNICAMENTE el JSON, sin texto adicional ni explicaciones.",
       "depends_on": [
-        "rights_funding_citations"
+        "classification"
       ],
       "use_chain_of_thought": true,
       "llm_config": {
         "model": "glm-5",
         "provider": "zai-coding-plan",
-        "temperature": 0.2,
+        "temperature": 0.1,
         "max_tokens": null
       }
     }
