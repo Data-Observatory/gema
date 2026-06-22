@@ -43,3 +43,13 @@ Thumbs.db
 
 # uv
 .uv/
+
+# Test/coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Cache
+.cache/
