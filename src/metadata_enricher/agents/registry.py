@@ -55,6 +55,11 @@ class AgentRegistry:
                     f"Available: {list(self._providers.keys())}"
                 )
 
+            if agent_config.model is None:
+                raise ValueError(
+                    f"Agent '{agent_config.id}' has no model set. "
+                    "Each agent must specify a model in the pipeline configuration."
+                )
             llm_client = self._llm_factory(
                 provider,
                 model=agent_config.model,

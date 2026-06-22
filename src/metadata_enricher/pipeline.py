@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable
 
-from metadata_enricher.agents.registry import AgentRegistry
+from metadata_enricher.agents.registry import AgentRegistry, LLMClientFactory
 from metadata_enricher.config.models import PipelineConfig
 from metadata_enricher.input_sources.base import InputSource
 from metadata_enricher.merger import MetadataMerger
@@ -50,7 +49,7 @@ class Pipeline:
         self,
         config: PipelineConfig,
         schema_registry: SchemaRegistry | None = None,
-        llm_factory: Callable[..., object] | None = None,
+        llm_factory: LLMClientFactory | None = None,
     ) -> None:
         self._config = config
         self._registry = schema_registry or get_registry()

@@ -131,7 +131,7 @@ class TestWrite:
         nested = tmp_path / "deep" / "nested" / "output.json"
         assert not nested.parent.exists()
         doc = MetadataDocument(fields={"titles": [{"title": "Nested"}]})
-        result = writer.write(doc, output_path=nested)
+        writer.write(doc, output_path=nested)
         assert nested.exists()
         data = json.loads(nested.read_text(encoding="utf-8"))
         assert data["titles"] == [{"title": "Nested"}]

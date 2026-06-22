@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
 
-from metadata_enricher.agents.base import BaseAgent
 from metadata_enricher.agents.registry import AgentRegistry
 from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
 

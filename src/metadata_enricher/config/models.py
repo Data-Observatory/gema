@@ -6,6 +6,7 @@ with strict validation. No I/O, no parsing.
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -81,9 +82,8 @@ class PipelineConfig(BaseModel):
                     raise ValueError(msg)
 
         if len(agent_ids) != len(self.agents):
-            ids = [a.id for a in self.agents]
-            seen = set()
-            duplicates = {i for i in ids if i in seen or seen.add(i)}
+            counter = Counter(a.id for a in self.agents)
+            duplicates = {id_ for id_, count in counter.items() if count > 1}
             msg = f"duplicate agent IDs found: {sorted(duplicates)}"
             raise ValueError(msg)
 

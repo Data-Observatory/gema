@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from pydantic import BaseModel
 
 from metadata_enricher.schemas import DataCiteSchema46, get_registry

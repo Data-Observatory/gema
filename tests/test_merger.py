@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 
-import pytest
 
 from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.types import AgentResult, MetadataDocument

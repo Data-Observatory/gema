@@ -10,7 +10,6 @@ if _src in sys.path:
 sys.path.insert(0, _src)
 
 # Pre-import to cache correct module (avoid flat-layout shadowing)
-import metadata_enricher  # noqa: E402
 
 import pytest
 

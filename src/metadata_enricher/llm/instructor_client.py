@@ -50,7 +50,7 @@ class InstructorLLMClient:
         **kwargs: Any,
     ) -> BaseModel:
         """Send prompt and return a validated Pydantic object."""
-        messages: list[dict[str, str]] = []
+        messages: list[dict[str, Any]] = []
         if system_prompt is not None:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
@@ -75,7 +75,7 @@ class InstructorLLMClient:
         **kwargs: Any,
     ) -> str:
         """Send prompt and return raw text response."""
-        messages: list[dict[str, str]] = []
+        messages: list[dict[str, Any]] = []
         if system_prompt is not None:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})

@@ -9,7 +9,7 @@ import pytest
 
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
-from metadata_enricher.pipeline import Pipeline, PipelineResult
+from metadata_enricher.pipeline import Pipeline
 from metadata_enricher.types import ResourceDescription
 
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 from pydantic import BaseModel
 
 from metadata_enricher.agents.base import BaseAgent

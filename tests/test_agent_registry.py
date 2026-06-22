@@ -116,7 +116,7 @@ def test_registry_uses_llm_factory(schema):
         return m
 
     config = make_config(num_agents=3)
-    registry = AgentRegistry(config=config, schema=schema, llm_factory=counting_factory)
+    AgentRegistry(config=config, schema=schema, llm_factory=counting_factory)
     assert call_count == 3
 
 

@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import timedelta
 from pathlib import Path
+
+from pydantic import SecretStr
 
 from metadata_enricher.cache import CachedLLMClient, CacheManager
 from metadata_enricher.config.models import ProviderConfig
 from metadata_enricher.llm.base import LLMClient, LLMConfig
 from metadata_enricher.llm.instructor_client import InstructorLLMClient
-from metadata_enricher.llm.retry import RetryableLLMClient, RetryConfig
+from metadata_enricher.llm.retry import RetryableLLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ def create_llm_client(
 
     config = LLMConfig(
         model=model,
-        api_key=api_key,
+        api_key=SecretStr(api_key),
         base_url=provider.base_url,
         temperature=temperature,
         max_tokens=max_tokens,
