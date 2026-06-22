@@ -1,19 +1,37 @@
-"""Metadata Enricher CLI."""
+"""CLI entry point for the metagen command."""
 
 from __future__ import annotations
 
+import logging
+import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
 
 from metadata_enricher import __version__
+from metadata_enricher.config.loader import load_config, find_config
+from metadata_enricher.input_sources.filesystem import FilesystemInputSource
+from metadata_enricher.schemas import get_registry
+from metadata_enricher.validation import PreFlightValidator
+
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(
     name="metagen",
     help="Metadata Enricher — automatic metadata generation",
     no_args_is_help=True,
 )
+
+
+def _setup_logging(verbose: bool, quiet: bool) -> None:
+    if quiet:
+        level = logging.WARNING
+    elif verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+    logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
 
 
 def _version_callback(value: bool) -> None:
@@ -23,7 +41,7 @@ def _version_callback(value: bool) -> None:
 
 
 @app.callback()
-def main(
+def callback(
     ctx: typer.Context,
     version: bool = typer.Option(
         False,
@@ -33,45 +51,126 @@ def main(
         is_eager=True,
     ),
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config file"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
-    quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress output"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable debug logging"),
+    quiet: bool = typer.Option(False, "--quiet", "-q", help="Minimal output"),
 ) -> None:
-    """Metadata Enricher CLI."""
+    _setup_logging(verbose, quiet)
+    ctx.obj = {"config_path": config, "verbose": verbose, "quiet": quiet}
 
 
-@app.command()
-def process(
-    input_path: Path = typer.Argument(..., help="Input JSON file or glob pattern"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file path"),
-    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Metadata schema to use"),
+@app.command(name="list-schemas")
+def list_schemas(ctx: typer.Context) -> None:
+    """List all registered metadata schemas."""
+    registry = get_registry()
+    schemas = registry.list_schemas()
+    if not schemas:
+        typer.echo("No schemas registered.")
+        return
+    typer.echo("Available schemas:")
+    for name in schemas:
+        schema = registry.get(name)
+        typer.echo(f"  - {schema.name} (v{schema.version})")
+
+
+@app.command(name="list-providers")
+def list_providers(
+    ctx: typer.Context,
+    config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
 ) -> None:
-    """Process input metadata file(s) through the enrichment pipeline."""
-    typer.echo("Not yet implemented")
-    raise typer.Exit(1)
+    """List providers defined in a config file."""
+    config_path = config
+    if config_path is None and ctx.obj:
+        config_path = ctx.obj.get("config_path")
+    if config_path is None:
+        config_path = find_config()
+    if config_path is None:
+        typer.echo("Error: No config file found. Use --config to specify.", err=True)
+        raise typer.Exit(1)
+    try:
+        pipeline_config = load_config(config_path)
+    except Exception as e:
+        typer.echo(f"Error loading config: {e}", err=True)
+        raise typer.Exit(1)
+    typer.echo(f"Providers in {config_path}:")
+    for p in pipeline_config.providers:
+        default = " (default)" if p.name == pipeline_config.default_provider else ""
+        typer.echo(f"  - {p.name}: {p.base_url}{default}")
 
 
 @app.command()
 def validate(
-    file: Path = typer.Argument(..., help="Metadata JSON file to validate"),
-    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema to validate against"),
+    ctx: typer.Context,
+    file: Path = typer.Argument(..., help="Path to input JSON file"),
+    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
 ) -> None:
-    """Validate a metadata JSON file against a schema."""
-    typer.echo("Not yet implemented")
-    raise typer.Exit(1)
+    """Validate an input JSON file for processing."""
+    if not file.exists():
+        typer.echo(f"Error: File not found: {file}", err=True)
+        raise typer.Exit(1)
+    registry = get_registry()
+    try:
+        schema_obj = registry.get(schema)
+    except KeyError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
+    source = FilesystemInputSource()
+    try:
+        resource = source.fetch(str(file))
+    except (FileNotFoundError, ValueError) as e:
+        typer.echo(f"Error reading input: {e}", err=True)
+        raise typer.Exit(1)
+    validator = PreFlightValidator(schema=schema_obj, registry=registry)
+    result = validator.validate_resource(resource)
+    if result.valid:
+        typer.echo(f"\u2713 {file} is valid for processing")
+        for w in result.warnings:
+            typer.echo(f"  warning: {w}")
+    else:
+        typer.echo(f"\u2717 {file} is invalid")
+        for err in result.errors:
+            typer.echo(f"  error: {err}", err=True)
+        for w in result.warnings:
+            typer.echo(f"  warning: {w}")
+        raise typer.Exit(1)
 
 
 @app.command()
-def list_schemas() -> None:
-    """List available metadata schemas."""
-    typer.echo("Not yet implemented")
-    raise typer.Exit(1)
+def process(
+    ctx: typer.Context,
+    input_path: Path = typer.Argument(..., help="Path to input JSON file or directory"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file or directory"),
+    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
+    config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
+) -> None:
+    """Process input resources and generate metadata."""
+    # This command requires T22 (pipeline wiring). For now, print a clear message
+    # that the full pipeline is under construction, but verify the config loads.
+    config_path = config
+    if config_path is None and ctx.obj:
+        config_path = ctx.obj.get("config_path")
+    if config_path is None:
+        config_path = find_config()
+    if config_path is None:
+        typer.echo("Error: No config file found. Use --config to specify.", err=True)
+        raise typer.Exit(1)
+    try:
+        pipeline_config = load_config(config_path)
+    except Exception as e:
+        typer.echo(f"Error loading config: {e}", err=True)
+        raise typer.Exit(1)
 
-
-@app.command()
-def list_providers() -> None:
-    """List available LLM providers."""
-    typer.echo("Not yet implemented")
-    raise typer.Exit(1)
+    # Defer to T22's Pipeline class for full execution
+    typer.echo(
+        f"Config loaded: {len(pipeline_config.agents)} agents, schema={pipeline_config.schema_name}"
+    )
+    typer.echo(f"Input: {input_path}")
+    typer.echo(f"Output: {output or 'stdout'}")
+    typer.echo("Note: Full pipeline execution will be wired in T22.")
+    # Verify input exists
+    if not input_path.exists():
+        typer.echo(f"Error: Input not found: {input_path}", err=True)
+        raise typer.Exit(1)
+    typer.echo("Input verified. Pipeline ready for wiring.")
 
 
 if __name__ == "__main__":
