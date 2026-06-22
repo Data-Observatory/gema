@@ -1,0 +1,35 @@
+# Line-ending normalization policy
+# Enforce LF in the repository on all platforms; let git convert to CRLF
+# on checkout only for files explicitly marked text eol=crlf (none here).
+
+# Default: auto-detect text files, normalize to LF.
+* text=auto eol=lf
+
+# Explicit text rules (LF on checkout).
+*.py     text eol=lf diff=python
+*.json   text eol=lf
+*.md     text eol=lf
+*.toml   text eol=lf
+*.txt    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.cfg    text eol=lf
+*.ini    text eol=lf
+*.sh     text eol=lf
+*.example text eol=lf
+
+# Version / lock files: do not touch line endings.
+*.lock         binary
+python-version text eol=lf
+
+# Generated exports: never normalize, never diff.
+*.csv  binary
+*.tsv  binary
+*.parquet binary
+*.xlsx binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.zip  binary
