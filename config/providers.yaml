@@ -1,0 +1,23 @@
+# LLM Provider configurations
+# Each entry specifies how to connect to an LLM API endpoint.
+# Reference from agents.yaml via the provider name.
+providers:
+  - name: zai-coding-plan
+    api_key_env: ZAI_API_KEY
+    base_url: https://api.z.ai/api/coding/paas/v4
+    default: false
+
+  - name: opencode
+    api_key_env: OPENCODE_API_KEY
+    base_url: https://opencode.ai/zen/go/v1
+    default: true
+
+  - name: openai
+    api_key_env: OPENAI_API_KEY
+    base_url: null
+    default: false
+
+  - name: anthropic
+    api_key_env: ANTHROPIC_API_KEY
+    base_url: null
+    default: false
