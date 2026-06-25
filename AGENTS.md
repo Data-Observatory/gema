@@ -62,7 +62,7 @@ proj-metadata-agents/
 
 - **Schema Protocol is the central abstraction** — not DataCite-specific. 8 methods: `name`, `version`, `output_model`, `validate_output`, `normalize_field`, `merge_agent_results`, `get_field_order`, `get_required_fields`.
 - **Agent prompts use `str.format_map(SafeDict(...))`** — missing template vars render as `""` instead of `KeyError`. See `agents/base.py:10-14`.
-- **LLM client middleware stack** — `InstructorLLMClient → RetryableLLMClient → CachedLLMClient`. Built by `factory.py`, cached by provider name (module-global dict).
+- **LLM client middleware stack** — `InstructorLLMClient → RetryableLLMClient → CachedLLMClient`. Built by `factory.py`, cached by composite key (provider+model+temp+seed+max_tokens+use_cache+use_retry).
 - **Orchestrator = Kahn topological sort + ThreadPoolExecutor** — agents run in parallel waves respecting `depends_on`. Single-agent waves skip thread pool. Cycle detection raises `ValueError`.
 - **7-day disk cache** — `~/.cache/metagen/`, SHA-256 keyed by prompt+model+response_model. See `cache.py`.
 - **`conftest.py` sys.path surgery** — ensures `src/metadata_enricher` shadows any flat-layout original. Lines 6-12.

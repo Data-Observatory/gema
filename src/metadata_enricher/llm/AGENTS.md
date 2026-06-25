@@ -42,7 +42,7 @@ Built bottom-up, wrapped by each layer:
 2. `RetryableLLMClient(inner, ...)` — wraps with tenacity
 3. `CachedLLMClient(inner, cache_dir)` — wraps with disk cache
 
-**Module-global cache by provider name** (lines 19-22): same provider → same client instance across calls.
+**Module-global cache by composite key** (lines 19-22): identical provider+model+temp+seed+max_tokens+use_cache+use_retry → same client instance across calls.
 
 ## Retry semantics (`retry.py`) — CRITICAL
 
