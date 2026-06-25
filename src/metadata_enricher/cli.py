@@ -12,6 +12,8 @@ import typer
 from metadata_enricher import __version__
 from metadata_enricher.config.loader import load_config, find_config
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
+from metadata_enricher.output import OutputWriter
+from metadata_enricher.pipeline import Pipeline
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.validation import PreFlightValidator
 
@@ -142,9 +144,15 @@ def process(
     schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
 ) -> None:
-    """Process input resources and generate metadata."""
-    # This command requires T22 (pipeline wiring). For now, print a clear message
-    # that the full pipeline is under construction, but verify the config loads.
+    """Process input resources and generate metadata.
+
+    Reads JSON input from a file or directory, runs the full agent pipeline,
+    and writes enriched metadata to stdout, a file, or a directory.
+    """
+    if not input_path.exists():
+        typer.echo(f"Error: Input not found: {input_path}", err=True)
+        raise typer.Exit(1)
+
     config_path = config
     if config_path is None and ctx.obj:
         config_path = ctx.obj.get("config_path")
@@ -153,24 +161,45 @@ def process(
     if config_path is None:
         typer.echo("Error: No config file found. Use --config to specify.", err=True)
         raise typer.Exit(1)
+
     try:
         pipeline_config = load_config(config_path)
     except Exception as e:
         typer.echo(f"Error loading config: {e}", err=True)
         raise typer.Exit(1)
 
-    # Defer to T22's Pipeline class for full execution
-    typer.echo(
-        f"Config loaded: {len(pipeline_config.agents)} agents, schema={pipeline_config.schema_name}"
-    )
-    typer.echo(f"Input: {input_path}")
-    typer.echo(f"Output: {output or 'stdout'}")
-    typer.echo("Note: Full pipeline execution will be wired in T22.")
-    # Verify input exists
-    if not input_path.exists():
-        typer.echo(f"Error: Input not found: {input_path}", err=True)
+    registry = get_registry()
+    try:
+        schema_obj = registry.get(schema)
+    except KeyError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
-    typer.echo("Input verified. Pipeline ready for wiring.")
+
+    pipeline = Pipeline(config=pipeline_config)
+    output_writer = OutputWriter(schema=schema_obj)
+    input_source = FilesystemInputSource()
+
+    results = pipeline.run(input_source, pattern=str(input_path))
+
+    if not results:
+        typer.echo("No resources matched the input.", err=True)
+        raise typer.Exit(1)
+
+    success_count = 0
+    for result in results:
+        if result.success:
+            assert result.document is not None
+            output_writer.write(result.document, output_path=output)
+            success_count += 1
+        else:
+            source = result.resource.url or "unknown"
+            typer.echo(f"Error processing {source}: {result.error}", err=True)
+
+    total = len(results)
+    typer.echo(f"Processed {success_count}/{total} resources successfully", err=True)
+
+    if success_count == 0:
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

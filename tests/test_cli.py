@@ -121,29 +121,140 @@ class TestListProvidersCommand:
 class TestProcessCommand:
     """process subcommand."""
 
+    def test_process_missing_input_exits_1(self) -> None:
+        """Non-existent input path exits with code 1."""
+        result = runner.invoke(app, ["process", "/nonexistent/input.json"])
+        assert result.exit_code == 1
+        assert "Input not found" in result.stderr
+
     def test_process_missing_config(self) -> None:
+        """Missing config file exits with code 1 when input exists."""
         from unittest.mock import patch
 
-        with patch("metadata_enricher.cli.find_config", return_value=None):
-            result = runner.invoke(app, ["process", "/nonexistent/input.json"])
-        assert result.exit_code == 1
+        input_path = _write_temp_input()
+        try:
+            with patch("metadata_enricher.cli.find_config", return_value=None):
+                result = runner.invoke(app, ["process", input_path])
+            assert result.exit_code == 1
+        finally:
+            os.unlink(input_path)
 
     def test_process_with_valid_config(self) -> None:
+        """Pipeline runs successfully and produces output."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument
+
         input_path = _write_temp_input()
         config_path = _write_temp_config()
         try:
-            result = runner.invoke(
-                app,
-                [
-                    "process",
-                    input_path,
-                    "--config",
-                    config_path,
-                ],
+            mock_doc = MetadataDocument()
+            mock_doc.set_field("titles", [{"title": "Test"}])
+
+            success_result = MagicMock()
+            success_result.configure_mock(
+                success=True,
+                document=mock_doc,
+                error=None,
             )
-            assert result.exit_code == 0
-            assert "Config loaded" in result.stdout
-            assert "Input verified" in result.stdout
+
+            with (
+                patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls,
+                patch("metadata_enricher.cli.OutputWriter"),
+            ):
+                mock_pipeline = mock_pipeline_cls.return_value
+                mock_pipeline.run.return_value = [success_result]
+
+                result = runner.invoke(
+                    app,
+                    ["process", input_path, "--config", config_path],
+                )
+
+                assert result.exit_code == 0
+                mock_pipeline_cls.assert_called_once()
+                mock_pipeline.run.assert_called_once()
+                assert "Processed 1/1" in result.stderr
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_routes_output_to_writer(self) -> None:
+        """Successful results go to OutputWriter; errors go to stderr."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        try:
+            mock_doc = MetadataDocument()
+            mock_doc.set_field("titles", [{"title": "Good"}])
+
+            success_result = MagicMock()
+            success_result.configure_mock(
+                success=True,
+                document=mock_doc,
+                resource=ResourceDescription(url="test://good"),
+                error=None,
+            )
+
+            error_result = MagicMock()
+            error_result.configure_mock(
+                success=False,
+                document=None,
+                resource=ResourceDescription(url="test://bad"),
+                error="Something went wrong",
+            )
+
+            with (
+                patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls,
+                patch("metadata_enricher.cli.OutputWriter") as mock_output_cls,
+            ):
+                mock_pipeline = mock_pipeline_cls.return_value
+                mock_pipeline.run.return_value = [success_result, error_result]
+                mock_writer = mock_output_cls.return_value
+
+                result = runner.invoke(
+                    app,
+                    ["process", input_path, "--config", config_path],
+                )
+
+                assert result.exit_code == 0
+                mock_writer.write.assert_called_once()
+                assert "Error processing test://bad: Something went wrong" in result.stderr
+                assert "Processed 1/2" in result.stderr
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_all_failed_exits_1(self) -> None:
+        """When every resource fails, exit code is 1."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import ResourceDescription
+
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        try:
+            error_result = MagicMock()
+            error_result.configure_mock(
+                success=False,
+                document=None,
+                resource=ResourceDescription(url="test://fail"),
+                error="All broken",
+            )
+
+            with (
+                patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls,
+                patch("metadata_enricher.cli.OutputWriter"),
+            ):
+                mock_pipeline = mock_pipeline_cls.return_value
+                mock_pipeline.run.return_value = [error_result]
+
+                result = runner.invoke(
+                    app,
+                    ["process", input_path, "--config", config_path],
+                )
+
+                assert result.exit_code == 1
+                assert "Processed 0/1" in result.stderr
         finally:
             os.unlink(input_path)
             os.unlink(config_path)
