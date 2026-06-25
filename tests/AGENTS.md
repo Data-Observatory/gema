@@ -15,9 +15,9 @@ tests/
 ├── test_config_loader.py
 ├── test_config_migration.py
 ├── test_config_models.py
-├── test_country_extractor.py  # tests enrichers/ (outside src/)
+├── test_country_extractor.py  # tests metadata_enricher.enrichers (migrated into src/)
 ├── test_datacite_schema.py    # 1052 lines — largest test file
-├── test_iana_normalizer.py    # tests enrichers/ (outside src/)
+├── test_iana_normalizer.py    # tests metadata_enricher.enrichers (migrated into src/)
 ├── test_input_source.py
 ├── test_instructor_client.py
 ├── test_llm_client.py

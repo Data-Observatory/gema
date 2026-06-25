@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 
 import httpx
 
-from enrichers.iana_normalizer import IANANormalizer
+from metadata_enricher.enrichers.iana_normalizer import IANANormalizer
 
 
 # ---------------------------------------------------------------------------
@@ -72,10 +72,7 @@ class TestNormalize:
         bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
         n = IANANormalizer(bundled_path=str(bundle))
         assert n.normalize("text/html; charset=utf-8") == "text/html"
-        assert (
-            n.normalize("application/json; charset=utf-8; version=1")
-            == "application/json"
-        )
+        assert n.normalize("application/json; charset=utf-8; version=1") == "application/json"
 
     def test_name_lookup(self, mock_iana_data, tmp_path):
         bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
@@ -196,9 +193,7 @@ class TestCache:
 
         stale_data = {
             "_metadata": {
-                "last_updated": (
-                    datetime.now(timezone.utc) - timedelta(days=60)
-                ).isoformat(),
+                "last_updated": (datetime.now(timezone.utc) - timedelta(days=60)).isoformat(),
                 "source": "IANA",
                 "count": 1,
             },
@@ -231,9 +226,7 @@ class TestCache:
 
         stale_data = {
             "_metadata": {
-                "last_updated": (
-                    datetime.now(timezone.utc) - timedelta(days=60)
-                ).isoformat(),
+                "last_updated": (datetime.now(timezone.utc) - timedelta(days=60)).isoformat(),
                 "source": "IANA",
                 "count": 1,
             },
@@ -284,9 +277,7 @@ class TestCache:
 
         with patch(
             "httpx.get",
-            side_effect=httpx.HTTPStatusError(
-                "500", request=MagicMock(), response=MagicMock()
-            ),
+            side_effect=httpx.HTTPStatusError("500", request=MagicMock(), response=MagicMock()),
         ):
             result = n.refresh_data()
 

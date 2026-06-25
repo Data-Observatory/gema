@@ -5,12 +5,15 @@ IANA media types registry. Uses a bundled JSON snapshot with automatic
 background refresh to ~/.cache/proj-metadata-agents/.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any, cast
 
 import httpx
 
@@ -35,21 +38,32 @@ class IANANormalizer:
 
     def __init__(
         self,
-        bundled_path: str = "data/iana_media_types.json",
+        bundled_path: str | None = None,
         cache_dir: str | None = None,
     ) -> None:
         """Initialize the normalizer.
 
         Args:
             bundled_path: Path to the bundled IANA JSON snapshot.
+                          If None, resolves relative to this module's location.
             cache_dir: Directory for cached data. Defaults to
                        ~/.cache/proj-metadata-agents/.
         """
+        if bundled_path is None:
+            bundled_path = str(
+                Path(__file__).resolve().parent.parent.parent.parent
+                / "data"
+                / "iana_media_types.json"
+            )
+
         if cache_dir is None:
             cache_dir = str(DEFAULT_CACHE_DIR)
 
         self._cache_dir = Path(cache_dir)
         self._cache_path = self._cache_dir / CACHE_FILENAME
+
+        self.types: dict[str, dict[str, str]] = {}
+        self.name_lookup: dict[str, str] = {}
 
         data = self._load_bundled(bundled_path)
         data = self._maybe_use_cache(data)
@@ -165,16 +179,16 @@ class IANANormalizer:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _apply_data(self, data: dict) -> None:
+    def _apply_data(self, data: dict[str, Any]) -> None:
         """Apply loaded data dict to in-memory lookups."""
-        self.types = data.get("types", {})
-        self.name_lookup = data.get("name_lookup", {})
+        self.types = cast(dict[str, dict[str, str]], data.get("types", {}))
+        self.name_lookup = cast(dict[str, str], data.get("name_lookup", {}))
 
-    def _load_bundled(self, bundled_path: str) -> dict:
+    def _load_bundled(self, bundled_path: str) -> dict[str, Any]:
         """Load the bundled JSON snapshot."""
         try:
             with open(bundled_path, encoding="utf-8") as f:
-                return json.load(f)
+                return cast(dict[str, Any], json.load(f))
         except FileNotFoundError:
             logger.warning(
                 "Bundled IANA data not found at '%s' — using empty lookups",
@@ -189,7 +203,7 @@ class IANANormalizer:
             )
             return {"types": {}, "name_lookup": {}}
 
-    def _maybe_use_cache(self, bundled_data: dict) -> dict:
+    def _maybe_use_cache(self, bundled_data: dict[str, Any]) -> dict[str, Any]:
         """Check cache and return fresher data if available and non-stale.
 
         Logic:
@@ -204,15 +218,13 @@ class IANANormalizer:
 
         try:
             with open(self._cache_path, encoding="utf-8") as f:
-                cached = json.load(f)
+                cached: dict[str, Any] = json.load(f)
             last_updated_str = cached.get("_metadata", {}).get("last_updated")
             if last_updated_str:
                 last_updated = datetime.fromisoformat(last_updated_str)
                 cutoff = datetime.now(timezone.utc) - timedelta(days=STALE_DAYS)
                 if last_updated > cutoff:
-                    logger.debug(
-                        "Using cached IANA data (updated %s)", last_updated_str
-                    )
+                    logger.debug("Using cached IANA data (updated %s)", last_updated_str)
                     return cached
                 else:
                     logger.info(
@@ -229,7 +241,7 @@ class IANANormalizer:
 
         return bundled_data
 
-    def _try_refresh(self) -> dict | None:
+    def _try_refresh(self) -> dict[str, Any] | None:
         """Attempt a single refresh and return the new data dict on success."""
         try:
             xml_text = self._fetch_iana_xml()
@@ -255,15 +267,15 @@ class IANANormalizer:
         return response.text
 
     @staticmethod
-    def _parse_iana_xml(xml_text: str) -> dict:
+    def _parse_iana_xml(xml_text: str) -> dict[str, Any]:
         """Parse IANA media types XML into the standard JSON structure.
 
         Mirrors the logic in ``scripts/generate_iana_data.py``.
         """
         root = ET.fromstring(xml_text)
 
-        types: dict = {}
-        type_breakdown: dict = defaultdict(int)
+        types: dict[str, dict[str, str]] = {}
+        type_breakdown: dict[str, int] = defaultdict(int)
 
         for registry in root.findall("ian:registry", IANA_NS):
             registry_id = registry.get("id", "unknown")
@@ -310,7 +322,7 @@ class IANANormalizer:
 # ------------------------------------------------------------------
 
 
-def _parse_reference(record: ET.Element, ns: dict) -> str:
+def _parse_reference(record: ET.Element, ns: dict[str, str]) -> str:
     """Extract a reference string from a record's xref elements."""
     xrefs = record.findall("ian:xref", ns)
     if not xrefs:
@@ -344,15 +356,15 @@ def _parse_reference(record: ET.Element, ns: dict) -> str:
     return ref_str.strip()
 
 
-def _deduplicate_name_lookup(types: dict) -> dict:
+def _deduplicate_name_lookup(types: dict[str, dict[str, str]]) -> dict[str, str]:
     """Build name_lookup keeping only short names that map to exactly one type."""
-    name_to_types: dict = defaultdict(list)
+    name_to_types: dict[str, list[str]] = defaultdict(list)
     for full_type in types:
         if "/" in full_type:
             short = full_type.split("/", 1)[1].lower()
             name_to_types[short].append(full_type)
 
-    lookup: dict = {}
+    lookup: dict[str, str] = {}
     for short_name, full_types in name_to_types.items():
         if len(full_types) == 1:
             lookup[short_name] = full_types[0]

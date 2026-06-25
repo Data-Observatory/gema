@@ -127,27 +127,21 @@ class CountryExtractor:
             return None
 
         # 1. og:locale
-        m = _RE_OG_LOCALE.search(html_content) or _RE_OG_LOCALE_SWAPPED.search(
-            html_content
-        )
+        m = _RE_OG_LOCALE.search(html_content) or _RE_OG_LOCALE_SWAPPED.search(html_content)
         if m:
             result = _extract_country_from_locale(m.group(1))
             if result:
                 return result
 
         # 2. geo.country (direct two-letter code)
-        m = _RE_GEO_COUNTRY.search(html_content) or _RE_GEO_COUNTRY_SWAPPED.search(
-            html_content
-        )
+        m = _RE_GEO_COUNTRY.search(html_content) or _RE_GEO_COUNTRY_SWAPPED.search(html_content)
         if m:
             candidate = m.group(1).strip().upper()
             if re.fullmatch(r"[A-Z]{2}", candidate):
                 return candidate
 
         # 3. geo.region (e.g. "CL-RM")
-        m = _RE_GEO_REGION.search(html_content) or _RE_GEO_REGION_SWAPPED.search(
-            html_content
-        )
+        m = _RE_GEO_REGION.search(html_content) or _RE_GEO_REGION_SWAPPED.search(html_content)
         if m:
             result = _extract_country_from_region(m.group(1))
             if result:

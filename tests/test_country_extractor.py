@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from enrichers.country_extractor import (
+from metadata_enricher.enrichers.country_extractor import (
     CountryExtractor,
     _extract_country_from_locale,
     _extract_country_from_region,
@@ -223,9 +223,7 @@ class TestExtractCountry:
     def test_both_none(self, extractor: CountryExtractor) -> None:
         assert extractor.extract_country() is None
 
-    def test_html_empty_string_falls_back_to_url(
-        self, extractor: CountryExtractor
-    ) -> None:
+    def test_html_empty_string_falls_back_to_url(self, extractor: CountryExtractor) -> None:
         result = extractor.extract_country(
             html_content="",
             url="https://example.cl",
@@ -237,7 +235,5 @@ class TestExtractCountry:
         assert result == "CL"
 
     def test_datos_gob_cl_url(self, extractor: CountryExtractor) -> None:
-        result = extractor.extract_country(
-            url="https://datos.gob.cl/dataset/gastos-municipales"
-        )
+        result = extractor.extract_country(url="https://datos.gob.cl/dataset/gastos-municipales")
         assert result == "CL"

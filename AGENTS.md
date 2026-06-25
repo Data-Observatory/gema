@@ -15,7 +15,6 @@ proj-metadata-agents/
 ├── src/metadata_enricher/    # Main package (src-layout). See ./src/metadata_enricher/AGENTS.md
 ├── tests/                    # 24 pytest files, 1:1 per module. See ./tests/AGENTS.md
 ├── config/                   # Runtime YAML/JSON configs (NOT code). Legacy in config/legacy/
-├── enrichers/                # ⚠ LIVE code outside src/ — IANANormalizer, CountryExtractor
 ├── data/iana_media_types.json# Static IANA registry (regen via scripts/generate_iana_data.py)
 ├── examples/                 # 3 sample input JSON files
 ├── docs/CONFIGURATION.md     # Config guide
@@ -36,7 +35,7 @@ proj-metadata-agents/
 | Add a new agent | `config/agents.yaml` only | No code needed — `BaseAgent` is generic |
 | Run end-to-end pipeline | `src/metadata_enricher/cli.py` `process` command | T22 wired: `Pipeline.run()` → `OutputWriter.write()`; per-resource error isolation |
 | Change retry behavior | `src/metadata_enricher/llm/retry.py` | **Never retry validation errors** — see file |
-| Add a post-merge enricher | `enrichers/` (currently outside src/) | Used by tests; pending migration into src/ |
+| Add a post-merge enricher | `src/metadata_enricher/enrichers/` | IANANormalizer, CountryExtractor (migrated from repo-root `enrichers/`) |
 | Regenerate IANA data | `scripts/generate_iana_data.py` | Manual; writes to `data/iana_media_types.json` |
 | Run a single test | `uv run pytest tests/test_X.py -v` | Mark `@pytest.mark.live` for real API keys |
 
@@ -57,7 +56,7 @@ proj-metadata-agents/
 - **Orchestrator MUST NOT hardcode agent names** — enforced by `tests/test_orchestrator.py:166-181` (scans for `"explorer"`). Use registry API.
 - **Validation errors MUST NEVER be retried** — `pydantic.ValidationError`, `InstructorRetryException`, `ValueError` belong to Instructor layer, not transport retry. See `llm/retry.py:53-59,181-183`.
 - **Original JSON config NEVER modified during migration** — `config/migrate.py:90`. Writes `.yaml` sibling only.
-- **Unknown MIME types preserved unchanged** — never null, never raise. `enrichers/iana_normalizer.py:33`.
+- **Unknown MIME types preserved unchanged** — never null, never raise. `src/metadata_enricher/enrichers/iana_normalizer.py`.
 - **Single resource failure MUST NEVER block batch** — `pipeline.py:44-46`. Each resource isolated.
 - **`process` CLI is fully wired (T22 complete)** — `cli.py:139-202`. Calls `Pipeline.run()` → `OutputWriter.write()`; per-resource error isolation; exit 1 only when all resources fail.
 
