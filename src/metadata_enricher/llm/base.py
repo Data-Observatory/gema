@@ -68,6 +68,7 @@ class LLMConfig(BaseModel):
     api_key: SecretStr
     base_url: str | None = None
     temperature: float = 0.0
+    seed: int | None = None
     max_tokens: int | None = None
     timeout: float = 60.0
 
@@ -78,6 +79,7 @@ class LLMConfig(BaseModel):
             "api_key": self.api_key.get_secret_value(),
             "base_url": self.base_url,
             "temperature": self.temperature,
+            "seed": self.seed,
             "max_tokens": self.max_tokens,
             "timeout": self.timeout,
         }

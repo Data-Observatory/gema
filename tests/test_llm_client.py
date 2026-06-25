@@ -119,6 +119,7 @@ class TestLLMConfig:
         assert isinstance(d["api_key"], str)
         assert d["model"] == "gpt-4"
         assert d["temperature"] == 0.0
+        assert d["seed"] is None
         assert d["timeout"] == 60.0
         assert d["max_tokens"] is None
         assert d["base_url"] is None

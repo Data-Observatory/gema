@@ -79,18 +79,18 @@ class TestCacheManager:
 
     def test_make_key_is_deterministic(self, tmp_path: Path) -> None:
         cm = CacheManager(cache_dir=tmp_path)
-        k1 = cm._make_key("hello", "gpt-4", "MyModel")
-        k2 = cm._make_key("hello", "gpt-4", "MyModel")
+        k1 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None)
+        k2 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None)
         assert k1 == k2
         assert isinstance(k1, str)
         assert len(k1) == 64
 
     def test_make_key_differs_on_any_input(self, tmp_path: Path) -> None:
         cm = CacheManager(cache_dir=tmp_path)
-        k1 = cm._make_key("hello", "gpt-4", "MyModel")
-        k2 = cm._make_key("world", "gpt-4", "MyModel")
-        k3 = cm._make_key("hello", "gpt-3.5", "MyModel")
-        k4 = cm._make_key("hello", "gpt-4", "OtherModel")
+        k1 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None)
+        k2 = cm._make_key("world", "gpt-4", "MyModel", 0.0, None)
+        k3 = cm._make_key("hello", "gpt-3.5", "MyModel", 0.0, None)
+        k4 = cm._make_key("hello", "gpt-4", "OtherModel", 0.0, None)
         assert len({k1, k2, k3, k4}) == 4
 
     def test_custom_ttl(self, tmp_path: Path) -> None:

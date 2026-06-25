@@ -64,6 +64,9 @@ class InstructorLLMClient:
         }
         if self._config.max_tokens is not None:
             create_kwargs["max_tokens"] = self._config.max_tokens
+        # OpenAI SDK requires seed in extra_body, not as top-level kwarg
+        if self._config.seed is not None:
+            create_kwargs["extra_body"] = {"seed": self._config.seed}
         create_kwargs.update(kwargs)
 
         return self._instructor_client.chat.completions.create(**create_kwargs)
@@ -80,10 +83,15 @@ class InstructorLLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        # OpenAI SDK requires seed in extra_body, not as top-level kwarg
+        extra_kwargs: dict[str, Any] = {}
+        if self._config.seed is not None:
+            extra_kwargs["extra_body"] = {"seed": self._config.seed}
         response = self._raw_client.chat.completions.create(
             model=self._config.model,
             messages=messages,
             temperature=self._config.temperature,
+            **extra_kwargs,
             **kwargs,
         )
         return response.choices[0].message.content or ""

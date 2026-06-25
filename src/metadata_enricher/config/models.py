@@ -21,6 +21,7 @@ class ProviderConfig(BaseModel):
     base_url: str | None = None
     api_key_env: str
     default: bool = False
+    seed: int | None = None
 
 
 class AgentConfig(BaseModel):

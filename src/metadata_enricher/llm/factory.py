@@ -43,6 +43,7 @@ def create_llm_client(
     model: str,
     temperature: float = 0.0,
     max_tokens: int | None = None,
+    seed: int | None = None,
     max_retries: int = 3,
     use_cache: bool = True,
     use_retry: bool = True,
@@ -76,11 +77,14 @@ def create_llm_client(
 
     api_key = _resolve_api_key(provider.api_key_env)
 
+    resolved_seed = seed if seed is not None else provider.seed
+
     config = LLMConfig(
         model=model,
         api_key=SecretStr(api_key),
         base_url=provider.base_url,
         temperature=temperature,
+        seed=resolved_seed,
         max_tokens=max_tokens,
     )
 
