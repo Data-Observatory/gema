@@ -13,11 +13,9 @@ Verify `metagen` produces **comparable (semantically similar)** outputs across r
 
 ## Phases
 
-### Phase 0 — Wire `process` CLI (T22) — BLOCKING
+### Phase 0 — Wire `process` CLI (T22) — DONE
 
-The `process` command at `cli.py:137-173` is a stub. It loads config + verifies input exists but **never calls `Pipeline.run()`**. This blocks all end-to-end work.
-
-**Deliverable:** `process` command calls `Pipeline.run(input_source, pattern)` and routes results to `OutputWriter.write(document, output_path)` per result. Preserves all existing flags (`--output/-o`, `--schema/-s`, `--config/-c`). Errors per-resource are logged but do not stop the batch.
+The `process` command at `cli.py:139-202` is fully wired. It loads config, calls `Pipeline.run(input_source, pattern)`, routes successful results to `OutputWriter.write(document, output_path)`, logs per-resource errors to stderr without stopping the batch, and exits 1 only when all resources fail. All existing flags (`--output/-o`, `--schema/-s`, `--config/-c`) preserved. Verified by `tests/test_cli.py::TestProcessCommand` (5 tests, all green).
 
 ### Phase 1 — Determinism Primitives
 

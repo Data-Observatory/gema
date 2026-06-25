@@ -153,11 +153,9 @@ MIT -- see [LICENSE](LICENSE)
 
 ## Status
 
-v1 -- stable core API. The CLI, config loading, schema registry, and agent pipeline are functional.
-The full end-to-end process command is under active development (tracked as T22).
+v1 -- stable core API. The CLI, config loading, schema registry, agent pipeline, and end-to-end `process` command are all functional.
 
 ### Known Limitations
 
-- The `process` command loads config and validates input but does not yet execute the full pipeline (stub pending T22).
 - Only DataCite 4.6 schema is bundled. Custom schemas require implementing the `Schema` Protocol.
 - Prompt optimization via DSPy teleprompters is planned but not yet implemented.

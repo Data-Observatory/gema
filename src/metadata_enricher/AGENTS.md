@@ -8,8 +8,8 @@ Main library package. src-layout — `pythonpath=["src"]` adds this to `sys.path
 metadata_enricher/
 ├── __init__.py              # Exports __version__ only (minimal public API)
 ├── py.typed                 # PEP 561 marker
-├── cli.py                   # Typer app `metagen` — list-schemas/list-providers/validate/process(stub)
-├── pipeline.py              # Pipeline class — end-to-end wiring (works, CLI not wired)
+├── cli.py                   # Typer app `metagen` — list-schemas/list-providers/validate/process (T22 complete)
+├── pipeline.py              # Pipeline class — end-to-end wiring (fully wired to CLI)
 ├── orchestrator.py          # Orchestrator — Kahn topological sort + ThreadPoolExecutor
 ├── merger.py                # MetadataMerger — delegates to Schema.merge_agent_results
 ├── output.py                # OutputWriter — schema field ordering → JSON file/dir/stdout

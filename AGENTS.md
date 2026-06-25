@@ -34,7 +34,7 @@ proj-metadata-agents/
 | Add a new metadata schema | `src/metadata_enricher/schemas/` | Implement `Schema` Protocol, register in `schemas/__init__.py` |
 | Add a new LLM provider | `src/metadata_enricher/llm/` | OpenAI-compatible; add to `config/providers.yaml` |
 | Add a new agent | `config/agents.yaml` only | No code needed — `BaseAgent` is generic |
-| Wire CLI `process` command | `src/metadata_enricher/cli.py` | `Pipeline.run()` is implemented; CLI is stub (T22) |
+| Run end-to-end pipeline | `src/metadata_enricher/cli.py` `process` command | T22 wired: `Pipeline.run()` → `OutputWriter.write()`; per-resource error isolation |
 | Change retry behavior | `src/metadata_enricher/llm/retry.py` | **Never retry validation errors** — see file |
 | Add a post-merge enricher | `enrichers/` (currently outside src/) | Used by tests; pending migration into src/ |
 | Regenerate IANA data | `scripts/generate_iana_data.py` | Manual; writes to `data/iana_media_types.json` |
@@ -59,7 +59,7 @@ proj-metadata-agents/
 - **Original JSON config NEVER modified during migration** — `config/migrate.py:90`. Writes `.yaml` sibling only.
 - **Unknown MIME types preserved unchanged** — never null, never raise. `enrichers/iana_normalizer.py:33`.
 - **Single resource failure MUST NEVER block batch** — `pipeline.py:44-46`. Each resource isolated.
-- **`process` CLI is a stub (T22)** — `cli.py:146-148,162-168`. Loads config + validates input only. `Pipeline.run()` works but is not wired to CLI.
+- **`process` CLI is fully wired (T22 complete)** — `cli.py:139-202`. Calls `Pipeline.run()` → `OutputWriter.write()`; per-resource error isolation; exit 1 only when all resources fail.
 
 ## UNIQUE STYLES
 
@@ -80,7 +80,7 @@ make lint                                        # ruff check src/ tests/
 make typecheck                                   # mypy src/ (strict)
 uv run metagen list-schemas                      # CLI: list schemas
 uv run metagen validate examples/sample_input01.json
-uv run metagen process <input> --config config/agents.yaml --output out.json  # T22 stub
+uv run metagen process <input> --config config/agents.yaml --output out.json  # end-to-end
 uv run pytest tests/test_X.py -v -m live         # Real API key tests
 uv run pytest -k "not live"                      # Skip live tests
 ```
@@ -91,6 +91,6 @@ uv run pytest -k "not live"                      # Skip live tests
 - **`.env` required** — copy `.env.example` to `.env`, fill `OPENAI_API_KEY` / `ZAI_API_KEY` / `OPENCODE_API_KEY`.
 - **Config search order** — `find_config()`: explicit `--config` → `./config/agents.yaml` → `~/.config/metagen/agents.yaml` → `$METAGEN_CONFIG`.
 - **YAML env var expansion** — `${VAR}` syntax supported in configs via `os.path.expandvars()` (`loader.py:50`).
-- **Pipeline class works end-to-end** (`pipeline.py` + `test_pipeline_integration.py`); only CLI wiring is pending.
+- **Pipeline + CLI work end-to-end** (`pipeline.py`, `cli.py:process`); per-resource error isolation, exit 1 only on total failure.
 - **Only DataCite 4.6 ships** — custom schemas must implement `Schema` Protocol.
 - **DSPy teleprompter planned, not implemented** — prompt optimization is future work.
