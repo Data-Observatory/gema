@@ -1,0 +1,83 @@
+{
+  "resource": {
+    "identifier": "https://www.rasgos.cl/",
+    "identifier_type": "URL",
+    "editor": "Data Observatory",
+    "maintainer": "Data Observatory",
+    "contact": "",
+    "producer": "",
+    "publication_year": "",
+    "resource_type": "Dataset",
+    "resource_type_general": "Dataset",
+    "version": "",
+    "thumbnail": "https://rasgos.cl/images/og-home.webp",
+    "language": "es"
+  },
+  "alternate_identifiers": [],
+  "citations": [],
+  "creators": [
+    {
+      "creator_name": "Data Observatory",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/027nn6b17",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/"
+        }
+      ],
+      "affiliations": []
+    }
+  ],
+  "dates": [],
+  "descriptions": [
+    {
+      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
+      "description_type": "Abstract",
+      "language": "es"
+    }
+  ],
+  "funding_references": [],
+  "languages": [
+    {
+      "lang_code": "es",
+      "language": "Spanish",
+      "description": ""
+    }
+  ],
+  "media_files": [],
+  "publishers": [
+    {
+      "publisher_name": "Data Observatory",
+      "publisher_identifier": "https://ror.org/027nn6b17",
+      "publisher_identifier_scheme": "ROR",
+      "scheme_uri": "https://ror.org/",
+      "lang": "es"
+    }
+  ],
+  "related_identifiers": [],
+  "rights": [
+    {
+      "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+      "rights_identifier": "CC-BY-4.0",
+      "rights_identifier_scheme": "SPDX",
+      "scheme_uri": "https://spdx.org/licenses/",
+      "rights_condition": "",
+      "rights_holder": "Data Observatory"
+    }
+  ],
+  "titles": [
+    {
+      "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
+      "title_type": "MainTitle",
+      "language": "es"
+    }
+  ]
+}
