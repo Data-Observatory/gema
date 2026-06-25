@@ -24,10 +24,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=5.0.0",
-    "ruff>=0.5.0",
+    "json-semantic-diff>=0.1.0",
     "mypy>=1.10.0",
+    "pytest-cov>=5.0.0",
+    "pytest>=8.0.0",
+    "ruff>=0.5.0",
 ]
 
 [project.scripts]
@@ -41,6 +42,7 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 markers = [
     "live: requires real API keys",
+    "regression: golden-output cache-replay tests (no API key needed)",
 ]
 
 [tool.ruff]
@@ -50,3 +52,9 @@ line-length = 100
 [tool.mypy]
 python_version = "3.11"
 strict = true
+
+[dependency-groups]
+dev = [
+    "deepeval>=4.0.7",
+]
+
