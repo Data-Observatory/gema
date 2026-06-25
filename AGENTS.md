@@ -19,8 +19,6 @@ proj-metadata-agents/
 ├── examples/                 # 3 sample input JSON files
 ├── docs/CONFIGURATION.md     # Config guide
 ├── scripts/                  # generate_iana_data.py only
-├── agents/  schemas/         # ⚠ EMPTY — stale __pycache__ only (post-migration residue)
-├── test_simple.py  test_creators.py  config/test_simple.py  # ⚠ ORPHAN scripts, not in testpaths
 ├── pyproject.toml            # uv + hatchling + ruff + mypy(strict) + pytest config
 ├── Makefile                  # install/test/lint/typecheck/run/clean (all via `uv run`)
 └── uv.lock                   # Reproducible deps

@@ -92,7 +92,5 @@ These are project invariants — do NOT delete or weaken.
 
 ## NOTES
 
-- Orphan test scripts exist OUTSIDE this dir: `/test_simple.py`, `/test_creators.py`, `/config/test_simple.py`. They are NOT in `testpaths` and do NOT run with `make test`. Treat as stale.
-- `test_creators.py` imports `from agents.registry import AgentRegistry` — references old flat-layout `agents/` (will fail after cleanup).
 - All tests synchronous; LLM calls mocked unless `@pytest.mark.live`.
 - Coverage: `make test` runs `--cov=metadata_enricher --cov-report=term-missing`.
