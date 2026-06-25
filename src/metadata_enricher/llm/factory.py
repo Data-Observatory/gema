@@ -16,7 +16,7 @@ from metadata_enricher.llm.retry import RetryableLLMClient
 
 logger = logging.getLogger(__name__)
 
-# Module-level cache of clients by provider name
+# Module-level cache of clients by composite key (provider + model + params)
 _client_cache: dict[str, LLMClient] = {}
 # Shared cache manager (created lazily)
 _shared_cache_manager: CacheManager | None = None
@@ -52,8 +52,9 @@ def create_llm_client(
     """Create a fully configured LLM client from a provider config.
 
     Wraps InstructorLLMClient with retry middleware and disk cache.
-    Client instances are cached by provider name — calling with the same
-    provider returns the same client instance.
+    Client instances are cached by a composite key of provider + model +
+    temperature + seed + max_tokens + use_cache + use_retry — calling
+    with identical parameters returns the same client instance.
 
     Args:
         provider: ProviderConfig with base_url and api_key_env.
@@ -71,7 +72,7 @@ def create_llm_client(
     Raises:
         ValueError: If the API key environment variable is not set.
     """
-    cache_key = provider.name
+    cache_key = f"{provider.name}|{model}|t={temperature}|seed={seed}|mt={max_tokens}|c={use_cache}|r={use_retry}"
     if cache_key in _client_cache:
         return _client_cache[cache_key]
 
@@ -98,7 +99,9 @@ def create_llm_client(
         client = CachedLLMClient(client, cm)
 
     _client_cache[cache_key] = client
-    logger.debug("Created LLM client for provider '%s' (model=%s)", provider.name, model)
+    logger.debug(
+        "Created LLM client for provider '%s' (model=%s, key=%s)", provider.name, model, cache_key
+    )
     return client
 
 

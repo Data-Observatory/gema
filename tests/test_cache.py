@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 from pydantic import BaseModel
 
@@ -15,8 +16,11 @@ class SimpleOutput(BaseModel):
 
 
 class MockLLMClient:
-    def __init__(self, model_name: str = "mock-model") -> None:
+    def __init__(
+        self, model_name: str = "mock-model", temperature: float = 0.0, seed: int | None = None
+    ) -> None:
         self._model = model_name
+        self._config = SimpleNamespace(temperature=temperature, seed=seed)
         self.call_count = 0
 
     @property

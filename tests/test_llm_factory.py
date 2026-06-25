@@ -5,6 +5,7 @@ Uses ``unittest.mock`` to avoid real network calls.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -29,6 +30,8 @@ def mock_instructor():
         mock_instance = MagicMock()
         # Make the mock instance satisfy LLMClient protocol structurally
         mock_instance.model = "test-model"
+        mock_instance._config = SimpleNamespace(temperature=0.0, seed=None)
+        del mock_instance.inner
         mock.return_value = mock_instance
         yield mock
 
@@ -138,3 +141,27 @@ class TestFactory:
 
         assert client_a is not client_b
         assert len(_client_cache) == 1
+
+    def test_different_temperature_different_clients(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        """Same provider + model but different temperature yields different clients."""
+        monkeypatch.setenv("TEST_API_KEY", "sk-test-123")
+        provider = make_provider()
+
+        client_a = create_llm_client(provider, model="gpt-4", temperature=0.7)
+        client_b = create_llm_client(provider, model="gpt-4", temperature=0.2)
+
+        assert client_a is not client_b
+
+    def test_different_seed_different_clients(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        """Same provider + model + temperature but different seed yields different clients."""
+        monkeypatch.setenv("TEST_API_KEY", "sk-test-123")
+        provider = make_provider()
+
+        client_a = create_llm_client(provider, model="gpt-4", seed=42)
+        client_b = create_llm_client(provider, model="gpt-4", seed=99)
+
+        assert client_a is not client_b

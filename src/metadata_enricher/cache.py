@@ -74,10 +74,24 @@ class CachedLLMClient:
     def __init__(self, inner: LLMClient, cache_manager: CacheManager) -> None:
         self._inner = inner
         self._cache = cache_manager
-        # Best-effort extraction of temperature + seed for cache key diversity
-        config = getattr(inner, "_config", None)
-        self._temperature: float = getattr(config, "temperature", 0.0) if config else 0.0
-        self._seed: int | None = getattr(config, "seed", None) if config else None
+        candidate: LLMClient = inner
+        for _ in range(5):
+            if not hasattr(candidate, "inner"):
+                break
+            candidate = candidate.inner
+        else:
+            msg = "Middleware chain exceeds 5 layers; cannot locate LLMConfig"
+            raise RuntimeError(msg)
+        config = getattr(candidate, "_config", None)
+        if config is None:
+            msg = (
+                f"Could not locate LLMConfig in middleware chain "
+                f"(leaf type: {type(candidate).__name__}). "
+                f"Ensure the chain terminates with an InstructorLLMClient."
+            )
+            raise RuntimeError(msg)
+        self._temperature: float = getattr(config, "temperature", 0.0)
+        self._seed: int | None = getattr(config, "seed", None)
 
     @property
     def model(self) -> str:
@@ -109,9 +123,7 @@ class CachedLLMClient:
         system_prompt: str | None = None,
         **kwargs: object,
     ) -> str:
-        key = self._cache._make_key(
-            prompt, self.model, "raw", self._temperature, self._seed
-        )
+        key = self._cache._make_key(prompt, self.model, "raw", self._temperature, self._seed)
         cached = self._cache.get(key)
         if cached is not None:
             logger.debug("Cache HIT for key=%s (raw)", key[:12])
