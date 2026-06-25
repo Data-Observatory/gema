@@ -5,12 +5,13 @@ providers:
   - name: zai-coding-plan
     api_key_env: ZAI_API_KEY
     base_url: https://api.z.ai/api/coding/paas/v4
-    default: false
+    seed: 42
+    default: true
 
   - name: opencode
     api_key_env: OPENCODE_API_KEY
     base_url: https://opencode.ai/zen/go/v1
-    default: true
+    default: false
 
   - name: openai
     api_key_env: OPENAI_API_KEY

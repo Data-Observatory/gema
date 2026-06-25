@@ -201,8 +201,8 @@ agents:
     \ }\n}\n\nDevuelve UNICAMENTE el JSON, sin texto adicional ni explicaciones."
   depends_on: []
   use_chain_of_thought: true
-  model: deepseek-v4-flash
-  provider: opencode
+  model: glm-5.2
+  provider: zai-coding-plan
   temperature: 0.2
   max_tokens: null
 - id: creators_publishers
@@ -386,8 +386,8 @@ agents:
   depends_on:
   - core_metadata
   use_chain_of_thought: true
-  model: deepseek-v4-flash
-  provider: opencode
+  model: glm-5.2
+  provider: zai-coding-plan
   temperature: 0.0
   max_tokens: null
 - id: classification
@@ -521,8 +521,8 @@ agents:
   depends_on:
   - creators_publishers
   use_chain_of_thought: true
-  model: deepseek-v4-flash
-  provider: opencode
+  model: glm-5.2
+  provider: zai-coding-plan
   temperature: 0.0
   max_tokens: null
 - id: rights_funding_citations
@@ -634,8 +634,8 @@ agents:
   depends_on:
   - classification
   use_chain_of_thought: true
-  model: deepseek-v4-flash
-  provider: opencode
+  model: glm-5.2
+  provider: zai-coding-plan
   temperature: 0.0
   max_tokens: null
 - id: media_files
@@ -740,19 +740,22 @@ agents:
   depends_on:
   - rights_funding_citations
   use_chain_of_thought: true
-  model: deepseek-v4-flash
-  provider: opencode
+  model: glm-5.2
+  provider: zai-coding-plan
   temperature: 0.2
   max_tokens: null
 providers:
 - name: zai-coding-plan
   api_key_env: ZAI_API_KEY
   base_url: https://api.z.ai/api/coding/paas/v4
+  seed: 42
+  default: true
 - name: opencode
   api_key_env: OPENCODE_API_KEY
   base_url: https://opencode.ai/zen/go/v1
+  default: false
 - name: openai
   api_key_env: OPENAI_API_KEY
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
-default_provider: opencode
+default_provider: zai-coding-plan
