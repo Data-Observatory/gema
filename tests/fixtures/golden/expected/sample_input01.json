@@ -5,7 +5,7 @@
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "Ministerio de Hacienda",
     "contact": "",
-    "producer": "",
+    "producer": "Ministerio de Hacienda",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -14,48 +14,6 @@
     "language": "es"
   },
   "alternate_identifiers": [],
-  "audiences": [
-    {
-      "audience": "Investigadores",
-      "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Administradores",
-      "mediator": "Gerente",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Ciudadanos",
-      "mediator": "Bibliotecario",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Periodistas",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    }
-  ],
-  "categories": [
-    {
-      "name": "Ciencias Sociales",
-      "sub_category": "Economía y negocios"
-    },
-    {
-      "name": "Ciencias Sociales",
-      "sub_category": "Geografía económica y social"
-    }
-  ],
   "citations": [],
   "creators": [
     {
@@ -106,13 +64,14 @@
       "description": ""
     }
   ],
+  "media_files": [],
   "publishers": [
     {
-      "lang": "es",
+      "publisher_name": "Ministerio de Hacienda",
       "publisher_identifier": "https://isni.org/isni/000000040628717X",
       "publisher_identifier_scheme": "ISNI",
-      "publisher_name": "Ministerio de Hacienda",
-      "scheme_uri": "https://isni.org/"
+      "scheme_uri": "https://isni.org/",
+      "lang": "es"
     }
   ],
   "related_identifiers": [],
@@ -127,27 +86,11 @@
       "rights_holder": "Estado de Chile"
     }
   ],
-  "subjects": [
-    {
-      "subject_name": "Gastos municipales -- Presupuesto público -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    },
-    {
-      "subject_name": "Corporaciones municipales -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    }
-  ],
   "titles": [
     {
+      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }

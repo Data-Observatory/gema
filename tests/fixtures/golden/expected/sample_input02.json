@@ -3,7 +3,7 @@
     "identifier": "https://www.rasgos.cl/",
     "identifier_type": "URL",
     "editor": "Data Observatory",
-    "maintainer": "Data Observatory",
+    "maintainer": "Rasgos-CL",
     "contact": "",
     "producer": "",
     "publication_year": "",
@@ -14,27 +14,50 @@
     "language": "es"
   },
   "alternate_identifiers": [],
-  "citations": [],
-  "creators": [
+  "audiences": [
     {
-      "creator_name": "Data Observatory",
-      "creator_name_type": "Organizational",
-      "given_name": "",
-      "family_name": "",
-      "email": "",
-      "genre": "",
-      "type": "Organization",
-      "contributor_type": "",
-      "name_identifiers": [
-        {
-          "name_identifier": "https://ror.org/027nn6b17",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org/"
-        }
-      ],
-      "affiliations": []
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Docentes",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Clase guiada"
+    },
+    {
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
+      "instructional_method": "Estudio de caso"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
+  "categories": [
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias biológicas"
+    },
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias medioambientales"
+    }
+  ],
+  "citations": [],
+  "creators": [],
   "dates": [],
   "descriptions": [
     {
@@ -73,11 +96,27 @@
       "rights_holder": "Data Observatory"
     }
   ],
+  "subjects": [
+    {
+      "subject_name": "Rasgos funcionales (Plantas) -- Biodiversidad -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Plantas -- Ecología -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    }
+  ],
   "titles": [
     {
+      "language": "es",
       "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }
