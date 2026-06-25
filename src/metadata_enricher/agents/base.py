@@ -56,8 +56,18 @@ class BaseAgent:
         """Format prompt, call LLM, extract+normalize fields per schema."""
         try:
             resource_dict = self._build_resource_dict(resource)
-            safe = SafeDict(resource_dict)
-            formatted = self._prompt.format_map(safe)
+            formatted = self._prompt
+            for key, val in resource_dict.items():
+                formatted = formatted.replace("{" + key + "}", val)
+
+            formatted += "\n\n=== RECURSO A PROCESAR ===\n"
+            for key in ("url", "title", "description", "doi", "fetched_content"):
+                val = resource_dict.get(key, "")
+                if val:
+                    formatted += f"- {key}: {val}\n"
+            for key, val in resource_dict.items():
+                if key not in ("url", "title", "description", "doi", "fetched_content") and val:
+                    formatted += f"- {key}: {val}\n"
 
             output_model = self._schema.output_model
             result = self._llm_client.complete(

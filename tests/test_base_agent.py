@@ -151,7 +151,9 @@ class TestBaseAgent:
         resource = ResourceDescription(title="No URL")
         agent.run(resource)
         assert client.last_prompt is not None
-        assert client.last_prompt == "URL: []"
+        assert "URL: []" in client.last_prompt
+        assert "=== RECURSO A PROCESAR ===" in client.last_prompt
+        assert "- title: No URL" in client.last_prompt
 
     def test_no_dspy_imports(self) -> None:
         source_path = (
