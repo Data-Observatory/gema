@@ -1,0 +1,298 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36433/Area%20de%20Riesgo%20IPT",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Vivienda y Urbanismo",
+        "maintainer": "Centro de Estudios de Ciudad y Territorio, Ministerio de Vivienda y Urbanismo",
+        "contact": "ideminvu@minvu.cl; 800 104 559; http://sistred.bienes.cl/siac-atencion/atencion?idechile",
+        "producer": "",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36433",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{07c9eca4-4245-4454-9b8a-54e233fc65ae}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Vivienda y Urbanismo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106708868",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2023-12-30",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Las áreas de riesgo según el Instrumento de Planificación Territorial (IPT) son territorios que, a través de un estudio de riesgos, limitan su uso por razones de seguridad frente a desastres naturales o antrópicos. Estas áreas pueden restringir o prohibir la construcción de edificaciones en ellas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Áreas de riesgo según Instrumento de Planificación Territorial (IPT)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Vivienda y Urbanismo",
+          "file_uri": "https://geoide.minvu.cl/server/rest/services/IPT/IPT_AREA_RIESGO/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Áreas de riesgo según Instrumento de Planificación Territorial (IPT)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Vivienda y Urbanismo",
+          "file_uri": "https://geoide.minvu.cl/server/rest/services/IPT/IPT_AREA_RIESGO/FeatureServer",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Vivienda y Urbanismo",
+          "publisher_identifier": "https://isni.org/isni/0000000106708868",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoide.minvu.cl/server/rest/services/IPT/IPT_AREA_RIESGO/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoide.minvu.cl/server/rest/services/IPT/IPT_AREA_RIESGO/FeatureServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B07c9eca4-4245-4454-9b8a-54e233fc65ae%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDescribedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Vivienda y Urbanismo"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Áreas de riesgo -- Planificación territorial -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Desastres naturales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Planificación y catastro",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Area de Riesgo IPT",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.164,-60.403,-60.856,-13.893",
+            "geo_description": "Áreas de riesgo según Instrumento de Planificación Territorial (IPT) con cobertura nacional de Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11989,
+        "completion_tokens": 2507,
+        "total_tokens": 14496
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47126,
+        "completion_tokens": 5714,
+        "total_tokens": 52840
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11989,
+        "completion_tokens": 2507,
+        "total_tokens": 14496
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12646,
+        "completion_tokens": 1565,
+        "total_tokens": 14211
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11462,
+        "completion_tokens": 1619,
+        "total_tokens": 13081
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11491,
+        "completion_tokens": 1489,
+        "total_tokens": 12980
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11527,
+        "completion_tokens": 1041,
+        "total_tokens": 12568
+      }
+    },
+    "total": {
+      "prompt_tokens": 59115,
+      "completion_tokens": 8221,
+      "total_tokens": 67336
+    }
+  },
+  "processed_at": "2026-06-01T17:14:44.972273",
+  "input_file": "inputs1\\3.json"
+}

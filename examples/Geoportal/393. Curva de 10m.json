@@ -1,0 +1,287 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35655/Curva%20de%2010m",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Medio Ambiente",
+        "maintainer": "Ministerio del Medio Ambiente",
+        "contact": "Mherrera@mma.gob.cl; +562 29385406",
+        "producer": "Ministerio del Medio Ambiente",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35655",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "608897-43-LP18",
+          "alternate_identifier_type": "Project ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{332D128E-B2AD-467E-96A5-BDCCFA44C80F}",
+          "alternate_identifier_type": "XML Identifier"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio del Medio Ambiente",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-06-18",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Información generada en el marco del proyecto 'Determinación del riesgo de los impactos del Cambio Climático en las costas de Chile', ID N°608897-43-LP18, cuyo objetivo general fue generar información de proyecciones respecto de la amenaza del cambio climático en las costas de Chile y sus impactos, a escala regional, y determinar el riesgo asociado a este fenómeno, para el diseño de políticas e implementación de medidas de adaptación. El proyecto, mandatado por el Ministerio del Medio Ambiente, se desarrolló entre los años 2018 y 2019. La capa representa la cota 10 msnm.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [
+        {
+          "funder_name": "Ministerio del Medio Ambiente",
+          "funding_stream": "",
+          "award_number": "608897-43-LP18",
+          "award_uri": "",
+          "award_title": "Determinación del riesgo de los impactos del Cambio Climático en las costas de Chile",
+          "funder_identifiers": []
+        }
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "cota 10 msnm",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Medio Ambiente",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/3a31521f-1bef-38a3-9ae0-90546efebfad",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Medio Ambiente",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://gis.mma.gob.cl/server/rest/services/IDE_2019/IDE_CambioClim%C3%A1tico/MapServer/3",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/3a31521f-1bef-38a3-9ae0-90546efebfad",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://mma.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Medio Ambiente"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Cambio climático -- Costas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Elevación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Riesgo climático -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Curva de 10m",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-75.2315,-58.7062,-65.3137,-18.893",
+            "geo_description": "Cobertura nacional del territorio chileno incluyendo zona costera, para análisis de cambio climático",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10509,
+        "completion_tokens": 2767,
+        "total_tokens": 13276
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 44373,
+        "completion_tokens": 5194,
+        "total_tokens": 49567
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10509,
+        "completion_tokens": 2767,
+        "total_tokens": 13276
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11514,
+        "completion_tokens": 1081,
+        "total_tokens": 12595
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11096,
+        "completion_tokens": 1442,
+        "total_tokens": 12538
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11095,
+        "completion_tokens": 1490,
+        "total_tokens": 12585
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10668,
+        "completion_tokens": 1181,
+        "total_tokens": 11849
+      }
+    },
+    "total": {
+      "prompt_tokens": 54882,
+      "completion_tokens": 7961,
+      "total_tokens": 62843
+    }
+  },
+  "processed_at": "2026-05-19T14:15:31.980289",
+  "input_file": "examples\\2.json"
+}

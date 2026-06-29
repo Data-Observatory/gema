@@ -1,0 +1,328 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35603/Municipios",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Desarrollo Regional y Administrativo",
+        "maintainer": "Subsecretaría de Desarrollo Regional y Administrativo",
+        "contact": "rodrigo.osorio@subdere.gov.cl; +562 2676 3030",
+        "producer": "SUBDERE, con ayuda en la geolocalización de direcciones por Carabineros",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "V0301",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35603",
+          "alternate_identifier_type": "Internal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{356F8BBF-DFBD-4910-B360-E02ACCD64E9C}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Subsecretaría de Desarrollo Regional y Administrativo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Carabineros de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106624277",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2016-01-01",
+          "date_type": "Created",
+          "date_information": ""
+        },
+        {
+          "date": "2020-04-28",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa de puntos que representan la localización de los municipios de todas las comunas del país (edificio consistorial, según listado de direcciones entregada por el Sistema Nacional de Información Municipal SINIM de la Subsecretaría de Desarrollo Regional SUBDERE). Cuenta con el Código Único Territorial de la comuna. Capa generada por SUBDERE en 2016, con ayuda en la geolocalización de direcciones por Carabineros. Escala nacional. Versiones: V02 - Actualización de nombres de regiones (según ley 21.074 de 2018), Actualización de códigos únicos territoriales (según decreto supremo 1.115 de 2018), Corrección en municipio de Peumo y Mostazal (región del Libertador General Bernardo O'Higgins), Reproyección a SIRGAS-Chile. V0201 - Corrección en nombre de campo (CUT_2010 a CUT_2018). V03 - Actualización a planilla de direcciones de municipios reportadas por SINIM el 24/04/2020. V0301 - Corrección en ubicación de municipio de La Pintana y correcciones menores en municipios de Providencia, Quinta Normal, Recoleta, Puente Alto, San José de Maipo y Padre Hurtado (región Metropolitana de Santiago).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Geolocalización de direcciones",
+          "provenance": "SUBDERE, con ayuda en la geolocalización de direcciones por Carabineros",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/6355033d-109f-3776-9178-bf608ea04a89",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Geolocalización de direcciones",
+          "provenance": "SUBDERE, con ayuda en la geolocalización de direcciones por Carabineros",
+          "file_uri": "https://www.geoportal.cl/geoserver/Municipios/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Desarrollo Regional y Administrativo",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.geoportal.cl/geoserver/Municipios/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDerivedFrom",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/6355033d-109f-3776-9178-bf608ea04a89",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.subdere.gov.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Subsecretaría de Desarrollo Regional y Administrativo; Carabineros de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Municipios -- Geolocalización -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "División administrativa -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Comunas -- Ubicación geográfica -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Municipios",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-109.2117, -67.16, -56.536, -17.49916",
+            "geo_description": "Cobertura nacional - Ubicación de los municipios de todas las comunas del país",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11252,
+        "completion_tokens": 2457,
+        "total_tokens": 13709
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48625,
+        "completion_tokens": 5784,
+        "total_tokens": 54409
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11252,
+        "completion_tokens": 2457,
+        "total_tokens": 13709
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12450,
+        "completion_tokens": 1627,
+        "total_tokens": 14077
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12170,
+        "completion_tokens": 1788,
+        "total_tokens": 13958
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12247,
+        "completion_tokens": 1157,
+        "total_tokens": 13404
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11758,
+        "completion_tokens": 1212,
+        "total_tokens": 12970
+      }
+    },
+    "total": {
+      "prompt_tokens": 59877,
+      "completion_tokens": 8241,
+      "total_tokens": 68118
+    }
+  },
+  "processed_at": "2026-05-19T15:19:44.061151",
+  "input_file": "examples\\2.json"
+}

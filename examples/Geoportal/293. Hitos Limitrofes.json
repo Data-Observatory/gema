@@ -1,0 +1,298 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36572/Hitos%20Lim%C3%ADtrofes",
+        "identifier_type": "URL",
+        "editor": "Dirección Nacional de Fronteras y Límites del Estado",
+        "maintainer": "Dirección Nacional de Fronteras y Límites del Estado (DIFROL)",
+        "contact": "infodifrol@minrel.gob.cl; 562 2413 5700; https://www.difrol.cl",
+        "producer": "Dirección Nacional de Fronteras y Límites del Estado (DIFROL)",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{ecfef400-ed1a-4a3d-8f95-77e2bf1f6fcc}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Hitos Limítrofes",
+          "volume": "",
+          "issue": "",
+          "start_page": "",
+          "end_page": "",
+          "edition": "",
+          "conference_place": "",
+          "conference_date": ""
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000474071266",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Relaciones Exteriores",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-12-06",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Los hitos limítrofes son señales permanentes o puntos de referencia utilizados para demarcar las fronteras entre dos países. Estos hitos pueden ser de hierro, cumbres naturales, monumentos, pilares o pircas; son elementos físicos que indican claramente la ubicación del límite. Los hitos limítrofes son fundamentales para establecer y mantener la claridad en las fronteras y prevenir disputas territoriales.\n\nLos hitos limítrofes, están representados en una capa de líneas con características vectoriales, para ser descargada, utilizada y visualizada en proyectos en softwares de Sistemas de Información Geográfica (SIG).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "text/html",
+          "variable_measured": "hitos limítrofes",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://www.difrol.cl/descarga_hitos/",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "hitos limítrofes",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://www.difrol.cl/download/hitos_shp/?wpdmdl=5220&refresh=661016950f4711712330389",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "publisher_identifier": "https://isni.org/isni/0000000474071266",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.difrol.cl/descarga_hitos/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDocumentedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.difrol.cl/download/hitos_shp/?wpdmdl=5220&refresh=661016950f4711712330389",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Becfef400-ed1a-4a3d-8f95-77e2bf1f6fcc%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección Nacional de Fronteras y Límites del Estado"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Fronteras -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Límites territoriales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Hitos limítrofes",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Hitos Limítrofes",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.164,-57.987,-62.064,-16.309",
+            "geo_description": "Área fronteriza de Chile, abarcando las coordenadas límite del territorio nacional donde se ubican los hitos limítrofes que demarcan las fronteras internacionales",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12130,
+        "completion_tokens": 2748,
+        "total_tokens": 14878
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47975,
+        "completion_tokens": 5206,
+        "total_tokens": 53181
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12130,
+        "completion_tokens": 2748,
+        "total_tokens": 14878
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12873,
+        "completion_tokens": 1312,
+        "total_tokens": 14185
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11678,
+        "completion_tokens": 1656,
+        "total_tokens": 13334
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11671,
+        "completion_tokens": 979,
+        "total_tokens": 12650
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11753,
+        "completion_tokens": 1259,
+        "total_tokens": 13012
+      }
+    },
+    "total": {
+      "prompt_tokens": 60105,
+      "completion_tokens": 7954,
+      "total_tokens": 68059
+    }
+  },
+  "processed_at": "2026-06-01T16:39:02.672573",
+  "input_file": "inputs1\\4.json"
+}

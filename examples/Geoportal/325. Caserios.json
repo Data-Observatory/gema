@@ -1,0 +1,283 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36037/Caserios",
+        "identifier_type": "URL",
+        "editor": "Instituto Nacional de Estadisticas",
+        "maintainer": "Instituto Nacional de Estadísticas",
+        "contact": "ine@ine.gob.cl; 562 3246 1010",
+        "producer": "Instituto Nacional de Estadísticas",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36037",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{6E7CD150-62DE-4DED-87EB-CDFBD32AE756}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Instituto Nacional de Estadísticas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000122977777",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2023-04-19",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial en formato shp, se muestran los caserios a nivel nacional, en base al CENSO 2017.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "caserios a nivel nacional",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Instituto Nacional de Estadísticas",
+          "file_uri": "https://www.ine.gob.cl/docs/default-source/geodatos-abiertos/cartografia/censo-2017/ciudades-pueblos-aldeas-y-caser%C3%ADos/shp/caserios_2017.zip?sfvrsn=6080e4f2_3",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Instituto Nacional de Estadísticas",
+          "publisher_identifier": "https://isni.org/isni/0000000122977777",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.ine.gob.cl/docs/default-source/geodatos-abiertos/cartografia/censo-2017/ciudades-pueblos-aldeas-y-caser%C3%ADos/shp/caserios_2017.zip?sfvrsn=6080e4f2_3",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.ine.gob.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B6E7CD150-62DE-4DED-87EB-CDFBD32AE756%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Instituto Nacional de Estadísticas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Caseríos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Censo de población -- Chile -- 2017",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Caserios",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-79.581,-60.403,-60.252,-17.517",
+            "geo_description": "Cobertura nacional de Chile para la ubicación de caseríos según el Censo 2017",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11416,
+        "completion_tokens": 2585,
+        "total_tokens": 14001
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 44722,
+        "completion_tokens": 4718,
+        "total_tokens": 49440
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11416,
+        "completion_tokens": 2585,
+        "total_tokens": 14001
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12067,
+        "completion_tokens": 1343,
+        "total_tokens": 13410
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10887,
+        "completion_tokens": 1441,
+        "total_tokens": 12328
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10867,
+        "completion_tokens": 1025,
+        "total_tokens": 11892
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10901,
+        "completion_tokens": 909,
+        "total_tokens": 11810
+      }
+    },
+    "total": {
+      "prompt_tokens": 56138,
+      "completion_tokens": 7303,
+      "total_tokens": 63441
+    }
+  },
+  "processed_at": "2026-06-01T18:50:57.613485",
+  "input_file": "inputs1\\4.json"
+}

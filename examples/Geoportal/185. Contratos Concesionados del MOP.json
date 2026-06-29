@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36789/Contratos%20Concesionados%20del%20MOP",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Unidades de Comunicaciones y Medio Ambiente y Territorio de Concesiones, Ministerio de Obras Públicas",
+        "contact": "562 2449 4000",
+        "producer": "Dirección General de Concesiones, Ministerio de Obras Públicas",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36789",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{0af9dc67-09c4-425d-996a-22bb4d3787a8}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección General de Concesiones",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Ministerio de Obras Públicas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-18",
+          "date_type": "Issued",
+          "date_information": ""
+        },
+        {
+          "date": "2014-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Servicio de Mapas, con geometrías de Puntos y Líneas que hacen referencia a los proyectos que se encuentran bajo la Administración de Concesiones del MOP. Los proyectos se clasifican en: Agenda 2014-2020, Licitación, Construcción, Construcción y Operación y Operación. La información contenida en el servicio de mapas es mantenida por las Unidades de Comunicaciones y Medio Ambiente y Territorio de Concesiones.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Contratos de concesión de obras públicas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Obras Públicas, Dirección General de Concesiones",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/CCOP/CONTRATOS_CONCESIONADOS/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Contratos de concesión de obras públicas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Obras Públicas, Dirección General de Concesiones",
+          "file_uri": "https://geomop.mop.gob.cl/descargas/",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/CCOP/CONTRATOS_CONCESIONADOS/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geomop.mop.gob.cl/descargas/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Obras Públicas; Dirección General de Concesiones"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Contratos de concesión -- Obras públicas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Transporte -- Infraestructura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Contratos Concesionados del MOP",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.822, -61.007, -63.326, -15.705",
+            "geo_description": "Territorio nacional de Chile, incluyendo la ubicación de todos los proyectos bajo la Administración de Concesiones del MOP",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12100,
+        "completion_tokens": 2815,
+        "total_tokens": 14915
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47582,
+        "completion_tokens": 5868,
+        "total_tokens": 53450
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12100,
+        "completion_tokens": 2815,
+        "total_tokens": 14915
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12831,
+        "completion_tokens": 1730,
+        "total_tokens": 14561
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11653,
+        "completion_tokens": 1832,
+        "total_tokens": 13485
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11629,
+        "completion_tokens": 1055,
+        "total_tokens": 12684
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11469,
+        "completion_tokens": 1251,
+        "total_tokens": 12720
+      }
+    },
+    "total": {
+      "prompt_tokens": 59682,
+      "completion_tokens": 8683,
+      "total_tokens": 68365
+    }
+  },
+  "processed_at": "2026-05-28T16:10:28.812192",
+  "input_file": "examples\\3.json"
+}

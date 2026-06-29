@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/34965/Jardines%20Infantiles%20JUNJI",
+        "identifier_type": "URL",
+        "editor": "Junta Nacional de Jardines Infantiles",
+        "maintainer": "Junta Nacional de Jardines Infantiles",
+        "contact": "cvillablanca@junji.cl; +562 2654 5045; 800 104 559",
+        "producer": "Junta Nacional de Jardines Infantiles",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "34965",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{FE3F294D-3990-4842-A961-497EA725940B}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias de la educación"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Jardines Infantiles JUNJI",
+          "volume": "",
+          "issue": "",
+          "start_page": "",
+          "end_page": "",
+          "edition": "",
+          "conference_place": "",
+          "conference_date": ""
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Junta Nacional de Jardines Infantiles",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000122029881",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Educación",
+              "affiliation_identifier": "https://ror.org/018f7hf93",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-06-19",
+          "date_type": "Issued",
+          "date_information": ""
+        },
+        {
+          "date": "2024-04-01",
+          "date_type": "Collected",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Archivo de puntos, donde cada uno representa la ubicación de una Unidad Educativa de la Junta Nacional de Jardines Infantiles, operando en abril de 2024 por región, comuna a nivel nacional, con información de dirección y capacidad de atención.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "ubicación de unidades educativas JUNJI, dirección, capacidad de atención",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Junta Nacional de Jardines Infantiles",
+          "file_uri": "https://geoportal.cl/geoserver/Jardines_Infantiles_JUNJI/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "ubicación de unidades educativas JUNJI, dirección, capacidad de atención",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Junta Nacional de Jardines Infantiles",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/1248e5ef-e1ea-3a68-ac3c-199239cc68a7",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Junta Nacional de Jardines Infantiles",
+          "publisher_identifier": "https://isni.org/isni/0000000122029881",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Jardines_Infantiles_JUNJI/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/1248e5ef-e1ea-3a68-ac3c-199239cc68a7",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Junta Nacional de Jardines Infantiles"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Jardines infantiles -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Educación preescolar -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Jardines Infantiles JUNJI",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-76.5484,-56.6513,-62.1956,-16.2247",
+            "geo_description": "Cobertura nacional del territorio chileno, incluyendo unidades educativas por región y comuna",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12085,
+        "completion_tokens": 2230,
+        "total_tokens": 14315
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47438,
+        "completion_tokens": 5369,
+        "total_tokens": 52807
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12085,
+        "completion_tokens": 2230,
+        "total_tokens": 14315
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12758,
+        "completion_tokens": 1415,
+        "total_tokens": 14173
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11572,
+        "completion_tokens": 1282,
+        "total_tokens": 12854
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11514,
+        "completion_tokens": 1483,
+        "total_tokens": 12997
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11594,
+        "completion_tokens": 1189,
+        "total_tokens": 12783
+      }
+    },
+    "total": {
+      "prompt_tokens": 59523,
+      "completion_tokens": 7599,
+      "total_tokens": 67122
+    }
+  },
+  "processed_at": "2026-05-28T18:19:59.854103",
+  "input_file": "examples\\02.json"
+}

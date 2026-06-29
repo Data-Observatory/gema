@@ -1,0 +1,274 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35095/Accidentes%20en%20motocicletas%20a%C3%B1o%202013",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Transporte y Telecomunicaciones",
+        "maintainer": "Ministerio de Transporte y Telecomunicaciones",
+        "contact": "+562 2421 3000",
+        "producer": "CONASET (Comisión Nacional de Seguridad de Tránsito)",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{7AD7F66F-689C-42A1-B8EB-DF43EFCD78B5}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35095",
+          "alternate_identifier_type": "Catalog ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Otras ciencias sociales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Comisión Nacional de Seguridad de Tránsito",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Transporte y Telecomunicaciones",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2013-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2015-04-20",
+          "date_type": "Created",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Siniestros de tránsito con participación de motocicletas para el Gran Santiago en el año 2013. Información provista por CONASET. WGS84 UTM 19S, escala 1:5.000.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Accidentes en motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "CONASET (Comisión Nacional de Seguridad de Tránsito); Ministerio de Transporte y Telecomunicaciones",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/17d41031-e150-38cc-8bd5-0570edd6133c",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Accidentes en motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "CONASET (Comisión Nacional de Seguridad de Tránsito); Ministerio de Transporte y Telecomunicaciones",
+          "file_uri": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2013/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Transporte y Telecomunicaciones",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2013/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/17d41031-e150-38cc-8bd5-0570edd6133c",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Transporte y Telecomunicaciones; Comisión Nacional de Seguridad de Tránsito"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Accidentes de tránsito -- Motocicletas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Seguridad vial -- Santiago (Chile : Región Metropolitana)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Accidentes en motocicletas año 2013",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Gran Santiago, Región Metropolitana de Santiago, Chile",
+            "geo_location_box": "-71.0931,-33.8421,-69.9817,-33.1741",
+            "geo_description": "Área urbana del Gran Santiago, cubriendo siniestros de tránsito con participación de motocicletas",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12125,
+        "completion_tokens": 2863,
+        "total_tokens": 14988
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 46975,
+        "completion_tokens": 6611,
+        "total_tokens": 53586
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12125,
+        "completion_tokens": 2863,
+        "total_tokens": 14988
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12833,
+        "completion_tokens": 2183,
+        "total_tokens": 15016
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11567,
+        "completion_tokens": 1524,
+        "total_tokens": 13091
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11529,
+        "completion_tokens": 1042,
+        "total_tokens": 12571
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11046,
+        "completion_tokens": 1862,
+        "total_tokens": 12908
+      }
+    },
+    "total": {
+      "prompt_tokens": 59100,
+      "completion_tokens": 9474,
+      "total_tokens": 68574
+    }
+  },
+  "processed_at": "2026-05-28T10:08:09.538481",
+  "input_file": "examples\\3.json"
+}

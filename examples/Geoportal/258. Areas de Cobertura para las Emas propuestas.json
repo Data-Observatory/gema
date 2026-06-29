@@ -1,0 +1,202 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35552/%C3%81reas%20de%20Cobertura%20para%20las%20Emas%20propuestas",
+        "identifier_type": "URL",
+        "editor": "Fundación para la Innovación Agraria",
+        "contact": "mcanepa@fia.cl",
+        "producer": "Agrimed-INIA",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "Identificador UUID del Geoportal",
+          "alternate_identifier": "{50EEAD55-F23E-4AD7-A81E-58E9693AD187}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Taller"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Agrimed-INIA",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-12-31",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Resultados Estudio FIA-Subsecretaría Cobertura Actual y Futura de la RAN,2015 ejecutado Agrimed-INIA/Localización de Estaciones Meteorológicas Automáticas propuestas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [
+        {
+          "funder_name": "Fundación para la Innovación Agraria",
+          "funding_stream": "FIA",
+          "award_title": "Estudio FIA-Subsecretaría Cobertura Actual y Futura de la RAN",
+          "funder_identifiers": []
+        }
+      ],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "áreas de cobertura para estaciones meteorológicas automáticas propuestas",
+          "measurement_technique": "estudio de cobertura territorial FIA-Subsecretaría ejecutado por Agrimed-INIA",
+          "provenance": "Fundación para la Innovación Agraria; Agrimed-INIA",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/area_coberturas_emas_propuestas.zip",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Fundación para la Innovación Agraria",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Fundación para la Innovación Agraria; Agrimed-INIA"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Estaciones meteorológicas automáticas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Clima -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Áreas de Cobertura para las Emas propuestas",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-81.8894 -56.3837 -68.2358 -16.1112",
+            "geo_description": "Área de cobertura nacional para estaciones meteorológicas automáticas propuestas",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 52339,
+        "completion_tokens": 7687,
+        "total_tokens": 60026
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 9422,
+        "completion_tokens": 1670,
+        "total_tokens": 11092
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10627,
+        "completion_tokens": 1617,
+        "total_tokens": 12244
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10473,
+        "completion_tokens": 1805,
+        "total_tokens": 12278
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10432,
+        "completion_tokens": 1457,
+        "total_tokens": 11889
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11385,
+        "completion_tokens": 1138,
+        "total_tokens": 12523
+      }
+    },
+    "total": {
+      "prompt_tokens": 52339,
+      "completion_tokens": 7687,
+      "total_tokens": 60026
+    }
+  },
+  "processed_at": "2026-05-05T13:45:01.751036",
+  "input_file": "inputs\\inputs.json"
+}

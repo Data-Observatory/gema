@@ -1,0 +1,263 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35385/Macrozonas%20Sanitarias",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Pesca y Acuicultura",
+        "maintainer": "Subsecretaría de Pesca y Acuicultura",
+        "contact": "larancibiao@subpesca.cl; 56 32 2507789",
+        "producer": "Subsecretaría de Pesca y Acuicultura",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35385",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{4FCE76C2-C106-4A0C-8E48-6BAACC1936D5}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Agricultura, silvicultura y pesca"
+        },
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Ciencias veterinarias"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Subsecretaría de Pesca y Acuicultura",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-07-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Las macrozonas corresponden a amplios territorios de mar y costa que se establecen con el objetivo de alcanzar el mayor aislamiento sanitario posible entre sí, en función de variables oceanográficas y soporte logístico propio. Este aislamiento se logra mediante variables físicas naturales y por la existencia entre ellas de un corredor libre de concesiones de salmónidos. La principal función de una macrozona es contener brotes de enfermedades, por lo que éstas se comportarían como compartimentos estancos y contendrán volúmenes de producción razonables. La fuente corresponde a la Subsecretaría de Pesca y Acuicultura, organismo encargado de dictar los reglamentos asociados a materias de gestión sanitaria de la acuicultura. La escala de referencia espacial comprende las 3 regiones más australes de Chile.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Subsecretaría de Pesca y Acuicultura",
+          "file_uri": "https://geoportal.subpesca.cl/portal/home/item.html?id=85a07aca68a14c3985ce88fe71941234",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Pesca y Acuicultura",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.subpesca.cl/portal/home/item.html?id=85a07aca68a14c3985ce88fe71941234",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.subpesca.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Subsecretaría de Pesca y Acuicultura"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Acuicultura -- Gestión sanitaria -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Salmónidos -- Enfermedades -- Prevención -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Macrozonas sanitarias -- Acuicultura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Macrozonas Sanitarias",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Regiones australes de Chile",
+            "geo_location_box": "-79.4104,-56.7101,-67.5044,-38.8145",
+            "geo_description": "Comprende las 3 regiones más australes de Chile, territorios de mar y costa para aislamiento sanitario de acuicultura",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10568,
+        "completion_tokens": 2537,
+        "total_tokens": 13105
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 44611,
+        "completion_tokens": 4979,
+        "total_tokens": 49590
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10568,
+        "completion_tokens": 2537,
+        "total_tokens": 13105
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11575,
+        "completion_tokens": 1262,
+        "total_tokens": 12837
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11167,
+        "completion_tokens": 1651,
+        "total_tokens": 12818
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11181,
+        "completion_tokens": 1022,
+        "total_tokens": 12203
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10688,
+        "completion_tokens": 1044,
+        "total_tokens": 11732
+      }
+    },
+    "total": {
+      "prompt_tokens": 55179,
+      "completion_tokens": 7516,
+      "total_tokens": 62695
+    }
+  },
+  "processed_at": "2026-05-19T17:08:31.625321",
+  "input_file": "examples\\3.json"
+}

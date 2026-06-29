@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35378/Incendios%20Forestales%20Isla%20de%20Pascua%202015",
+        "identifier_type": "URL",
+        "editor": "Corporación Nacional Forestal",
+        "maintainer": "Corporación Nacional Forestal",
+        "contact": "consulta.oirs@conaf.cl; 562 2663 0000",
+        "producer": "Corporación Nacional Forestal",
+        "publication_year": "2018",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35378",
+          "alternate_identifier_type": "Geoportal Internal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{E68E5647-56E5-4849-8C5F-87AD3E6568E5}",
+          "alternate_identifier_type": "Metadata UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias biológicas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Corporación Nacional Forestal",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121952869",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2018-06-15",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Cartografía obtenida de georreferencia en terreno del inicio del incendio; permite obtener identificación del incendio (número regional y nombre), ámbito al cual de circunscribe el territorio donde fue afectado (CONAF o Empresa Forestal); causas estimada y desglose de la superficie quemada.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "georreferencia en terreno",
+          "provenance": "Corporación Nacional Forestal",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/77a9929e-41fa-367c-b8fa-7b605275fb13",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Corporación Nacional Forestal",
+          "publisher_identifier": "https://isni.org/isni/0000000121952869",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/77a9929e-41fa-367c-b8fa-7b605275fb13",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BE68E5647-56E5-4849-8C5F-87AD3E6568E5%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "HasMetadata",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Corporación Nacional Forestal"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Incendios forestales -- Isla de Pascua -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Flora y fauna -- Medio ambiente -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Incendios Forestales Isla de Pascua 2015",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Isla de Pascua",
+            "geo_location_box": "-109.743,-27.454,-108.931,-26.808",
+            "geo_description": "Área de la Isla de Pascua, territorio afectado por incendios forestales en 2015",
+            "coverage": "local"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10374,
+        "completion_tokens": 2096,
+        "total_tokens": 12470
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 43378,
+        "completion_tokens": 4414,
+        "total_tokens": 47792
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10374,
+        "completion_tokens": 2096,
+        "total_tokens": 12470
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11250,
+        "completion_tokens": 1080,
+        "total_tokens": 12330
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10904,
+        "completion_tokens": 1422,
+        "total_tokens": 12326
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10861,
+        "completion_tokens": 961,
+        "total_tokens": 11822
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10363,
+        "completion_tokens": 951,
+        "total_tokens": 11314
+      }
+    },
+    "total": {
+      "prompt_tokens": 53752,
+      "completion_tokens": 6510,
+      "total_tokens": 60262
+    }
+  },
+  "processed_at": "2026-05-22T10:08:26.234009",
+  "input_file": "examples\\1.json"
+}

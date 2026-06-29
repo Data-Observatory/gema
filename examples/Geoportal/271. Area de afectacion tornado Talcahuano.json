@@ -1,0 +1,288 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35418/%C3%81rea%20de%20afectaci%C3%B3n%20tornado%20Talcahuano",
+        "identifier_type": "URL",
+        "editor": "ADRA Chile",
+        "maintainer": "ADRA Chile",
+        "contact": "felipe.irribarra@adra.cl; 56 2 3244 5640",
+        "producer": "ADRA Chile",
+        "publication_year": "2019",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{9C95426E-B4A6-4141-9D4D-774B89D5AFD7}",
+          "alternate_identifier_type": "Geoportal ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Basado en proyectos"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "ADRA Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2019-05-31",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2019-06-05",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Describe la ruta y área de mayor daño del tornado que afectó a la ciudad de Talcahuano, Región del Biobío, el viernes 31 de Mayo de 2019, pasadas las 14:00hrs. El polígono es el resultado de trabajo de campo y sobrevuelo con drones. Escala Local (Comuna).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Área de afectación tornado",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "trabajo de campo y sobrevuelo con drones",
+          "provenance": "ADRA Chile",
+          "file_uri": "https://geoportal.cl/geoserver/Area_afectacion_tornado_Talcahuano/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Área de afectación tornado",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "trabajo de campo y sobrevuelo con drones",
+          "provenance": "ADRA Chile",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/58ac93ef-925f-31f0-82fd-9a3ab2013d25",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "ADRA Chile",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Area_afectacion_tornado_Talcahuano/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsServiceOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/58ac93ef-925f-31f0-82fd-9a3ab2013d25",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B9C95426E-B4A6-4141-9D4D-774B89D5AFD7%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://adra.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "ADRA Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tornados -- Talcahuano (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Desastres naturales -- Evaluación de daños -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Área de afectación tornado Talcahuano",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Talcahuano, Región del Biobío",
+            "geo_location_box": "-73.1098,-36.7838,-73.0662,-36.7374",
+            "geo_description": "Área de afectación del tornado que impactó la comuna de Talcahuano el 31 de mayo de 2019",
+            "coverage": "comunal"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12067,
+        "completion_tokens": 2952,
+        "total_tokens": 15019
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47350,
+        "completion_tokens": 4831,
+        "total_tokens": 52181
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12067,
+        "completion_tokens": 2952,
+        "total_tokens": 15019
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12819,
+        "completion_tokens": 1027,
+        "total_tokens": 13846
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11504,
+        "completion_tokens": 1312,
+        "total_tokens": 12816
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11499,
+        "completion_tokens": 950,
+        "total_tokens": 12449
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11528,
+        "completion_tokens": 1542,
+        "total_tokens": 13070
+      }
+    },
+    "total": {
+      "prompt_tokens": 59417,
+      "completion_tokens": 7783,
+      "total_tokens": 67200
+    }
+  },
+  "processed_at": "2026-06-01T12:26:45.400687",
+  "input_file": "inputs1\\2.json"
+}

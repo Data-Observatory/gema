@@ -1,0 +1,219 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36393/Cuerpos%20de%20Bomberos",
+        "identifier_type": "URL",
+        "editor": "Junta Nacional de Cuerpos de Bomberos de Chile",
+        "maintainer": "Junta Nacional de Cuerpos de Bomberos de Chile",
+        "contact": "jeniffer.olguin@bomberos.cl",
+        "producer": "Junta Nacional de Cuerpos de Bomberos de Chile",
+        "publication_year": "2017",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "Identificador UUID del Geoportal",
+          "alternate_identifier": "2ea7cdd8-630a-4730-aa78-d8370c648d7d",
+          "alternate_identifier_type": "Local"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Junta Nacional de Cuerpos de Bomberos de Chile",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-11-03",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "EL archivo incluye información sobre la geolocalización de cuerpos de bomberos de Chile. Posee escala a nivel regional y comunal a través de código único territorial (CUT).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "geolocalización de cuerpos de bomberos de Chile",
+          "data_quality": "escala a nivel regional y comunal a través de código único territorial (CUT)",
+          "measurement_technique": "georreferenciación mediante código único territorial",
+          "provenance": "Junta Nacional de Cuerpos de Bomberos de Chile",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/4a41e805-278f-3be3-99bc-17b6d7adf086",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "WMS",
+          "variable_measured": "geolocalización de cuerpos de bomberos de Chile",
+          "data_quality": "escala a nivel regional y comunal a través de código único territorial (CUT)",
+          "measurement_technique": "servicio de mapas web (Web Map Service)",
+          "provenance": "Junta Nacional de Cuerpos de Bomberos de Chile",
+          "file_uri": "https://geoportal.cl/geoserver/Cuerpos_Bomberos/wms?request=GetCapabilities",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Junta Nacional de Cuerpos de Bomberos de Chile",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Junta Nacional de Cuerpos de Bomberos de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Cuerpos de bomberos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Instalaciones y edificaciones -- Geolocalización -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Cuerpos de Bomberos",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2017-11-03",
+            "description": "Fecha de publicación del recurso geoespacial"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-81.178 -56.721 -61.210 -16.394",
+            "geo_description": "Cobertura nacional de cuerpos de bomberos de Chile a nivel regional y comunal",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 55925,
+        "completion_tokens": 8660,
+        "total_tokens": 64585
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10029,
+        "completion_tokens": 2278,
+        "total_tokens": 12307
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11600,
+        "completion_tokens": 931,
+        "total_tokens": 12531
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11136,
+        "completion_tokens": 1447,
+        "total_tokens": 12583
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11146,
+        "completion_tokens": 1600,
+        "total_tokens": 12746
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12014,
+        "completion_tokens": 2404,
+        "total_tokens": 14418
+      }
+    },
+    "total": {
+      "prompt_tokens": 55925,
+      "completion_tokens": 8660,
+      "total_tokens": 64585
+    }
+  },
+  "processed_at": "2026-05-05T16:49:19.446829",
+  "input_file": "inputs\\inputs.json"
+}

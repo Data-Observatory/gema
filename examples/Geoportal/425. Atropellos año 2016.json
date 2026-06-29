@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35326/Atropellos%20a%C3%B1o%202016",
+        "identifier_type": "URL",
+        "editor": "Comisión Nacional de Seguridad de Tránsito",
+        "maintainer": "Comisión Nacional de Seguridad de Tránsito",
+        "contact": "56 2 2467 7500",
+        "producer": "Comisión Nacional de Seguridad de Tránsito",
+        "publication_year": "2017",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35326",
+          "alternate_identifier_type": "Local ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Otras ciencias sociales"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Atropellos año 2016",
+          "volume": "",
+          "issue": "",
+          "start_page": "",
+          "end_page": "",
+          "edition": "",
+          "conference_place": "",
+          "conference_date": ""
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Comisión Nacional de Seguridad de Tránsito",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-10-02",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Siniestros de tránsito con participación de motocicletas en el Gran Santiago para el año 2016.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Siniestros de tránsito con participación de motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://geoportal.cl/geoserver/Atropellos_2016/wms?request=GetCapabilities",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Siniestros de tránsito con participación de motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/72b80410-6028-378f-b31f-aa8f6a600aa8",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Comisión Nacional de Seguridad de Tránsito",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Atropellos_2016/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/72b80410-6028-378f-b31f-aa8f6a600aa8",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.conaset.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Comisión Nacional de Seguridad de Tránsito"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Accidentes de tránsito -- Motocicletas -- Santiago (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Transporte -- Seguridad vial -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Atropellos año 2016",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Gran Santiago, Región Metropolitana de Santiago, Chile",
+            "geo_location_box": "-71.156,-33.999,-69.927,-32.945",
+            "geo_description": "Área urbana del Gran Santiago, cubriendo la zona de siniestros de tránsito con participación de motocicletas",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10908,
+        "completion_tokens": 1977,
+        "total_tokens": 12885
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45277,
+        "completion_tokens": 5888,
+        "total_tokens": 51165
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10908,
+        "completion_tokens": 1977,
+        "total_tokens": 12885
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11760,
+        "completion_tokens": 1505,
+        "total_tokens": 13265
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11350,
+        "completion_tokens": 1597,
+        "total_tokens": 12947
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11308,
+        "completion_tokens": 1218,
+        "total_tokens": 12526
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10859,
+        "completion_tokens": 1568,
+        "total_tokens": 12427
+      }
+    },
+    "total": {
+      "prompt_tokens": 56185,
+      "completion_tokens": 7865,
+      "total_tokens": 64050
+    }
+  },
+  "processed_at": "2026-05-22T10:56:52.017728",
+  "input_file": "examples\\3.json"
+}

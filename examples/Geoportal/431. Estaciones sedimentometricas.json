@@ -1,0 +1,256 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35265/Estaciones%20sedimentom%C3%A9tricas",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Geoportal de Chile / IDE Chile",
+        "contact": "562 2449 4000",
+        "producer": "Dirección General de Aguas, Ministerio de Obras Públicas",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35265",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "ACA222DD-48F4-424A-AF1E-43E1D832288C",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección General de Aguas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-02-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa de información en formato Shape de las estaciones sedimentométricas del país.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Estaciones sedimentométricas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección General de Aguas, Ministerio de Obras Públicas",
+          "file_uri": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/EstacionesSedimentometricas.zip",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/EstacionesSedimentometricas.zip",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://siac.mop.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDocumentedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección General de Aguas; Ministerio de Obras Públicas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Estaciones sedimentométricas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Sedimentos -- Medición -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Estaciones sedimentométricas",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.7117,-56.6156,-68.5275,-17.0032",
+            "geo_description": "Territorio nacional de Chile con estaciones sedimentométricas",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10212,
+        "completion_tokens": 2208,
+        "total_tokens": 12420
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 41989,
+        "completion_tokens": 6151,
+        "total_tokens": 48140
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10212,
+        "completion_tokens": 2208,
+        "total_tokens": 12420
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10963,
+        "completion_tokens": 2594,
+        "total_tokens": 13557
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10534,
+        "completion_tokens": 1585,
+        "total_tokens": 12119
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10491,
+        "completion_tokens": 1123,
+        "total_tokens": 11614
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10001,
+        "completion_tokens": 849,
+        "total_tokens": 10850
+      }
+    },
+    "total": {
+      "prompt_tokens": 52201,
+      "completion_tokens": 8359,
+      "total_tokens": 60560
+    }
+  },
+  "processed_at": "2026-05-22T12:33:48.877856",
+  "input_file": "examples\\3.json"
+}

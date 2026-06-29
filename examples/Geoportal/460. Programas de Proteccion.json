@@ -1,0 +1,263 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35084/Programas%20de%20Protecci%C3%B3n",
+        "identifier_type": "URL",
+        "editor": "Servicio Nacional de Menores",
+        "maintainer": "Servicio Nacional de Menores",
+        "contact": "tomas.matamala@sename.cl; +562 2398 4000",
+        "producer": "Servicio Nacional de Menores",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{1D7DCDA4-80D2-4EA9-A109-2906BA0EC9FC}",
+          "alternate_identifier_type": "XML Metadata UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Educación continua",
+          "instructional_method": "Estudio de caso"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Otras ciencias sociales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Nacional de Menores",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000483416668",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Justicia y Derechos Humanos",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-06-05",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Localización de los Programas de Protección de SENAME, categorizados por tipo de programa. Presenta información respecto al modelo que se implementa y de información de contacto. Información presente para todo el país.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Localización de Programas de Protección de SENAME, categorizados por tipo de programa",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Servicio Nacional de Menores",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/6f2448fb-ad00-3ef4-a768-cd6d170e3ba4",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Nacional de Menores",
+          "publisher_identifier": "https://isni.org/isni/0000000483416668",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Programas_Proteccion/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "HasService",
+          "related_metadata_scheme": "WMS Service",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/6f2448fb-ad00-3ef4-a768-cd6d170e3ba4",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadableAt",
+          "related_metadata_scheme": "Direct Download",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Servicio Nacional de Menores"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Programas de protección -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Servicio Nacional de Menores (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Programas de Protección",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-82.1619,-58.0627,-65.8625,-14.9973",
+            "geo_description": "Localización de los Programas de Protección de SENAME a nivel nacional, cubriendo todo el territorio chileno",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12003,
+        "completion_tokens": 2478,
+        "total_tokens": 14481
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 46138,
+        "completion_tokens": 5205,
+        "total_tokens": 51343
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12003,
+        "completion_tokens": 2478,
+        "total_tokens": 14481
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12570,
+        "completion_tokens": 1407,
+        "total_tokens": 13977
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11367,
+        "completion_tokens": 1309,
+        "total_tokens": 12676
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11349,
+        "completion_tokens": 1135,
+        "total_tokens": 12484
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10852,
+        "completion_tokens": 1354,
+        "total_tokens": 12206
+      }
+    },
+    "total": {
+      "prompt_tokens": 58141,
+      "completion_tokens": 7683,
+      "total_tokens": 65824
+    }
+  },
+  "processed_at": "2026-05-28T11:36:02.768274",
+  "input_file": "examples\\1.json"
+}

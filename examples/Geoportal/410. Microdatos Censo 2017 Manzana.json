@@ -1,0 +1,260 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35396/Microdatos%20Censo%202017:%20Manzana",
+        "identifier_type": "URL",
+        "editor": "Instituto Nacional de Estadísticas",
+        "maintainer": "Instituto Nacional de Estadísticas",
+        "contact": "ine@ine.gob.cl; 562 3246 1010",
+        "producer": "Instituto Nacional de Estadísticas",
+        "publication_year": "2018",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35396",
+          "alternate_identifier_type": "Catalog ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Docente",
+          "education_level": "Pregrado",
+          "instructional_method": "Estudio de caso"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Instituto Nacional de Estadísticas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000122977777",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2018-09-04",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "El Instituto Nacional de Estadísticas pone a disposición de la ciudadanía las manzanas a nivel país de acuerdo a censo 2017",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Instituto Nacional de Estadísticas",
+          "file_uri": "https://www.ine.gob.cl/docs/default-source/geodatos-abiertos/cartografia/censo-2017/siedu/shp/microdatos_manzana.zip?sfvrsn=972b0c54_3",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Instituto Nacional de Estadísticas",
+          "publisher_identifier": "https://isni.org/isni/0000000122977777",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.ine.gob.cl/docs/default-source/geodatos-abiertos/cartografia/censo-2017/siedu/shp/microdatos_manzana.zip?sfvrsn=972b0c54_3",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Instituto Nacional de Estadísticas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Censo de población -- Manzanas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Cartografía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Datos geoespaciales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Microdatos Censo 2017: Manzana",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile - Zona Central (Región Metropolitana de Santiago)",
+            "geo_location_box": "-71.3433,-34.0253,-69.8346,-32.9207",
+            "geo_description": "Cobertura de manzanas censales en la zona central de Chile, correspondiente principalmente a la Región Metropolitana de Santiago",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10327,
+        "completion_tokens": 2017,
+        "total_tokens": 12344
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 42965,
+        "completion_tokens": 3974,
+        "total_tokens": 46939
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10327,
+        "completion_tokens": 2017,
+        "total_tokens": 12344
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11108,
+        "completion_tokens": 1103,
+        "total_tokens": 12211
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10765,
+        "completion_tokens": 1352,
+        "total_tokens": 12117
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10794,
+        "completion_tokens": 783,
+        "total_tokens": 11577
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10298,
+        "completion_tokens": 736,
+        "total_tokens": 11034
+      }
+    },
+    "total": {
+      "prompt_tokens": 53292,
+      "completion_tokens": 5991,
+      "total_tokens": 59283
+    }
+  },
+  "processed_at": "2026-05-20T11:24:31.517671",
+  "input_file": "examples\\3.json"
+}

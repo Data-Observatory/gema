@@ -1,0 +1,239 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36776/Territorios%20con%20Potencial%20Tur%C3%ADstico%202024",
+        "identifier_type": "URL",
+        "editor": "Servicio Nacional de Turismo",
+        "maintainer": "Servicio Nacional de Turismo",
+        "contact": "narce@sernatur.cl",
+        "producer": "Servicio Nacional de Turismo",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "UUID del Geoportal",
+          "alternate_identifier": "8e80d839-4934-44ea-a81e-6c93df8b18cb",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Consultores",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Nacional de Turismo",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000403732581",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-01-01",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Área geográfica con recursos y atractivos, pero con una oferta turística incipiente, informal o deficiencias en infraestructura, buscando su desarrollo a través de inversión pública y privada.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal del recurso y metadatos"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "delimitación geográfica de territorios con potencial turístico",
+          "measurement_technique": "delimitación territorial basada en evaluación de recursos y atractivos turísticos",
+          "provenance": "Servicio Nacional de Turismo",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/0495cf63-1d64-357a-872c-c75fe5e7c030",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "GeoJSON",
+          "variable_measured": "delimitación geográfica de territorios con potencial turístico",
+          "measurement_technique": "delimitación territorial basada en evaluación de recursos y atractivos turísticos",
+          "provenance": "Servicio Nacional de Turismo",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/f739ba4e-652b-36e9-bf89-054059ca98bc",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Nacional de Turismo",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Servicio Nacional de Turismo"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Turismo -- Desarrollo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Planificación territorial -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Industria turística -- Infraestructura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Territorios con Potencial Turístico 2024",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2024-01-01",
+            "frequency_number": "1",
+            "frequency_type": "yearly",
+            "description": "Datos territoriales con potencial turístico para el año 2024"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-76.560 -59.799 -60.856 -15.705",
+            "geo_description": "Territorios con potencial turístico a nivel nacional en Chile",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 59147,
+        "completion_tokens": 8549,
+        "total_tokens": 67696
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10695,
+        "completion_tokens": 2060,
+        "total_tokens": 12755
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11951,
+        "completion_tokens": 1609,
+        "total_tokens": 13560
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11848,
+        "completion_tokens": 1844,
+        "total_tokens": 13692
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11896,
+        "completion_tokens": 1266,
+        "total_tokens": 13162
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12757,
+        "completion_tokens": 1770,
+        "total_tokens": 14527
+      }
+    },
+    "total": {
+      "prompt_tokens": 59147,
+      "completion_tokens": 8549,
+      "total_tokens": 67696
+    }
+  },
+  "processed_at": "2026-05-05T16:23:04.328982",
+  "input_file": "inputs\\inputs.json"
+}

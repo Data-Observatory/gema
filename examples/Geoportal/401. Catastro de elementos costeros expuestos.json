@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35647/Catastro%20de%20elementos%20costeros%20expuestos",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Medio Ambiente",
+        "maintainer": "Geoportal de Chile - IDE Chile",
+        "contact": "MHerrera@mma.gob.cl; +562 29385406",
+        "producer": "Recopilación de Múltiples instituciones gubernamentales",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "608897-43-LP18",
+          "alternate_identifier_type": "Project ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio del Medio Ambiente",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-06-17",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Información generada en el marco del proyecto 'Determinación del riesgo de los impactos del Cambio Climático en las costas de Chile', ID N°608897-43-LP18, cuyo objetivo general fue generar información de proyecciones respecto de la amenaza del cambio climático en las costas de Chile y sus impactos, a escala regional, y determinar el riesgo asociado a este fenómeno, para el diseño de políticas e implementación de medidas de adaptación. El proyecto, mandatado por el Ministerio del Medio Ambiente, se desarrolló entre los años 2018 y 2019. La capa representa el catastro de exposición de elementos costeros considerando sistemas humanos y naturales en los primeros 10 m sobre el nivel medio del mar.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [
+        {
+          "funder_name": "Ministerio del Medio Ambiente",
+          "funding_stream": "",
+          "award_number": "608897-43-LP18",
+          "award_uri": "",
+          "award_title": "Determinación del riesgo de los impactos del Cambio Climático en las costas de Chile",
+          "funder_identifiers": [
+            {
+              "funder_identifier": "",
+              "funder_identifier_type": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "catastro de exposición de elementos costeros",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Medio Ambiente",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/91de4599-8aaf-3a9e-b15c-225f52817a42",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Medio Ambiente",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/91de4599-8aaf-3a9e-b15c-225f52817a42",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B2E9D22EE-2370-4DBE-894B-36F6A593959A%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "HasMetadata",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://mma.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsProducedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Medio Ambiente"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Cambio climático -- Costas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Zonas costeras -- Riesgo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Nivel del mar -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Catastro de elementos costeros expuestos",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-84.0412,-63.058,-65.8972,-12.0036",
+            "geo_description": "Cobertura nacional del territorio chileno incluyendo zonas costeras y áreas oceánicas",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10558,
+        "completion_tokens": 2135,
+        "total_tokens": 12693
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 44734,
+        "completion_tokens": 5342,
+        "total_tokens": 50076
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10558,
+        "completion_tokens": 2135,
+        "total_tokens": 12693
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11555,
+        "completion_tokens": 1104,
+        "total_tokens": 12659
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11137,
+        "completion_tokens": 1984,
+        "total_tokens": 13121
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11225,
+        "completion_tokens": 1405,
+        "total_tokens": 12630
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10817,
+        "completion_tokens": 849,
+        "total_tokens": 11666
+      }
+    },
+    "total": {
+      "prompt_tokens": 55292,
+      "completion_tokens": 7477,
+      "total_tokens": 62769
+    }
+  },
+  "processed_at": "2026-05-19T15:55:57.970497",
+  "input_file": "examples\\3.json"
+}

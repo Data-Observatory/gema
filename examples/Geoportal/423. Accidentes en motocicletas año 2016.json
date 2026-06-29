@@ -1,0 +1,281 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35325/Accidentes%20en%20motocicletas%20a%C3%B1o%202016",
+        "identifier_type": "URL",
+        "editor": "Comisión Nacional de Seguridad de Tránsito (CONASET)",
+        "maintainer": "Geoportal de Chile - IDE Chile",
+        "contact": "56-2-24677500",
+        "producer": "Comisión Nacional de Seguridad de Tránsito (CONASET)",
+        "publication_year": "2017",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35325",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{222D3EC0-0AEA-48F8-B714-BB260985F126}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Otras ciencias sociales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Comisión Nacional de Seguridad de Tránsito",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-09-02",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Siniestros de tránsito con participación de motocicletas en el Gran Santiago para el año 2016",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Accidentes de tránsito con motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito (CONASET)",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/b20c4218-4509-344f-92d4-a7388b91da12",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito (CONASET)",
+          "file_uri": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2016/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Comisión Nacional de Seguridad de Tránsito",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2016/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/b20c4218-4509-344f-92d4-a7388b91da12",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Comisión Nacional de Seguridad de Tránsito (CONASET)"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Accidentes de tránsito -- Motocicletas -- Chile -- Santiago",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Seguridad de tránsito -- Chile -- Santiago",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Transporte -- Chile -- Gran Santiago",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Accidentes en motocicletas año 2016",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Gran Santiago, Chile",
+            "geo_location_box": "-72.152,-34.359,-69.196,-32.699",
+            "geo_description": "Área metropolitana del Gran Santiago, cobertura de siniestros de tránsito con motocicletas",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "yearly",
+            "description": "Datos correspondientes al año 2016"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10414,
+        "completion_tokens": 1927,
+        "total_tokens": 12341
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 43372,
+        "completion_tokens": 5719,
+        "total_tokens": 49091
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10414,
+        "completion_tokens": 1927,
+        "total_tokens": 12341
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11270,
+        "completion_tokens": 1247,
+        "total_tokens": 12517
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10860,
+        "completion_tokens": 1414,
+        "total_tokens": 12274
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10866,
+        "completion_tokens": 1080,
+        "total_tokens": 11946
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10376,
+        "completion_tokens": 1978,
+        "total_tokens": 12354
+      }
+    },
+    "total": {
+      "prompt_tokens": 53786,
+      "completion_tokens": 7646,
+      "total_tokens": 61432
+    }
+  },
+  "processed_at": "2026-05-22T10:31:44.048909",
+  "input_file": "examples\\2.json"
+}

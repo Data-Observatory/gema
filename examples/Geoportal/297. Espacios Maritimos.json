@@ -1,0 +1,310 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "http://geoportal.cl/geoportal/catalog/36571/Espacios%20Mar%C3%ADtimos",
+        "identifier_type": "URL",
+        "editor": "Dirección Nacional de Fronteras y Límites del Estado",
+        "maintainer": "Geoportal de Chile - IDE Chile",
+        "contact": "infodifrol@minrel.gob.cl; 562 2413 5700",
+        "producer": "Dirección Nacional de Fronteras y Límites del Estado",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{90bb8b84-f117-4ea9-b0b4-d71ad76b00ab}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Docente",
+          "education_level": "Pregrado",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Derecho"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000474071266",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Relaciones Exteriores",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2023-08-23",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Los espacios marítimos hacen referencia a las áreas de agua que rodean un país o una isla. Estos espacios se dividen en zonas como el Mar Territorial (MT), la Zona Contigua (ZC), la Zona Económica Exclusiva (ZEE) y la Plataforma Continental (PC), cada una con sus propias regulaciones y acuerdos internacionales. Su anchura se mide a partir de las líneas de base normal y recta definida por el país. Dichos espacios tienen derechos y responsabilidades específicas en estas áreas, que pueden incluir la soberanía, el control de recursos, la seguridad de la navegación y la protección del medio ambiente.\n\nLos espacios marítimos, están representados en una capa de líneas con características vectoriales, para ser descargada, utilizada y visualizada en proyectos en softwares de Sistemas de Información Geográfica (SIG).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "text/html",
+          "variable_measured": "Espacios marítimos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://www.difrol.cl/descarga-espacios-maritimos/",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Espacios marítimos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://difrol.gob.cl/repositorio/Espacios_Maritimos/Espacios_Maritimos.zip",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "publisher_identifier": "https://isni.org/isni/0000000474071266",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.difrol.cl/descarga-espacios-maritimos/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementTo",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://difrol.gob.cl/repositorio/Espacios_Maritimos/Espacios_Maritimos.zip",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementTo",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B90bb8b84-f117-4ea9-b0b4-d71ad76b00ab%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.difrol.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección Nacional de Fronteras y Límites del Estado"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Espacios marítimos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Límites marítimos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Zona económica exclusiva -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Sistemas de Información Geográfica (SIG)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Espacios Marítimos",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-138.171,-73.691,-48.171,-15.101",
+            "geo_description": "Espacios marítimos de Chile que incluyen el Mar Territorial, Zona Contigua, Zona Económica Exclusiva y Plataforma Continental",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12153,
+        "completion_tokens": 2845,
+        "total_tokens": 14998
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48311,
+        "completion_tokens": 5701,
+        "total_tokens": 54012
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12153,
+        "completion_tokens": 2845,
+        "total_tokens": 14998
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12924,
+        "completion_tokens": 1753,
+        "total_tokens": 14677
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11729,
+        "completion_tokens": 1688,
+        "total_tokens": 13417
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11810,
+        "completion_tokens": 1065,
+        "total_tokens": 12875
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11848,
+        "completion_tokens": 1195,
+        "total_tokens": 13043
+      }
+    },
+    "total": {
+      "prompt_tokens": 60464,
+      "completion_tokens": 8546,
+      "total_tokens": 69010
+    }
+  },
+  "processed_at": "2026-06-01T16:48:10.781337",
+  "input_file": "inputs1\\4.json"
+}

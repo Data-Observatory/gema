@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35197/Sistema%20Nacional%20de%20Quemas%202015",
+        "identifier_type": "URL",
+        "editor": "Corporación Nacional Forestal",
+        "maintainer": "Corporación Nacional Forestal",
+        "contact": "consulta.oirs@conaf.cl; 562 2663 0000",
+        "producer": "Corporación Nacional Forestal",
+        "publication_year": "2016",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias biológicas"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Sistema Nacional de Quemas 2015",
+          "volume": "",
+          "issue": "",
+          "start_page": "",
+          "end_page": "",
+          "edition": "",
+          "conference_place": "",
+          "conference_date": ""
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Corporación Nacional Forestal",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121952869",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2016-09-21",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Quemas a nivel nacional para el año 2015. Incluye información sobre ubicación, superficie, tipo de quema y objetivo. La escala de la información es 1:50.000.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "quemas (ubicación, superficie, tipo de quema y objetivo)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Corporación Nacional Forestal",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/0f97fcd2-6905-3de2-b72e-c49882265521",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Corporación Nacional Forestal",
+          "publisher_identifier": "https://isni.org/isni/0000000121952869",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/0f97fcd2-6905-3de2-b72e-c49882265521",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Corporación Nacional Forestal"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Quemas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Incendios forestales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Sistema Nacional de Quemas 2015",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.5688,-58.265,-64.5051,-15.0172",
+            "geo_description": "Cobertura nacional de quemas para el año 2015, territorio continental e insular de Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "yearly",
+            "description": "Datos de quemas registradas durante el año 2015 a nivel nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10984,
+        "completion_tokens": 2033,
+        "total_tokens": 13017
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 43711,
+        "completion_tokens": 4510,
+        "total_tokens": 48221
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10984,
+        "completion_tokens": 2033,
+        "total_tokens": 13017
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11958,
+        "completion_tokens": 1152,
+        "total_tokens": 13110
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10769,
+        "completion_tokens": 1311,
+        "total_tokens": 12080
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10717,
+        "completion_tokens": 954,
+        "total_tokens": 11671
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10267,
+        "completion_tokens": 1093,
+        "total_tokens": 11360
+      }
+    },
+    "total": {
+      "prompt_tokens": 54695,
+      "completion_tokens": 6543,
+      "total_tokens": 61238
+    }
+  },
+  "processed_at": "2026-05-26T17:05:34.293242",
+  "input_file": "examples\\2.json"
+}

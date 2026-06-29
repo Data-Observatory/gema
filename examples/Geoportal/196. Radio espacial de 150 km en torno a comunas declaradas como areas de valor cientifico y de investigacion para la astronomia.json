@@ -1,0 +1,266 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36833/Radio%20espacial%20de%20150%20km%20en%20torno%20a%20comunas%20declaradas%20como%20%C3%A1reas%20de%20valor%20cient%C3%ADfico%20y%20de%20investigaci%C3%B3n%20para%20la%20astronom%C3%ADa",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "maintainer": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "contact": "https://minciencia.gob.cl/; 800 104 559",
+        "producer": "Comisión Asesora Ministerial sobre Áreas con Valor Científico y de Investigación para la Observación Astronómica",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36833",
+          "alternate_identifier_type": "geoportal_cl_id"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{e1fc3506-4d30-448d-9126-4b065f02aa3c}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Astronomía y astrofísica"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Comisión Asesora Ministerial sobre Áreas con Valor Científico y de Investigación para la Observación Astronómica",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+              "affiliation_identifier": "https://ror.org/03tvpbp09",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-27",
+          "date_type": "Created",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "El radio de 150 km corresponde a una representación cartográfica basada en el modelo técnico aplicado por la Comisión Asesora Ministerial sobre Áreas con Valor Científico y de Investigación para la Observación Astronómica (2020), del Ministerio de Ciencia, Tecnología, Conocimiento e Innovación.\n\nEste radio fue determinado a partir de recomendaciones de la Comisión Internacional de Iluminación (CIE 150:2017) y de simulaciones sobre la propagación de la contaminación lumínica, estableciendo una distancia mínima de 150 kilómetros desde cada sitio astronómico profesional identificado por la Comisión, para preservar condiciones de cielo oscuro.\n\nLa capa geoespacial permite visualizar la extensión territorial considerada en dicho análisis científico y constituye el fundamento técnico para la definición de las 29 comunas reconocidas como Áreas de Valor Científico y de Investigación para la Observación Astronómica en las regiones de Antofagasta, Atacama y Coquimbo.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación; Comisión Asesora Ministerial sobre Áreas con Valor Científico y de Investigación para la Observación Astronómica",
+          "file_uri": "https://geoportal.cl/observatorios/catalog/download/339665f7-9ecd-37c7-bc45-73f598371d35",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "publisher_identifier": "https://ror.org/03tvpbp09",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Be1fc3506-4d30-448d-9126-4b065f02aa3c%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/observatorios/catalog/download/339665f7-9ecd-37c7-bc45-73f598371d35",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://minciencia.gob.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación; Comisión Asesora Ministerial sobre Áreas con Valor Científico y de Investigación para la Observación Astronómica"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Astronomía -- Observación astronómica -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Contaminación lumínica -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Radio espacial de 150 km en torno a comunas declaradas como áreas de valor científico y de investigación para la astronomía",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Regiones de Antofagasta, Atacama y Coquimbo",
+            "geo_location_box": "-72.530,-33.702,-66.565,-16.332",
+            "geo_description": "Área de 150 km de radio en torno a comunas declaradas como áreas de valor científico y de investigación para la observación astronómica, que abarca partes de las regiones de Antofagasta, Atacama y Coquimbo",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12165,
+        "completion_tokens": 3189,
+        "total_tokens": 15354
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49096,
+        "completion_tokens": 5647,
+        "total_tokens": 54743
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12165,
+        "completion_tokens": 3189,
+        "total_tokens": 15354
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13176,
+        "completion_tokens": 1633,
+        "total_tokens": 14809
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11978,
+        "completion_tokens": 1607,
+        "total_tokens": 13585
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11936,
+        "completion_tokens": 1130,
+        "total_tokens": 13066
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12006,
+        "completion_tokens": 1277,
+        "total_tokens": 13283
+      }
+    },
+    "total": {
+      "prompt_tokens": 61261,
+      "completion_tokens": 8836,
+      "total_tokens": 70097
+    }
+  },
+  "processed_at": "2026-06-01T10:03:01.962354",
+  "input_file": "inputs1\\2.json"
+}

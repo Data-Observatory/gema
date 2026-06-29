@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35935/Capa%20Vectorial%20-%20Carta%20Inundaci%C3%B3n%20por%20Tsunami%20Laguna%20Verde",
+        "identifier_type": "URL",
+        "editor": "",
+        "maintainer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "56-32-266666",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Taller"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            },
+            {
+              "name_identifier": "https://ror.org/04rfh4r06",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-07-27",
+          "date_type": "Published",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad maxima de inundacion por tsunami para la localidad de Laguna Verde, comuna de Valparaiso, Provincia de Valparaiso, Region de Valparaiso. La capa vectorial es parte de la carta de inundacion para la localidad de Laguna Verde, y se elaboro mediante simulacion numerica, la cual fue alimentada con la ultima informacion topografica y batimetrica disponible.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Laguna Verde, Valparaíso, Región de Valparaíso, Chile",
+          "geo_location_point": "",
+          "geo_location_box": "-71.6980458589999 -33.1108448369999 -71.6578472699999 -33.0900661859999",
+          "geo_location_polygon": "",
+          "geo_description": "Localidad de Laguna Verde, comuna de Valparaíso, Provincia de Valparaíso, Región de Valparaíso",
+          "coverage": "local"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kmz",
+          "variable_measured": "profundidad máxima de inundación por tsunami",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "simulación numérica",
+          "provenance": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Laguna_Verde_1ra_Ed_2017.kmz",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tsunamis -- Chile -- Valparaíso",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Inundación por tsunami -- Mapas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Batimetría -- Chile -- Valparaíso",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta Inundacion por Tsunami Laguna Verde",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 9823,
+        "completion_tokens": 1885,
+        "total_tokens": 11708
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45140,
+        "completion_tokens": 5201,
+        "total_tokens": 50341
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 9823,
+        "completion_tokens": 1885,
+        "total_tokens": 11708
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11304,
+        "completion_tokens": 1139,
+        "total_tokens": 12443
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11485,
+        "completion_tokens": 1700,
+        "total_tokens": 13185
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11551,
+        "completion_tokens": 1017,
+        "total_tokens": 12568
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10800,
+        "completion_tokens": 1345,
+        "total_tokens": 12145
+      }
+    },
+    "total": {
+      "prompt_tokens": 54963,
+      "completion_tokens": 7086,
+      "total_tokens": 62049
+    }
+  },
+  "processed_at": "2026-05-14T17:51:22.122361",
+  "input_file": "examples\\1.json"
+}

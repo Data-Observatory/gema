@@ -1,0 +1,274 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35921/Capa%20Vectorial%20-%20Carta%20de%20Inundaci%C3%B3n%20por%20Tsunami%20Mejillones",
+        "identifier_type": "URL",
+        "editor": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "maintainer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "56-32-266666; 800 104 559",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{C550D53E-77C4-4A0F-8EE6-CE8D7DBEB427}",
+          "alternate_identifier_type": "XML Metadata UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35921",
+          "alternate_identifier_type": "Catalog ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            },
+            {
+              "name_identifier": "https://ror.org/04rfh4r06",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-07-09",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad máxima de inundación por tsunami para la ciudad de Mejillones, comuna de Mejillones, Provincia de Antofagasta, Región de Antofagasta. La capa vectorial es parte de la carta de inundación para la ciudad de Mejillones, y se elaboró mediante simulación numérica, la cual fue alimentada con la ultima información topográfica y batimétrica disponible.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kmz",
+          "variable_measured": "profundidad máxima de inundación por tsunami",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "simulación numérica",
+          "provenance": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/Mejillones_Ed_2012.kmz",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/Mejillones_Ed_2012.kmz",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.shoa.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tsunamis -- Inundación -- Chile -- Mejillones",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Simulación numérica (Oceanografía)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Batimetría -- Chile -- Antofagasta",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta de Inundación por Tsunami Mejillones",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Mejillones, Provincia de Antofagasta, Región de Antofagasta, Chile",
+            "geo_location_box": "-70.4958427649999,-23.11136346,-70.3583333329999,-23.0424330989999",
+            "geo_description": "Área de inundación por tsunami para la ciudad y comuna de Mejillones, Provincia de Antofagasta, Región de Antofagasta",
+            "coverage": "local"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11246,
+        "completion_tokens": 2524,
+        "total_tokens": 13770
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 46722,
+        "completion_tokens": 4334,
+        "total_tokens": 51056
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11246,
+        "completion_tokens": 2524,
+        "total_tokens": 13770
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11700,
+        "completion_tokens": 1095,
+        "total_tokens": 12795
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11915,
+        "completion_tokens": 1456,
+        "total_tokens": 13371
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11929,
+        "completion_tokens": 846,
+        "total_tokens": 12775
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11178,
+        "completion_tokens": 937,
+        "total_tokens": 12115
+      }
+    },
+    "total": {
+      "prompt_tokens": 57968,
+      "completion_tokens": 6858,
+      "total_tokens": 64826
+    }
+  },
+  "processed_at": "2026-05-18T11:51:36.942289",
+  "input_file": "examples\\3.json"
+}

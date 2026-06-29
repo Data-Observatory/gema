@@ -1,0 +1,245 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
+        "identifier_type": "URL",
+        "editor": "Departamento de Geografía Universidad de Chile",
+        "contact": "psarricolea@uchilefau.cl",
+        "publication_year": "2017",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Docentes",
+          "mediator": "Docente",
+          "education_level": "Educación Media",
+          "instructional_method": "Clase guiada"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Climatic regionalization of continental Chile",
+          "volume": "13",
+          "issue": "2",
+          "start_page": "66",
+          "end_page": "73"
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Sarricolea, P.",
+          "creator_name_type": "Organizational",
+          "given_name": "P.",
+          "family_name": "Sarricolea",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Universidad de Chile",
+              "affiliation_identifier": "https://ror.org/047gc3g35",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Herrera, M.J.",
+          "creator_name_type": "Organizational",
+          "given_name": "M.J.",
+          "family_name": "Herrera",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Universidad de Chile",
+              "affiliation_identifier": "https://ror.org/047gc3g35",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Meseguer-Ruiz, O.",
+          "creator_name_type": "Organizational",
+          "given_name": "O.",
+          "family_name": "Meseguer-Ruiz",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Universidad de Chile",
+              "affiliation_identifier": "https://ror.org/047gc3g35",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-01-12",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Mapa que representa los 25 tipos de clima que posee Chile segun Sarricolea et al (2017) usando la clasificacion climatica de KÃ¶ppen-Geiger, en formato shapefile, y realizado sobre cubiertas de temperatura y precipitacion mensual de 1 km2 de resolucion. Posee la abreviatura y el tipo de clima en espaÃ±ol. La precipitacion (pp) representa el promedio de precipitacion por el tipo en toda su distribucion espacial, al igual que la temperatura. La altitud (min y max) son los extremos altitudinales en que se situa el tipo climatico. Zona geografica: Chile continental Oeste: -77.1975 Este: -63.547 Norte: -16.7587 Sur: -57.1275 Sistema de referencia: WGS84 - Coordenadas Geograficas Formato: Shapefile Fuentes de los datos (las coberturas climaticas de resolucion 1km2) de: Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014). Effects of alternative sets of climatic predictors on species distribution models and associated estimates of extinction risk: A test with plants in an arid environment. Ecological Modelling, 288, 166-177. El mapa se debe citar como: Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Chile continental",
+          "geo_location_box": "-76.5337 -56.7392 -69.0261 -16.9754",
+          "geo_description": "Chile continental, sistema de referencia WGS84 - Coordenadas Geográficas",
+          "coverage": "nacional"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "clasificación climática Köppen-Geiger (tipos de clima, temperatura, precipitación, altitud)",
+          "data_quality": "escala 1:1.500.000, resolución 1 km², 25 tipos de clima identificados, sistema de referencia WGS84",
+          "measurement_technique": "interpolación de coberturas climáticas de temperatura y precipitación mensual de resolución 1 km²",
+          "provenance": "Departamento de Geografía Universidad de Chile, basado en Pliscoff et al. (2014) y Sarricolea et al. (2017)",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
+          "temporal_resolution": "monthly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Departamento de Geografía Universidad de Chile",
+          "publisher_identifier": "https://ror.org/047gc3g35",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Universidad de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Clima -- Clasificación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Temperatura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Precipitación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Zonas climaticas de Chile segun KÃ¶ppen-Geiger escala 1:1.500.000",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11240,
+        "completion_tokens": 2058,
+        "total_tokens": 13298
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48969,
+        "completion_tokens": 6907,
+        "total_tokens": 55876
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11240,
+        "completion_tokens": 2058,
+        "total_tokens": 13298
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11751,
+        "completion_tokens": 3307,
+        "total_tokens": 15058
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12070,
+        "completion_tokens": 1395,
+        "total_tokens": 13465
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12117,
+        "completion_tokens": 1119,
+        "total_tokens": 13236
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13031,
+        "completion_tokens": 1086,
+        "total_tokens": 14117
+      }
+    },
+    "total": {
+      "prompt_tokens": 60209,
+      "completion_tokens": 8965,
+      "total_tokens": 69174
+    }
+  },
+  "processed_at": "2026-05-11T10:38:39.918741",
+  "input_file": "inputs\\inputs.json"
+}

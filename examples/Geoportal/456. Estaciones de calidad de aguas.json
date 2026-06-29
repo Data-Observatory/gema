@@ -1,0 +1,246 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35154/Estaciones%20de%20calidad%20de%20aguas",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección General de Aguas (DGA), Ministerio de Obras Públicas",
+        "contact": "562 2449 4000; https://siac.mop.gob.cl",
+        "producer": "Dirección General de Aguas (DGA), Ministerio de Obras Públicas",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{8F391598-8E96-4F0F-BF8B-9C5F465CEDC5}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35154",
+          "alternate_identifier_type": "CatalogID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección General de Aguas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-02-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa de información en formato shapefile de las estaciones de monitoreo de calidad del agua. Información perteneciente a la Dirección General de Agua, distribuida por el ministerio del Medio Ambiente. Sistema de referencia: Proyección Geográfica Datum WGS84.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Calidad del agua",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección General de Aguas (DGA), Ministerio de Obras Públicas; distribuida por el ministerio del Medio Ambiente",
+          "file_uri": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/EstacionesCalidadAguas.zip",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/EstacionesCalidadAguas.zip",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección General de Aguas; Ministerio de Obras Públicas; Ministerio del Medio Ambiente"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Calidad del agua -- Monitoreo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Aguas continentales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Estaciones de calidad de aguas",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-85.6798,-57.4654,-63.7558,-15.2008",
+            "geo_description": "Cobertura nacional de las estaciones de monitoreo de calidad del agua de la Dirección General de Aguas",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11420,
+        "completion_tokens": 2103,
+        "total_tokens": 13523
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 43628,
+        "completion_tokens": 4831,
+        "total_tokens": 48459
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11420,
+        "completion_tokens": 2103,
+        "total_tokens": 13523
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12004,
+        "completion_tokens": 1640,
+        "total_tokens": 13644
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10732,
+        "completion_tokens": 1210,
+        "total_tokens": 11942
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10688,
+        "completion_tokens": 925,
+        "total_tokens": 11613
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10204,
+        "completion_tokens": 1056,
+        "total_tokens": 11260
+      }
+    },
+    "total": {
+      "prompt_tokens": 55048,
+      "completion_tokens": 6934,
+      "total_tokens": 61982
+    }
+  },
+  "processed_at": "2026-05-28T10:40:28.340986",
+  "input_file": "examples\\2.json"
+}

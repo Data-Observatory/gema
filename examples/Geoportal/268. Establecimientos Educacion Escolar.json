@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35408/Establecimientos%20Educaci%C3%B3n%20Escolar",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Educación",
+        "contact": "estadisticas@mineduc.cl",
+        "producer": "Unidad de Estadísticas del Centro de Estudios, División de Planificación y Presupuesto del Ministerio de Educación",
+        "publication_year": "2022",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Docentes",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias de la educación"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Educación",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/018f7hf93",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2022-02-04",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La capa contiene la ubicacion de todos los establecimientos de educacion escolar al aÃ±o 2021 que se encontraban funcionando a nivel nacional. Lo anterior excluye aquellos establecimientos educacionales que se encuentran cerrados, en receso o que dependen de la Junta Nacional de Jardines Infantiles, Fundacion Integra o instituciones de educacion superior. Estos datos han sido generados por la Unidad de Estadisticas del Centro de Estudios, perteneciente a la Division de Planificacion y Presupuesto del Ministerio de Educacion. Para su confeccion se utilizaron las direcciones reportadas por los establecimientos a traves del Sistema de Informacion General de Estudiantes (SIGE), se realizaron correcciones en base a datos del Censo 2017 realizado por el Departamento de Geografia del Instituto Nacional de Estadisticas y se consultaron fuentes de informacion adicionales en casos puntuales. En caso de contar observaciones sobre la informacion presentada, se solicita escribir a estadisticas@mineduc.cl.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Chile",
+          "geo_location_box": "-109.2117 -67.16 -56.536 -17.49916",
+          "geo_description": "Cobertura nacional de establecimientos educacionales funcionando al año 2021",
+          "coverage": "nacional"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "SHP",
+          "variable_measured": "ubicacion de establecimientos de educacion escolar",
+          "data_quality": "datos corregidos con Censo 2017 por Departamento de Geografia del INE",
+          "measurement_technique": "direcciones reportadas via SIGE, correccion con datos del Censo 2017 y fuentes adicionales",
+          "provenance": "Unidad de Estadisticas del Centro de Estudios, Division de Planificacion y Presupuesto del Ministerio de Educacion",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/d6bf9431-3282-3738-bd69-baf0d1ad63ec",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "ubicacion de establecimientos de educacion escolar",
+          "data_quality": "datos corregidos con Censo 2017 por Departamento de Geografia del INE",
+          "measurement_technique": "servicio de mapas web OGC WMS",
+          "provenance": "Ministerio de Educacion - Geoportal de Chile",
+          "file_uri": "https://geoportal.cl/geoserver/Establecimientos_Educacion_Escolar/wms?request=GetCapabilities",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Educación",
+          "publisher_identifier": "https://ror.org/018f7hf93",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Ministerio de Educación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Escuelas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Educación escolar -- Establecimientos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Sistema de Información General de Estudiantes (SIGE)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Establecimientos Educacion Escolar",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10753,
+        "completion_tokens": 2055,
+        "total_tokens": 12808
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 46406,
+        "completion_tokens": 5338,
+        "total_tokens": 51744
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10753,
+        "completion_tokens": 2055,
+        "total_tokens": 12808
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11251,
+        "completion_tokens": 1021,
+        "total_tokens": 12272
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11398,
+        "completion_tokens": 1437,
+        "total_tokens": 12835
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11448,
+        "completion_tokens": 1096,
+        "total_tokens": 12544
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12309,
+        "completion_tokens": 1784,
+        "total_tokens": 14093
+      }
+    },
+    "total": {
+      "prompt_tokens": 57159,
+      "completion_tokens": 7393,
+      "total_tokens": 64552
+    }
+  },
+  "processed_at": "2026-05-07T18:23:17.455963",
+  "input_file": "inputs\\inputs.json"
+}

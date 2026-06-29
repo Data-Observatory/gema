@@ -1,0 +1,288 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35097/Ferias%20Libres",
+        "identifier_type": "URL",
+        "editor": "Secretaría Ejecutiva SNIT",
+        "maintainer": "Secretaría Ejecutiva SNIT",
+        "contact": "800 104 559; http://sistred.bienes.cl/siac-atencion/atencion?idechile",
+        "producer": "Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{34101CD2-1612-49C4-AC2A-41109D51FF86}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35097",
+          "alternate_identifier_type": "InternalID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Economía y negocios"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-10-08",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Mapa que representa la localización y emplazamiento de las ferias libres en comunas de la Región Metropolitana. En sus atributos de puede encontrar, días de la semana en se instala la feria, nombre de la feria y dirección. Esta información fue provista en formato de tabla por la Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile",
+          "file_uri": "https://geoportal.cl/geoserver/Ferias_Libres/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/9449ddc0-50c4-3b4e-b192-ad37023ebfa1",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Secretaría Ejecutiva SNIT",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Ferias_Libres/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsService",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/9449ddc0-50c4-3b4e-b192-ad37023ebfa1",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B34101CD2-1612-49C4-AC2A-41109D51FF86%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.ide.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Secretaría Ejecutiva SNIT; Confederación Gremial Nacional de Organizaciones de Ferias Libres, Persas y Afines de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Ferias libres -- Región Metropolitana -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Comercio ambulante -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Ferias Libres",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Región Metropolitana",
+            "geo_location_box": "-70.8576,-33.6716,-70.4504,-33.2504",
+            "geo_description": "Área de cobertura correspondiente a comunas de la Región Metropolitana donde se ubican ferias libres",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12009,
+        "completion_tokens": 2654,
+        "total_tokens": 14663
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47025,
+        "completion_tokens": 5450,
+        "total_tokens": 52475
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12009,
+        "completion_tokens": 2654,
+        "total_tokens": 14663
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12717,
+        "completion_tokens": 1428,
+        "total_tokens": 14145
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11428,
+        "completion_tokens": 1301,
+        "total_tokens": 12729
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11411,
+        "completion_tokens": 1394,
+        "total_tokens": 12805
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11469,
+        "completion_tokens": 1327,
+        "total_tokens": 12796
+      }
+    },
+    "total": {
+      "prompt_tokens": 59034,
+      "completion_tokens": 8104,
+      "total_tokens": 67138
+    }
+  },
+  "processed_at": "2026-06-01T11:17:49.097171",
+  "input_file": "inputs1\\2.json"
+}

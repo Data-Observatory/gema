@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35651/Nivel%20de%20erosi%C3%B3n",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Medio Ambiente",
+        "maintainer": "Ministerio del Medio Ambiente",
+        "contact": "MHerrera@mma.gob.cl; +562 29385406",
+        "producer": "Ministerio del Medio Ambiente",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{EF03ABFD-E020-4DA1-96CA-047C838E1033}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "608897-43-LP18",
+          "alternate_identifier_type": "Project ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio del Medio Ambiente",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106896547",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-06-17",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Información generada en el marco del proyecto 'Determinación del riesgo de los impactos del Cambio Climático en las costas de Chile', ID N°608897-43-LP18, cuyo objetivo general fue generar información de proyecciones respecto de la amenaza del cambio climático en las costas de Chile y sus impactos, a escala regional, y determinar el riesgo asociado a este fenómeno, para el diseño de políticas e implementación de medidas de adaptación. El proyecto, mandatado por el Ministerio del Medio Ambiente, se desarrolló entre los años 2018 y 2019. La capa representa el nivel de erosión de algunas playas de Chile. Lugar: Zona centro norte de Chile. Fuente: Ministerio de Medio Ambiente. Escala de referencia: Comunal - Playa.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Nivel de erosión de playas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Medio Ambiente, Proyecto ID N°608897-43-LP18",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/258d2e54-9aac-3e7c-8be3-990bead4a86f",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Medio Ambiente",
+          "publisher_identifier": "https://isni.org/isni/0000000106896547",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://gis.mma.gob.cl/server/rest/services/IDE_2019/IDE_CambioClim%C3%A1tico/MapServer/5",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/258d2e54-9aac-3e7c-8be3-990bead4a86f",
+          "related_identifier_type": "URL",
+          "relation_type": "IsVersionOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Medio Ambiente"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Erosión costera -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Cambio climático -- Costas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Nivel de erosión",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Zona centro norte de Chile",
+            "geo_location_box": "-85.4369,-59.0087,-64.5015,-20.0446",
+            "geo_description": "Zona centro norte de Chile, cubriendo playas seleccionadas para el estudio de erosión costera",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10542,
+        "completion_tokens": 2351,
+        "total_tokens": 12893
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 44208,
+        "completion_tokens": 5539,
+        "total_tokens": 49747
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10542,
+        "completion_tokens": 2351,
+        "total_tokens": 12893
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11559,
+        "completion_tokens": 1249,
+        "total_tokens": 12808
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11172,
+        "completion_tokens": 1326,
+        "total_tokens": 12498
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11119,
+        "completion_tokens": 1259,
+        "total_tokens": 12378
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10358,
+        "completion_tokens": 1705,
+        "total_tokens": 12063
+      }
+    },
+    "total": {
+      "prompt_tokens": 54750,
+      "completion_tokens": 7890,
+      "total_tokens": 62640
+    }
+  },
+  "processed_at": "2026-05-18T18:14:04.309579",
+  "input_file": "examples\\3.json"
+}

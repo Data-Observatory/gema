@@ -1,0 +1,329 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35554/Establecimientos%20de%20Educaci%C3%B3n%20Superior",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Educación",
+        "maintainer": "Ministerio de Educación",
+        "contact": "estadisticas@mineduc.cl; 600 600 2626",
+        "producer": "Unidad de Estadísticas, Centro de Estudios, División de Planificación y Presupuesto, Ministerio de Educación",
+        "publication_year": "2022",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{B0D2C76C-439D-4EE0-AAC0-DD116CE3E7DB}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35554",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "0dde8427-113a-356a-bace-ed4d51ddcb05",
+          "alternate_identifier_type": "Download ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Autodirigido",
+          "education_level": "Pregrado",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias de la educación"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Educación",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/018f7hf93",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-10-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2022-02-04",
+          "date_type": "Created",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La capa contiene la ubicación de infraestructura, correspondiente a sedes o inmuebles donde se realizan clases en Instituciones de Educación Superior, que a octubre 2020 se encontraban funcionando a nivel nacional. Estos datos han sido generados por la Unidad de Estadísticas del Centro de Estudios, perteneciente a la División de Planificación y Presupuesto del Ministerio de Educación. Para su confección se utilizaron las direcciones reportadas por el Servicio de Información de Educación Superior (SIES), perteneciente a la Subsecretaría de Educación Superior. La información contenida en esta capa cuenta con actualización anual, por lo cual la próxima actualización se realizará en octubre 2020. En caso de contar observaciones sobre la información presentada, se solicita escribir a estadisticas@mineduc.cl. La información se encuentra en SIRGAS CHILE, coordenadas geográficas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Ubicación de infraestructura de establecimientos de educación superior",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Educación",
+          "file_uri": "https://geoportal.cl/geoserver/Establecimientos_Educacion_Superior/wms?request=GetCapabilities",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Ubicación de infraestructura de establecimientos de educación superior",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Educación",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/0dde8427-113a-356a-bace-ed4d51ddcb05",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Educación",
+          "publisher_identifier": "https://ror.org/018f7hf93",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Establecimientos_Educacion_Superior/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDerivedFrom",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/0dde8427-113a-356a-bace-ed4d51ddcb05",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BB0D2C76C-439D-4EE0-AAC0-DD116CE3E7DB%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.mineduc.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsOwnedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Educación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Educación superior -- Establecimientos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Instituciones de educación superior -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura educacional -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [
+        {
+          "frequency_type": "yearly",
+          "description": "Update frequency: Anual"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Establecimientos de Educación Superior",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.970,-56.779,-64.473,-16.913",
+            "geo_description": "Cobertura nacional de establecimientos de Educación Superior en funcionamiento a octubre de 2020",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "yearly",
+            "description": "Actualización anual de los datos de establecimientos de Educación Superior"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12347,
+        "completion_tokens": 3199,
+        "total_tokens": 15546
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49571,
+        "completion_tokens": 4911,
+        "total_tokens": 54482
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12347,
+        "completion_tokens": 3199,
+        "total_tokens": 15546
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13273,
+        "completion_tokens": 1141,
+        "total_tokens": 14414
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12067,
+        "completion_tokens": 1580,
+        "total_tokens": 13647
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12100,
+        "completion_tokens": 952,
+        "total_tokens": 13052
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12131,
+        "completion_tokens": 1238,
+        "total_tokens": 13369
+      }
+    },
+    "total": {
+      "prompt_tokens": 61918,
+      "completion_tokens": 8110,
+      "total_tokens": 70028
+    }
+  },
+  "processed_at": "2026-06-01T12:27:18.461691",
+  "input_file": "inputs1\\4.json"
+}

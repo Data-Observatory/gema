@@ -1,0 +1,314 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35184/Accidentes%20en%20motocicletas%20a%C3%B1o%202015",
+        "identifier_type": "URL",
+        "editor": "Comisión Nacional de Seguridad de Tránsito",
+        "maintainer": "Geoportal de Chile",
+        "contact": "56 2 2467 7500; https://www.conaset.cl/",
+        "producer": "Comisión Nacional de Seguridad de Tránsito",
+        "publication_year": "2016",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35184",
+          "alternate_identifier_type": "Local"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{2135A4E4-3605-484A-BE4D-CE6D5FB17459}",
+          "alternate_identifier_type": "Local"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Otras ciencias sociales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Comisión Nacional de Seguridad de Tránsito",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Transportes y Telecomunicaciones",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2016-08-19",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Siniestros de tránsito con participación de motocicletas en el Gran Santiago para el año 2015.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Accidentes de tránsito con participación de motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2015/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Accidentes de tránsito con participación de motocicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/43222592-2354-38c6-8645-1e2daaf2da23",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Comisión Nacional de Seguridad de Tránsito",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        },
+        {
+          "publisher_name": "Geoportal de Chile",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Accidentes_motocicletas_2015/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsServiceOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/43222592-2354-38c6-8645-1e2daaf2da23",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B2135A4E4-3605-484A-BE4D-CE6D5FB17459%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.conaset.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Comisión Nacional de Seguridad de Tránsito"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Accidentes de tránsito -- Motocicletas -- Santiago (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Seguridad de tránsito -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Siniestros de tránsito -- Gran Santiago",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Accidentes en motocicletas año 2015",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Gran Santiago",
+            "geo_location_box": "-71.1954,-33.9128,-69.988,-33.1346",
+            "geo_description": "Área del Gran Santiago donde se registraron los siniestros de tránsito con participación de motocicletas durante el año 2015",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12067,
+        "completion_tokens": 2585,
+        "total_tokens": 14652
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47518,
+        "completion_tokens": 5199,
+        "total_tokens": 52717
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12067,
+        "completion_tokens": 2585,
+        "total_tokens": 14652
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12773,
+        "completion_tokens": 1562,
+        "total_tokens": 14335
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11539,
+        "completion_tokens": 1508,
+        "total_tokens": 13047
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11585,
+        "completion_tokens": 990,
+        "total_tokens": 12575
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11621,
+        "completion_tokens": 1139,
+        "total_tokens": 12760
+      }
+    },
+    "total": {
+      "prompt_tokens": 59585,
+      "completion_tokens": 7784,
+      "total_tokens": 67369
+    }
+  },
+  "processed_at": "2026-06-01T12:44:25.834533",
+  "input_file": "inputs1\\2.json"
+}

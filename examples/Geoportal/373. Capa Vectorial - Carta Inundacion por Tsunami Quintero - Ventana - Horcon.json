@@ -1,0 +1,269 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35932/Capa%20Vectorial%20-%20Carta%20Inundaci%C3%B3n%20por%20Tsunami%20Quintero%20-%20Ventana%20-%20Horc%C3%B3n",
+        "identifier_type": "URL",
+        "editor": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "maintainer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "56-32-266666",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{B5994009-22B1-4DFC-AF7E-6424A183E74B}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            },
+            {
+              "name_identifier": "https://ror.org/04rfh4r06",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-07-26",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad máxima de inundación por tsunami para las localidades de Quintero, Ventana y Horcón, comuna de Quintero, Provincia de Valparaíso, Región de Valparaíso. La capa vectorial es parte de la carta de inundación para las localidades de Quintero, Ventana y Horcón, y se elaboró mediante simulación numérica, la cual fue alimentada con la ultima información topográfica y batimétrica disponible.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kmz",
+          "variable_measured": "profundidad máxima de inundación por tsunami",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "simulación numérica",
+          "provenance": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Quintero-Ventana-Horcon_2da_Ed_2011.kmz",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Quintero-Ventana-Horcon_2da_Ed_2011.kmz",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.shoa.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDocumentedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tsunamis -- Chile -- Quintero (Región de Valparaíso)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Inundaciones -- Simulación numérica -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Batimetría -- Chile -- Quintero (Región de Valparaíso)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta Inundación por Tsunami Quintero - Ventana - Horcón",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Quintero, Ventana y Horcón, comuna de Quintero, Provincia de Valparaíso, Región de Valparaíso",
+            "geo_location_box": "-71.5477306999999, -32.8097999999999, -71.4535866159999, -32.6915943309999",
+            "geo_description": "Área costera de las localidades de Quintero, Ventana y Horcón en la Región de Valparaíso, Chile",
+            "coverage": "local"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11456,
+        "completion_tokens": 2453,
+        "total_tokens": 13909
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47762,
+        "completion_tokens": 4773,
+        "total_tokens": 52535
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11456,
+        "completion_tokens": 2453,
+        "total_tokens": 13909
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11955,
+        "completion_tokens": 1218,
+        "total_tokens": 13173
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12170,
+        "completion_tokens": 1479,
+        "total_tokens": 13649
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12194,
+        "completion_tokens": 1051,
+        "total_tokens": 13245
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11443,
+        "completion_tokens": 1025,
+        "total_tokens": 12468
+      }
+    },
+    "total": {
+      "prompt_tokens": 59218,
+      "completion_tokens": 7226,
+      "total_tokens": 66444
+    }
+  },
+  "processed_at": "2026-05-18T11:20:13.217754",
+  "input_file": "examples\\1.json"
+}

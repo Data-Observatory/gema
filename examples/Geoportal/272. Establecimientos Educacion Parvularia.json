@@ -1,0 +1,319 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35553/Establecimientos%20Educaci%C3%B3n%20Parvularia",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Educación",
+        "maintainer": "Ministerio de Educación",
+        "contact": "estadisticas@mineduc.cl; 600 600 2626",
+        "producer": "Unidad de Estadísticas, Centro de Estudios, División de Planificación y Presupuesto, Ministerio de Educación",
+        "publication_year": "2022",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{E8A877E9-C0F6-4C9B-A859-35EE4667DCD1}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Docentes",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias de la educación"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Educación",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/018f7hf93",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2022-02-04",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La capa contiene la ubicación de todos los establecimientos de educación parvularia que al año 2021 se encontraban funcionando a nivel nacional. Lo anterior incluye aquellos establecimientos educacionales con reconocimiento oficial Mineduc, Junji y Fundación Integra. Estos datos han sido generados por la Unidad de Estadísticas del Centro de Estudios, perteneciente a la División de Planificación y Presupuesto del Ministerio de Educación. Para su confección se utilizaron las direcciones reportadas por los establecimientos a través del Sistema de Información General de Estudiantes (SIGE). La información contenida en esta capa cuenta con actualización cuatrimestral, por lo cual la próxima actualización se realizará en marzo de 2020. En caso de contar observaciones sobre la información presentada, se solicita escribir a estadisticas@mineduc.cl.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Ubicación de establecimientos de educación parvularia",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Educación",
+          "file_uri": "https://geoportal.cl/geoserver/Establecimientos_Educacion_Parvularia/wms?request=GetCapabilities",
+          "temporal_resolution": "Cuatrimestral",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Ubicación de establecimientos de educación parvularia",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Direcciones reportadas por establecimientos a través del Sistema de Información General de Estudiantes (SIGE)",
+          "provenance": "Unidad de Estadísticas, Centro de Estudios, División de Planificación y Presupuesto, Ministerio de Educación",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/b52e4229-365e-3163-b211-679cc6b2fd99",
+          "temporal_resolution": "Cuatrimestral",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Educación",
+          "publisher_identifier": "https://ror.org/018f7hf93",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Establecimientos_Educacion_Parvularia/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsServiceOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/b52e4229-365e-3163-b211-679cc6b2fd99",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BE8A877E9-C0F6-4C9B-A859-35EE4667DCD1%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.mineduc.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Educación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Educación parvularia -- Establecimientos educacionales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Escuelas de párvulos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Junji",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [
+        {
+          "frequency_type": "Cuatrimestral",
+          "description": "Update frequency: Cuatrimestral"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Establecimientos Educación Parvularia",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-79.836,-59.078,-63.938,-15.276",
+            "geo_description": "Cobertura nacional de Chile con la ubicación de todos los establecimientos de educación parvularia funcionando a nivel nacional",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "quarterly",
+            "description": "Actualización cuatrimestral de la capa de establecimientos de educación parvularia"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12346,
+        "completion_tokens": 3192,
+        "total_tokens": 15538
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49427,
+        "completion_tokens": 5066,
+        "total_tokens": 54493
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12346,
+        "completion_tokens": 3192,
+        "total_tokens": 15538
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13236,
+        "completion_tokens": 1225,
+        "total_tokens": 14461
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12030,
+        "completion_tokens": 1322,
+        "total_tokens": 13352
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12065,
+        "completion_tokens": 972,
+        "total_tokens": 13037
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12096,
+        "completion_tokens": 1547,
+        "total_tokens": 13643
+      }
+    },
+    "total": {
+      "prompt_tokens": 61773,
+      "completion_tokens": 8258,
+      "total_tokens": 70031
+    }
+  },
+  "processed_at": "2026-06-01T12:27:02.690411",
+  "input_file": "inputs1\\3.json"
+}

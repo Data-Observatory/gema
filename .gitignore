@@ -38,9 +38,8 @@ output/
 reports/
 result.json
 
-# Geoportal ground truth data (302 human-reviewed outputs, ~3.4MB)
-# Obtain from project owner; not tracked to keep repo lean
-examples/Geoportal/
+# Geoportal ground truth is COMMITTED (302 human-reviewed outputs, ~3.4MB)
+# Required for multi-model comparison reproducibility
 
 # OS
 .DS_Store

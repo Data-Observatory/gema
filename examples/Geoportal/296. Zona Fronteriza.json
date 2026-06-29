@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36570/Zona%20Fronteriza",
+        "identifier_type": "URL",
+        "editor": "Dirección Nacional de Fronteras y Límites del Estado",
+        "maintainer": "Dirección Nacional de Fronteras y Límites del Estado (DIFROL)",
+        "contact": "infodifrol@minrel.gob.cl; 562 2413 5700; https://www.difrol.cl",
+        "producer": "Dirección Nacional de Fronteras y Límites del Estado",
+        "publication_year": "2018",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36570",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{d5f6f2af-9f45-41ab-96be-9cc9728620f8}",
+          "alternate_identifier_type": "CSW UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000474071266",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Relaciones Exteriores",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2018-10-23",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La zona fronteriza corresponde a áreas relativamente cercanas al límite político internacional, en las que las relaciones geográfico-territoriales, sociales, económicas y jurídicas que se desarrollan se ven afectadas por la presencia de dicho límite, ya que se transforman en espacios de movimiento, intercambio e integración. La zona fronteriza está representada en una capa de líneas con características vectoriales, para ser descargada, utilizada y visualizada en proyectos en softwares de Sistemas de Información Geográfica (SIG).",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "zona fronteriza",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://difrol.gob.cl/repositorio/ZF/ZF_limite_2024_29_08_2024.zip",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kmz",
+          "variable_measured": "zona fronteriza",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección Nacional de Fronteras y Límites del Estado",
+          "file_uri": "https://difrol.gob.cl/repositorio/ZF/zona_fronteriza_v2.kmz",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "publisher_identifier": "https://isni.org/isni/0000000474071266",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.difrol.cl/zfdescarga/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://difrol.gob.cl/repositorio/ZF/ZF_limite_2024_29_08_2024.zip",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://difrol.gob.cl/repositorio/ZF/zona_fronteriza_v2.kmz",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Bd5f6f2af-9f45-41ab-96be-9cc9728620f8%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección Nacional de Fronteras y Límites del Estado"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Zonas fronterizas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Límites territoriales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Zona Fronteriza",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.164,-59.195,-61.460,-15.705",
+            "geo_description": "Zona fronteriza de Chile, áreas cercanas al límite político internacional a lo largo de todo el territorio nacional",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12525,
+        "completion_tokens": 2761,
+        "total_tokens": 15286
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49429,
+        "completion_tokens": 5430,
+        "total_tokens": 54859
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12525,
+        "completion_tokens": 2761,
+        "total_tokens": 15286
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13274,
+        "completion_tokens": 1321,
+        "total_tokens": 14595
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12079,
+        "completion_tokens": 1426,
+        "total_tokens": 13505
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12019,
+        "completion_tokens": 1374,
+        "total_tokens": 13393
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12057,
+        "completion_tokens": 1309,
+        "total_tokens": 13366
+      }
+    },
+    "total": {
+      "prompt_tokens": 61954,
+      "completion_tokens": 8191,
+      "total_tokens": 70145
+    }
+  },
+  "processed_at": "2026-06-01T16:47:35.205416",
+  "input_file": "inputs1\\3.json"
+}

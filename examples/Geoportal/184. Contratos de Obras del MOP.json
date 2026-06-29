@@ -1,0 +1,330 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36790/Contratos%20de%20Obras%20del%20MOP",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección General de Obras Públicas",
+        "contact": "562 2449 4000; 800 104 559",
+        "producer": "Ministerio de Obras Públicas",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36790",
+          "alternate_identifier_type": "Catalog ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Consultores",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        },
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería medioambiental"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Obras Públicas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Dirección General de Obras Públicas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-18",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Servicio de mapas con la distribución de Contratos sectoriales de obra MOP, para ser utilizados en el Visor de Obras Civiles útil para el Monitoreo de Obras Públicas. El Servicio se conforma de la unión de las geometrías de puntos y líneas que representan a los contratos de las direcciones de: Vialidad, Obras Hidráulicas, Obras Portuarias, Aeropuertos, Agua Potable Rural, Arquitectura y Dirección General de Aguas, almacenados en la IDEMOP, más los atributos financieros almacenados en el Sistema Administración Financiera (SAFI) de la Dirección de Planeamiento del Ministerio de Obras Públicas. La actualización de la información es mensual y se realiza los días 16 de cada mes, reflejando el estado del contrato al mes anterior. La información es de cobertura nacional y se representa utilizando el Datum SIRGAS2000, con coordenadas geográficas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Contratos sectoriales de obra MOP",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Obras Públicas",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
+          "temporal_resolution": "monthly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Contratos sectoriales de obra MOP",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Obras Públicas",
+          "file_uri": "https://geomop.mop.gob.cl/descargas/",
+          "temporal_resolution": "monthly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geomop.mop.gob.cl/descargas/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://siac.mop.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Obras Públicas; Dirección General de Obras Públicas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Obras públicas -- Contratos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Vialidad -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Obras hidráulicas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [
+        {
+          "frequency_type": "monthly",
+          "description": "Update frequency: Mensual"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Contratos de Obras del MOP",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-109, -67, -55, -17",
+            "geo_description": "Territorio nacional de Chile, incluyendo territorio continental e insular, con cobertura de contratos de obras públicas a nivel nacional",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "monthly",
+            "description": "La actualización de la información es mensual y se realiza los días 16 de cada mes, reflejando el estado del contrato al mes anterior"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12315,
+        "completion_tokens": 3127,
+        "total_tokens": 15442
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48844,
+        "completion_tokens": 8062,
+        "total_tokens": 56906
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12315,
+        "completion_tokens": 3127,
+        "total_tokens": 15442
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13152,
+        "completion_tokens": 2107,
+        "total_tokens": 15259
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11976,
+        "completion_tokens": 2147,
+        "total_tokens": 14123
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12100,
+        "completion_tokens": 1409,
+        "total_tokens": 13509
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11616,
+        "completion_tokens": 2399,
+        "total_tokens": 14015
+      }
+    },
+    "total": {
+      "prompt_tokens": 61159,
+      "completion_tokens": 11189,
+      "total_tokens": 72348
+    }
+  },
+  "processed_at": "2026-05-28T15:52:07.066701",
+  "input_file": "examples\\3.json"
+}

@@ -1,0 +1,277 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35002/Plan%20Cuadrante",
+        "identifier_type": "URL",
+        "editor": "Carabineros de Chile",
+        "maintainer": "Geoportal de Chile - IDE Chile",
+        "contact": "56 2 29220888; 800 104 559",
+        "producer": "Carabineros de Chile",
+        "publication_year": "2018",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{725928F0-FF2C-4EF9-BF0D-0734AAB419D4}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Carabineros de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106624277",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio del Interior y Seguridad Pública",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2018-03-20",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Información geográfica referida al Plan Cuadrante de Carabineros de Chile. Un Cuadrante está fijado por variables cuantitativas y cualitativas, expresadas de acuerdo a estudios sociológicos y culturales, que permiten inferir la problemática delictual de la que es objeto. Además es la división del territorio jurisdiccional que tiene cada unidad policial.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Carabineros de Chile",
+          "file_uri": "https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Carabineros de Chile",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/94f708df-2f40-3f3c-a502-763d16d97aaa",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Carabineros de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000106624277",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Service",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/94f708df-2f40-3f3c-a502-763d16d97aaa",
+          "related_identifier_type": "URL",
+          "relation_type": "IsVersionOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Carabineros de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Seguridad pública -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Delincuencia -- Prevención -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Policía -- Jurisdicción -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Plan Cuadrante",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-77.5431,-58.458,-64.4832,-21.1342",
+            "geo_description": "Territorio nacional de Chile, correspondiente a la cobertura de los cuadrantes de Carabineros de Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11987,
+        "completion_tokens": 2561,
+        "total_tokens": 14548
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 46507,
+        "completion_tokens": 5144,
+        "total_tokens": 51651
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11987,
+        "completion_tokens": 2561,
+        "total_tokens": 14548
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12580,
+        "completion_tokens": 1460,
+        "total_tokens": 14040
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11371,
+        "completion_tokens": 1322,
+        "total_tokens": 12693
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11364,
+        "completion_tokens": 1151,
+        "total_tokens": 12515
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11192,
+        "completion_tokens": 1211,
+        "total_tokens": 12403
+      }
+    },
+    "total": {
+      "prompt_tokens": 58494,
+      "completion_tokens": 7705,
+      "total_tokens": 66199
+    }
+  },
+  "processed_at": "2026-05-28T16:53:32.724059",
+  "input_file": "examples\\3.json"
+}
