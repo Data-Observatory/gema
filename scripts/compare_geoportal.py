@@ -62,7 +62,8 @@ def load_ground_truth(geoportal_path: Path) -> dict[str, Any]:
 
 
 def run_pipeline_for_model(
-    input_path: Path, model: str, max_attempts: int = 3
+    input_path: Path, model: str, output_root: Path = REPORTS_DIR,
+    enrich: bool = False, max_attempts: int = 3
 ) -> dict[str, Any] | None:
     """Run pipeline on a single input with the specified model.
 
@@ -85,13 +86,16 @@ def run_pipeline_for_model(
 
     config = load_config(CONFIG_PATH)
 
+    if enrich:
+        config.enable_identifier_enrichment = True
+
     # Override all agents to use target model + zai-coding-plan provider
     for agent in config.agents:
         agent.model = model
         agent.provider = "zai-coding-plan"
 
     # Per-model cache directory
-    cache_dir = REPORTS_DIR / "cache" / model.replace(".", "_")
+    cache_dir = output_root / "cache" / model.replace(".", "_")
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     def llm_factory(provider: str, model: str, **kwargs: Any) -> Any:
@@ -289,7 +293,7 @@ def compare_outputs(truth: dict, actual: dict) -> dict[str, float]:
 # Main comparison runner
 # ---------------------------------------------------------------------------
 
-def run_comparison(models: list[str]) -> dict:
+def run_comparison(models: list[str], output_root: Path = REPORTS_DIR, enrich: bool = False) -> dict:
     input_files = sorted(INPUTS_DIR.glob("*.json"))
     if not input_files:
         print("No inputs found. Run generate_geoportal_inputs.py first.", file=sys.stderr)
@@ -320,7 +324,7 @@ def run_comparison(models: list[str]) -> dict:
             truth = load_ground_truth(gt_path)
 
             try:
-                actual = run_pipeline_for_model(input_path, model, max_attempts=3)
+                actual = run_pipeline_for_model(input_path, model, output_root, enrich=enrich, max_attempts=3)
             except Exception as e:
                 print(f"ERROR ({e})")
                 model_results.append({"input": input_path.name, "error": str(e), "scores": {}})
@@ -337,7 +341,7 @@ def run_comparison(models: list[str]) -> dict:
             print(f"overall={scores['overall']:.3f} fields={n_fields}/18 ({elapsed:.0f}s)")
 
             # Save raw output
-            out_dir = REPORTS_DIR / "outputs" / model.replace(".", "_")
+            out_dir = output_root / "outputs" / model.replace(".", "_")
             out_dir.mkdir(parents=True, exist_ok=True)
             (out_dir / input_path.name).write_text(
                 json.dumps(actual, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -356,7 +360,7 @@ def run_comparison(models: list[str]) -> dict:
             print(f"\n  → {model} average: {avg:.3f} ({len(valid)}/{len(input_files)} succeeded)")
 
             # Save partial results after each model
-            (REPORTS_DIR / "comparison_data.json").write_text(
+            (output_root / "comparison_data.json").write_text(
                 json.dumps(all_results, indent=2, ensure_ascii=False), encoding="utf-8"
             )
 
@@ -433,6 +437,10 @@ def main() -> None:
         help=f"Comma-separated model names (default: {DEFAULT_MODELS})"
     )
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument(
+        "--enrich", action="store_true", default=False,
+        help="Enable identifier enrichment (ROR/ISNI resolution via live APIs)"
+    )
     args = parser.parse_args()
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -440,14 +448,19 @@ def main() -> None:
         print("No models specified.", file=sys.stderr)
         sys.exit(1)
 
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    output_root = Path("reports/geoportal_enriched" if args.enrich else "reports/geoportal")
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    if args.enrich:
+        print("Identifier enrichment: ENABLED (ROR/ISNI live API resolution)")
+
     print(f"Models: {', '.join(models)}")
     print(f"Inputs: {INPUTS_DIR}/")
-    print(f"Reports: {REPORTS_DIR}/")
+    print(f"Reports: {output_root}/")
 
-    results = run_comparison(models)
+    results = run_comparison(models, output_root=output_root, enrich=args.enrich)
     report = generate_report(results)
-    report_path = REPORTS_DIR / "cross_model_comparison.md"
+    report_path = output_root / "cross_model_comparison.md"
     report_path.write_text(report, encoding="utf-8")
     print(f"\nReport: {report_path}")
 
