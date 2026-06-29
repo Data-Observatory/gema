@@ -3,7 +3,7 @@
     "identifier": "https://www.rasgos.cl/",
     "identifier_type": "URL",
     "editor": "Data Observatory",
-    "maintainer": "Rasgos-CL",
+    "maintainer": "Data Observatory",
     "contact": "",
     "producer": "",
     "publication_year": "",
@@ -13,55 +13,32 @@
     "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
   },
-  "alternate_identifiers": [],
-  "audiences": [
+  "alternate_identifiers": [
     {
-      "audience": "Investigadores",
-      "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Docentes",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Clase guiada"
-    },
-    {
-      "audience": "Estudiantes",
-      "mediator": "Docente",
-      "education_level": "Pregrado",
-      "instructional_method": "Estudio de caso"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    }
-  ],
-  "categories": [
-    {
-      "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias biológicas"
-    },
-    {
-      "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias medioambientales"
+      "alternate_name": "",
+      "alternate_identifier": "Rasgos-CL",
+      "alternate_identifier_type": "Name"
     }
   ],
   "citations": [],
-  "creators": [],
+  "creators": [
+    {
+      "creator_name": "Data Observatory",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [],
+      "affiliations": []
+    }
+  ],
   "dates": [],
   "descriptions": [
     {
-      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
+      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
       "description_type": "Abstract",
       "language": "es"
     }
@@ -74,13 +51,12 @@
       "description": ""
     }
   ],
-  "media_files": [],
   "publishers": [
     {
       "publisher_name": "Data Observatory",
-      "publisher_identifier": "https://ror.org/027nn6b17",
-      "publisher_identifier_scheme": "ROR",
-      "scheme_uri": "https://ror.org/",
+      "publisher_identifier": "",
+      "publisher_identifier_scheme": "",
+      "scheme_uri": "",
       "lang": "es"
     }
   ],
@@ -96,27 +72,11 @@
       "rights_holder": "Data Observatory"
     }
   ],
-  "subjects": [
-    {
-      "subject_name": "Rasgos funcionales (Plantas) -- Biodiversidad -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    },
-    {
-      "subject_name": "Plantas -- Ecología -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    }
-  ],
   "titles": [
     {
-      "language": "es",
       "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }

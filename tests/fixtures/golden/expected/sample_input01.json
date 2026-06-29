@@ -3,9 +3,9 @@
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
-    "maintainer": "Ministerio de Hacienda",
+    "maintainer": "Ministerio de Hacienda - Gobierno de Chile",
     "contact": "",
-    "producer": "Ministerio de Hacienda",
+    "producer": "",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -14,7 +14,6 @@
     "language": "es"
   },
   "alternate_identifiers": [],
-  "citations": [],
   "creators": [
     {
       "creator_name": "Ministerio de Hacienda",
@@ -27,17 +26,17 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "https://isni.org/isni/000000040628717X",
-          "name_identifier_scheme": "ISNI",
-          "scheme_uri": "https://isni.org/"
+          "name_identifier": "",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": ""
         }
       ],
       "affiliations": [
         {
           "affiliation": "Gobierno de Chile",
-          "affiliation_identifier": "https://ror.org/02sevrz47",
-          "affiliation_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org/"
+          "affiliation_identifier": "",
+          "affiliation_identifier_scheme": "",
+          "scheme_uri": ""
         }
       ]
     }
@@ -56,7 +55,6 @@
       "language": "es"
     }
   ],
-  "funding_references": [],
   "languages": [
     {
       "lang_code": "es",
@@ -64,33 +62,21 @@
       "description": ""
     }
   ],
-  "media_files": [],
   "publishers": [
     {
       "publisher_name": "Ministerio de Hacienda",
-      "publisher_identifier": "https://isni.org/isni/000000040628717X",
-      "publisher_identifier_scheme": "ISNI",
-      "scheme_uri": "https://isni.org/",
+      "publisher_identifier": "",
+      "publisher_identifier_scheme": "ROR",
+      "scheme_uri": "",
       "lang": "es"
     }
   ],
   "related_identifiers": [],
-  "rights": [
-    {
-      "rights": "Datos Abiertos del Estado de Chile",
-      "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
-      "rights_identifier": "CC-BY-4.0",
-      "rights_identifier_scheme": "SPDX",
-      "scheme_uri": "https://spdx.org/licenses/",
-      "rights_condition": "",
-      "rights_holder": "Estado de Chile"
-    }
-  ],
   "titles": [
     {
-      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }
