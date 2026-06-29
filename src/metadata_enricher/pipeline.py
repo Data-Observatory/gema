@@ -56,6 +56,12 @@ class Pipeline:
         self._schema: Schema = self._registry.get(config.schema_name)
         self._llm_factory = llm_factory
         self._validator = PreFlightValidator(self._schema, self._registry)
+        self._enricher = None
+        if config.enable_identifier_enrichment:
+            from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
+            from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
+
+            self._enricher = IdentifierEnricher(IdentifierResolver())
 
     def run(self, input_source: InputSource, pattern: str = "*.json") -> list[PipelineResult]:
         """Run the full pipeline on all resources matching *pattern*.
@@ -132,5 +138,12 @@ class Pipeline:
         except Exception as exc:
             logger.error("Merge failed: %s", exc)
             return PipelineResult(resource=resource, error=f"Merge failed: {exc}")
+
+        # 5. Post-merge identifier enrichment
+        if self._enricher is not None:
+            try:
+                document = self._enricher.enrich(document)
+            except Exception as exc:
+                logger.warning("Identifier enrichment failed: %s", exc)
 
         return PipelineResult(resource=resource, document=document)
