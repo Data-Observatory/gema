@@ -1,0 +1,6 @@
+{
+  "url": "https://geoportal.cl/geoportal/catalog/36785/Red%20Vial%20Nacional",
+  "title": "Red Vial Nacional",
+  "description": "Elaboración propia en base principalmente a levantamiento geo-referenciado con el Sistema Global de Navegación por Satélite (GNSS) entre años 2000-2003. Contiene actualización en base al proceso de Homologación de caminos y, entre otras cosas, nuevos levantamientos con tecnología GNSS. La Red Vial está segmentada con información de los tipos de carpeta o rodadura, incluyendo información de los Caminos Básicos con data actualizada a Agosto de 2015. Escala aproximada entre 1:10.000 y 1:25.000, dependiendo de la región. Sistema de Referencia SIRGAS. Coordenadas Geográficas. Estos archivos son considerados documentos de trabajo y corresponden a Bases de Datos dinámicas que están en constante depuración, complementación y actualización. La Red Vial contenida en estos archivos es parte de lo que se encuentra disponible en el servicio web de mapas de la Dirección de Vialidad (www.mapas.mop.cl), no representa la naturaleza jurídica de los caminos graficados.",
+  "publisher": "Ministerio de Obras Públicas"
+}

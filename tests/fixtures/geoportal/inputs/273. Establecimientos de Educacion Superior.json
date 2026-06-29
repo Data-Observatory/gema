@@ -1,0 +1,6 @@
+{
+  "url": "https://geoportal.cl/geoportal/catalog/35554/Establecimientos%20de%20Educaci%C3%B3n%20Superior",
+  "title": "Establecimientos de Educación Superior",
+  "description": "La capa contiene la ubicación de infraestructura, correspondiente a sedes o inmuebles donde se realizan clases en Instituciones de Educación Superior, que a octubre 2020 se encontraban funcionando a nivel nacional. Estos datos han sido generados por la Unidad de Estadísticas del Centro de Estudios, perteneciente a la División de Planificación y Presupuesto del Ministerio de Educación. Para su confección se utilizaron las direcciones reportadas por el Servicio de Información de Educación Superior (SIES), perteneciente a la Subsecretaría de Educación Superior. La información contenida en esta capa cuenta con actualización anual, por lo cual la próxima actualización se realizará en octubre 2020. En caso de contar observaciones sobre la información presentada, se solicita escribir a estadisticas@mineduc.cl. La información se encuentra en SIRGAS CHILE, coordenadas geográficas.",
+  "publisher": "Ministerio de Educación"
+}
