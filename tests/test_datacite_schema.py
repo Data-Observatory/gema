@@ -280,12 +280,17 @@ class TestNormalizePublishers:
         schema = DataCiteSchema46()
         result = schema._normalize_publishers("Some Publisher")
         assert result[0]["publisher_name"] == "Some Publisher"
-        assert result[0]["publisher_identifier"] == "publisher_identifier"
+        assert result[0]["publisher_identifier"] == ""
+        assert result[0]["publisher_identifier_scheme"] == ""
+        assert result[0]["publisher_scheme_uri"] == ""
 
     def test_dict_without_publisher_name_or_name(self) -> None:
         schema = DataCiteSchema46()
         result = schema._normalize_publishers([{"other": "Fallback Pub"}])
         assert result[0]["publisher_name"] == "Fallback Pub"
+        assert result[0]["publisher_identifier"] == ""
+        assert result[0]["publisher_identifier_scheme"] == ""
+        assert result[0]["publisher_scheme_uri"] == ""
 
 
 class TestNormalizeSubjects:
