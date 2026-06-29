@@ -17,6 +17,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "pyyaml>=6.0",
+    "rapidfuzz>=3.0.0",
     "diskcache>=5.6.0",
     "tenacity>=8.0.0",
     "typer>=0.12.0",
