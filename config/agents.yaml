@@ -718,3 +718,7 @@ default_provider: zai-coding-plan
 # calls to respect it reliably. Raise this if a less rate-limited provider
 # is configured. Override per-invocation with `metagen process --max-workers N`.
 max_workers: 1
+# Post-merge resolution of ROR/ISNI identifiers for creators/publishers/
+# funders that the LLM left blank (prompts intentionally no longer supply a
+# hardcoded lookup table — see PASO 3 in the creators_publishers prompt).
+enable_identifier_enrichment: true
