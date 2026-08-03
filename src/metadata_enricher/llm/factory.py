@@ -5,8 +5,12 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import SecretStr
+
+if TYPE_CHECKING:
+    from datetime import timedelta
 
 from metadata_enricher.cache import CachedLLMClient, CacheManager
 from metadata_enricher.config.models import ProviderConfig
@@ -48,6 +52,7 @@ def create_llm_client(
     use_cache: bool = True,
     use_retry: bool = True,
     cache_dir: Path | None = None,
+    cache_ttl: timedelta | None = None,
 ) -> LLMClient:
     """Create a fully configured LLM client from a provider config.
 
@@ -65,6 +70,9 @@ def create_llm_client(
         use_cache: Enable disk cache wrapper.
         use_retry: Enable retry middleware.
         cache_dir: Override cache directory.
+        cache_ttl: Override the cache entry TTL. Only applies when *cache_dir* is
+            also given (isolated cache, e.g. golden-fixture recording) — the
+            shared default cache always uses CacheManager's own default TTL.
 
     Returns:
         Configured LLMClient (wrapped with cache + retry).
@@ -95,7 +103,14 @@ def create_llm_client(
         client = RetryableLLMClient(client)
 
     if use_cache:
-        cm = CacheManager(cache_dir=cache_dir) if cache_dir else _get_shared_cache_manager()
+        if cache_dir:
+            cm = (
+                CacheManager(cache_dir=cache_dir, default_ttl=cache_ttl)
+                if cache_ttl is not None
+                else CacheManager(cache_dir=cache_dir)
+            )
+        else:
+            cm = _get_shared_cache_manager()
         client = CachedLLMClient(client, cm)
 
     _client_cache[cache_key] = client

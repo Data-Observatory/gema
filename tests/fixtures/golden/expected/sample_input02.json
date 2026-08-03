@@ -3,7 +3,7 @@
     "identifier": "https://www.rasgos.cl/",
     "identifier_type": "URL",
     "editor": "Data Observatory",
-    "maintainer": "Rasgos-CL",
+    "maintainer": "Data Observatory",
     "contact": "",
     "producer": "",
     "publication_year": "",
@@ -22,10 +22,16 @@
       "instructional_method": "Análisis"
     },
     {
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    },
+    {
       "audience": "Docentes",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Clase guiada"
+      "instructional_method": "Estudio de caso"
     },
     {
       "audience": "Estudiantes",
@@ -38,12 +44,6 @@
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -56,7 +56,18 @@
       "sub_category": "Ciencias medioambientales"
     }
   ],
-  "citations": [],
+  "citations": [
+    {
+      "title": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
+      "volume": "",
+      "issue": "",
+      "start_page": "",
+      "end_page": "",
+      "edition": "",
+      "conference_place": "",
+      "conference_date": ""
+    }
+  ],
   "creators": [],
   "dates": [],
   "descriptions": [
@@ -98,14 +109,21 @@
   ],
   "subjects": [
     {
-      "subject_name": "Rasgos funcionales (Plantas) -- Biodiversidad -- Chile",
+      "subject_name": "Rasgos funcionales de plantas -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
       "classification_code": ""
     },
     {
-      "subject_name": "Plantas -- Ecología -- Chile",
+      "subject_name": "Biodiversidad vegetal -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Ecología vegetal -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",

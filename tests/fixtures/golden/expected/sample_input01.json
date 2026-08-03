@@ -3,9 +3,9 @@
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
-    "maintainer": "Ministerio de Hacienda",
+    "maintainer": "Ministerio de Hacienda - Gobierno de Chile",
     "contact": "",
-    "producer": "Ministerio de Hacienda",
+    "producer": "Ministerio de Hacienda - Gobierno de Chile",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -14,6 +14,42 @@
     "language": "es"
   },
   "alternate_identifiers": [],
+  "audiences": [
+    {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    },
+    {
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Ciudadanos",
+      "mediator": "Bibliotecario",
+      "education_level": "Aprendizaje permanente",
+      "instructional_method": "Autoaprendizaje"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ciencias Sociales",
+      "sub_category": "Economía y negocios"
+    },
+    {
+      "name": "Ciencias Sociales",
+      "sub_category": "Ciencias políticas"
+    }
+  ],
   "citations": [],
   "creators": [
     {
@@ -86,11 +122,34 @@
       "rights_holder": "Estado de Chile"
     }
   ],
+  "subjects": [
+    {
+      "subject_name": "Gastos municipales -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Presupuesto público -- Corporaciones municipales -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Sector público local -- Egresos -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    }
+  ],
   "titles": [
     {
-      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }

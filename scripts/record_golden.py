@@ -25,6 +25,7 @@ import logging
 import os
 import shutil
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 from metadata_enricher.agents.registry import LLMClientFactory
@@ -39,6 +40,12 @@ from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
 logger = logging.getLogger(__name__)
+
+# The recorded cache is committed to git and replayed indefinitely by
+# test_regression.py — it must not expire on CacheManager's normal 7-day TTL,
+# or the "no API key needed" regression suite silently falls through to live
+# HTTP calls the next time someone runs it.
+_GOLDEN_CACHE_TTL = timedelta(days=3650)
 
 
 def _make_factory(cache_dir: Path) -> LLMClientFactory:
@@ -56,6 +63,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             cache_dir=cache_dir,
+            cache_ttl=_GOLDEN_CACHE_TTL,
         )
 
     return _factory
@@ -190,7 +198,11 @@ def main(argv: list[str] | None = None) -> None:
             # Fresh clients per input so cache_dir is injected correctly.
             reset_client_cache()
 
-            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            # max_workers=1: some providers (observed with ZAI's zai-coding-plan)
+            # rate-limit far below what 5 agents firing concurrently need —
+            # recording must stay serialized even though the real pipeline
+            # defaults to parallel waves.
+            pipeline = Pipeline(config=config, llm_factory=llm_factory, max_workers=1)
             results: list[PipelineResult] = pipeline.run(
                 FilesystemInputSource(), pattern=str(input_file)
             )

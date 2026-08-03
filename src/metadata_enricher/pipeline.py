@@ -52,11 +52,13 @@ class Pipeline:
         config: PipelineConfig,
         schema_registry: SchemaRegistry | None = None,
         llm_factory: LLMClientFactory | None = None,
+        max_workers: int = 4,
     ) -> None:
         self._config = config
         self._registry = schema_registry or get_registry()
         self._schema: Schema = self._registry.get(config.schema_name)
         self._llm_factory = llm_factory
+        self._max_workers = max_workers
         self._validator = PreFlightValidator(self._schema, self._registry)
 
     def run(self, input_source: InputSource, pattern: str = "*.json") -> list[PipelineResult]:
@@ -123,7 +125,7 @@ class Pipeline:
 
         # 3. Execute orchestrator (parallel agent waves)
         try:
-            orchestrator = Orchestrator(registry)
+            orchestrator = Orchestrator(registry, max_workers=self._max_workers)
             agent_results = orchestrator.run(resource)
         except Exception as exc:
             logger.error("Orchestrator failed: %s", exc)
