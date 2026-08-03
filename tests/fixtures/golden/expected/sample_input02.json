@@ -10,7 +10,7 @@
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
     "version": "",
-    "thumbnail": "",
+    "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
   },
   "alternate_identifiers": [],
@@ -22,28 +22,22 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
       "audience": "Estudiantes",
       "mediator": "Docente",
       "education_level": "Pregrado",
       "instructional_method": "Estudio de caso"
     },
     {
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    },
+    {
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Docentes",
-      "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Estudio de caso"
     }
   ],
   "categories": [
@@ -80,7 +74,7 @@
   "dates": [],
   "descriptions": [
     {
-      "description": "Plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
+      "description": "Plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Contiene datos recopilados de fuentes científicas, permitiendo conocer características ecológicas de especies a una escala regional y nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie.",
       "description_type": "Abstract",
       "language": "es"
     }
@@ -118,21 +112,21 @@
   ],
   "subjects": [
     {
-      "subject_name": "Rasgos funcionales (Plantas) -- Chile",
+      "subject_name": "Rasgos funcionales de plantas -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
       "classification_code": ""
     },
     {
-      "subject_name": "Biodiversidad vegetal -- Chile",
+      "subject_name": "Biodiversidad -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
       "classification_code": ""
     },
     {
-      "subject_name": "Ecología vegetal -- Chile",
+      "subject_name": "Plantas -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",

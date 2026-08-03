@@ -5,7 +5,7 @@
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "Ministerio de Hacienda - Gobierno de Chile",
     "contact": "",
-    "producer": "Ministerio de Hacienda - Gobierno de Chile",
+    "producer": "",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -121,14 +121,7 @@
       "classification_code": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    },
-    {
-      "subject_name": "Presupuesto público -- Chile",
+      "subject_name": "Presupuesto público -- Corporaciones municipales -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
@@ -137,9 +130,9 @@
   ],
   "titles": [
     {
-      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }
