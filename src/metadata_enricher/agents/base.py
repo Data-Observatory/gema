@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.schemas.base import Schema
 from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
 
 
-class SafeDict(dict):
+class SafeDict(dict[str, str]):
     """Dict subclass returning '' for missing keys — safe str.format_map()."""
 
     def __missing__(self, key: str) -> str:
@@ -84,7 +86,9 @@ class BaseAgent:
                 agent_results.append(
                     AgentResult(
                         field_name=field_name,
-                        value=normalized,
+                        # Schema.normalize_field returns `object` by protocol
+                        # contract, but always yields a JSON-shaped value here.
+                        value=cast("list[Any] | dict[str, Any] | str | None", normalized),
                         raw_llm_response=raw_json,
                         token_usage=TokenUsage(),
                     )

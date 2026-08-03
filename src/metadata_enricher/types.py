@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -29,7 +31,7 @@ class LLMResponse(BaseModel):
     content: str
     model: str
     usage: TokenUsage = Field(default_factory=TokenUsage)
-    raw: dict | None = None
+    raw: dict[str, Any] | None = None
 
 
 class ResourceDescription(BaseModel):
@@ -50,7 +52,7 @@ class AgentResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     field_name: str = Field(..., min_length=1)
-    value: list | dict | str | None = None
+    value: list[Any] | dict[str, Any] | str | None = None
     confidence: float | None = None
     raw_llm_response: str | None = None
     token_usage: TokenUsage = Field(default_factory=TokenUsage)
@@ -66,15 +68,15 @@ class MetadataDocument(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    fields: dict = Field(default_factory=dict)
+    fields: dict[str, Any] = Field(default_factory=dict)
 
-    def set_field(self, name: str, value) -> None:
+    def set_field(self, name: str, value: Any) -> None:
         self.fields[name] = value
 
-    def get_field(self, name: str, default=None):
+    def get_field(self, name: str, default: Any = None) -> Any:
         return self.fields.get(name, default)
 
-    def merge(self, other: dict) -> None:
+    def merge(self, other: dict[str, Any]) -> None:
         """Merge a dict of agent results into this document."""
         for key, value in other.items():
             if value is not None:

@@ -7,6 +7,7 @@ from typing import Any, cast
 
 import instructor
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from metadata_enricher.llm.base import LLMConfig
@@ -125,7 +126,9 @@ class InstructorLLMClient:
             create_kwargs["extra_body"] = {"seed": self._config.seed}
         create_kwargs.update(kwargs)
 
-        return self._instructor_client.chat.completions.create(**create_kwargs)
+        # instructor's create() return type can't be inferred through a
+        # **dict[str, Any] spread; response_model guarantees a BaseModel.
+        return cast(BaseModel, self._instructor_client.chat.completions.create(**create_kwargs))
 
     def complete_raw(
         self,
@@ -145,7 +148,7 @@ class InstructorLLMClient:
             extra_kwargs["extra_body"] = {"seed": self._config.seed}
         response = self._raw_client.chat.completions.create(
             model=self._config.model,
-            messages=messages,
+            messages=cast("list[ChatCompletionMessageParam]", messages),
             temperature=self._config.temperature,
             **extra_kwargs,
             **kwargs,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import glob as glob_module
+from typing import Any
 
 from metadata_enricher.types import ResourceDescription
 
@@ -34,7 +35,7 @@ class FilesystemInputSource:
 
         try:
             with open(source, encoding="utf-8") as f:
-                data: dict = json.load(f)
+                data: dict[str, Any] = json.load(f)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in input file '{source}': {e}") from e
 

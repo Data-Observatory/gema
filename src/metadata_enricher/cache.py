@@ -6,7 +6,7 @@ import hashlib
 import logging
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import diskcache
 from pydantic import BaseModel
@@ -43,13 +43,13 @@ class CacheManager:
         raw = f"{prompt}:{model}:{response_model_name}:{temperature}:{seed}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-    def get(self, key: str) -> dict | None:
-        return self._cache.get(key)
+    def get(self, key: str) -> dict[str, Any] | None:
+        return cast("dict[str, Any] | None", self._cache.get(key))
 
     def set(
         self,
         key: str,
-        value: dict,
+        value: dict[str, Any],
         ttl: timedelta | None = None,
     ) -> None:
         expire = int((ttl or self.default_ttl).total_seconds())
@@ -58,7 +58,7 @@ class CacheManager:
     def clear(self) -> None:
         self._cache.clear()
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, int]:
         return {
             "size": len(self._cache),
             "keys": len(list(self._cache.iterkeys())),
@@ -127,7 +127,7 @@ class CachedLLMClient:
         cached = self._cache.get(key)
         if cached is not None:
             logger.debug("Cache HIT for key=%s (raw)", key[:12])
-            return cached["raw"]
+            return cast(str, cached["raw"])
 
         logger.debug("Cache MISS for key=%s (raw)", key[:12])
         result = self._inner.complete_raw(prompt, system_prompt, **kwargs)

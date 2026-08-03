@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable
+from typing import Protocol
 
 from metadata_enricher.agents.base import BaseAgent
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
@@ -14,7 +14,20 @@ from metadata_enricher.schemas.base import Schema, SchemaRegistry
 
 logger = logging.getLogger(__name__)
 
-LLMClientFactory = Callable[[ProviderConfig, str, float, int | None], LLMClient]
+
+class LLMClientFactory(Protocol):
+    """Callable that builds an LLMClient for a provider — matches
+    ``create_llm_client``'s call shape (called with keyword args below), which
+    a plain ``Callable[[...], ...]`` alias cannot express.
+    """
+
+    def __call__(
+        self,
+        provider: ProviderConfig,
+        model: str,
+        temperature: float = ...,
+        max_tokens: int | None = ...,
+    ) -> LLMClient: ...
 
 
 class AgentRegistry:

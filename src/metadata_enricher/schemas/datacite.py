@@ -6,7 +6,7 @@ implementation.  No dependency on the datacite PyPI library.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -23,24 +23,24 @@ class DataCiteOutputModel(BaseModel):
 
     model_config = {"extra": "allow"}
 
-    resource: dict = Field(default_factory=dict)
-    alternate_identifiers: list[dict] = Field(default_factory=list)
-    audiences: list[dict] = Field(default_factory=list)
-    categories: list[dict] = Field(default_factory=list)
-    citations: list[dict] = Field(default_factory=list)
-    creators: list[dict] = Field(default_factory=list)
-    dates: list[dict] = Field(default_factory=list)
-    descriptions: list[dict] = Field(default_factory=list)
-    funding_references: list[dict] = Field(default_factory=list)
-    geo_locations: list[dict] = Field(default_factory=list)
-    languages: list[dict] = Field(default_factory=list)
-    media_files: list[dict] = Field(default_factory=list)
-    publishers: list[dict] = Field(default_factory=list)
-    related_identifiers: list[dict] = Field(default_factory=list)
-    rights: list[dict] = Field(default_factory=list)
-    subjects: list[dict] = Field(default_factory=list)
-    temporal_events: list[dict] = Field(default_factory=list)
-    titles: list[dict] = Field(default_factory=list)
+    resource: dict[str, Any] = Field(default_factory=dict)
+    alternate_identifiers: list[dict[str, Any]] = Field(default_factory=list)
+    audiences: list[dict[str, Any]] = Field(default_factory=list)
+    categories: list[dict[str, Any]] = Field(default_factory=list)
+    citations: list[dict[str, Any]] = Field(default_factory=list)
+    creators: list[dict[str, Any]] = Field(default_factory=list)
+    dates: list[dict[str, Any]] = Field(default_factory=list)
+    descriptions: list[dict[str, Any]] = Field(default_factory=list)
+    funding_references: list[dict[str, Any]] = Field(default_factory=list)
+    geo_locations: list[dict[str, Any]] = Field(default_factory=list)
+    languages: list[dict[str, Any]] = Field(default_factory=list)
+    media_files: list[dict[str, Any]] = Field(default_factory=list)
+    publishers: list[dict[str, Any]] = Field(default_factory=list)
+    related_identifiers: list[dict[str, Any]] = Field(default_factory=list)
+    rights: list[dict[str, Any]] = Field(default_factory=list)
+    subjects: list[dict[str, Any]] = Field(default_factory=list)
+    temporal_events: list[dict[str, Any]] = Field(default_factory=list)
+    titles: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class DataCiteSchema46:
@@ -142,7 +142,7 @@ class DataCiteSchema46:
     # Validate
     # ------------------------------------------------------------------
 
-    def validate_output(self, raw: dict) -> DataCiteOutputModel:
+    def validate_output(self, raw: dict[str, Any]) -> DataCiteOutputModel:
         return DataCiteOutputModel(**raw)
 
     # ------------------------------------------------------------------
@@ -186,7 +186,7 @@ class DataCiteSchema46:
                 doc.set_field(field, normalized)
 
         # Order fields
-        ordered: dict = {}
+        ordered: dict[str, Any] = {}
         for field_name in self._FIELD_ORDER:
             if field_name in doc.fields:
                 ordered[field_name] = doc.fields[field_name]
@@ -225,8 +225,8 @@ class DataCiteSchema46:
 
     # -- titles --------------------------------------------------------
 
-    def _normalize_titles(self, value: object) -> list[dict]:
-        titles: list[dict] = []
+    def _normalize_titles(self, value: object) -> list[dict[str, Any]]:
+        titles: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for i, item in enumerate(items):
@@ -266,8 +266,8 @@ class DataCiteSchema46:
 
     # -- descriptions --------------------------------------------------
 
-    def _normalize_descriptions(self, value: object) -> list[dict]:
-        descriptions: list[dict] = []
+    def _normalize_descriptions(self, value: object) -> list[dict[str, Any]]:
+        descriptions: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for i, item in enumerate(items):
@@ -312,8 +312,8 @@ class DataCiteSchema46:
             return v
         return value
 
-    def _normalize_languages(self, value: object) -> list[dict]:
-        languages: list[dict] = []
+    def _normalize_languages(self, value: object) -> list[dict[str, Any]]:
+        languages: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -348,8 +348,8 @@ class DataCiteSchema46:
 
     # -- creators ------------------------------------------------------
 
-    def _normalize_creators(self, value: object) -> list[dict]:
-        creators: list[dict] = []
+    def _normalize_creators(self, value: object) -> list[dict[str, Any]]:
+        creators: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -423,8 +423,8 @@ class DataCiteSchema46:
 
     # -- publishers ----------------------------------------------------
 
-    def _normalize_publishers(self, value: object) -> list[dict]:
-        publishers: list[dict] = []
+    def _normalize_publishers(self, value: object) -> list[dict[str, Any]]:
+        publishers: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -467,8 +467,8 @@ class DataCiteSchema46:
 
     # -- subjects ------------------------------------------------------
 
-    def _normalize_subjects(self, value: object) -> list[dict]:
-        subjects: list[dict] = []
+    def _normalize_subjects(self, value: object) -> list[dict[str, Any]]:
+        subjects: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -512,8 +512,8 @@ class DataCiteSchema46:
 
     # -- dates ---------------------------------------------------------
 
-    def _normalize_dates(self, value: object) -> list[dict]:
-        dates: list[dict] = []
+    def _normalize_dates(self, value: object) -> list[dict[str, Any]]:
+        dates: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for i, item in enumerate(items):
@@ -550,8 +550,8 @@ class DataCiteSchema46:
 
     # -- temporal_events -----------------------------------------------
 
-    def _normalize_temporal_events(self, value: object) -> list[dict]:
-        events: list[dict] = []
+    def _normalize_temporal_events(self, value: object) -> list[dict[str, Any]]:
+        events: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -580,8 +580,8 @@ class DataCiteSchema46:
 
     # -- geo_locations -------------------------------------------------
 
-    def _normalize_geo_locations(self, value: object) -> list[dict]:
-        locations: list[dict] = []
+    def _normalize_geo_locations(self, value: object) -> list[dict[str, Any]]:
+        locations: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -627,8 +627,8 @@ class DataCiteSchema46:
     # -- media_files ---------------------------------------------------
     # NOTE: "Collections" with capital C is intentional (matches merger.py:675)
 
-    def _normalize_media_files(self, value: object) -> list[dict]:
-        files: list[dict] = []
+    def _normalize_media_files(self, value: object) -> list[dict[str, Any]]:
+        files: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -653,7 +653,7 @@ class DataCiteSchema46:
 
     # -- resource ------------------------------------------------------
 
-    def _normalize_resource(self, value: object) -> dict:
+    def _normalize_resource(self, value: object) -> dict[str, Any]:
         if isinstance(value, dict):
             resource_type = value.get("resource_type", "")
             if resource_type.lower() not in self.VALID_RESOURCE_TYPES:
@@ -693,8 +693,8 @@ class DataCiteSchema46:
 
     # -- rights --------------------------------------------------------
 
-    def _normalize_rights(self, value: object) -> list[dict]:
-        rights: list[dict] = []
+    def _normalize_rights(self, value: object) -> list[dict[str, Any]]:
+        rights: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -727,8 +727,8 @@ class DataCiteSchema46:
 
     # -- funding_references --------------------------------------------
 
-    def _normalize_funding_references(self, value: object) -> list[dict]:
-        refs: list[dict] = []
+    def _normalize_funding_references(self, value: object) -> list[dict[str, Any]]:
+        refs: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -759,8 +759,8 @@ class DataCiteSchema46:
 
     # -- related_identifiers -------------------------------------------
 
-    def _normalize_related_identifiers(self, value: object) -> list[dict]:
-        ids: list[dict] = []
+    def _normalize_related_identifiers(self, value: object) -> list[dict[str, Any]]:
+        ids: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -797,8 +797,8 @@ class DataCiteSchema46:
 
     # -- alternate_identifiers -----------------------------------------
 
-    def _normalize_alternate_identifiers(self, value: object) -> list[dict]:
-        ids: list[dict] = []
+    def _normalize_alternate_identifiers(self, value: object) -> list[dict[str, Any]]:
+        ids: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -825,8 +825,8 @@ class DataCiteSchema46:
 
     # -- audiences -----------------------------------------------------
 
-    def _normalize_audiences(self, value: object) -> list[dict]:
-        audiences: list[dict] = []
+    def _normalize_audiences(self, value: object) -> list[dict[str, Any]]:
+        audiences: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -853,8 +853,8 @@ class DataCiteSchema46:
 
     # -- categories ----------------------------------------------------
 
-    def _normalize_categories(self, value: object) -> list[dict]:
-        cats: list[dict] = []
+    def _normalize_categories(self, value: object) -> list[dict[str, Any]]:
+        cats: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:
@@ -872,8 +872,8 @@ class DataCiteSchema46:
 
     # -- citations -----------------------------------------------------
 
-    def _normalize_citations(self, value: object) -> list[dict]:
-        citations: list[dict] = []
+    def _normalize_citations(self, value: object) -> list[dict[str, Any]]:
+        citations: list[dict[str, Any]] = []
         items = value if isinstance(value, list) else [value]
 
         for item in items:

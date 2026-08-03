@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -26,7 +27,7 @@ _RENAMED_FIELDS = {
 }
 
 
-def _load_providers(providers_path: Path) -> list[dict]:
+def _load_providers(providers_path: Path) -> list[dict[str, Any]]:
     """Load and convert the legacy ``providers.json`` file.
 
     Maps ``api_base`` → ``base_url``.
@@ -37,10 +38,10 @@ def _load_providers(providers_path: Path) -> list[dict]:
 
     raw = json.loads(providers_path.read_text(encoding="utf-8"))
     providers_data = raw.get("providers", raw)
-    result: list[dict] = []
+    result: list[dict[str, Any]] = []
 
     for name, cfg in providers_data.items():
-        entry = {"name": name, "api_key_env": cfg["api_key_env"]}
+        entry: dict[str, Any] = {"name": name, "api_key_env": cfg["api_key_env"]}
         api_base = cfg.get("api_base")
         if api_base is not None:
             entry["base_url"] = api_base
@@ -49,9 +50,9 @@ def _load_providers(providers_path: Path) -> list[dict]:
     return result
 
 
-def _convert_agent(old: dict) -> dict:
+def _convert_agent(old: dict[str, Any]) -> dict[str, Any]:
     """Convert a single legacy agent dict to the new format."""
-    new: dict = {}
+    new: dict[str, Any] = {}
 
     for key, value in old.items():
         if key in _DIRECT_FIELDS:
@@ -108,7 +109,7 @@ def migrate_json_to_yaml(json_path: Path) -> Path:
     providers_path = json_path.parent / "providers.json"
     new_providers = _load_providers(providers_path)
 
-    pipeline: dict = {
+    pipeline: dict[str, Any] = {
         "schema_name": "datacite-4.6",
         "agents": new_agents,
         "providers": new_providers,

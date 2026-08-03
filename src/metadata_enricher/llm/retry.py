@@ -44,6 +44,7 @@ from tenacity import (
     wait_exponential,
     wait_random,
 )
+from tenacity.wait import wait_base
 
 from metadata_enricher.llm.base import LLMClient
 
@@ -55,7 +56,7 @@ if TYPE_CHECKING:
 try:  # pragma: no cover - import path depends on instructor version
     from instructor.core import InstructorRetryException
 except ImportError:  # pragma: no cover
-    from instructor.exceptions import InstructorRetryException  # type: ignore[no-redef]
+    from instructor.exceptions import InstructorRetryException
 
 
 # Exceptions that represent *validation* failures and must never be retried.
@@ -167,7 +168,7 @@ class RetryableLLMClient:
     @staticmethod
     def _build_retrying(config: RetryConfig) -> Retrying:
         """Build a ``tenacity`` retry controller from a ``RetryConfig``."""
-        wait = wait_exponential(
+        wait: wait_base = wait_exponential(
             multiplier=config.initial_wait,
             max=config.max_wait,
         )

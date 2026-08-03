@@ -30,6 +30,7 @@ dev = [
     "pytest-cov>=5.0.0",
     "pytest>=8.0.0",
     "ruff>=0.5.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 [project.scripts]
@@ -51,8 +52,12 @@ target-version = "py311"
 line-length = 100
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+module = "diskcache.*"
+ignore_missing_imports = true
 
 [dependency-groups]
 dev = [
