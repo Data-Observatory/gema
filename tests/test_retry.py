@@ -48,6 +48,18 @@ def _make_validation_error() -> ValidationError:
     raise AssertionError("unreachable")
 
 
+def _instructor_retry_exc_with_cause(cause: BaseException | None) -> InstructorRetryException:
+    """Build an InstructorRetryException with __cause__ set the way instructor
+    itself sets it: ``raise InstructorRetryException(...) from last_exception``.
+    """
+    if cause is None:
+        return InstructorRetryException("failed", n_attempts=1, total_usage=0)
+    try:
+        raise InstructorRetryException("failed", n_attempts=1, total_usage=0) from cause
+    except InstructorRetryException as exc:
+        return exc
+
+
 class TestSuccess:
     def test_success_on_first_try_calls_inner_once(self) -> None:
         inner = MagicMock()
@@ -168,6 +180,79 @@ class TestNonRetryable:
 
         client = RetryableLLMClient(inner, _fast_config())
         with pytest.raises(ValueError):
+            client.complete("test", SimpleModel)
+
+        assert inner.complete.call_count == 1
+
+
+class TestInstructorRetryExceptionUnwrapping:
+    """InstructorRetryException is raised by Instructor both for genuine
+    validation dead-ends AND for transport failures (e.g. sustained 429s)
+    that exhausted Instructor's own internal retry budget. This layer must
+    unwrap __cause__ and retry only the latter.
+    """
+
+    def test_retries_when_cause_is_rate_limit_error(self) -> None:
+        rate_limit_exc = openai.RateLimitError("429", response=_resp(429), body=None)
+        wrapped = _instructor_retry_exc_with_cause(rate_limit_exc)
+
+        inner = MagicMock()
+        inner.complete.side_effect = [wrapped, SimpleModel()]
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result = client.complete("test", SimpleModel)
+
+        assert isinstance(result, SimpleModel)
+        assert inner.complete.call_count == 2
+
+    def test_retries_when_cause_is_retryable_api_status_error(self) -> None:
+        status_exc = openai.APIStatusError("503", response=_resp(503), body=None)
+        wrapped = _instructor_retry_exc_with_cause(status_exc)
+
+        inner = MagicMock()
+        inner.complete.side_effect = [wrapped, SimpleModel()]
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result = client.complete("test", SimpleModel)
+
+        assert isinstance(result, SimpleModel)
+        assert inner.complete.call_count == 2
+
+    def test_does_not_retry_when_cause_is_validation_error(self) -> None:
+        wrapped = _instructor_retry_exc_with_cause(_make_validation_error())
+
+        inner = MagicMock()
+        inner.complete.side_effect = wrapped
+
+        client = RetryableLLMClient(inner, _fast_config())
+        with pytest.raises(InstructorRetryException):
+            client.complete("test", SimpleModel)
+
+        assert inner.complete.call_count == 1
+
+    def test_does_not_retry_when_cause_is_non_retryable_status_error(self) -> None:
+        status_exc = openai.APIStatusError("400", response=_resp(400), body=None)
+        wrapped = _instructor_retry_exc_with_cause(status_exc)
+
+        inner = MagicMock()
+        inner.complete.side_effect = wrapped
+
+        client = RetryableLLMClient(inner, _fast_config())
+        with pytest.raises(InstructorRetryException):
+            client.complete("test", SimpleModel)
+
+        assert inner.complete.call_count == 1
+
+    def test_does_not_retry_when_no_cause_at_all(self) -> None:
+        """No __cause__ (e.g. constructed directly, not via `raise ... from`)
+        must fall back to the original, safe non-retryable behavior."""
+        wrapped = _instructor_retry_exc_with_cause(None)
+
+        inner = MagicMock()
+        inner.complete.side_effect = wrapped
+
+        client = RetryableLLMClient(inner, _fast_config())
+        with pytest.raises(InstructorRetryException):
             client.complete("test", SimpleModel)
 
         assert inner.complete.call_count == 1

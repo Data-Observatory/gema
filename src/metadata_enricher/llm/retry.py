@@ -14,11 +14,19 @@ It deliberately **does not** retry validation errors — those are owned by the
 Instructor layer (T9) which validates structured outputs:
 
 * ``pydantic.ValidationError``
-* ``instructor.exceptions.InstructorRetryException``
 * ``ValueError``
 
 Client (4xx) errors other than 429 are likewise not retried, since they are
 non-transient.
+
+``instructor.exceptions.InstructorRetryException`` is a special case: Instructor
+raises it both when the LLM's output is a genuine, permanent validation
+dead-end (never retry — could loop forever) *and* when a transient transport
+error (e.g. a sustained 429) exhausted Instructor's own internal retry budget
+before this layer ever saw it. Instructor sets ``__cause__`` to the original
+exception in both cases (``raise InstructorRetryException(...) from
+last_exception``), so this layer unwraps it and re-checks retryability against
+the *root cause* instead of blanket-rejecting every InstructorRetryException.
 """
 
 from __future__ import annotations
@@ -52,9 +60,10 @@ except ImportError:  # pragma: no cover
 
 # Exceptions that represent *validation* failures and must never be retried.
 # The Instructor layer (T9) is responsible for retrying these.
+# InstructorRetryException is NOT here — it needs special unwrapping, see
+# _is_retryable below.
 _NON_RETRYABLE_EXCEPTIONS: tuple[type[BaseException], ...] = (
     pydantic.ValidationError,
-    InstructorRetryException,
     ValueError,
 )
 
@@ -178,6 +187,12 @@ def _is_retryable(exc: BaseException, retry_on_status: list[int]) -> bool:
 
     Validation errors and non-429 client errors are *not* retryable.
     """
+    # InstructorRetryException conflates two very different situations —
+    # unwrap to the root cause (see module docstring) rather than guessing.
+    if isinstance(exc, InstructorRetryException):
+        cause = exc.__cause__
+        return cause is not None and _is_retryable(cause, retry_on_status)
+
     # Validation errors are owned by the Instructor layer — never retry here.
     if isinstance(exc, _NON_RETRYABLE_EXCEPTIONS):
         return False
