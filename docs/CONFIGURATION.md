@@ -14,6 +14,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `providers` | `list[ProviderConfig]` | yes | LLM provider connection settings (at least 1) |
 | `default_provider` | `str` | no | Provider name used when an agent omits the `provider` field |
 | `strategies` | `dict[str, str]` | no | Reserved for future strategy/override configuration |
+| `max_workers` | `int` | no | `4` | Max concurrent agent requests per resource (one wave's `ThreadPoolExecutor` size). Lower if the provider rate-limits (429s); override per-run with `metagen process --max-workers N` |
 
 ### AgentConfig Fields
 

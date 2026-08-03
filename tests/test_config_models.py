@@ -215,6 +215,31 @@ class TestPipelineConfig:
         assert len(p.providers) == 1
         assert p.default_provider is None
         assert p.strategies == {}
+        assert p.max_workers == 4
+
+    def test_max_workers_override(self):
+        """max_workers can be tuned down for tightly rate-limited providers."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+            max_workers=1,
+        )
+        assert p.max_workers == 1
+
+    def test_max_workers_rejects_zero(self):
+        """max_workers must be >= 1 — 0 or negative concurrency makes no sense."""
+        with pytest.raises(ValidationError):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+                max_workers=0,
+            )
 
     def test_full_config(self):
         """Full pipeline matching andrea_v3-like structure."""

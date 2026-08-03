@@ -163,6 +163,13 @@ def process(
         help="Write best-effort output even if some agents failed, instead of "
         "treating a resource with any failed field as a failure.",
     ),
+    max_workers: Optional[int] = typer.Option(
+        None,
+        "--max-workers",
+        help="Max concurrent agent requests per resource. Overrides the config's "
+        "max_workers. Lower this if the provider rate-limits (429s).",
+        min=1,
+    ),
 ) -> None:
     """Process input resources and generate metadata.
 
@@ -189,7 +196,11 @@ def process(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
-    pipeline = Pipeline(config=pipeline_config, allow_partial=allow_partial)
+    pipeline = Pipeline(
+        config=pipeline_config,
+        allow_partial=allow_partial,
+        max_workers=max_workers if max_workers is not None else pipeline_config.max_workers,
+    )
     output_writer = OutputWriter(schema=schema_obj)
     input_source = FilesystemInputSource()
 

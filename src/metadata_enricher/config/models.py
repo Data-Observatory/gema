@@ -53,6 +53,7 @@ class PipelineConfig(BaseModel):
     providers: list[ProviderConfig] = Field(..., min_length=1)
     default_provider: str | None = None
     strategies: dict[str, str] = {}
+    max_workers: int = Field(default=4, ge=1)
 
     @model_validator(mode="after")
     def _validate_references(self) -> Self:
