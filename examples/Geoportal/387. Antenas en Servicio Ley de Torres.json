@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35911/Antenas%20en%20Servicio%20Ley%20de%20Torres",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Telecomunicaciones",
+        "maintainer": "Subsecretaría de Telecomunicaciones",
+        "contact": "ddiezdemedina@subtel.gob.cl; 562 2588 8000 Anexo 3658",
+        "producer": "Subsecretaría de Telecomunicaciones",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35911",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{2E96BAB1-6FAF-4123-9466-65B2508650C6}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería eléctrica y electrónica"
+        },
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería de la información"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Subsecretaría de Telecomunicaciones",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-04-13",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Corresponde a la georreferenciación de la ubicación de las Antenas (Sistemas Radiantes) en Servicio que se encuentran publicadas en la página web institucional la cual cuenta con la debida tramitación desde su permiso de autorización, hasta su recepción de obras para su funcionamiento. Esta información es levantada a escala local.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Antenas (Sistemas Radiantes) en Servicio - georreferenciación de ubicación",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Subsecretaría de Telecomunicaciones",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/686f8ca4-adb4-381d-866d-6c1b1a421fde",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Telecomunicaciones",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/686f8ca4-adb4-381d-866d-6c1b1a421fde",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.subtel.gob.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Subsecretaría de Telecomunicaciones"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Antenas de telecomunicaciones -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Telecomunicaciones -- Infraestructura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Antenas en Servicio Ley de Torres",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-109.2117,-67.16,-56.536,-17.49916",
+            "geo_description": "Territorio nacional de Chile incluyendo territorios insulares",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10360,
+        "completion_tokens": 2987,
+        "total_tokens": 13347
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 42790,
+        "completion_tokens": 6203,
+        "total_tokens": 48993
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10360,
+        "completion_tokens": 2987,
+        "total_tokens": 13347
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11229,
+        "completion_tokens": 1390,
+        "total_tokens": 12619
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10775,
+        "completion_tokens": 1664,
+        "total_tokens": 12439
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10773,
+        "completion_tokens": 1532,
+        "total_tokens": 12305
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10013,
+        "completion_tokens": 1617,
+        "total_tokens": 11630
+      }
+    },
+    "total": {
+      "prompt_tokens": 53150,
+      "completion_tokens": 9190,
+      "total_tokens": 62340
+    }
+  },
+  "processed_at": "2026-05-18T17:53:05.541505",
+  "input_file": "examples\\2.json"
+}

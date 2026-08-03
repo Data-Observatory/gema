@@ -1,0 +1,289 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35185/Accidentes%20en%20bicicleta%20a%C3%B1o%202015",
+        "identifier_type": "URL",
+        "editor": "Comisión Nacional de Seguridad de Tránsito",
+        "maintainer": "IDE Chile",
+        "contact": "56 2 2467 7500; http://sistred.bienes.cl/siac-atencion/atencion?idechile",
+        "producer": "Comisión Nacional de Seguridad de Tránsito",
+        "publication_year": "2016",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35185",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{8EFC84E2-23A8-416A-9BAF-D9411C5D1C7A}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Comisión Nacional de Seguridad de Tránsito",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2016-08-19",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Siniestros de tránsito con participación de bicicletas en el Gran Santiago para el año 2015.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Siniestros de tránsito con participación de bicicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://geoportal.cl/geoserver/Accidentes_bicicleta_2015/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Siniestros de tránsito con participación de bicicletas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Comisión Nacional de Seguridad de Tránsito",
+          "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/a93279b7-6614-3cf3-a5bc-1fd2d52c1f80",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Comisión Nacional de Seguridad de Tránsito",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Accidentes_bicicleta_2015/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsServiceOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.geoportal.cl/geoportal/catalog/download/a93279b7-6614-3cf3-a5bc-1fd2d52c1f80",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B8EFC84E2-23A8-416A-9BAF-D9411C5D1C7A%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.conaset.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Comisión Nacional de Seguridad de Tránsito"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Accidentes de tránsito -- Bicicletas -- Santiago (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Seguridad de tránsito -- Santiago (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Accidentes en bicicleta año 2015",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Gran Santiago",
+            "geo_location_box": "-71.3045,-33.8809,-70.0962,-33.1369",
+            "geo_description": "Área del Gran Santiago donde se registraron los siniestros de tránsito con participación de bicicletas durante el año 2015",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12094,
+        "completion_tokens": 2931,
+        "total_tokens": 15025
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47697,
+        "completion_tokens": 6056,
+        "total_tokens": 53753
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12094,
+        "completion_tokens": 2931,
+        "total_tokens": 15025
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12902,
+        "completion_tokens": 1793,
+        "total_tokens": 14695
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11601,
+        "completion_tokens": 1508,
+        "total_tokens": 13109
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11579,
+        "completion_tokens": 857,
+        "total_tokens": 12436
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11615,
+        "completion_tokens": 1898,
+        "total_tokens": 13513
+      }
+    },
+    "total": {
+      "prompt_tokens": 59791,
+      "completion_tokens": 8987,
+      "total_tokens": 68778
+    }
+  },
+  "processed_at": "2026-06-01T12:43:54.397371",
+  "input_file": "inputs1\\1.json"
+}

@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35951/Capa%20Vectorial%20-%20Carta%20Inundaci%C3%B3n%20por%20Tsunami%20Tom%C3%A9%20-%20Lirqu%C3%A9n%20-%20Penco",
+        "identifier_type": "URL",
+        "editor": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-08-04",
+          "date_type": "Published",
+          "date_information": "Fecha de publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad maxima de inundacion por tsunami para las localidades de Tome, Lirquen y Penco, comuna de Tome, Provincia de Concepcion, Region de Bio-Bio. La capa vectorial es parte de la carta de inundacion para las localidades de Tome, Lirquen y Penco, y se elaboro mediante simulacion numerica, la cual fue alimentada con la ultima informacion topografica y batimetrica disponible.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Tomé, Lirquén, Penco, comuna de Tomé, Provincia de Concepción, Región de Bío-Bío, Chile",
+          "geo_location_box": "-73.1798786339999, -36.7882654129999, -72.9482978759999, -36.5829143789999",
+          "geo_description": "Profundidad máxima de inundación por tsunami para las localidades de Tomé, Lirquén y Penco",
+          "coverage": "local"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kml+xml",
+          "variable_measured": "profundidad máxima de inundación por tsunami",
+          "measurement_technique": "simulación numérica alimentada con información topográfica y batimétrica disponible",
+          "provenance": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Bahias_Concepcion_San%20Vicente_1ra_Ed2013.kmz",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Inundación por tsunami -- Tomé, Lirquén, Penco -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Batimetría -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Simulación numérica",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta Inundacion por Tsunami Tome - Lirquen - Penco",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11231,
+        "completion_tokens": 1967,
+        "total_tokens": 13198
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48647,
+        "completion_tokens": 4811,
+        "total_tokens": 53458
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11231,
+        "completion_tokens": 1967,
+        "total_tokens": 13198
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11575,
+        "completion_tokens": 1195,
+        "total_tokens": 12770
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12588,
+        "completion_tokens": 1337,
+        "total_tokens": 13925
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11806,
+        "completion_tokens": 991,
+        "total_tokens": 12797
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12678,
+        "completion_tokens": 1288,
+        "total_tokens": 13966
+      }
+    },
+    "total": {
+      "prompt_tokens": 59878,
+      "completion_tokens": 6778,
+      "total_tokens": 66656
+    }
+  },
+  "processed_at": "2026-05-14T14:53:05.764027",
+  "input_file": "examples\\3.json"
+}

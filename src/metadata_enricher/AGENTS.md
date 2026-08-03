@@ -20,6 +20,7 @@ metadata_enricher/
 ├── config/                  # Pydantic models + YAML loader + migration (see ./config/AGENTS.md)
 ├── llm/                     # LLMClient middleware stack (see ./llm/AGENTS.md)
 ├── schemas/                 # Schema Protocol + DataCite 4.6 (see ./schemas/AGENTS.md)
+├── enrichers/               # Post-merge enrichment: identifier resolver + IANA/country (see ./enrichers/AGENTS.md)
 └── input_sources/           # InputSource Protocol + FilesystemInputSource
 ```
 

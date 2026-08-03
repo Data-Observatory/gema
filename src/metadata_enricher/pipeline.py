@@ -64,6 +64,12 @@ class Pipeline:
         self._max_workers = max_workers
         self._allow_partial = allow_partial
         self._validator = PreFlightValidator(self._schema, self._registry)
+        self._enricher = None
+        if config.enable_identifier_enrichment:
+            from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
+            from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
+
+            self._enricher = IdentifierEnricher(IdentifierResolver())
 
     def run(self, input_source: InputSource, pattern: str = "*.json") -> list[PipelineResult]:
         """Run the full pipeline on all resources matching *pattern*.
@@ -164,6 +170,7 @@ class Pipeline:
         # written to disk looks legitimate and could be published as-is. Callers
         # that want best-effort output anyway can opt in via allow_partial.
         failed = [r for r in agent_results if r.error]
+        warnings: list[str] = []
         if failed:
             fields = sorted({r.field_name for r in failed})
             distinct_errors = sorted({r.error for r in failed if r.error})
@@ -176,6 +183,12 @@ class Pipeline:
                 )
             warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
             logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
-            return PipelineResult(resource=resource, document=document, warnings=warnings)
 
-        return PipelineResult(resource=resource, document=document)
+        # 5. Post-merge identifier enrichment
+        if self._enricher is not None:
+            try:
+                document = self._enricher.enrich(document)
+            except Exception as exc:
+                logger.warning("Identifier enrichment failed: %s", exc)
+
+        return PipelineResult(resource=resource, document=document, warnings=warnings)

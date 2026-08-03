@@ -1,0 +1,276 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35376/Incendios%20Forestales%202016",
+        "identifier_type": "URL",
+        "editor": "Corporación Nacional Forestal",
+        "maintainer": "Geoportal de Chile",
+        "contact": "consulta.oirs@conaf.cl; 562 2663 0000",
+        "producer": "Corporación Nacional Forestal",
+        "publication_year": "2018",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{E8D6D302-26BB-4D43-983E-684B659A8916}",
+          "alternate_identifier_type": "Internal ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Incendios Forestales 2016",
+          "volume": "",
+          "issue": "",
+          "start_page": "",
+          "end_page": "",
+          "edition": "",
+          "conference_place": "",
+          "conference_date": ""
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Corporación Nacional Forestal",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121952869",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2018-06-15",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Incendios forestales a nivel nacional correspondientes al año 2016.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Incendios forestales a nivel nacional",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Corporación Nacional Forestal",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/168cf022-e655-3fa3-a469-8fd67e7d177e",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Corporación Nacional Forestal",
+          "publisher_identifier": "https://isni.org/isni/0000000121952869",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/168cf022-e655-3fa3-a469-8fd67e7d177e",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Corporación Nacional Forestal"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Incendios forestales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Flora y fauna -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Medio ambiente -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Incendios Forestales 2016",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-79.503, -58.4112, -61.7194, -20.6326",
+            "geo_description": "Cobertura nacional de incendios forestales en Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "yearly",
+            "description": "Datos anuales de incendios forestales correspondientes al año 2016"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10229,
+        "completion_tokens": 2130,
+        "total_tokens": 12359
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 42484,
+        "completion_tokens": 5183,
+        "total_tokens": 47667
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10229,
+        "completion_tokens": 2130,
+        "total_tokens": 12359
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10963,
+        "completion_tokens": 1146,
+        "total_tokens": 12109
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10617,
+        "completion_tokens": 1705,
+        "total_tokens": 12322
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10678,
+        "completion_tokens": 1023,
+        "total_tokens": 11701
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10226,
+        "completion_tokens": 1309,
+        "total_tokens": 11535
+      }
+    },
+    "total": {
+      "prompt_tokens": 52713,
+      "completion_tokens": 7313,
+      "total_tokens": 60026
+    }
+  },
+  "processed_at": "2026-05-22T10:07:44.969925",
+  "input_file": "examples\\3.json"
+}

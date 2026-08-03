@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35837/Hidrograf%C3%ADa%20de%20la%20regi%C3%B3n%20de%20Arica%20a%20la%20regi%C3%B3n%20de%20Ohiggins",
+        "identifier_type": "URL",
+        "editor": "Secretaría Ejecutiva SNIT",
+        "maintainer": "Secretaría Ejecutiva SNIT",
+        "contact": "800 104 559",
+        "producer": "Grupo de Hidrografía de IDE de Chile",
+        "publication_year": "2022",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35837",
+          "alternate_identifier_type": "Geoportal CL ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{4D727082-5F64-4E1B-BF1A-F752B197E1B2}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Docente",
+          "education_level": "Pregrado",
+          "instructional_method": "Basado en proyectos"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Grupo de Hidrografía de IDE de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2022-03-08",
+          "date_type": "Updated",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La cartografía digital de la Red hidrográfica de las Regiones de Arica y Parinacota, Tarapacá, Antofagasta, Atacama, Coquimbo, Valparaíso, Metropolitana de Santiago y del Libertador General Bernardo O'Higgins, es un archivo en formato shapefile de geometría de líneas que se enmarca en el Trabajo del Grupo de Hidrografía de IDE de Chile. Esta cartografía posee una escala representación de 1:25.000. Para su desarrollo se consideró una metodología en base al consenso de los especialistas participantes en el Grupo de Trabajo de Hidrografía, en su desarrollo se utilizaron imágenes satelitales, modelos digitales de elevación ALOS PALSAR, rutinas Python y edición gráfica para mejorar la geometría de las líneas, limpiar vectores y analizar topológicamente el archivo.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "Red hidrográfica",
+          "checksum": "",
+          "data_quality": "escala representación de 1:25.000",
+          "measurement_technique": "imágenes satelitales, modelos digitales de elevación ALOS PALSAR, rutinas Python y edición gráfica",
+          "provenance": "Grupo de Hidrografía de IDE de Chile; Secretaría Ejecutiva SNIT",
+          "file_uri": "https://www.geoportal.cl/geoserver/Hidrografia/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Red hidrográfica",
+          "checksum": "",
+          "data_quality": "escala representación de 1:25.000",
+          "measurement_technique": "imágenes satelitales, modelos digitales de elevación ALOS PALSAR, rutinas Python y edición gráfica",
+          "provenance": "Grupo de Hidrografía de IDE de Chile; Secretaría Ejecutiva SNIT",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/e109bc13-483e-3452-b918-2456cbc3db74",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Secretaría Ejecutiva SNIT",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://www.geoportal.cl/geoserver/Hidrografia/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/e109bc13-483e-3452-b918-2456cbc3db74",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B4D727082-5F64-4E1B-BF1A-F752B197E1B2%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDescribedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "http://sistred.bienes.cl/siac-atencion/atencion?idechile",
+          "related_identifier_type": "URL",
+          "relation_type": "IsRelatedTo",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Secretaría Ejecutiva SNIT; Grupo de Hidrografía de IDE de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Hidrografía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Aguas continentales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Red hidrográfica -- Cartografía digital -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Hidrografía de la región de Arica a la región de Ohiggins",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Regiones de Arica y Parinacota a O'Higgins, Chile",
+            "geo_location_box": "-79.449,-45.183,-63.967,-14.625",
+            "geo_description": "Cobertura territorial desde la Región de Arica y Parinacota hasta la Región del Libertador General Bernardo O'Higgins, incluyendo las regiones de Tarapacá, Antofagasta, Atacama, Coquimbo, Valparaíso y Metropolitana de Santiago",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12508,
+        "completion_tokens": 3223,
+        "total_tokens": 15731
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49992,
+        "completion_tokens": 6402,
+        "total_tokens": 56394
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12508,
+        "completion_tokens": 3223,
+        "total_tokens": 15731
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13441,
+        "completion_tokens": 2023,
+        "total_tokens": 15464
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12138,
+        "completion_tokens": 1805,
+        "total_tokens": 13943
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12184,
+        "completion_tokens": 1264,
+        "total_tokens": 13448
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12229,
+        "completion_tokens": 1310,
+        "total_tokens": 13539
+      }
+    },
+    "total": {
+      "prompt_tokens": 62500,
+      "completion_tokens": 9625,
+      "total_tokens": 72125
+    }
+  },
+  "processed_at": "2026-06-01T11:18:13.578244",
+  "input_file": "inputs1\\3.json"
+}

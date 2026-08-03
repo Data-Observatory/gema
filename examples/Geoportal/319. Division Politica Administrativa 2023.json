@@ -1,0 +1,353 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36391/Divisi%C3%B3n%20Pol%C3%ADtica%20Administrativa%202023",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Desarrollo Regional y Administrativo",
+        "maintainer": "Subsecretaría de Desarrollo Regional y Administrativo",
+        "contact": "rodrigo.osorio@subdere.gov.cl; +562 2676 3030",
+        "producer": "Grupo de Trabajo DPA de la IDE Chile (SUBDERE, IGM, DIFROL, INE)",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{04047a04-c2ea-46b6-8864-873157b62201}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36391",
+          "alternate_identifier_type": "Geoportal CL ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Desarrolladores",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Basado en proyectos"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Subsecretaría de Desarrollo Regional y Administrativo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio del Interior y Seguridad Pública",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Instituto Geográfico Militar",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Defensa Nacional",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Dirección Nacional de Fronteras y Límites del Estado",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000474071266",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Relaciones Exteriores",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Instituto Nacional de Estadísticas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000122977777",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2023-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2023-09-29",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Los Límites de la División Política Administrativa (DPA) 2023 de Chile, es un archivo shapefile de polígonos que se enmarca en el Trabajo del Grupo de Trabajo DPA de la IDE Chile, donde participan las siguientes instituciones: Subsecretaría de Desarrollo Regional y Administrativo (SUBDERE), Instituto Geográfico Militar (IGM), la Dirección Nacional de Fronteras y Límites del Estado (DIFROL) e Instituto Nacional de Estadísticas (INE); este trabajo es el resultado de la coordinación de las instituciones participantes para obtener una capa de la División Política del país actualizada, y que resulta de la unión de las capas de límites internacionales de DIFROL, los límites interiores del país de SUBDERE y línea de costa e islas de IGM para todo el país, su sistema de referencia es SIRGAS Chile y su escala de representación es 1:50.000. Cabe mencionar que esta capa no incluye el Territorio Antártico Chileno. Esta cartografía cuenta con la aprobación para su circulación mediante, resolución exenta de DIFROL. De acuerdo a las disposiciones contenidas en el DFL Nº5 de 1967, DS Nº 566 de 1970 y DFL Nº83 de 1979 del Ministerio de Relaciones Exteriores, toda publicación cuya circulación sea autorizada por esta Dirección Nacional, deberá llevar la siguiente leyenda: \"Autorizada su circulación por Resolución Nº50 del 2019 de la Dirección Nacional de Fronteras y Límites del Estado\". La edición y circulación de mapas, cartas geográficas u otros impresos y documentos que se refieran o relacionen con los límites y fronteras de Chile, no comprometen, en modo alguno, al Estado de Chile, de acuerdo con el Art. 2º, letra g) del DFL Nº83 de 1979 del Ministerio de Relaciones Exteriores. Cabe considerar que aunque esta cartografía cuenta con la aprobación para la circulación de DIFROL, las publicaciones y productos derivados de ella deben ser revisados y validados de igual manera por DIFROL. Para desplegar esta capa, el usuario debe tener desplegados todos los shapefiles referidos al límite internacional de Chile. La cartografía se entrega separada en 3 shapefiles: comunas, provincias y regiones. No se considera el polígono correspondiente a la comuna Antártica en la región de Magallanes y de la Antártica Chilena.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Límites administrativos - comunas, provincias y regiones",
+          "checksum": "",
+          "data_quality": "Escala de representación 1:50.000, sistema de referencia SIRGAS Chile",
+          "measurement_technique": "Unión de capas de límites internacionales de DIFROL, límites interiores de SUBDERE y línea de costa e islas de IGM",
+          "provenance": "Grupo de Trabajo DPA de la IDE Chile (Subsecretaría de Desarrollo Regional y Administrativo, Instituto Geográfico Militar, Dirección Nacional de Fronteras y Límites del Estado, Instituto Nacional de Estadísticas)",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/912598ad-ac92-35f6-8045-098f214bd9c2",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Desarrollo Regional y Administrativo",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B04047a04-c2ea-46b6-8864-873157b62201%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/912598ad-ac92-35f6-8045-098f214bd9c2",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.subdere.gov.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Subsecretaría de Desarrollo Regional y Administrativo; Instituto Geográfico Militar; Dirección Nacional de Fronteras y Límites del Estado; Instituto Nacional de Estadísticas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "División político-administrativa -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Límites administrativos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Cartografía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "División Política Administrativa 2023",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.852,-58.563,-64.949,-14.457",
+            "geo_description": "Límites de la División Política Administrativa de Chile continental e insular, excluyendo el Territorio Antártico Chileno",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12229,
+        "completion_tokens": 3243,
+        "total_tokens": 15472
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 51140,
+        "completion_tokens": 6041,
+        "total_tokens": 57181
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12229,
+        "completion_tokens": 3243,
+        "total_tokens": 15472
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13451,
+        "completion_tokens": 2208,
+        "total_tokens": 15659
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12523,
+        "completion_tokens": 1504,
+        "total_tokens": 14027
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12552,
+        "completion_tokens": 1239,
+        "total_tokens": 13791
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12614,
+        "completion_tokens": 1090,
+        "total_tokens": 13704
+      }
+    },
+    "total": {
+      "prompt_tokens": 63369,
+      "completion_tokens": 9284,
+      "total_tokens": 72653
+    }
+  },
+  "processed_at": "2026-06-01T17:55:39.511400",
+  "input_file": "inputs1\\2.json"
+}

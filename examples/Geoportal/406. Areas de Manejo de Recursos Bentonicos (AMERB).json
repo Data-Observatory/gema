@@ -1,0 +1,237 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35383/%C3%81reas%20de%20Manejo%20de%20Recursos%20Bent%C3%B3nicos%20%28AMERB%29",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Pesca y Acuicultura",
+        "maintainer": "Subsecretaría de Pesca y Acuicultura",
+        "contact": "larancibiao@subpesca.cl; 56 32 2507789",
+        "producer": "Subsecretaría de Pesca y Acuicultura",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Agricultura, silvicultura y pesca"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Subsecretaría de Pesca y Acuicultura",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-07-05",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Áreas de Manejo de Recursos Bentónicos (AMERB), consiste en la asignación de derechos de explotación exclusiva a organizaciones de pescadores artesanales mediante un plan de manejo y explotación del recurso, basado en la conservación de los recursos bentónicos presentes en sectores geográficos previamente delimitados geográficamente. Fuentes provienen de la solicitud para el establecimiento de áreas de manejo por asociación gremial, sindicatos, cooperativas y organizaciones de pescadores artesanales. Procesos realizados es la proyección de coordenadas enviadas por medio de carta al Consejo de Pesca, ajustando los vértices a las cartografías vigentes (Planos Marítimos Costeros, Planos de Acuicultura, Cartas SHOA e IGM) para calcular los deslindes y superficie del área solicitada. Escala referencial de 1:5.000 a 1:200.000. Nivel Nacional, Zonas Costeras.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Subsecretaría de Pesca y Acuicultura",
+          "file_uri": "https://geoportal.subpesca.cl/portal/home/item.html?id=ba0f79842063453cbed272d8884f14b3",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Pesca y Acuicultura",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.subpesca.cl/portal/home/item.html?id=ba0f79842063453cbed272d8884f14b3",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Subsecretaría de Pesca y Acuicultura"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Recursos bentónicos -- Manejo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Pesca artesanal -- Áreas de manejo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Áreas de Manejo de Recursos Bentónicos (AMERB)",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile, Zonas Costeras",
+            "geo_location_box": "-79.4854,-58.2014,-64.7449,-18.0033",
+            "geo_description": "Zonas costeras de Chile a nivel nacional, incluyendo áreas marítimas y territorios insulares",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10769,
+        "completion_tokens": 2320,
+        "total_tokens": 13089
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45133,
+        "completion_tokens": 6576,
+        "total_tokens": 51709
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10769,
+        "completion_tokens": 2320,
+        "total_tokens": 13089
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11721,
+        "completion_tokens": 1844,
+        "total_tokens": 13565
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11319,
+        "completion_tokens": 2277,
+        "total_tokens": 13596
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11293,
+        "completion_tokens": 1396,
+        "total_tokens": 12689
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10800,
+        "completion_tokens": 1059,
+        "total_tokens": 11859
+      }
+    },
+    "total": {
+      "prompt_tokens": 55902,
+      "completion_tokens": 8896,
+      "total_tokens": 64798
+    }
+  },
+  "processed_at": "2026-05-19T16:42:41.335296",
+  "input_file": "examples\\1.json"
+}

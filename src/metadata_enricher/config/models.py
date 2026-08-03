@@ -54,6 +54,7 @@ class PipelineConfig(BaseModel):
     default_provider: str | None = None
     strategies: dict[str, str] = {}
     max_workers: int = Field(default=4, ge=1)
+    enable_identifier_enrichment: bool = False
 
     @model_validator(mode="after")
     def _validate_references(self) -> Self:

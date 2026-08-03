@@ -1,0 +1,318 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35088/Atractivos%20Tur%C3%ADsticos%20Nacionales%202020",
+        "identifier_type": "URL",
+        "editor": "Servicio Nacional de Turismo",
+        "maintainer": "Servicio Nacional de Turismo",
+        "contact": "narce@sernatur.cl; +562 2731 8310",
+        "producer": "Servicio Nacional de Turismo (Sernatur)",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35088",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{F569DACE-D8D9-4E99-A133-F1632387CF1A}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "94384a73-4e86-3d7b-9b85-fd537e602d20",
+          "alternate_identifier_type": "Download ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Consultores",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Economía y negocios"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Nacional de Turismo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000403732581",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-01-01",
+          "date_type": "Created",
+          "date_information": ""
+        },
+        {
+          "date": "2020-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "El Servicio Nacional de Turismo (Sernatur) cuenta con un catastro de atractivos turísticos a nivel nacional, el cual se elabora y actualiza en conjunto con las Direcciones Regionales de Sernatur, tomando como base la metodología diseñada para elaborar inventarios turísticos, desarrollada en la década del 70 por el Centro Interamericano de Capacitación Turística (CICATUR) con el apoyo de la Organización de Estados Americanos (OEA). Los atractivos turísticos son elementos determinantes para motivar, por sí solos o en combinación con otros la elección del destino de la actividad turística. Éstos se encuentran jerarquizados según el perfil del visitante y clasificados para establecer su interés turístico. El catastro se encuentra a nivel nacional, provincial, regional y comunal.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "atractivos turísticos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Metodología CICATUR/OEA para inventarios turísticos",
+          "provenance": "Servicio Nacional de Turismo",
+          "file_uri": "https://geoportal.cl/geoserver/Atractivos_Turisticos_Nacionales/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "atractivos turísticos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Metodología CICATUR/OEA para inventarios turísticos",
+          "provenance": "Servicio Nacional de Turismo",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/94384a73-4e86-3d7b-9b85-fd537e602d20",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Nacional de Turismo",
+          "publisher_identifier": "https://isni.org/isni/0000000403732581",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Atractivos_Turisticos_Nacionales/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/94384a73-4e86-3d7b-9b85-fd537e602d20",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BF569DACE-D8D9-4E99-A133-F1632387CF1A%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDescribedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.sernatur.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsProducedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Servicio Nacional de Turismo"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Atractivos turísticos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Turismo -- Inventarios -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Catastro turístico -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Atractivos Turísticos Nacionales 2020",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-81.6137,-55.9065,-63.4117,-15.584",
+            "geo_description": "Cobertura espacial del catastro de atractivos turísticos a nivel nacional, provincial, regional y comunal de Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12342,
+        "completion_tokens": 3017,
+        "total_tokens": 15359
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49519,
+        "completion_tokens": 5400,
+        "total_tokens": 54919
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12342,
+        "completion_tokens": 3017,
+        "total_tokens": 15359
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13246,
+        "completion_tokens": 1446,
+        "total_tokens": 14692
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12060,
+        "completion_tokens": 1452,
+        "total_tokens": 13512
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12091,
+        "completion_tokens": 1370,
+        "total_tokens": 13461
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12122,
+        "completion_tokens": 1132,
+        "total_tokens": 13254
+      }
+    },
+    "total": {
+      "prompt_tokens": 61861,
+      "completion_tokens": 8417,
+      "total_tokens": 70278
+    }
+  },
+  "processed_at": "2026-06-01T16:20:45.927687",
+  "input_file": "inputs1\\2.json"
+}

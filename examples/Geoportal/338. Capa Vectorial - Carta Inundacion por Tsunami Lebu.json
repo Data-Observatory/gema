@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35958/Capa%20Vectorial%20-%20Carta%20Inundaci%C3%B3n%20por%20Tsunami%20Lebu",
+        "identifier_type": "URL",
+        "editor": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Doctorado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Taller"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-08-05",
+          "date_type": "Published",
+          "date_information": "Fecha de publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad maxima de inundacion por tsunami para la ciudad de Lebu, comuna de Lebu, Provincia de Arauco, Region de Bio-Bio. La capa vectorial es parte de la carta de inundacion para la ciudad de Lebu, y se elaboro mediante simulacion numerica, la cual fue alimentada con la ultima informacion topografica y batimetrica disponible.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Lebu, Provincia de Arauco, Región de Bío-Bío, Chile",
+          "geo_location_box": "-73.6775298469999, -37.6202132799999, -73.6295526299999, -37.5519207869999",
+          "geo_description": "Ciudad de Lebu, comuna de Lebu, Provincia de Arauco, Región de Bío-Bío. Capa vectorial de inundación por tsunami.",
+          "coverage": "local"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kml+xml",
+          "variable_measured": "profundidad máxima de inundación por tsunami",
+          "measurement_technique": "simulación numérica alimentada con información topográfica y batimétrica",
+          "provenance": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Lebu_2da_Ed_2018.kmz",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tsunamis -- Inundación -- Chile -- Lebu",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Simulación numérica -- Tsunamis",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Batimetría -- Chile -- Lebu",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta Inundacion por Tsunami Lebu",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11017,
+        "completion_tokens": 2192,
+        "total_tokens": 13209
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47701,
+        "completion_tokens": 5337,
+        "total_tokens": 53038
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11017,
+        "completion_tokens": 2192,
+        "total_tokens": 13209
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11337,
+        "completion_tokens": 1490,
+        "total_tokens": 12827
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12350,
+        "completion_tokens": 1800,
+        "total_tokens": 14150
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11571,
+        "completion_tokens": 888,
+        "total_tokens": 12459
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12443,
+        "completion_tokens": 1159,
+        "total_tokens": 13602
+      }
+    },
+    "total": {
+      "prompt_tokens": 58718,
+      "completion_tokens": 7529,
+      "total_tokens": 66247
+    }
+  },
+  "processed_at": "2026-05-14T11:55:18.994216",
+  "input_file": "examples\\3.json"
+}

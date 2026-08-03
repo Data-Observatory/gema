@@ -1,0 +1,299 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35386/Programa%20de%20Manejo%20y%20Monitoreo%20de%20Mareas%20Rojas",
+        "identifier_type": "URL",
+        "editor": "Subsecretaría de Pesca y Acuicultura",
+        "maintainer": "Subsecretaría de Pesca y Acuicultura",
+        "contact": "larancibiao@subpesca.cl; 56 32 2507789",
+        "producer": "Instituto de Fomento Pesquero (IFOP)",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35386",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{999C712F-7AAF-4D09-8AFB-03DC2FB64742}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias biológicas"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Instituto de Fomento Pesquero",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        },
+        {
+          "creator_name": "Subsecretaría de Pesca y Acuicultura",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+              "affiliation_identifier": "https://ror.org/00as45r68",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2020-09-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "La Red de Estaciones de Monitoreo de Mareas Rojas perteneciente al programa de monitoreo del mismo nombre desarrollado por el Instituto de Fomento Pesquero (IFOP) y apoyado por la Subsecretaría de Pesca y Acuicultura (SUBPESCA) desde el año 2007, tiene por finalidad disponer en términos espaciales de las abundancias de especies de microalgas catalogadas como fuentes primarias (ej. Alexandrium catenella) y potenciales (Dinophysis acuta, Pseudonitzschia australis, etc) de toxinas como el VPM (veneno paralizante de los mariscos), VDM (veneno diarreico de los mariscos) y VAM (veneno amnésico de los mariscos). Las muestras utilizadas en cada análisis se basan en la recolección de mariscos transvectores o 'Especies Centinelas' de gran desarrollo comercial-artesanal (Chorito y Cholga) y de rápido metabolismo por lo que se perfilan como indicadores de cambios ambientales en lo referido a las Mareas Rojas. El Programa de Manejo y Monitoreo de Mareas Rojas a objeto de la prevención mediante la Red de Muestreo, la detección y subsecuente cuantificación de toxinas comprende las regiones australes de Chile: Región de Los Lagos, Región de Aysén del General Carlos Ibáñez del Campo, y Región de Magallanes y de la Antártica Chilena.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Abundancias de especies de microalgas (Alexandrium catenella, Dinophysis acuta, Pseudonitzschia australis, etc.), toxinas VPM (veneno paralizante de los mariscos), VDM (veneno diarreico de los mariscos), VAM (veneno amnésico de los mariscos)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Recolección de mariscos transvectores o 'Especies Centinelas' (Chorito y Cholga) de gran desarrollo comercial-artesanal y de rápido metabolismo como indicadores de cambios ambientales",
+          "provenance": "Instituto de Fomento Pesquero (IFOP); Subsecretaría de Pesca y Acuicultura (SUBPESCA)",
+          "file_uri": "https://geoportal.subpesca.cl/server/rest/services/IDE_PUBLICO/SRMPUB_MAREAROJA/MapServer",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Abundancias de especies de microalgas (Alexandrium catenella, Dinophysis acuta, Pseudonitzschia australis, etc.), toxinas VPM (veneno paralizante de los mariscos), VDM (veneno diarreico de los mariscos), VAM (veneno amnésico de los mariscos)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Recolección de mariscos transvectores o 'Especies Centinelas' (Chorito y Cholga) de gran desarrollo comercial-artesanal y de rápido metabolismo como indicadores de cambios ambientales",
+          "provenance": "Instituto de Fomento Pesquero (IFOP); Subsecretaría de Pesca y Acuicultura (SUBPESCA)",
+          "file_uri": "https://subpesca.maps.arcgis.com/apps/MapAndAppGallery/index.html?appid=f4e0b300b143443ebaa21372c6e7d2fa",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Subsecretaría de Pesca y Acuicultura",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.subpesca.cl/server/rest/services/IDE_PUBLICO/SRMPUB_MAREAROJA/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://subpesca.maps.arcgis.com/apps/MapAndAppGallery/index.html?appid=f4e0b300b143443ebaa21372c6e7d2fa",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Instituto de Fomento Pesquero; Subsecretaría de Pesca y Acuicultura"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Mareas rojas -- Monitoreo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Microalgas tóxicas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Toxinas marinas -- Mariscos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [
+        {
+          "frequency_type": "weekly",
+          "description": "Update frequency: Semanal"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Programa de Manejo y Monitoreo de Mareas Rojas",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Regiones australes de Chile (Los Lagos, Aysén, Magallanes y de la Antártica Chilena)",
+            "geo_location_box": "-78.4864,-56.6666,-65.1825,-40.5439",
+            "geo_description": "Cobertura de las regiones australes de Chile incluyendo Estuario y Seno Reloncaví, Isla de Chiloé, Golfo Corcovado, Melinka, Raúl Marín Balmaceda, Tortel, Provincia de Última Esperanza, Estrecho de Magallanes - Seno Otway y Canal Beagle",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "weekly",
+            "description": "La actualización es de carácter semanal, cada vez que el Instituto de Fomento Pesquero notifica a la Subsecretaría de la publicación de un nuevo reporte (Crucero regular o de Vigilancia) para alguno de los sectores muestreados"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11984,
+        "completion_tokens": 2779,
+        "total_tokens": 14763
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 51793,
+        "completion_tokens": 8277,
+        "total_tokens": 60070
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11984,
+        "completion_tokens": 2779,
+        "total_tokens": 14763
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13330,
+        "completion_tokens": 2314,
+        "total_tokens": 15644
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12975,
+        "completion_tokens": 1751,
+        "total_tokens": 14726
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12985,
+        "completion_tokens": 1319,
+        "total_tokens": 14304
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12503,
+        "completion_tokens": 2893,
+        "total_tokens": 15396
+      }
+    },
+    "total": {
+      "prompt_tokens": 63777,
+      "completion_tokens": 11056,
+      "total_tokens": 74833
+    }
+  },
+  "processed_at": "2026-05-19T17:10:27.031497",
+  "input_file": "examples\\2.json"
+}

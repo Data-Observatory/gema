@@ -1,0 +1,306 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36784/Infraestructura%20Portuaria",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección de Obras Portuarias, Ministerio de Obras Públicas",
+        "contact": "562 2449 4000; 800 104 559; https://siac.mop.gob.cl",
+        "producer": "Dirección de Obras Portuarias, Ministerio de Obras Públicas",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36784",
+          "alternate_identifier_type": "Internal Catalog ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        },
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería medioambiental"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección de Obras Portuarias",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Ministerio de Obras Públicas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-18",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Este es un servicio de mapa, incluye la infraestructura Portuaria a nivel nacional, creada y mantenida por el Ministerio de Obras Públicas de Chile. Dicha infraestructura considera: Caletas, Muelles y Varaderos, así como otras obras portuarias, marítimas, fluviales y lacustres, asociadas a la conectividad, protección y uso del borde costero. Esta información es generada por la Dirección de Obras Portuarias del Ministerio, a través de la contratación de consultorías externas, que realizan levantamientos topográficos a escala 1:10.000 obteniendo las formas y características de cada una de las obras, las que luego son compiladas a escala 1:50.000, para disponibilizarla en el Modelo de Datos Corporativo y sus derivaciones.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Infraestructura portuaria",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Levantamientos topográficos a escala 1:10.000, compilados a escala 1:50.000",
+          "provenance": "Dirección de Obras Portuarias, Ministerio de Obras Públicas",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DOP/CATASTRO_DOP/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Infraestructura portuaria",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Levantamientos topográficos a escala 1:10.000, compilados a escala 1:50.000",
+          "provenance": "Dirección de Obras Portuarias, Ministerio de Obras Públicas",
+          "file_uri": "https://geomop.mop.gob.cl/descargas/",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DOP/CATASTRO_DOP/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geomop.mop.gob.cl/descargas/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://siac.mop.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Obras Públicas; Dirección de Obras Portuarias"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Infraestructura portuaria -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Borde costero -- Protección -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Obras públicas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Infraestructura Portuaria",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-109, -67, -55, -18",
+            "geo_description": "Territorio nacional de Chile incluyendo territorio continental, insular y antártico, cubriendo la totalidad del borde costero donde se ubica la infraestructura portuaria",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12170,
+        "completion_tokens": 2370,
+        "total_tokens": 14540
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48138,
+        "completion_tokens": 7044,
+        "total_tokens": 55182
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12170,
+        "completion_tokens": 2370,
+        "total_tokens": 14540
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12937,
+        "completion_tokens": 1581,
+        "total_tokens": 14518
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11759,
+        "completion_tokens": 1610,
+        "total_tokens": 13369
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11801,
+        "completion_tokens": 1551,
+        "total_tokens": 13352
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11641,
+        "completion_tokens": 2302,
+        "total_tokens": 13943
+      }
+    },
+    "total": {
+      "prompt_tokens": 60308,
+      "completion_tokens": 9414,
+      "total_tokens": 69722
+    }
+  },
+  "processed_at": "2026-05-28T16:24:35.134059",
+  "input_file": "examples\\3.json"
+}

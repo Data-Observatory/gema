@@ -1,0 +1,275 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36780/Radio%20espacial%20de%2030%20y%2050%20km%20en%20torno%20a%20observatorios",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "maintainer": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "contact": "800 104 559",
+        "producer": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36780",
+          "alternate_identifier_type": "internal_id"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{4d57a258-de86-4fa9-b935-e98b28cd6775}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Astronomía y astrofísica"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/03tvpbp09",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-17",
+          "date_type": "Created",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Esta capa SHP representa el área a considerar para radios de 30 km y 50 km, centrado en la ubicación geográfica de cada observatorio. La proyección utilizada corresponde a EPSG 4326 para las ubicaciones de los centros, que posteriormente fueron trabajadas en EPSG 20049 (SIRGAS-Chile 2021 / UTM zone 19S) para definir distancias y radios, como también las superficies. Finalmente, la capa importada en el geoportal está estandarizada como EPSG 4326. Radio de 30 km: El radio de 30 km corresponde a la representación cartográfica de un área de resguardo definida conforme a la normativa vigente aplicable a observatorios de radioastronomía, regulada por la Subsecretaría de Telecomunicaciones (SUBTEL) del Ministerio de Transportes y Telecomunicaciones de Chile. Radio de 50 km: El radio de 50 km corresponde a una representación cartográfica derivada de un ángulo de elevación de 45°, calculado desde la posición geográfica del telescopio en el sitio astronómico. Este ángulo se mide respecto del plano horizontal local del instrumento y define un umbral habitual de observación científica en telescopios ópticos e infrarrojos. El dato geoespacial proyecta sobre el territorio el alcance horizontal asociado a esa línea de visión, permitiendo visualizar de manera referencial la extensión territorial vinculada al campo observable del telescopio y el ámbito espacial en el cual deben resguardarse las condiciones ambientales y lumínicas necesarias para la calidad de la observación astronómica. Esta proyección espacial permite visualizar, de manera referencial, la extensión territorial vinculada a la bóveda celeste observable desde el sitio astronómico, facilitando la comprensión del alcance geográfico de las condiciones que deben resguardarse para preservar la calidad del cielo nocturno. El radio de 50 km es una proyección espacial a partir del ángulo de observación en 45°, de observatorios ópticos e infrarrojos. Esta proyección permite visualizar el despliegue geográfico de la bóveda de observación astronómica.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Radios espaciales de protección de observatorios astronómicos (30 km y 50 km)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "file_uri": "https://geoportal.cl/observatorios/catalog/download/10a65d37-4e8a-37c9-b532-0821a3094802",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "publisher_identifier": "https://ror.org/03tvpbp09",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/observatorios/catalog/download/10a65d37-4e8a-37c9-b532-0821a3094802",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B4d57a258-de86-4fa9-b935-e98b28cd6775%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Observatorios astronómicos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Radioastronomía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Cielo nocturno -- Protección -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Radio espacial de 30 y 50 km en torno a observatorios",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile (zona de observatorios astronómicos)",
+            "geo_location_box": "-72.530,-33.702,-66.565,-16.332",
+            "geo_description": "Área del norte de Chile que cubre las zonas de observatorios astronómicos, desde el límite norte hasta aproximadamente la latitud de La Serena, incluyendo las regiones de Arica y Parinacota, Tarapacá, Antofagasta, Atacama y parte de Coquimbo",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12035,
+        "completion_tokens": 3483,
+        "total_tokens": 15518
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49326,
+        "completion_tokens": 5013,
+        "total_tokens": 54339
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12035,
+        "completion_tokens": 3483,
+        "total_tokens": 15518
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13189,
+        "completion_tokens": 1190,
+        "total_tokens": 14379
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12003,
+        "completion_tokens": 1760,
+        "total_tokens": 13763
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12046,
+        "completion_tokens": 897,
+        "total_tokens": 12943
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12088,
+        "completion_tokens": 1166,
+        "total_tokens": 13254
+      }
+    },
+    "total": {
+      "prompt_tokens": 61361,
+      "completion_tokens": 8496,
+      "total_tokens": 69857
+    }
+  },
+  "processed_at": "2026-06-01T09:46:45.366378",
+  "input_file": "inputs1\\3.json"
+}

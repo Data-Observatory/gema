@@ -1,0 +1,351 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36788/Proyectos%20Mandatados%20al%20MOP",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+        "contact": "562 2449 4000; https://siac.mop.gob.cl",
+        "producer": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36788",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{967f88f5-dfcf-43db-ab4b-6161dcce3963}",
+          "alternate_identifier_type": "CSW UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección de Arquitectura",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-18",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Servicio de mapas, con la distribución de Contratos Mandatados en ejecución por parte de la Dirección de Arquitectura de Ministerio de Obras Públicas. Los contratos se clasifican según el Sector - Destino en: Administración y Gobierno Interior, Defensa y Seguridad, Deporte y Recreación, Educación, Cultura, Equipamiento Social y Comunitario, Justicia y Salud. Los contratos se representan como puntos y su localización es de responsabilidad de las Direcciones Regionales de Arquitectura. La información se actualiza una vez por semana.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Contratos Mandatados en ejecución",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DA/PYTO_MANDATOS/MapServer",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Contratos Mandatados en ejecución",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+          "file_uri": "https://drive.google.com/uc?export=download&id=1YRreLLi30keystfmhHPT2HzmTWc8ZuEO",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Contratos Mandatados en ejecución",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+          "file_uri": "https://drive.google.com/uc?export=download&id=1JDR2nwjgXqazvT5gF15XSuuoQGj7njGK",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kml+xml",
+          "variable_measured": "Contratos Mandatados en ejecución",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección de Arquitectura, Ministerio de Obras Públicas",
+          "file_uri": "https://drive.google.com/uc?export=download&id=18IcpdOi8ePBS8DsABa5fPTCgAAwsFkLd",
+          "temporal_resolution": "weekly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DA/PYTO_MANDATOS/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsHostedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://drive.google.com/uc?export=download&id=1YRreLLi30keystfmhHPT2HzmTWc8ZuEO",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://drive.google.com/uc?export=download&id=1JDR2nwjgXqazvT5gF15XSuuoQGj7njGK",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://drive.google.com/uc?export=download&id=18IcpdOi8ePBS8DsABa5fPTCgAAwsFkLd",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B967f88f5-dfcf-43db-ab4b-6161dcce3963%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Datos Abiertos del Estado de Chile",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Estado de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Obras públicas -- Contratos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Construcción de edificios públicos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura pública -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "temporal_events": [
+        {
+          "frequency_type": "weekly",
+          "description": "Update frequency: Semanal"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Proyectos Mandatados al MOP",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.119,-59.195,-62.791,-17.039",
+            "geo_description": "Cobertura nacional de Chile con la distribución de contratos mandatados en ejecución por la Dirección de Arquitectura del MOP",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": [
+          {
+            "frequency_type": "weekly",
+            "description": "La información del servicio de mapas se actualiza semanalmente con los contratos mandatados en ejecución por la Dirección de Arquitectura"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 13386,
+        "completion_tokens": 3099,
+        "total_tokens": 16485
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 53467,
+        "completion_tokens": 8465,
+        "total_tokens": 61932
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 13386,
+        "completion_tokens": 3099,
+        "total_tokens": 16485
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 14285,
+        "completion_tokens": 1762,
+        "total_tokens": 16047
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13014,
+        "completion_tokens": 1758,
+        "total_tokens": 14772
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13073,
+        "completion_tokens": 2963,
+        "total_tokens": 16036
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13095,
+        "completion_tokens": 1982,
+        "total_tokens": 15077
+      }
+    },
+    "total": {
+      "prompt_tokens": 66853,
+      "completion_tokens": 11564,
+      "total_tokens": 78417
+    }
+  },
+  "processed_at": "2026-06-01T10:43:30.150859",
+  "input_file": "inputs1\\3.json"
+}

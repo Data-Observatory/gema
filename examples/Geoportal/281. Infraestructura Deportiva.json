@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35034/Infraestructura%20Deportiva",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Deporte",
+        "maintainer": "Geoportal de Chile",
+        "contact": "",
+        "producer": "",
+        "publication_year": "2014",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35034",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{9E0DF7BA-9638-440D-9B72-F15D7A69C0CE}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio del Deporte",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2014-03-21",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Localización de la infraestructura deportiva pública y privada, en donde se identifican instalaciones en donde se practican deportes como fútbol, futbolito, rugby, tenis, baloncesto, hockey, atletismo, voleibol, natación, remo, canotaje, entre otros. Además se identifica los tipos de recintos, tales como: estadios, medialunas, multicancha, salas especializadas, piscinas, skatepark, gimnasios, salas de uso múltiple, etc.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/xml",
+          "variable_measured": "infraestructura deportiva",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Deporte",
+          "file_uri": "https://geoportal.cl/geoserver/Infraestructura_Deportiva/wms?request=GetCapabilities",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "infraestructura deportiva",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Deporte",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/888c604a-a1cd-3a35-ab2d-0eab213d3dd4",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Deporte",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoserver/Infraestructura_Deportiva/wms?request=GetCapabilities",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/888c604a-a1cd-3a35-ab2d-0eab213d3dd4",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B9E0DF7BA-9638-440D-9B72-F15D7A69C0CE%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.mindep.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Deporte"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Instalaciones deportivas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura deportiva -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Infraestructura Deportiva",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.3425,-55.9461,-62.7936,-16.1529",
+            "geo_description": "Cobertura espacial de la infraestructura deportiva pública y privada a nivel nacional",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12068,
+        "completion_tokens": 2819,
+        "total_tokens": 14887
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47219,
+        "completion_tokens": 4712,
+        "total_tokens": 51931
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12068,
+        "completion_tokens": 2819,
+        "total_tokens": 14887
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12752,
+        "completion_tokens": 1294,
+        "total_tokens": 14046
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11491,
+        "completion_tokens": 1163,
+        "total_tokens": 12654
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11472,
+        "completion_tokens": 1068,
+        "total_tokens": 12540
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11504,
+        "completion_tokens": 1187,
+        "total_tokens": 12691
+      }
+    },
+    "total": {
+      "prompt_tokens": 59287,
+      "completion_tokens": 7531,
+      "total_tokens": 66818
+    }
+  },
+  "processed_at": "2026-06-01T16:09:44.591467",
+  "input_file": "inputs1\\4.json"
+}

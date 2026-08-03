@@ -1,0 +1,281 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/31199/Erosividad%20del%20suelo",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Medio Ambiente",
+        "maintainer": "Ministerio del Medio Ambiente",
+        "contact": "MHerrera@mma.gob.cl; 562 29385406",
+        "producer": "Universidad Austral de Chile",
+        "publication_year": "2002",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "4dbf914acc374e5094ed6637d2d57921",
+          "alternate_identifier_type": "ArcGIS Item ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{C9ACB135-339F-4844-AF94-7E4AC7DAE254}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Universidad Austral de Chile",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        },
+        {
+          "creator_name": "Ministerio del Medio Ambiente",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2002-01-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Cobertura en formato shapefile de la erosividad del suelo, entendida como la facilidad que presenta el suelo para ser movilizado. Esta cobertura es producto de la realizacion del estudio 'Elaboracion de pre diagnostico nacional del componente suelo para la discusion regional de la politica para la sustentabilidad ambiental del patrimonio natural renovable', encargado a la Universidad Austral de Chile el año 2002.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "erosividad del suelo",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Medio Ambiente; Universidad Austral de Chile",
+          "file_uri": "https://arcgis.mma.gob.cl/portal/home/item.html?id=4dbf914acc374e5094ed6637d2d57921",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Medio Ambiente",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://arcgis.mma.gob.cl/portal/home/item.html?id=4dbf914acc374e5094ed6637d2d57921",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BC9ACB135-339F-4844-AF94-7E4AC7DAE254%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Medio Ambiente; Universidad Austral de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Erosividad del suelo -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Suelos -- Degradación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Sustentabilidad ambiental -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Erosividad del suelo",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.7757,-57.1428,-66.2341,-20.5113",
+            "geo_description": "Cobertura nacional de erosividad del suelo de Chile, correspondiente al pre diagnóstico nacional del componente suelo",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11496,
+        "completion_tokens": 2613,
+        "total_tokens": 14109
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45072,
+        "completion_tokens": 5850,
+        "total_tokens": 50922
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11496,
+        "completion_tokens": 2613,
+        "total_tokens": 14109
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12149,
+        "completion_tokens": 1851,
+        "total_tokens": 14000
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10930,
+        "completion_tokens": 1521,
+        "total_tokens": 12451
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10978,
+        "completion_tokens": 853,
+        "total_tokens": 11831
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11015,
+        "completion_tokens": 1625,
+        "total_tokens": 12640
+      }
+    },
+    "total": {
+      "prompt_tokens": 56568,
+      "completion_tokens": 8463,
+      "total_tokens": 65031
+    }
+  },
+  "processed_at": "2026-05-29T12:23:14.947973",
+  "input_file": "examples\\3.json"
+}

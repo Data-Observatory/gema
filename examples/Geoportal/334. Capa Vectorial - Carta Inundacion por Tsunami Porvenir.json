@@ -1,0 +1,213 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35969/Capa%20Vectorial%20-%20Carta%20Inundaci%C3%B3n%20por%20Tsunami%20Porvenir",
+        "identifier_type": "URL",
+        "editor": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "maintainer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "contact": "56-32-266666",
+        "producer": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Doctorado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000121699955",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-08-10",
+          "date_type": "Published",
+          "date_information": "Fecha de publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa vectorial descargable que representa la profundidad maxima de inundacion por tsunami para la localidad de Porvenir, comuna de Porvenir, Provincia de Tierra del Fuego, Region de Magallanes y Antartica Chilena. La capa vectorial es parte de la carta de inundacion para la localidad de Porvenir, y se elaboro mediante simulacion numerica, la cual fue alimentada con la ultima informacion topografica y batimetrica disponible.",
+          "description_type": "Abstract"
+        }
+      ],
+      "funding_references": [],
+      "geo_locations": [
+        {
+          "geo_location_place": "Porvenir, Provincia de Tierra del Fuego, Región de Magallanes y Antártica Chilena, Chile",
+          "geo_location_box": "-70.4625938219999 -53.3264173189999 -70.3636064529999 -53.293647646",
+          "geo_description": "Localidad de Porvenir, comuna de Porvenir, Provincia de Tierra del Fuego, Región de Magallanes y Antártica Chilena",
+          "coverage": "local"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.google-earth.kml+xml",
+          "variable_measured": "profundidad maxima de inundacion por tsunami",
+          "measurement_technique": "simulacion numerica alimentada con informacion topografica y batimetrica disponible",
+          "provenance": "Servicio Hidrografico y Oceanografico de la Armada de Chile",
+          "file_uri": "https://www.shoa.cl/s3/shoa-cl/descargas/citsu/kmz/CITSU_Porvenir_1ra_Ed_2017.kmz",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile",
+          "publisher_identifier": "https://isni.org/isni/0000000121699955",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Servicio Hidrográfico y Oceanográfico de la Armada de Chile"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Tsunami -- Inundación -- Porvenir (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Simulación numérica -- Tsunami -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Batimetría -- Magallanes (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "temporal_events": [],
+      "titles": [
+        {
+          "name": "Capa Vectorial - Carta Inundacion por Tsunami Porvenir",
+          "title_type": "MainTitle"
+        }
+      ]
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11043,
+        "completion_tokens": 1587,
+        "total_tokens": 12630
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47853,
+        "completion_tokens": 4752,
+        "total_tokens": 52605
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11043,
+        "completion_tokens": 1587,
+        "total_tokens": 12630
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11375,
+        "completion_tokens": 1130,
+        "total_tokens": 12505
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12388,
+        "completion_tokens": 1643,
+        "total_tokens": 14031
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11609,
+        "completion_tokens": 893,
+        "total_tokens": 12502
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12481,
+        "completion_tokens": 1086,
+        "total_tokens": 13567
+      }
+    },
+    "total": {
+      "prompt_tokens": 58896,
+      "completion_tokens": 6339,
+      "total_tokens": 65235
+    }
+  },
+  "processed_at": "2026-05-14T11:28:59.664543",
+  "input_file": "examples\\1.json"
+}

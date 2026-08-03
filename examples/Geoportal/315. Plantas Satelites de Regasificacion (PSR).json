@@ -1,0 +1,289 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36411/Plantas%20Sat%C3%A9lites%20de%20Regasificaci%C3%B3n%20%28PSR%29",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Energía",
+        "maintainer": "Ministerio de Energía",
+        "contact": "egutierrez@minenergia.cl; 562 2365 6800",
+        "producer": "Ministerio de Energía",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36411",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{f43be35a-501b-4215-9de5-27905b8a42b2}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        },
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería química"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Energía",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2023-03-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Localización de plantas satélites de regasificación en el territorio nacional.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Energía",
+          "file_uri": "https://ide-energia.minenergia.cl/server/rest/services/IDE_Energia/Visor_IDE_Energ%C3%ADa/MapServer/14",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Energía",
+          "file_uri": "https://atencionciudadana.minenergia.cl/tramites/informacion/15",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Energía",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://ide-energia.minenergia.cl/server/rest/services/IDE_Energia/Visor_IDE_Energ%C3%ADa/MapServer/14",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://atencionciudadana.minenergia.cl/tramites/informacion/15",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Bf43be35a-501b-4215-9de5-27905b8a42b2%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://energia.gob.cl/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Energía"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Plantas satélites de regasificación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Redes de energía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Plantas Satélites de Regasificación (PSR)",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-80.185,-60.403,-58.440,-18.121",
+            "geo_description": "Territorio nacional de Chile, cobertura de plantas satélites de regasificación",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12082,
+        "completion_tokens": 2564,
+        "total_tokens": 14646
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47057,
+        "completion_tokens": 6570,
+        "total_tokens": 53627
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12082,
+        "completion_tokens": 2564,
+        "total_tokens": 14646
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12725,
+        "completion_tokens": 1097,
+        "total_tokens": 13822
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11464,
+        "completion_tokens": 2981,
+        "total_tokens": 14445
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11418,
+        "completion_tokens": 1085,
+        "total_tokens": 12503
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11450,
+        "completion_tokens": 1407,
+        "total_tokens": 12857
+      }
+    },
+    "total": {
+      "prompt_tokens": 59139,
+      "completion_tokens": 9134,
+      "total_tokens": 68273
+    }
+  },
+  "processed_at": "2026-06-01T17:48:56.631042",
+  "input_file": "inputs1\\2.json"
+}

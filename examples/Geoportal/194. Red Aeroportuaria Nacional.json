@@ -1,0 +1,276 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35417/Red%20Aeroportuaria%20Nacional",
+        "identifier_type": "URL",
+        "editor": "Dirección de Aeropuertos",
+        "maintainer": "Dirección de Aeropuertos, Ministerio de Obras Públicas",
+        "contact": "562 2449 4000",
+        "producer": "Dirección General de Aeronáutica Civil (DGAC)",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{4EC2B71D-F2A6-4AC7-B058-7B809FD3C2C3}",
+          "alternate_identifier_type": "InternalID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección General de Aeronáutica Civil",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-09-05",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Ubicación de la infraestructura aeroportuaria a nivel nacional, diferenciando entre aeropuertos y aeródromos, así como si estos pertenecen a la red primaria, secundaria o pequeños aeródromos, representados mediante puntos. Creado en el software Arcgis en su versión 10.2. La localización es oficial y es suministrada por la Dirección General de Aeronáutica Civil – DGAC, adicionalmente se incluyen datos complementarios asociados a las pistas y los territorios en los que se encuentra la infraestructura.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Infraestructura aeroportuaria (aeropuertos y aeródromos)",
+          "checksum": "",
+          "data_quality": "Localización oficial suministrada por la Dirección General de Aeronáutica Civil – DGAC",
+          "measurement_technique": "ArcGIS 10.2",
+          "provenance": "Dirección General de Aeronáutica Civil (DGAC); Dirección de Aeropuertos",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DAP/Red_Aeroportuaria_Nacional/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Infraestructura aeroportuaria (aeropuertos y aeródromos)",
+          "checksum": "",
+          "data_quality": "Localización oficial suministrada por la Dirección General de Aeronáutica Civil – DGAC",
+          "measurement_technique": "ArcGIS 10.2",
+          "provenance": "Dirección General de Aeronáutica Civil (DGAC); Dirección de Aeropuertos",
+          "file_uri": "https://geomop.mop.gob.cl/descargas/",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Dirección de Aeropuertos",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DAP/Red_Aeroportuaria_Nacional/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsHostedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geomop.mop.gob.cl/descargas/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementTo",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B4EC2B71D-F2A6-4AC7-B058-7B809FD3C2C3%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección General de Aeronáutica Civil (DGAC); Dirección de Aeropuertos; Ministerio de Obras Públicas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Aeropuertos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Aeródromos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura aeroportuaria -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Red Aeroportuaria Nacional",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-109.4,-59,-67,-18.3",
+            "geo_description": "Cobertura de la infraestructura aeroportuaria a nivel nacional de Chile, incluyendo aeropuertos y aeródromos",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12110,
+        "completion_tokens": 2610,
+        "total_tokens": 14720
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47307,
+        "completion_tokens": 6793,
+        "total_tokens": 54100
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12110,
+        "completion_tokens": 2610,
+        "total_tokens": 14720
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12780,
+        "completion_tokens": 2552,
+        "total_tokens": 15332
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11476,
+        "completion_tokens": 1294,
+        "total_tokens": 12770
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11498,
+        "completion_tokens": 1413,
+        "total_tokens": 12911
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11553,
+        "completion_tokens": 1534,
+        "total_tokens": 13087
+      }
+    },
+    "total": {
+      "prompt_tokens": 59417,
+      "completion_tokens": 9403,
+      "total_tokens": 68820
+    }
+  },
+  "processed_at": "2026-06-01T09:52:11.255781",
+  "input_file": "inputs1\\4.json"
+}

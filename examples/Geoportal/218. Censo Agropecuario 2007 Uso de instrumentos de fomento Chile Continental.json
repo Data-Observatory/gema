@@ -1,0 +1,284 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35534/Censo%20Agropecuario%202007%20Uso%20de%20instrumentos%20de%20fomento%20Chile%20Continental",
+        "identifier_type": "URL",
+        "editor": "Oficina de Estudios y Políticas Agrarias",
+        "maintainer": "Oficina de Estudios y Políticas Agrarias",
+        "contact": "jovalle@odepa.gob.cl; 56 223973137; http://sistred.bienes.cl/siac-atencion/atencion?idechile",
+        "producer": "Oficina de Estudios y Políticas Agrarias",
+        "publication_year": "2007",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35534",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{129325BA-C6C4-49C4-A853-F3FDCF52110D}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Agricultura, silvicultura y pesca"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Economía y negocios"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Oficina de Estudios y Políticas Agrarias",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000119427969",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2007-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2007-12-31",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE. El trazado de límites no es oficial de la República de Chile. Trazado de límites actualizado según modificaciones efectuadas el año 2014. Los límites internacionales fueron revisados por la Dirección de Fronteras y Límites (Difrol), y autorizados para su uso en elaboración de cartografía, mediante Resolución No. 255 del 2 de febrero de 2001. No obstante lo anterior, cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol. Cobertura que permite la asociación de cifras estadísticas y/o temáticas, referidas a las unidades administrativas del país y distritos censales INE.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/x-rar-compressed",
+          "variable_measured": "Uso de instrumentos de fomento",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "VII Censo Nacional Agropecuario",
+          "provenance": "Oficina de Estudios y Políticas Agrarias",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/cc_ifomento.rar",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Oficina de Estudios y Políticas Agrarias",
+          "publisher_identifier": "https://isni.org/isni/0000000119427969",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/cc_ifomento.rar",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.odepa.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPublishedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B129325BA-C6C4-49C4-A853-F3FDCF52110D%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Oficina de Estudios y Políticas Agrarias"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Censos agrícolas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Política agrícola -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "División administrativa -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Censo Agropecuario 2007 Uso de instrumentos de fomento Chile Continental",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile Continental",
+            "geo_location_box": "-78.6607,-57.5117,-67.832,-16.5148",
+            "geo_description": "Cobertura del Censo Agropecuario 2007 para Chile Continental, basada en división administrativa vigente y distritos censales INE",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11805,
+        "completion_tokens": 3542,
+        "total_tokens": 15347
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47326,
+        "completion_tokens": 4923,
+        "total_tokens": 52249
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11805,
+        "completion_tokens": 3542,
+        "total_tokens": 15347
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12705,
+        "completion_tokens": 1455,
+        "total_tokens": 14160
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11528,
+        "completion_tokens": 1354,
+        "total_tokens": 12882
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11528,
+        "completion_tokens": 923,
+        "total_tokens": 12451
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11565,
+        "completion_tokens": 1191,
+        "total_tokens": 12756
+      }
+    },
+    "total": {
+      "prompt_tokens": 59131,
+      "completion_tokens": 8465,
+      "total_tokens": 67596
+    }
+  },
+  "processed_at": "2026-06-01T11:45:02.609824",
+  "input_file": "inputs1\\3.json"
+}

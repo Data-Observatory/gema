@@ -1,0 +1,279 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36793/Radio%20espacial%20de%20120%20km%20en%20torno%20a%20observatorios",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "maintainer": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "contact": "800 104 559",
+        "producer": "",
+        "publication_year": "2026",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36793",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{9bcb2265-4f9e-4f3a-ae6c-b2440e087917}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Astronomía y astrofísica"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/03tvpbp09",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2026-02-17",
+          "date_type": "Created",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Esta capa SHP representa el área a considerar para un radio de 120 km, centrado en la ubicación geográfica de cada observatorio. La proyección utilizada corresponde a EPSG 4326 para las ubicaciones de los centros, que posteriormente fueron trabajadas en EPSG 20049 (SIRGAS-Chile 2021 / UTM zone 19S) para definir distancias y radios, como también las superficies. Finalmente, la capa importada en el geoportal está estandarizada como EPSG 4326. El radio de 120 km corresponde a la representación cartográfica de la zona de coordinación definida para observatorios de radioastronomía, conforme a la normativa vigente de la Subsecretaría de Telecomunicaciones (SUBTEL) del Ministerio de Transportes y Telecomunicaciones de Chile. Este dato geoespacial delimita, en términos métricos y proyectados sobre el territorio, el área dentro de la cual deben coordinarse y evaluarse las solicitudes de concesiones o autorizaciones de transmisiones radioeléctricas, con el fin de prevenir interferencias perjudiciales a las operaciones científicas de los observatorios.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Zona de coordinación de 120 km para observatorios de radioastronomía",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "file_uri": "https://geoportal.cl/observatorios/catalog/download/2c1f256b-cc86-3d8b-aa9f-052aa67863e4",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "publisher_identifier": "https://ror.org/03tvpbp09",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/observatorios/catalog/download/2c1f256b-cc86-3d8b-aa9f-052aa67863e4",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B9bcb2265-4f9e-4f3a-ae6c-b2440e087917%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/csw",
+          "related_identifier_type": "URL",
+          "relation_type": "IsPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Radioastronomía -- Zonas de coordinación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Observatorios astronómicos -- Protección -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Transmisiones radioeléctricas -- Regulación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Radio espacial de 120 km en torno a observatorios",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-72.530,-33.702,-66.565,-16.332",
+            "geo_description": "Área de 120 km de radio en torno a observatorios astronómicos ubicados en el norte y centro-norte de Chile, conforme a la normativa de SUBTEL para protección de radioastronomía",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11472,
+        "completion_tokens": 3506,
+        "total_tokens": 14978
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45982,
+        "completion_tokens": 5058,
+        "total_tokens": 51040
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11472,
+        "completion_tokens": 3506,
+        "total_tokens": 14978
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12366,
+        "completion_tokens": 1110,
+        "total_tokens": 13476
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11180,
+        "completion_tokens": 1700,
+        "total_tokens": 12880
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11197,
+        "completion_tokens": 1032,
+        "total_tokens": 12229
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11239,
+        "completion_tokens": 1216,
+        "total_tokens": 12455
+      }
+    },
+    "total": {
+      "prompt_tokens": 57454,
+      "completion_tokens": 8564,
+      "total_tokens": 66018
+    }
+  },
+  "processed_at": "2026-06-01T09:36:34.420099",
+  "input_file": "inputs1\\2.json"
+}

@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35254/Decretos%20de%20Escasez%20H%C3%ADdrica",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección General de Aguas, Ministerio de Obras Públicas",
+        "contact": "562 2449 4000; https://siac.mop.gob.cl",
+        "producer": "Dirección General de Aguas, Ministerio de Obras Públicas",
+        "publication_year": "2021",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35254",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{E4CAFAED-6032-4FE8-9EED-59ECB5B66975}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Periodistas",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección General de Aguas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2021-06-01",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Capa de información vectorial en formato Shape de los decretos de escasez hídrica a julio del año 2019, incluye número de decreto, fecha de decreto, fecha de caducidad, área y año.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "decretos de escasez hídrica (número de decreto, fecha de decreto, fecha de caducidad, área y año)",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Dirección General de Aguas, Ministerio de Obras Públicas",
+          "file_uri": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/DecretosEscasezHidrica.zip",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/DecretosEscasezHidrica.zip",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BE4CAFAED-6032-4FE8-9EED-59ECB5B66975%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "HasMetadata",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección General de Aguas; Ministerio de Obras Públicas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Recursos hídricos -- Escasez -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Agua -- Aspectos ambientales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Decretos de Escasez Hídrica",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-76.7491, -56.63, -62.7027, -16.955",
+            "geo_description": "Territorio nacional de Chile, cobertura de zonas con decretos de escasez hídrica",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 10330,
+        "completion_tokens": 2855,
+        "total_tokens": 13185
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 43974,
+        "completion_tokens": 5262,
+        "total_tokens": 49236
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 10330,
+        "completion_tokens": 2855,
+        "total_tokens": 13185
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12071,
+        "completion_tokens": 1693,
+        "total_tokens": 13764
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10799,
+        "completion_tokens": 1548,
+        "total_tokens": 12347
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10797,
+        "completion_tokens": 959,
+        "total_tokens": 11756
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10307,
+        "completion_tokens": 1062,
+        "total_tokens": 11369
+      }
+    },
+    "total": {
+      "prompt_tokens": 54304,
+      "completion_tokens": 8117,
+      "total_tokens": 62421
+    }
+  },
+  "processed_at": "2026-05-26T14:06:21.764172",
+  "input_file": "examples\\2.json"
+}

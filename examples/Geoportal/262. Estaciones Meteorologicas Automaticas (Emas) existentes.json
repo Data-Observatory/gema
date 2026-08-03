@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35539/Estaciones%20Meteorol%C3%B3gicas%20Autom%C3%A1ticas%20%28Emas%29%20existentes",
+        "identifier_type": "URL",
+        "editor": "Fundación para la Innovación Agraria",
+        "contact": "mcanepa@fia.cl",
+        "producer": "Agrimed-INIA",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "Identificador UUID del Geoportal",
+          "alternate_identifier": "{39615DF2-5A48-4629-8549-1ACA120743A7}",
+          "alternate_identifier_type": "Local"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Estaciones Meteorológicas Automáticas (Emas) existentes"
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Agrimed-INIA",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-12-31",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Resultados Estudio FIA-Subsecretaría Cobertura Actual y Futura de la RAN, 2015 ejecutado Agrimed-INIA/Localización de Estaciones Meteorológicas Automáticas, EMAs.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [
+        {
+          "funder_name": "Fundación para la Innovación Agraria",
+          "funding_stream": "FIA",
+          "award_title": "Cobertura Actual y Futura de la RAN",
+          "funder_identifiers": []
+        }
+      ],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/x-rar-compressed",
+          "variable_measured": "localización de estaciones meteorológicas automáticas (EMAs)",
+          "measurement_technique": "levantamiento geoespacial del estudio de cobertura de la Red Agroclimática Nacional",
+          "provenance": "Fundación para la Innovación Agraria / Agrimed-INIA / Subsecretaría",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/emas.rar",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Fundación para la Innovación Agraria",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Fundación para la Innovación Agraria; Agrimed-INIA; Subsecretaría"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Estaciones meteorológicas automáticas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Clima -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Estaciones Meteorológicas Automáticas (Emas) existentes",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2015-01-01",
+            "description": "Estudio de cobertura actual y futura de la RAN ejecutado en 2015"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-76.5245 -56.5156 -67.574 -18.1874",
+            "geo_description": "Localización de Estaciones Meteorológicas Automáticas (EMAs) a nivel nacional",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 52745,
+        "completion_tokens": 7405,
+        "total_tokens": 60150
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 9441,
+        "completion_tokens": 1910,
+        "total_tokens": 11351
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10710,
+        "completion_tokens": 1458,
+        "total_tokens": 12168
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10556,
+        "completion_tokens": 1444,
+        "total_tokens": 12000
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10519,
+        "completion_tokens": 1470,
+        "total_tokens": 11989
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11519,
+        "completion_tokens": 1123,
+        "total_tokens": 12642
+      }
+    },
+    "total": {
+      "prompt_tokens": 52745,
+      "completion_tokens": 7405,
+      "total_tokens": 60150
+    }
+  },
+  "processed_at": "2026-05-05T16:04:36.713895",
+  "input_file": "inputs\\inputs.json"
+}

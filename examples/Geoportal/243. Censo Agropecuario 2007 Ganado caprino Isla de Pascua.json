@@ -1,0 +1,229 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35504/Censo%20Agropecuario%202007%20Ganado%20caprino%20Isla%20de%20Pascua",
+        "identifier_type": "URL",
+        "editor": "Oficina de Estudios y Políticas Agrarias",
+        "contact": "jovalle@odepa.gob.cl",
+        "producer": "Oficina de Estudios y Políticas Agrarias",
+        "publication_year": "2007",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "UUID del Geoportal",
+          "alternate_identifier": "F338E22D-D76D-4160-8116-AAA690AB2C3D",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Ciencia animal y lechería"
+        }
+      ],
+      "citations": [
+        {
+          "title": "Censo Agropecuario 2007 Ganado caprino Isla de Pascua"
+        }
+      ],
+      "creators": [
+        {
+          "creator_name": "Oficina de Estudios y Políticas Agrarias",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000119427969",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2007-12-31",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE. El trazado de límites no es oficial de la República de Chile. Trazado de límites actualizado según modificaciones efectuadas el año 2014. Los límites internacionales fueron revisados por la Dirección de Fronteras y Límites (Difrol), y autorizados para su uso en elaboración de cartografía, mediante Resolución No. 255 del 2 de febrero de 2001. No obstante lo anterior, cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol. Cobertura que permite la asociación de cifras estadísticas y/o temáticas, referidas a las unidades administrativas del país y distritos censales INE.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/x-rar-compressed",
+          "variable_measured": "ganado caprino en Isla de Pascua",
+          "data_quality": "Capa vectorial con poligonos de division administrativa vigente y distritos censales INE. Limites revisados por Direccion de Fronteras y Limites (Difrol), Resolucion No. 255 del 2 de febrero de 2001",
+          "measurement_technique": "VII Censo Nacional Agropecuario 2007",
+          "provenance": "Oficina de Estudios y Politicas Agrarias (ODEPA), Ministerio de Agricultura",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/ip_caprinos.rar",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Oficina de Estudios y Políticas Agrarias",
+          "publisher_identifier": "https://isni.org/isni/0000000119427969",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Oficina de Estudios y Políticas Agrarias"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Ganado caprino -- Censos -- Isla de Pascua (Chile)",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Censos agropecuarios -- Chile -- 2007",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Censo Agropecuario 2007 Ganado caprino Isla de Pascua",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2007-01-01",
+            "frequency_number": "1",
+            "frequency_type": "yearly",
+            "description": "VII Censo Nacional Agropecuario año 2007"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Isla de Pascua",
+            "geo_location_box": "-79.8285 -56.8968 -63.1658 -17.0056",
+            "geo_description": "Isla de Pascua, Región de Valparaíso, Chile",
+            "coverage": "local"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 55934,
+        "completion_tokens": 6525,
+        "total_tokens": 62459
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 9838,
+        "completion_tokens": 1830,
+        "total_tokens": 11668
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11301,
+        "completion_tokens": 1125,
+        "total_tokens": 12426
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11278,
+        "completion_tokens": 1525,
+        "total_tokens": 12803
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11296,
+        "completion_tokens": 997,
+        "total_tokens": 12293
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12221,
+        "completion_tokens": 1048,
+        "total_tokens": 13269
+      }
+    },
+    "total": {
+      "prompt_tokens": 55934,
+      "completion_tokens": 6525,
+      "total_tokens": 62459
+    }
+  },
+  "processed_at": "2026-05-05T10:20:22.423203",
+  "input_file": "inputs\\inputs.json"
+}

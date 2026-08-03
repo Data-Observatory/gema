@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35551/%C3%81reas%20de%20Cobertura%20de%20las%20Emas%20existentes",
+        "identifier_type": "URL",
+        "editor": "Fundación para la Innovación Agraria",
+        "contact": "mcanepa@fia.cl",
+        "producer": "Agrimed-INIA",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "Identificador local Geoportal",
+          "alternate_identifier": "{DE6C1282-BC5E-43C3-9E2C-4FFB1AB7833F}",
+          "alternate_identifier_type": "Local"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Docente",
+          "education_level": "Pregrado",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Coordinador",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Agrimed-INIA",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2015-12-31",
+          "date_type": "Published",
+          "date_information": "Fecha de Publicación del recurso"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Resultados Estudio FIA-Subsecretaría Cobertura Actual y Futura de la RAN,2015 ejecutado Agrimed-INIA/Localización de Áreas de Coberturas de las EMAs existentes.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [
+        {
+          "funder_name": "Fundación para la Innovación Agraria",
+          "funding_stream": "FIA",
+          "award_title": "Estudio FIA-Subsecretaría Cobertura Actual y Futura de la RAN",
+          "funder_identifiers": []
+        }
+      ],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "áreas de cobertura de estaciones meteorológicas automáticas (EMAs) existentes",
+          "measurement_technique": "estudio de cobertura geográfica de la Red Agroclimática Nacional",
+          "provenance": "Fundación para la Innovación Agraria; Agrimed-INIA",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/area_coberturas_emas_actuales.zip",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Fundación para la Innovación Agraria",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Fundación para la Innovación Agraria; Agrimed-INIA"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Estaciones meteorológicas automáticas -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "Red Agroclimática Nacional -- Cobertura -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Áreas de Cobertura de las Emas existentes",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2015-01-01",
+            "frequency_number": "1",
+            "frequency_type": "yearly",
+            "description": "Estudio ejecutado en 2015 sobre cobertura actual de EMAs"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-75.9629 -54.9216 -69.9447 -17.3636",
+            "geo_description": "Áreas de cobertura de estaciones meteorológicas automáticas (EMAs) existentes en Chile",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 52763,
+        "completion_tokens": 7515,
+        "total_tokens": 60278
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 9434,
+        "completion_tokens": 1905,
+        "total_tokens": 11339
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10707,
+        "completion_tokens": 1203,
+        "total_tokens": 11910
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10553,
+        "completion_tokens": 1455,
+        "total_tokens": 12008
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 10558,
+        "completion_tokens": 1348,
+        "total_tokens": 11906
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11511,
+        "completion_tokens": 1604,
+        "total_tokens": 13115
+      }
+    },
+    "total": {
+      "prompt_tokens": 52763,
+      "completion_tokens": 7515,
+      "total_tokens": 60278
+    }
+  },
+  "processed_at": "2026-05-05T15:16:41.773965",
+  "input_file": "inputs\\inputs.json"
+}

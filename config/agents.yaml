@@ -225,30 +225,27 @@ agents:
     \ y family_name por separado\n     - Institución → name_type = \"Organizational\"\
     , creator_name = nombre completo\n  b) ¿Es creador (produjo el contenido) o publicador\
     \ (lo distribuye)?\n     - Puede ser ambos → aparece en creators Y publishers\n\
-    \nPASO 3 — BUSCA IDENTIFICADORES EN LA TABLA\n  Para cada institución encontrada,\
-    \ consulta la tabla de identificadores:\n  - Si está en la tabla → copiar identifier,\
-    \ scheme y scheme_uri EXACTAMENTE\n  - Si NO está en la tabla → name_identifiers\
-    \ = []\n  - NUNCA inventar un ROR o ISNI que no esté en la tabla\n\nPASO 4 — DETERMINA\
+    \nPASO 3 — IMPORTANTE SOBRE IDENTIFICADORES (LEER ATENTAMENTE)\n  - NO incluyas identificadores ROR, ISNI u ORCID en los campos name_identifiers,\n     \ affiliation_identifier o publisher_identifier.\n  - Deja name_identifiers como lista vacía ([]) para instituciones.\n  - Deja affiliation_identifier como string vacío (\"\").\n  - Deja publisher_identifier como string vacío (\"\").\n  - Los identificadores se resolverán automáticamente después del procesamiento\n     \ mediante APIs oficiales (ROR, ISNI).\n  - ENFÓCATE en extraer los NOMBRES correctos de instituciones y su estructura\n     \ jerárquica de afiliaciones.\n\nPASO 4 — DETERMINA\
     \ AFILIACIONES RESPETANDO LA JERARQUÍA\n  REGLA FUNDAMENTAL: La afiliación debe\
     \ ser el organismo INMEDIATAMENTE superior en la jerarquía, no el nivel máximo.\n\
     \  La cadena jerárquica del Estado chileno es:\n    Servicio/Corporación/Oficina\
     \ → Ministerio del que depende → Gobierno de Chile\n\n  NIVEL 1 — Servicios y\
     \ organismos dependientes de un Ministerio:\n    Su afiliación es el MINISTERIO\
     \ del que dependen (NO el Gobierno de Chile directamente).\n    - ODEPA → affiliation\
-    \ = \"Ministerio de Agricultura\" + ROR https://ror.org/05nqvv719\n    - CONAF\
-    \ → affiliation = \"Ministerio de Agricultura\" + ROR https://ror.org/05nqvv719\n\
+    \ = \"Ministerio de Agricultura\"\n    - CONAF\
+    \ → affiliation = \"Ministerio de Agricultura\"\n\
     \    - SERNATUR → affiliation = \"Ministerio de Economía, Desarrollo y Turismo\"\
-    \ + ROR https://ror.org/00as45r68\n    - SENAME → affiliation = \"Ministerio de\
-    \ Justicia y Derechos Humanos\" (sin ROR en tabla)\n    - JUNJI → affiliation\
-    \ = \"Ministerio de Educación\" + ROR https://ror.org/018f7hf93\n    - SII → affiliation\
-    \ = \"Ministerio de Hacienda\" + ISNI https://isni.org/isni/000000040628717X\n\
-    \    - BCN → affiliation = \"Congreso Nacional de Chile\" (sin ROR en tabla)\n\
+    \\n    - SENAME → affiliation = \"Ministerio de\
+    \ Justicia y Derechos Humanos\" \n    - JUNJI → affiliation\
+    \ = \"Ministerio de Educación\"\n    - SII → affiliation\
+    \ = \"Ministerio de Hacienda\"\n\
+    \    - BCN → affiliation = \"Congreso Nacional de Chile\" \n\
     \    - DIFROL → affiliation = \"Ministerio de Relaciones Exteriores\" (sin ROR\
-    \ en tabla)\n    - SHOA → affiliation = \"Armada de Chile\" (sin ROR en tabla)\n\
+    \ en tabla)\n    - SHOA → affiliation = \"Armada de Chile\" \n\
     \    - Carabineros → affiliation = \"Ministerio del Interior y Seguridad Pública\"\
-    \ (sin ROR en tabla)\n    - INE → affiliation = \"Ministerio de Economía, Desarrollo\
-    \ y Turismo\" + ROR https://ror.org/00as45r68\n\n  NIVEL 2 — Ministerios:\n  \
-    \  Su afiliación es siempre \"Gobierno de Chile\" + ROR https://ror.org/02sevrz47\n\
+    \ \n    - INE → affiliation = \"Ministerio de Economía, Desarrollo\
+    \ y Turismo\"\n\n  NIVEL 2 — Ministerios:\n  \
+    \  Su afiliación es siempre \"Gobierno de Chile\"\n\
     \    - Ministerio de Salud → affiliation = \"Gobierno de Chile\"\n    - Ministerio\
     \ de Hacienda → affiliation = \"Gobierno de Chile\"\n    - Ministerio de Agricultura\
     \ → affiliation = \"Gobierno de Chile\"\n    - Ministerio de Educación → affiliation\
@@ -260,7 +257,7 @@ agents:
     \ se menciona)\n    - Universidad → affiliations = [] (entidad independiente)\n\
     \    - Sin información → affiliations = []\n\nPASO 5 — AUTO-VERIFICACIÓN (obligatorio\
     \ antes de responder)\n  ✓ ¿Todos los nombres vienen del texto fuente? (no inventados)\n\
-    \  ✓ ¿Los ROR/ISNI provienen exclusivamente de la tabla?\n  ✓ ¿Las personas tienen\
+    \  ✓ \n  ✓ ¿Las personas tienen\
     \ given_name y family_name separados?\n  ✓ ¿Las organizaciones NO tienen given_name\
     \ ni family_name?\n  ✓ **¿TODOS los creadores tienen creator_name con valor NO\
     \ vacío?**\n  ✓ **¿TODOS los publishers tienen publisher_name con valor NO vacío?**\n\
@@ -270,49 +267,10 @@ agents:
     \ es NO → corregir antes de responder.\n\n=== REGLAS ESTRICTAS ===\n- **CAMPO\
     \ OBLIGATORIO:** creator_name SIEMPRE debe tener un valor NO vacío para cada objeto\
     \ en creators\n- **CAMPO OBLIGATORIO:** publisher_name SIEMPRE debe tener un valor\
-    \ NO vacío para cada objeto en publishers\n- NUNCA inventar nombres, identificadores\
-    \ o afiliaciones\n- NUNCA usar null → usar \"\" para strings, [] para arrays\n\
-    - Formato de nombre personal: \"Apellido, Nombre\" en creator_name\n- Solo incluir\
-    \ identificadores que estén en la tabla de abajo\n- La afiliación SIEMPRE es el\
+    \ NO vacío para cada objeto en publishers\n- NUNCA usar null → usar \"\" para strings, [] para arrays\n\
+    - Formato de nombre personal: \"Apellido, Nombre\" en creator_name\n- La afiliación SIEMPRE es el\
     \ organismo inmediatamente superior, nunca saltar niveles jerárquicos\n- Si no\
-    \ hay creadores → {\"creators\": [], \"publishers\": []}\n\n=== TABLA DE IDENTIFICADORES\
-    \ CONOCIDOS ===\n| Institución | Identifier | Scheme | Scheme URI | Afiliación\
-    \ inmediata |\n|---|---|---|---|---|\n| Ministerio de Salud de Chile | https://ror.org/01qe7f394\
-    \ | ROR | https://ror.org/ | Gobierno de Chile |\n| Gobierno de Chile | https://ror.org/02sevrz47\
-    \ | ROR | https://ror.org/ | |\n| Ministerio de Hacienda | https://isni.org/isni/000000040628717X\
-    \ | ISNI | https://isni.org/ | Gobierno de Chile |\n| Ministerio de Ciencia, Tecnología,\
-    \ Conocimiento e Innovación | https://ror.org/03tvpbp09 | ROR | https://ror.org/\
-    \ | Gobierno de Chile |\n| Ministerio de Agricultura | https://ror.org/05nqvv719\
-    \ | ROR | https://ror.org/ | Gobierno de Chile |\n| Ministerio de Economía, Desarrollo\
-    \ y Turismo | https://ror.org/00as45r68 | ROR | https://ror.org/ | Gobierno de\
-    \ Chile |\n| Ministerio de Vivienda y Urbanismo | https://isni.org/isni/0000000106708868\
-    \ | ISNI | https://isni.org/ | Gobierno de Chile |\n| Ministerio de Educación\
-    \ | https://ror.org/018f7hf93 | ROR | https://ror.org/ | Gobierno de Chile |\n\
-    | Servicio de Impuestos Internos (SII) | https://isni.org/isni/0000000108053092\
-    \ | ISNI | https://isni.org/ | Ministerio de Hacienda |\n| Servicio Hidrográfico\
-    \ y Oceanográfico de la Armada de Chile (SHOA) | https://isni.org/isni/0000000121699955\
-    \ | ISNI | https://isni.org/ | Armada de Chile |\n| Instituto Nacional de Estadísticas\
-    \ (INE) | https://isni.org/isni/0000000122977777 | ISNI | https://isni.org/ |\
-    \ Ministerio de Economía, Desarrollo y Turismo |\n| Oficina de Estudios y Políticas\
-    \ Agrarias (ODEPA) | https://isni.org/isni/0000000119427969 | ISNI | https://isni.org/\
-    \ | Ministerio de Agricultura |\n| Servicio Nacional de Turismo (SERNATUR) | https://isni.org/isni/0000000403732581\
-    \ | ISNI | https://isni.org/ | Ministerio de Economía, Desarrollo y Turismo |\n\
-    | Servicio Nacional de Menores (SENAME) | https://isni.org/isni/0000000483416668\
-    \ | ISNI | https://isni.org/ | Ministerio de Justicia y Derechos Humanos |\n|\
-    \ Dirección Nacional de Fronteras y Límites del Estado (DIFROL) | https://isni.org/isni/0000000474071266\
-    \ | ISNI | https://isni.org/ | Ministerio de Relaciones Exteriores |\n| Biblioteca\
-    \ del Congreso Nacional (BCN) | https://isni.org/isni/0000000406040724 | ISNI\
-    \ | https://isni.org/ | Congreso Nacional de Chile |\n| Corporación Nacional Forestal\
-    \ (CONAF) | https://isni.org/isni/0000000121952869 | ISNI | https://isni.org/\
-    \ | Ministerio de Agricultura |\n| Carabineros de Chile | https://isni.org/isni/0000000106624277\
-    \ | ISNI | https://isni.org/ | Ministerio del Interior y Seguridad Pública |\n\
-    | Junta Nacional de Jardines Infantiles (JUNJI) | https://isni.org/isni/0000000122029881\
-    \ | ISNI | https://isni.org/ | Ministerio de Educación |\n| Universidad de Chile\
-    \ | https://ror.org/047gc3g35 | ROR | https://ror.org/ | |\n| Universidad de Santiago\
-    \ | https://ror.org/02ma57s91 | ROR | https://ror.org/ | |\n| Pontificia Universidad\
-    \ Católica de Chile | https://ror.org/04teye511 | ROR | https://ror.org/ | |\n\
-    | Data Observatory | https://ror.org/027nn6b17 | ROR | https://ror.org/ | |\n\n\
-    === FORMATO EXACTO DE SALIDA ===\n{\n  \"creators\": [\n    {\n      \"creator_name\"\
+    \ hay creadores → {\"creators\": [], \"publishers\": []=== FORMATO EXACTO DE SALIDA ===\n{\n  \"creators\": [\n    {\n      \"creator_name\"\
     : \"\",\n      \"name_type\": \"\",\n      \"given_name\": \"\",\n      \"family_name\"\
     : \"\",\n      \"name_identifiers\": [\n        {\"name_identifier\": \"\", \"\
     name_identifier_scheme\": \"\", \"scheme_uri\": \"\"}\n      ],\n      \"affiliations\"\
@@ -325,61 +283,61 @@ agents:
     Informe del Ministerio de Educación sobre matrícula escolar.\"\nSalida:\n{\n \
     \ \"creators\": [\n    {\"creator_name\": \"Ministerio de Educación\", \"name_type\"\
     : \"Organizational\", \"given_name\": \"\", \"family_name\": \"\",\n     \"name_identifiers\"\
-    : [{\"name_identifier\": \"https://ror.org/018f7hf93\", \"name_identifier_scheme\"\
-    : \"ROR\", \"scheme_uri\": \"https://ror.org/\"}],\n     \"affiliations\": [{\"\
-    affiliation\": \"Gobierno de Chile\", \"affiliation_identifier\": \"https://ror.org/02sevrz47\"\
-    , \"affiliation_identifier_scheme\": \"ROR\", \"scheme_uri\": \"https://ror.org/\"\
+    : [{\"name_identifier\": \"\", \"name_identifier_scheme\"\
+    : \"ROR\", \"scheme_uri\": \"\"}],\n     \"affiliations\": [{\"\
+    affiliation\": \"Gobierno de Chile\", \"affiliation_identifier\": \"\"\
+    , \"affiliation_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     }]}\n  ],\n  \"publishers\": [\n    {\"publisher_name\": \"Ministerio de Educación\"\
-    , \"publisher_identifier\": \"https://ror.org/018f7hf93\", \"publisher_identifier_scheme\"\
-    : \"ROR\", \"scheme_uri\": \"https://ror.org/\", \"lang\": \"es\"}\n  ]\n}\n\n\
+    , \"publisher_identifier\": \"\", \"publisher_identifier_scheme\"\
+    : \"ROR\", \"scheme_uri\": \"\", \"lang\": \"es\"}\n  ]\n}\n\n\
     --- EJEMPLO 2: SERNATUR (Servicio → Ministerio de Economía → Gobierno de Chile)\
     \ ---\nEntrada: \"Estudio del Servicio Nacional de Turismo sobre temporada estival.\"\
     \nSalida:\n{\n  \"creators\": [\n    {\"creator_name\": \"Servicio Nacional de\
     \ Turismo\", \"name_type\": \"Organizational\", \"given_name\": \"\", \"family_name\"\
-    : \"\",\n     \"name_identifiers\": [{\"name_identifier\": \"https://isni.org/isni/0000000403732581\"\
-    , \"name_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/\"\
+    : \"\",\n     \"name_identifiers\": [{\"name_identifier\": \"\"\
+    , \"name_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     }],\n     \"affiliations\": [{\"affiliation\": \"Ministerio de Economía, Desarrollo\
-    \ y Turismo\", \"affiliation_identifier\": \"https://ror.org/00as45r68\", \"affiliation_identifier_scheme\"\
-    : \"ROR\", \"scheme_uri\": \"https://ror.org/\"}]}\n  ],\n  \"publishers\": [\n\
+    \ y Turismo\", \"affiliation_identifier\": \"\", \"affiliation_identifier_scheme\"\
+    : \"ROR\", \"scheme_uri\": \"\"}]}\n  ],\n  \"publishers\": [\n\
     \    {\"publisher_name\": \"Servicio Nacional de Turismo\", \"publisher_identifier\"\
-    : \"https://isni.org/isni/0000000403732581\", \"publisher_identifier_scheme\"\
-    : \"ISNI\", \"scheme_uri\": \"https://isni.org/\", \"lang\": \"es\"}\n  ]\n}\n\
+    : \"\", \"publisher_identifier_scheme\"\
+    : \"ISNI\", \"scheme_uri\": \"\", \"lang\": \"es\"}\n  ]\n}\n\
     \n--- EJEMPLO 3: ODEPA (Servicio → Ministerio de Agricultura → Gobierno de Chile)\
     \ ---\nEntrada: \"Estudio de la Oficina de Estudios y Políticas Agrarias sobre\
     \ producción frutícola.\"\nSalida:\n{\n  \"creators\": [\n    {\"creator_name\"\
     : \"Oficina de Estudios y Políticas Agrarias\", \"name_type\": \"Organizational\"\
     , \"given_name\": \"\", \"family_name\": \"\",\n     \"name_identifiers\": [{\"\
-    name_identifier\": \"https://isni.org/isni/0000000119427969\", \"name_identifier_scheme\"\
-    : \"ISNI\", \"scheme_uri\": \"https://isni.org/\"}],\n     \"affiliations\": [{\"\
-    affiliation\": \"Ministerio de Agricultura\", \"affiliation_identifier\": \"https://ror.org/05nqvv719\"\
-    , \"affiliation_identifier_scheme\": \"ROR\", \"scheme_uri\": \"https://ror.org/\"\
+    name_identifier\": \"\", \"name_identifier_scheme\"\
+    : \"ISNI\", \"scheme_uri\": \"\"}],\n     \"affiliations\": [{\"\
+    affiliation\": \"Ministerio de Agricultura\", \"affiliation_identifier\": \"\"\
+    , \"affiliation_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     }]}\n  ],\n  \"publishers\": [\n    {\"publisher_name\": \"Oficina de Estudios\
-    \ y Políticas Agrarias\", \"publisher_identifier\": \"https://isni.org/isni/0000000119427969\"\
-    , \"publisher_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/\"\
+    \ y Políticas Agrarias\", \"publisher_identifier\": \"\"\
+    , \"publisher_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     , \"lang\": \"es\"}\n  ]\n}\n\n--- EJEMPLO 4: CONAF (Corporación → Ministerio\
     \ de Agricultura → Gobierno de Chile) ---\nEntrada: \"Datos de la Corporación\
     \ Nacional Forestal sobre áreas protegidas.\"\nSalida:\n{\n  \"creators\": [\n\
     \    {\"creator_name\": \"Corporación Nacional Forestal\", \"name_type\": \"Organizational\"\
     , \"given_name\": \"\", \"family_name\": \"\",\n     \"name_identifiers\": [{\"\
-    name_identifier\": \"https://isni.org/isni/0000000121952869\", \"name_identifier_scheme\"\
-    : \"ISNI\", \"scheme_uri\": \"https://isni.org/\"}],\n     \"affiliations\": [{\"\
-    affiliation\": \"Ministerio de Agricultura\", \"affiliation_identifier\": \"https://ror.org/05nqvv719\"\
-    , \"affiliation_identifier_scheme\": \"ROR\", \"scheme_uri\": \"https://ror.org/\"\
+    name_identifier\": \"\", \"name_identifier_scheme\"\
+    : \"ISNI\", \"scheme_uri\": \"\"}],\n     \"affiliations\": [{\"\
+    affiliation\": \"Ministerio de Agricultura\", \"affiliation_identifier\": \"\"\
+    , \"affiliation_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     }]}\n  ],\n  \"publishers\": [\n    {\"publisher_name\": \"Corporación Nacional\
-    \ Forestal\", \"publisher_identifier\": \"https://isni.org/isni/0000000121952869\"\
-    , \"publisher_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/\"\
+    \ Forestal\", \"publisher_identifier\": \"\"\
+    , \"publisher_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     , \"lang\": \"es\"}\n  ]\n}\n\n--- EJEMPLO 5: SII (Servicio → Ministerio de Hacienda\
     \ → Gobierno de Chile) ---\nEntrada: \"Datos tributarios del Servicio de Impuestos\
     \ Internos.\"\nSalida:\n{\n  \"creators\": [\n    {\"creator_name\": \"Servicio\
     \ de Impuestos Internos\", \"name_type\": \"Organizational\", \"given_name\":\
     \ \"\", \"family_name\": \"\",\n     \"name_identifiers\": [{\"name_identifier\"\
-    : \"https://isni.org/isni/0000000108053092\", \"name_identifier_scheme\": \"ISNI\"\
-    , \"scheme_uri\": \"https://isni.org/\"}],\n     \"affiliations\": [{\"affiliation\"\
-    : \"Ministerio de Hacienda\", \"affiliation_identifier\": \"https://isni.org/isni/000000040628717X\"\
-    , \"affiliation_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/\"\
+    : \"\", \"name_identifier_scheme\": \"\"\
+    , \"scheme_uri\": \"\"}],\n     \"affiliations\": [{\"affiliation\"\
+    : \"Ministerio de Hacienda\", \"affiliation_identifier\": \"\"\
+    , \"affiliation_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     }]}\n  ],\n  \"publishers\": [\n    {\"publisher_name\": \"Servicio de Impuestos\
-    \ Internos\", \"publisher_identifier\": \"https://isni.org/isni/0000000108053092\"\
-    , \"publisher_identifier_scheme\": \"ISNI\", \"scheme_uri\": \"https://isni.org/\"\
+    \ Internos\", \"publisher_identifier\": \"\"\
+    , \"publisher_identifier_scheme\": \"\", \"scheme_uri\": \"\"\
     , \"lang\": \"es\"}\n  ]\n}\n\n--- EJEMPLO 6: Sin información ---\nEntrada: \"\
     Recurso sin autoría identificada.\"\nSalida:\n{\"creators\": [], \"publishers\"\
     : []}\n\nDevuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones"
@@ -565,8 +523,7 @@ agents:
     \ EXTRAE INFORMACION DE FINANCIAMIENTO (prioritario para DO)\n- Busca nombres\
     \ de fondos o instituciones: ANID, FONDECYT, CONICYT, FONDEQUIP, FONDEF, REGIONAL,\
     \ PAI, FIC, FOVI, CORFO, INNOVA\n- Busca numeros de proyectos o award numbers\
-    \ (formato tipico: 1234567, 11191101, 3220245, etc.)\n- Para ANID/CONICYT usar\
-    \ ROR: https://ror.org/04v0nnn25\n- Para otros financiadores, buscar su ROR si\
+    \ (formato tipico: 1234567, 11191101, 3220245, etc.)\n- NO incluyas identificadores ROR para financiadores. Deja funder_identifier vacío. Los identificadores se resolverán automáticamente.\n- Para otros financiadores, buscar su ROR si\
     \ es conocido\n- Multi-financiamiento: Pueden haber multiples funding_references,\
     \ uno por cada proyecto/financiador\n\nPaso 4: EXTRAE INFORMACION PARA CITAS BIBLIOGRAFICAS\n\
     - Buscar DOI cuando corresponda\n- Titulo del recurso (obligatorio para cita)\n\
@@ -605,8 +562,8 @@ agents:
     : \"Agencia Nacional de Investigacion y Desarrollo\",\n      \"funding_stream\"\
     : \"FONDECYT\",\n      \"award_number\": \"1234567\",\n      \"award_uri\": \"\
     \",\n      \"award_title\": \"\",\n      \"funder_identifiers\": [\n        {\n\
-    \          \"funder_identifier\": \"https://ror.org/04v0nnn25\",\n          \"\
-    funder_identifier_type\": \"ROR\",\n          \"scheme_uri\": \"https://ror.org/\"\
+    \          \"funder_identifier\": \"\",\n          \"\
+    funder_identifier_type\": \"ROR\",\n          \"scheme_uri\": \"\"\
     \n        }\n      ]\n    }\n  ],\n  \"citations\": []\n}\n\nEJEMPLO 2: Dataset\
     \ de una sola institucion\nContexto: \"Dataset de biodiversidad del Ministerio\
     \ de Ciencia, Tecnologia, Conocimiento e Innovacion.\"\n\nRESPUESTA:\n{\n  \"\

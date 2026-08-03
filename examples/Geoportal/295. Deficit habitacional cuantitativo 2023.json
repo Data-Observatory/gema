@@ -1,0 +1,306 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36435/D%C3%A9ficit%20habitacional%20cuantitativo%202023",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Vivienda y Urbanismo",
+        "maintainer": "Ministerio de Vivienda y Urbanismo",
+        "contact": "ideminvu@minvu.cl",
+        "producer": "Centro de Estudios de Ciudad y Territorio, Ministerio de Vivienda y Urbanismo",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36435",
+          "alternate_identifier_type": "Geoportal ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{f67fe8cd-84eb-45b7-abef-316de1bcd5b7}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Sociología"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Vivienda y Urbanismo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106708868",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2017-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2022-01-01",
+          "date_type": "Created",
+          "date_information": ""
+        },
+        {
+          "date": "2023-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2024-01-30",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Estimación de los requerimientos de viviendas nuevas en el país en base a información del Censo 2017, desagregados territorialmente a nivel de zona y entidad censal. Calculado en 2022 con una nueva metodología que consideró las viviendas irrecuperables, hogares allegados, viviendas con hacinamiento no ampliables y núcleos allegados hacinados con independencia económicas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "déficit habitacional cuantitativo",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Estimación basada en información del Censo 2017 considerando viviendas irrecuperables, hogares allegados, viviendas con hacinamiento no ampliables y núcleos allegados hacinados con independencia económicas",
+          "provenance": "Ministerio de Vivienda y Urbanismo; Centro de Estudios de Ciudad y Territorio",
+          "file_uri": "https://geoide.minvu.cl/server/rest/services/Otros/D%C3%A9ficit_habitacional_cuantitativo_2023/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "déficit habitacional cuantitativo",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "Estimación basada en información del Censo 2017 considerando viviendas irrecuperables, hogares allegados, viviendas con hacinamiento no ampliables y núcleos allegados hacinados con independencia económicas",
+          "provenance": "Ministerio de Vivienda y Urbanismo; Centro de Estudios de Ciudad y Territorio",
+          "file_uri": "https://geoide.minvu.cl/server/rest/services/Otros/D%C3%A9ficit_habitacional_cuantitativo_2023/FeatureServer",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Vivienda y Urbanismo",
+          "publisher_identifier": "https://isni.org/isni/0000000106708868",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoide.minvu.cl/server/rest/services/Otros/D%C3%A9ficit_habitacional_cuantitativo_2023/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoide.minvu.cl/server/rest/services/Otros/D%C3%A9ficit_habitacional_cuantitativo_2023/FeatureServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsSupplementedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Bf67fe8cd-84eb-45b7-abef-316de1bcd5b7%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Vivienda y Urbanismo; Centro de Estudios de Ciudad y Territorio"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Vivienda -- Déficit habitacional -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Censo de población y vivienda -- Chile -- 2017",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Déficit habitacional cuantitativo 2023",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.977,-57.987,-62.064,-13.893",
+            "geo_description": "Cobertura nacional del déficit habitacional cuantitativo, desagregado a nivel de zona y entidad censal según el Censo 2017",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12153,
+        "completion_tokens": 3070,
+        "total_tokens": 15223
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48574,
+        "completion_tokens": 5721,
+        "total_tokens": 54295
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12153,
+        "completion_tokens": 3070,
+        "total_tokens": 15223
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13026,
+        "completion_tokens": 1777,
+        "total_tokens": 14803
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11842,
+        "completion_tokens": 1651,
+        "total_tokens": 13493
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11830,
+        "completion_tokens": 954,
+        "total_tokens": 12784
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11876,
+        "completion_tokens": 1339,
+        "total_tokens": 13215
+      }
+    },
+    "total": {
+      "prompt_tokens": 60727,
+      "completion_tokens": 8791,
+      "total_tokens": 69518
+    }
+  },
+  "processed_at": "2026-06-01T16:47:25.993920",
+  "input_file": "inputs1\\2.json"
+}

@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35523/Censo%20Agropecuario%202007%20Otro%20tipo%20de%20ganado%20Chile%20Continental",
+        "identifier_type": "URL",
+        "editor": "Oficina de Estudios y Políticas Agrarias",
+        "contact": "jovalle@odepa.gob.cl",
+        "producer": "Oficina de Estudios y Políticas Agrarias",
+        "publication_year": "2007",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "Identificador UUID del Geoportal",
+          "alternate_identifier": "{B5B59F97-D8F1-4885-B8F0-667A922EF7D2}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Docente",
+          "education_level": "Pregrado",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Agricultura, silvicultura y pesca"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Oficina de Estudios y Políticas Agrarias",
+          "creator_name_type": "Organizational",
+          "type": "Organization",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000119427969",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2007-12-31",
+          "date_type": "Published",
+          "date_information": "Fecha de publicación del VII Censo Nacional Agropecuario"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE. El trazado de límites no es oficial de la República de Chile. Trazado de límites actualizado según modificaciones efectuadas el año 2014. Los límites internacionales fueron revisados por la Dirección de Fronteras y Límites (Difrol), y autorizados para su uso en elaboración de cartografía, mediante Resolución No. 255 del 2 de febrero de 2001. No obstante lo anterior, cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol. Cobertura que permite la asociación de cifras estadísticas y/o temáticas, referidas a las unidades administrativas del país y distritos censales INE.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "spa",
+          "language": "Español",
+          "description": "Texto principal"
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/x-rar-compressed",
+          "variable_measured": "cifras estadisticas de otro tipo de ganado por unidad administrativa y distrito censal",
+          "data_quality": "limites internacionales revisados por DIFROL, Resolucion No. 255 del 2 de febrero de 2001. Trazado de limites actualizado segun modificaciones del 2014",
+          "measurement_technique": "VII Censo Nacional Agropecuario 2007",
+          "provenance": "Oficina de Estudios y Politicas Agrarias (ODEPA), Ministerio de Agricultura",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/cc_oganado.rar",
+          "temporal_resolution": "yearly",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Oficina de Estudios y Políticas Agrarias",
+          "publisher_identifier": "https://isni.org/isni/0000000119427969",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_holder": "Oficina de Estudios y Políticas Agrarias"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Censo agropecuario -- Ganado -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        },
+        {
+          "subject_name": "División administrativa -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html"
+        }
+      ],
+      "titles": [
+        {
+          "name": "Censo Agropecuario 2007 Otro tipo de ganado Chile Continental",
+          "title_type": "Main",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "temporal_events": [
+          {
+            "start_date": "2007-01-01",
+            "frequency_number": "1",
+            "frequency_type": "yearly",
+            "description": "VII Censo Nacional Agropecuario año 2007"
+          }
+        ],
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile Continental",
+            "geo_location_box": "-77.4493 -59.1769 -68.7905 -17.509",
+            "geo_description": "Cobertura de Chile Continental con división administrativa vigente y distritos censales INE",
+            "coverage": "nacional"
+          }
+        ]
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5": {
+        "prompt_tokens": 55878,
+        "completion_tokens": 7362,
+        "total_tokens": 63240
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 9836,
+        "completion_tokens": 1795,
+        "total_tokens": 11631
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11307,
+        "completion_tokens": 1400,
+        "total_tokens": 12707
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11284,
+        "completion_tokens": 1488,
+        "total_tokens": 12772
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11292,
+        "completion_tokens": 1193,
+        "total_tokens": 12485
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12159,
+        "completion_tokens": 1486,
+        "total_tokens": 13645
+      }
+    },
+    "total": {
+      "prompt_tokens": 55878,
+      "completion_tokens": 7362,
+      "total_tokens": 63240
+    }
+  },
+  "processed_at": "2026-05-04T14:41:59.563636",
+  "input_file": "inputs\\inputs.json"
+}

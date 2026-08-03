@@ -1,0 +1,288 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36786/Puentes",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Dirección de Vialidad",
+        "contact": "562 2449 4000",
+        "producer": "Dirección de Vialidad, Ministerio de Obras Públicas",
+        "publication_year": "2019",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36786",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{18ff44bd-6951-4477-848e-549a96634ebc}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Desarrolladores",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ingeniería y Tecnología",
+          "sub_category": "Ingeniería civil y estructuras"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Dirección de Vialidad",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Obras Públicas",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2019-02-27",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Cobertura de puntos que representa la ubicación y contiene la descripción de los puentes, viaductos y pasos superiores de tuición de la Dirección de Vialidad del MOP a nivel nacional. Definición técnica Activo de obra de infraestructura pública: Puentes: Son las obras viales destinadas a permitir la continuidad de un camino de uso público sobre obstáculos naturales, tales como ríos, mar, esteros, lagos, etc. Viaductos: Son las obras viales destinadas a permitir la continuidad de un camino de uso público sobre hondonadas (quebradas, farellones, etc). Pasos Superiores: Son las obras viales destinadas a permitir la continuidad de un camino de uso público sobre vías férreas o carreteras. La fuente es mayormente levantamiento georreferenciado con el Sistema Global de Navegación por Satélite GNSS. Escala estimada de precisión 1:5.000.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "puentes, viaductos y pasos superiores",
+          "checksum": "",
+          "data_quality": "Escala estimada de precisión 1:5.000",
+          "measurement_technique": "levantamiento georreferenciado con el Sistema Global de Navegación por Satélite GNSS",
+          "provenance": "Dirección de Vialidad, Ministerio de Obras Públicas",
+          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/VIALIDAD/Puentes/MapServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "puentes, viaductos y pasos superiores",
+          "checksum": "",
+          "data_quality": "Escala estimada de precisión 1:5.000",
+          "measurement_technique": "levantamiento georreferenciado con el Sistema Global de Navegación por Satélite GNSS",
+          "provenance": "Dirección de Vialidad, Ministerio de Obras Públicas",
+          "file_uri": "https://geomop.mop.gob.cl/descargas/",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Obras Públicas",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://rest-sit.mop.gob.cl/arcgis/rest/services/VIALIDAD/Puentes/MapServer",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geomop.mop.gob.cl/descargas/",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://siac.mop.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Dirección de Vialidad; Ministerio de Obras Públicas"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Puentes -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Infraestructura de transporte -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Vialidad -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Puentes",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-76, -56, -61, -16",
+            "geo_description": "Cobertura nacional de puentes, viaductos y pasos superiores de la Dirección de Vialidad del MOP a lo largo del territorio chileno",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12428,
+        "completion_tokens": 2386,
+        "total_tokens": 14814
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 48979,
+        "completion_tokens": 6204,
+        "total_tokens": 55183
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12428,
+        "completion_tokens": 2386,
+        "total_tokens": 14814
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13233,
+        "completion_tokens": 1677,
+        "total_tokens": 14910
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11961,
+        "completion_tokens": 1489,
+        "total_tokens": 13450
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11974,
+        "completion_tokens": 1767,
+        "total_tokens": 13741
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11811,
+        "completion_tokens": 1271,
+        "total_tokens": 13082
+      }
+    },
+    "total": {
+      "prompt_tokens": 61407,
+      "completion_tokens": 8590,
+      "total_tokens": 69997
+    }
+  },
+  "processed_at": "2026-05-28T16:31:25.693091",
+  "input_file": "examples\\3.json"
+}

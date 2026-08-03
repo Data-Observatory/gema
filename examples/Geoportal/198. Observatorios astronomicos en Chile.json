@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36768/Observatorios%20astron%C3%B3micos%20en%20Chile",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "maintainer": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+        "contact": "http://sistred.bienes.cl/siac-atencion/atencion?idechile; 800 104 559",
+        "producer": "",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "36768",
+          "alternate_identifier_type": "Geoportal CL ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "c284eb6c-9a9d-4f5e-8dfe-78fd6b9b6bb8",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Científicos de datos",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Estudiantes",
+          "mediator": "Tutor",
+          "education_level": "Pregrado",
+          "instructional_method": "Estudio de caso"
+        },
+        {
+          "audience": "Público general",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Astronomía y astrofísica"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://ror.org/03tvpbp09",
+              "name_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-01-10",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Conjunto de datos geoespaciales que identifica los observatorios nacionales e internacionales emplazados en las Áreas de Valor Científico y de Investigación para la Observación Astronómica, declaradas mediante el Decreto Supremo N° 2/2023 del Ministerio de Ciencia, Tecnología, Conocimiento e Innovación. Cada registro corresponde a un sitio astronómico ubicado en territorio nacional y ha sido estructurado a partir de campos estandarizados que permiten su interoperabilidad en plataformas IDE. Entre las variables consideradas se incluyen: nombre de la infraestructura, tipo de tecnología astronómica empleada (óptica, óptico-infrarroja, radioastronomía, rayos gamma), región, comuna, cerro o emplazamiento específico, coordenadas geográficas (latitud y longitud), altitud sobre el nivel del mar, países administradores o consorcios responsables, tipo de concesión o régimen de tenencia territorial, estado operativo del observatorio (en construcción, en operación u otros estados técnicos) y tipos de protección vigentes aplicables a cada sitio. La información relativa a los regímenes de protección considera instrumentos sectoriales otorgados o regulados por el Ministerio de Ciencia, Tecnología, Conocimiento e Innovación, el Ministerio de Minería y el Ministerio de Transportes y Telecomunicaciones, en el ámbito de sus respectivas competencias normativas.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Observatorios astronómicos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "file_uri": "https://geoportal.cl/observatorios/catalog/download/9a79e316-41a6-33b4-bd96-712292ef8df8",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "variable_measured": "Observatorios astronómicos",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "file_uri": "https://geoportal.cl/observatorios/catalog/download/6e6d2830-fa80-3170-bb80-79a9151cb0d8",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+          "publisher_identifier": "https://ror.org/03tvpbp09",
+          "publisher_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/observatorios/catalog/download/9a79e316-41a6-33b4-bd96-712292ef8df8",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/observatorios/catalog/download/6e6d2830-fa80-3170-bb80-79a9151cb0d8",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7Bc284eb6c-9a9d-4f5e-8dfe-78fd6b9b6bb8%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Observatorios astronómicos -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Radioastronomía -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Datos geoespaciales -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Observatorios astronómicos en Chile",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile (norte y centro)",
+            "geo_location_box": "-72.530,-33.702,-66.565,-16.332",
+            "geo_description": "Área que abarca las zonas de emplazamiento de observatorios astronómicos en el norte y centro de Chile, desde la Región de Arica y Parinacota hasta la Región Metropolitana",
+            "coverage": "regional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12163,
+        "completion_tokens": 3509,
+        "total_tokens": 15672
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 49400,
+        "completion_tokens": 5495,
+        "total_tokens": 54895
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12163,
+        "completion_tokens": 3509,
+        "total_tokens": 15672
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13185,
+        "completion_tokens": 1312,
+        "total_tokens": 14497
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11999,
+        "completion_tokens": 2120,
+        "total_tokens": 14119
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12087,
+        "completion_tokens": 897,
+        "total_tokens": 12984
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12129,
+        "completion_tokens": 1166,
+        "total_tokens": 13295
+      }
+    },
+    "total": {
+      "prompt_tokens": 61563,
+      "completion_tokens": 9004,
+      "total_tokens": 70567
+    }
+  },
+  "processed_at": "2026-06-01T10:03:35.096237",
+  "input_file": "inputs1\\4.json"
+}

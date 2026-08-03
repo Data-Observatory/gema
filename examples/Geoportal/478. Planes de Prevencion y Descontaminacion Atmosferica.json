@@ -1,0 +1,284 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/32476/Planes%20de%20Prevenci%C3%B3n%20y%20Descontaminaci%C3%B3n%20Atmosf%C3%A9rica",
+        "identifier_type": "URL",
+        "editor": "Ministerio del Medio Ambiente",
+        "maintainer": "Ministerio del Medio Ambiente",
+        "contact": "Mherrera@mma.gob.cl; +562 29385406",
+        "producer": "Ministerio del Medio Ambiente",
+        "publication_year": "2020",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "32476",
+          "alternate_identifier_type": "Catalog ID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{593BF2E9-C4D6-40FA-8A47-3C7F87DF9A8F}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Bibliotecario",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Trabajadores de ONG",
+          "mediator": "Autodirigido",
+          "education_level": "Educación continua",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias medioambientales"
+        },
+        {
+          "name": "Ciencias Naturales y Exactas",
+          "sub_category": "Ciencias de la Tierra"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Ministerio del Medio Ambiente",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2019-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2020-06-17",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Planes de Prevención y/o descontaminación para aquellas zonas del país que poseen decreto de saturación o latencia por contaminantes al aire. Lugar: Chile. Fuente: Ministerio de Medio Ambiente. Escala de referencia: Región. Año: 2019.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Planes de Prevención y Descontaminación Atmosférica",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Ministerio del Medio Ambiente",
+          "file_uri": "https://geoportal.cl/geoportal/catalog/download/c97d774c-dc3d-334d-99cc-7c101cd69b8e",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio del Medio Ambiente",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/download/c97d774c-dc3d-334d-99cc-7c101cd69b8e",
+          "related_identifier_type": "URL",
+          "relation_type": "IsDownloadedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B593BF2E9-C4D6-40FA-8A47-3C7F87DF9A8F%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "HasMetadata",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://mma.gob.cl",
+          "related_identifier_type": "URL",
+          "relation_type": "IsReferencedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Ministerio del Medio Ambiente"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Contaminación atmosférica -- Planes de descontaminación -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Calidad del aire -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Medio ambiente -- Planificación y catastro -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Planes de Prevención y Descontaminación Atmosférica",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-75.7922,-56.9427,-64.4523,-15.6552",
+            "geo_description": "Zonas del territorio nacional de Chile que poseen decreto de saturación o latencia por contaminantes al aire",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11576,
+        "completion_tokens": 2907,
+        "total_tokens": 14483
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 45503,
+        "completion_tokens": 5278,
+        "total_tokens": 50781
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11576,
+        "completion_tokens": 2907,
+        "total_tokens": 14483
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12285,
+        "completion_tokens": 1115,
+        "total_tokens": 13400
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11024,
+        "completion_tokens": 1365,
+        "total_tokens": 12389
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11081,
+        "completion_tokens": 1426,
+        "total_tokens": 12507
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11113,
+        "completion_tokens": 1372,
+        "total_tokens": 12485
+      }
+    },
+    "total": {
+      "prompt_tokens": 57079,
+      "completion_tokens": 8185,
+      "total_tokens": 65264
+    }
+  },
+  "processed_at": "2026-05-28T18:43:39.360088",
+  "input_file": "examples\\3.json"
+}

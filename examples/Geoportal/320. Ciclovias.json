@@ -1,0 +1,384 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/36392/Ciclov%C3%ADas",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Transporte y Telecomunicaciones",
+        "maintainer": "SECTRA",
+        "contact": "+562 2421 3000",
+        "producer": "SEREMITT, MINVU, MOP, GOREs y Municipios",
+        "publication_year": "2024",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "https://www.geoportal.cl//storage/geoportal/metadatagis/f5nwrXyL5OpbmSyUcOAXJOLTVKMH9XBj9ppAMQ5N.png",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{2d7bfa20-a81a-4e1a-9676-02e4a7c84654}",
+          "alternate_identifier_type": "UUID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Ciudadanos",
+          "mediator": "Autodirigido",
+          "education_level": "Aprendizaje permanente",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Supervisor",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Geografía económica y social"
+        },
+        {
+          "name": "Ciencias Sociales",
+          "sub_category": "Ciencias políticas"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Secretaría Ejecutiva de la Comisión de Planificación de Inversiones en Infraestructura de Transporte (SECTRA)",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Transporte y Telecomunicaciones",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Secretarías Regionales Ministeriales de Transporte y Telecomunicaciones (SEREMITT)",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Transporte y Telecomunicaciones",
+              "affiliation_identifier": "",
+              "affiliation_identifier_scheme": "",
+              "scheme_uri": ""
+            }
+          ]
+        },
+        {
+          "creator_name": "Ministerio de Vivienda y Urbanismo",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000106708868",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Ministerio de Obras Públicas",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Gobiernos Regionales (GOREs)",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": [
+            {
+              "affiliation": "Gobierno de Chile",
+              "affiliation_identifier": "https://ror.org/02sevrz47",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        },
+        {
+          "creator_name": "Municipios",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [],
+          "affiliations": []
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-05-29",
+          "date_type": "Issued",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Mapa de ciclovías existentes, en proceso de diseño, planificación y ejecución a nivel nacional actualizado a mayo de 2024. Esta capa es consolidada por SECTRA con registros aportados por SEREMITT, MINVU, MOP, GOREs y Municipios.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/json",
+          "variable_measured": "Ciclovías",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "SECTRA con registros aportados por SEREMITT, MINVU, MOP, GOREs y Municipios",
+          "file_uri": "https://services6.arcgis.com/feQ9HId8vmgonvvD/ArcGIS/rest/services/CICLOV_validVisor_WFL1/FeatureServer",
+          "temporal_resolution": "",
+          "Collections": []
+        },
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/zip",
+          "variable_measured": "Ciclovías",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "SECTRA con registros aportados por SEREMITT, MINVU, MOP, GOREs y Municipios",
+          "file_uri": "https://drive.google.com/uc?export=download&id=1dauGTYrvR2SgUm7436kUZyt7TkJ0bMZP",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Ministerio de Transporte y Telecomunicaciones",
+          "publisher_identifier": "",
+          "publisher_identifier_scheme": "",
+          "scheme_uri": "",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://services6.arcgis.com/feQ9HId8vmgonvvD/ArcGIS/rest/services/CICLOV_validVisor_WFL1/FeatureServer",
+          "related_identifier_type": "URL",
+          "relation_type": "isHostedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://www.arcgis.com/apps/dashboards/d2c380a49743480e86a628daeb696e9f",
+          "related_identifier_type": "URL",
+          "relation_type": "isVisualizedBy",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://drive.google.com/uc?export=download&id=1dauGTYrvR2SgUm7436kUZyt7TkJ0bMZP",
+          "related_identifier_type": "URL",
+          "relation_type": "isPartOf",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B2d7bfa20-a81a-4e1a-9676-02e4a7c84654%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "isMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Secretaría Ejecutiva de la Comisión de Planificación de Inversiones en Infraestructura de Transporte (SECTRA); Secretarías Regionales Ministeriales de Transporte y Telecomunicaciones (SEREMITT); Ministerio de Vivienda y Urbanismo; Ministerio de Obras Públicas; Gobiernos Regionales; Municipios"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Ciclovías -- Transporte -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "Planificación del transporte -- Chile",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Ciclovías",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Chile",
+            "geo_location_box": "-78.372,-59.195,-61.460,-15.705",
+            "geo_description": "Cobertura nacional de ciclovías existentes y en proceso de diseño, planificación y ejecución a lo largo de Chile",
+            "coverage": "nacional"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 12632,
+        "completion_tokens": 3084,
+        "total_tokens": 15716
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 51159,
+        "completion_tokens": 8488,
+        "total_tokens": 59647
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 12632,
+        "completion_tokens": 3084,
+        "total_tokens": 15716
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 13374,
+        "completion_tokens": 3030,
+        "total_tokens": 16404
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12577,
+        "completion_tokens": 1353,
+        "total_tokens": 13930
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12555,
+        "completion_tokens": 2029,
+        "total_tokens": 14584
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12653,
+        "completion_tokens": 2076,
+        "total_tokens": 14729
+      }
+    },
+    "total": {
+      "prompt_tokens": 63791,
+      "completion_tokens": 11572,
+      "total_tokens": 75363
+    }
+  },
+  "processed_at": "2026-06-01T17:56:44.899645",
+  "input_file": "inputs1\\3.json"
+}

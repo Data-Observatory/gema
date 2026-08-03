@@ -455,18 +455,18 @@ class DataCiteSchema46:
                         publishers.append(
                             {
                                 "publisher_name": str(first_val),
-                                "publisher_identifier": "publisher_identifier",
-                                "publisher_identifier_scheme": "publisher_identifier_scheme",
-                                "publisher_scheme_uri": "publisher_scheme_uri",
+                                "publisher_identifier": "",
+                                "publisher_identifier_scheme": "",
+                                "publisher_scheme_uri": "",
                             }
                         )
             elif isinstance(item, str) and item.strip():
                 publishers.append(
                     {
                         "publisher_name": item.strip(),
-                        "publisher_identifier": "publisher_identifier",
-                        "publisher_identifier_scheme": "publisher_identifier_scheme",
-                        "publisher_scheme_uri": "publisher_scheme_uri",
+                        "publisher_identifier": "",
+                        "publisher_identifier_scheme": "",
+                        "publisher_scheme_uri": "",
                     }
                 )
 

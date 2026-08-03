@@ -1,0 +1,268 @@
+{
+  "metadata": {
+    "attributes": {
+      "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35537/Censo%20Agropecuario%202007%20Vi%C3%B1as%20Isla%20de%20Pascua",
+        "identifier_type": "URL",
+        "editor": "Oficina de Estudios y Políticas Agrarias",
+        "maintainer": "Oficina de Estudios y Políticas Agrarias (ODEPA)",
+        "contact": "jovalle@odepa.gob.cl; 56 223973137",
+        "producer": "",
+        "publication_year": "2007",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "alternate_identifiers": [
+        {
+          "alternate_name": "",
+          "alternate_identifier": "{87ADFD34-4A66-45C3-A2EC-E296F15558BE}",
+          "alternate_identifier_type": "UUID"
+        },
+        {
+          "alternate_name": "",
+          "alternate_identifier": "35537",
+          "alternate_identifier_type": "Geoportal ID"
+        }
+      ],
+      "audiences": [
+        {
+          "audience": "Investigadores",
+          "mediator": "Autodirigido",
+          "education_level": "Postgrado",
+          "instructional_method": "Análisis"
+        },
+        {
+          "audience": "Tomadores de decisiones",
+          "mediator": "Analista",
+          "education_level": "Profesional",
+          "instructional_method": "Consultoría"
+        },
+        {
+          "audience": "Profesionales",
+          "mediator": "Autodirigido",
+          "education_level": "Profesional",
+          "instructional_method": "Autoaprendizaje"
+        },
+        {
+          "audience": "Administradores",
+          "mediator": "Gerente",
+          "education_level": "Profesional",
+          "instructional_method": "Análisis"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Ciencias Agrícolas",
+          "sub_category": "Agricultura, silvicultura y pesca"
+        }
+      ],
+      "citations": [],
+      "creators": [
+        {
+          "creator_name": "Oficina de Estudios y Políticas Agrarias",
+          "creator_name_type": "Organizational",
+          "given_name": "",
+          "family_name": "",
+          "email": "",
+          "genre": "",
+          "type": "Organization",
+          "contributor_type": "",
+          "name_identifiers": [
+            {
+              "name_identifier": "https://isni.org/isni/0000000119427969",
+              "name_identifier_scheme": "ISNI",
+              "scheme_uri": "https://isni.org/"
+            }
+          ],
+          "affiliations": [
+            {
+              "affiliation": "Ministerio de Agricultura",
+              "affiliation_identifier": "https://ror.org/05nqvv719",
+              "affiliation_identifier_scheme": "ROR",
+              "scheme_uri": "https://ror.org/"
+            }
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "2007-01-01",
+          "date_type": "Collected",
+          "date_information": ""
+        },
+        {
+          "date": "2007-12-31",
+          "date_type": "Issued",
+          "date_information": ""
+        },
+        {
+          "date": "2014-01-01",
+          "date_type": "Updated",
+          "date_information": ""
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE. El trazado de límites no es oficial de la República de Chile. Trazado de límites actualizado según modificaciones efectuadas el año 2014. Los límites internacionales fueron revisados por la Dirección de Fronteras y Límites (Difrol), y autorizados para su uso en elaboración de cartografía, mediante Resolución No. 255 del 2 de febrero de 2001. No obstante lo anterior, cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol. Cobertura que permite la asociación de cifras estadísticas y/o temáticas, referidas a las unidades administrativas del país y distritos censales INE.",
+          "description_type": "Abstract",
+          "language": "es"
+        }
+      ],
+      "funding_references": [],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": ""
+        }
+      ],
+      "media_files": [
+        {
+          "sizes": [],
+          "physical_carrier": "digital",
+          "format": "application/x-rar-compressed",
+          "variable_measured": "Censo agropecuario - Viñas",
+          "checksum": "",
+          "data_quality": "",
+          "measurement_technique": "",
+          "provenance": "Oficina de Estudios y Políticas Agrarias (ODEPA)",
+          "file_uri": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/ip_vinas.rar",
+          "temporal_resolution": "",
+          "Collections": []
+        }
+      ],
+      "publishers": [
+        {
+          "publisher_name": "Oficina de Estudios y Políticas Agrarias",
+          "publisher_identifier": "https://isni.org/isni/0000000119427969",
+          "publisher_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org/",
+          "lang": "es"
+        }
+      ],
+      "related_identifiers": [
+        {
+          "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7B87ADFD34-4A66-45C3-A2EC-E296F15558BE%7D",
+          "related_identifier_type": "URL",
+          "relation_type": "IsMetadataFor",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        },
+        {
+          "related_identifier": "https://ide.minagri.gob.cl/geoweb/wp-content/uploads/2026/01/ip_vinas.rar",
+          "related_identifier_type": "URL",
+          "relation_type": "HasPart",
+          "related_metadata_scheme": "",
+          "scheme_uri": "",
+          "scheme_type": "",
+          "resource_type_general": "Dataset",
+          "contact": ""
+        }
+      ],
+      "rights": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+          "rights_identifier": "CC-BY-4.0",
+          "rights_identifier_scheme": "SPDX",
+          "scheme_uri": "https://spdx.org/licenses/",
+          "rights_condition": "",
+          "rights_holder": "Oficina de Estudios y Políticas Agrarias; Ministerio de Agricultura"
+        }
+      ],
+      "subjects": [
+        {
+          "subject_name": "Censo agropecuario -- Viñas -- Isla de Pascua",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        },
+        {
+          "subject_name": "División administrativa -- Chile -- Isla de Pascua",
+          "subject_scheme": "LCSH",
+          "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+          "value_uri": "",
+          "classification_code": ""
+        }
+      ],
+      "titles": [
+        {
+          "name": "Censo Agropecuario 2007 Viñas Isla de Pascua",
+          "title_type": "MainTitle",
+          "language": "es"
+        }
+      ],
+      "temporal_geo": {
+        "geo_locations": [
+          {
+            "geo_location_place": "Isla de Pascua",
+            "geo_location_box": "-109.5466,-27.3855,-109.0739,-26.8937",
+            "geo_description": "Área de las viñas en la Isla de Pascua, correspondiente al levantamiento del Censo Agropecuario 2007",
+            "coverage": "local"
+          }
+        ],
+        "temporal_events": []
+      }
+    }
+  },
+  "token_usage": {
+    "by_model": {
+      "openai/glm-5-turbo": {
+        "prompt_tokens": 11787,
+        "completion_tokens": 3307,
+        "total_tokens": 15094
+      },
+      "openai/glm-5": {
+        "prompt_tokens": 47129,
+        "completion_tokens": 4552,
+        "total_tokens": 51681
+      }
+    },
+    "by_agent": {
+      "core_metadata": {
+        "model": "openai/glm-5-turbo",
+        "prompt_tokens": 11787,
+        "completion_tokens": 3307,
+        "total_tokens": 15094
+      },
+      "creators_publishers": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 12683,
+        "completion_tokens": 1136,
+        "total_tokens": 13819
+      },
+      "classification": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11506,
+        "completion_tokens": 1469,
+        "total_tokens": 12975
+      },
+      "rights_funding_citations": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11449,
+        "completion_tokens": 852,
+        "total_tokens": 12301
+      },
+      "media_files": {
+        "model": "openai/glm-5",
+        "prompt_tokens": 11491,
+        "completion_tokens": 1095,
+        "total_tokens": 12586
+      }
+    },
+    "total": {
+      "prompt_tokens": 58916,
+      "completion_tokens": 7859,
+      "total_tokens": 66775
+    }
+  },
+  "processed_at": "2026-06-01T11:32:26.958241",
+  "input_file": "inputs1\\4.json"
+}
