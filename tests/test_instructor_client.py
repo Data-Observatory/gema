@@ -164,3 +164,57 @@ class TestInstructorLLMClient:
 
         result = client.complete_raw(prompt="hello")
         assert result == ""
+
+
+class TestReaskToolsNoneCrashPatch:
+    """Regression coverage for the instructor upstream bug worked around in
+    instructor_client._patch_instructor_reask_tools_none_crash().
+
+    Some providers (observed with ZAI's glm-5.2) sometimes answer with plain
+    content instead of a tool call. instructor's own reask_tools() then
+    crashes with TypeError('NoneType' object is not iterable) instead of
+    building a retry message — this patch makes it fall back gracefully.
+    """
+
+    def test_none_tool_calls_falls_back_instead_of_crashing(self) -> None:
+        from instructor.v2.providers.openai import handlers
+
+        message = MagicMock()
+        message.tool_calls = None
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+
+        kwargs = {"messages": [{"role": "user", "content": "original prompt"}]}
+        result = handlers.reask_tools(kwargs, response, ValueError("bad output"))
+
+        assert len(result["messages"]) == 2
+        assert result["messages"][0] == {"role": "user", "content": "original prompt"}
+        assert "bad output" in result["messages"][1]["content"]
+        # Original kwargs must not be mutated.
+        assert len(kwargs["messages"]) == 1
+
+    def test_present_tool_calls_keeps_original_behavior(self) -> None:
+        """When tool_calls IS present, the patch must not intercept —
+        instructor's normal (bug-free) tool-aware reask path still runs."""
+        from instructor.v2.providers.openai import handlers
+
+        tool_call = MagicMock()
+        tool_call.id = "call_1"
+        tool_call.function.name = "SomeModel"
+        message = MagicMock()
+        message.tool_calls = [tool_call]
+        message.function_call = None
+        message.model_dump.return_value = {"role": "assistant", "tool_calls": [{"id": "call_1"}]}
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+
+        kwargs = {"messages": [{"role": "user", "content": "original prompt"}]}
+        result = handlers.reask_tools(kwargs, response, ValueError("bad output"))
+
+        tool_messages = [m for m in result["messages"] if m.get("role") == "tool"]
+        assert len(tool_messages) == 1
+        assert tool_messages[0]["tool_call_id"] == "call_1"
