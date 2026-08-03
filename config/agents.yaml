@@ -756,8 +756,8 @@ providers:
   api_key_env: ANTHROPIC_API_KEY
 default_provider: zai-coding-plan
 # Max concurrent agent requests per resource (Orchestrator's ThreadPoolExecutor
-# size). zai-coding-plan's rate limit is tight enough that the default 5-agent
-# wave running at max_workers=4 reliably triggers 429 bursts. Lower this
-# further, or raise it, to match whatever provider is actually configured.
-# Override per-invocation with `metagen process --max-workers N`.
-max_workers: 2
+# size). zai-coding-plan's actual rate limit is tight enough that even 2
+# concurrent requests trigger 429 bursts (measured live) — serialize agent
+# calls to respect it reliably. Raise this if a less rate-limited provider
+# is configured. Override per-invocation with `metagen process --max-workers N`.
+max_workers: 1
