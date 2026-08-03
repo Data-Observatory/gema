@@ -102,10 +102,6 @@ class AgentRegistry:
             raise KeyError(f"Agent '{name}' not found. Available: {list(self._agents.keys())}")
         return self._agents[name]
 
-    def get_all_agents(self) -> list[BaseAgent]:
-        """Get all agents in registration order."""
-        return list(self._agents.values())
-
     def get_agent_configs(self) -> list[AgentConfig]:
         """Get all agent configs (for dependency resolution)."""
         return list(self._config.agents)

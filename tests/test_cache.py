@@ -72,15 +72,6 @@ class TestCacheManager:
         assert cm.get("a") is None
         assert cm.get("b") is None
 
-    def test_stats(self, tmp_path: Path) -> None:
-        cm = CacheManager(cache_dir=tmp_path)
-        assert cm.stats() == {"size": 0, "keys": 0}
-        cm.set("x", {"v": 1})
-        cm.set("y", {"v": 2})
-        s = cm.stats()
-        assert s["size"] == 2
-        assert s["keys"] == 2
-
     def test_make_key_is_deterministic(self, tmp_path: Path) -> None:
         cm = CacheManager(cache_dir=tmp_path)
         k1 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None)

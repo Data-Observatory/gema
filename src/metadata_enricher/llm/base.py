@@ -71,15 +71,3 @@ class LLMConfig(BaseModel):
     seed: int | None = None
     max_tokens: int | None = None
     timeout: float = 60.0
-
-    def to_dict(self) -> dict[str, object]:
-        """Return config as plain dict, unwrapping SecretStr."""
-        return {
-            "model": self.model,
-            "api_key": self.api_key.get_secret_value(),
-            "base_url": self.base_url,
-            "temperature": self.temperature,
-            "seed": self.seed,
-            "max_tokens": self.max_tokens,
-            "timeout": self.timeout,
-        }

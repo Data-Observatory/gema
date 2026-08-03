@@ -23,17 +23,6 @@ class TokenUsage(BaseModel):
         return self
 
 
-class LLMResponse(BaseModel):
-    """Generic wrapper for LLM responses."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    content: str
-    model: str
-    usage: TokenUsage = Field(default_factory=TokenUsage)
-    raw: dict[str, Any] | None = None
-
-
 class ResourceDescription(BaseModel):
     """Input resource description — the source material to enrich."""
 

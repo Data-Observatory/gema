@@ -111,19 +111,6 @@ class TestLLMConfig:
         config = LLMConfig(model="gpt-4", api_key="sk-test")
         assert config.timeout == 60.0
 
-    def test_to_dict_unwraps_secret(self) -> None:
-        """to_dict() unwraps SecretStr to plain string."""
-        config = LLMConfig(model="gpt-4", api_key="sk-12345")
-        d = config.to_dict()
-        assert d["api_key"] == "sk-12345"
-        assert isinstance(d["api_key"], str)
-        assert d["model"] == "gpt-4"
-        assert d["temperature"] == 0.0
-        assert d["seed"] is None
-        assert d["timeout"] == 60.0
-        assert d["max_tokens"] is None
-        assert d["base_url"] is None
-
     def test_api_key_stored_as_secret(self) -> None:
         """api_key accepted as plain string, stored as SecretStr internally."""
         config = LLMConfig(model="gpt-4", api_key="sk-xyz")

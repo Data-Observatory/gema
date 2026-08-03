@@ -58,12 +58,6 @@ class CacheManager:
     def clear(self) -> None:
         self._cache.clear()
 
-    def stats(self) -> dict[str, int]:
-        return {
-            "size": len(self._cache),
-            "keys": len(list(self._cache.iterkeys())),
-        }
-
     def close(self) -> None:
         self._cache.close()
 

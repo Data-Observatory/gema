@@ -5,7 +5,6 @@ from pydantic import ValidationError
 
 from metadata_enricher.types import (
     AgentResult,
-    LLMResponse,
     MetadataDocument,
     ResourceDescription,
     TokenUsage,
@@ -128,45 +127,6 @@ class TestTokenUsage:
         """extra='forbid'."""
         with pytest.raises(ValidationError):
             TokenUsage(prompt_tokens=1, completion_tokens=1, bad_field="nope")
-
-
-class TestLLMResponse:
-    """LLMResponse: wrapper for LLM call results."""
-
-    def test_minimal(self):
-        """content and model required."""
-        resp = LLMResponse(content="hello", model="gpt-4")
-        assert resp.content == "hello"
-        assert resp.model == "gpt-4"
-
-    def test_with_usage(self):
-        """usage via TokenUsage object."""
-        usage = TokenUsage(prompt_tokens=10, completion_tokens=5)
-        resp = LLMResponse(content="hello", model="gpt-4", usage=usage)
-        assert resp.usage.total_tokens == 15
-        assert resp.usage.prompt_tokens == 10
-
-    def test_default_usage(self):
-        """usage defaults to empty TokenUsage."""
-        resp = LLMResponse(content="hi", model="gpt-3.5")
-        assert isinstance(resp.usage, TokenUsage)
-        assert resp.usage.total_tokens == 0
-
-    def test_raw_passthrough(self):
-        """raw dict passthrough."""
-        raw = {"id": "chatcmpl-xyz", "choices": []}
-        resp = LLMResponse(content="hi", model="gpt-4", raw=raw)
-        assert resp.raw == raw
-
-    def test_extra_fields_forbidden(self):
-        """extra='forbid'."""
-        with pytest.raises(ValidationError):
-            LLMResponse(content="hi", model="gpt-4", extra="bad")
-
-    def test_missing_content_raises(self):
-        """content is required."""
-        with pytest.raises(ValidationError):
-            LLMResponse(model="gpt-4")  # type: ignore[call-arg]
 
 
 class TestMetadataDocument:

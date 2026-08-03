@@ -8,7 +8,6 @@ import pytest
 from pydantic import ValidationError
 
 from metadata_enricher.agents.registry import AgentRegistry
-from metadata_enricher.agents.base import BaseAgent
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 
 
@@ -74,15 +73,6 @@ def schema():
     return FakeSchema()
 
 
-def test_registry_builds_all_agents(schema):
-    config = make_config(num_agents=3)
-    registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)
-    agents = registry.get_all_agents()
-    assert len(agents) == 3
-    for agent in agents:
-        assert isinstance(agent, BaseAgent)
-
-
 def test_get_agent_by_id(schema):
     config = make_config(num_agents=3)
     registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)
@@ -95,14 +85,6 @@ def test_get_agent_unknown_raises(schema):
     registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)
     with pytest.raises(KeyError, match="Agent 'nonexistent' not found"):
         registry.get_agent("nonexistent")
-
-
-def test_get_all_agents(schema):
-    config = make_config(num_agents=3)
-    registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)
-    agents = registry.get_all_agents()
-    assert len(agents) == 3
-    assert [a.name for a in agents] == ["Agent 0", "Agent 1", "Agent 2"]
 
 
 def test_registry_uses_llm_factory(schema):
