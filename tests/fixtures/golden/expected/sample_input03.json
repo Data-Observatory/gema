@@ -5,7 +5,7 @@
     "editor": "Departamento de Geografía Universidad de Chile",
     "maintainer": "Geoportal de Chile",
     "contact": "psarricolea@uchilefau.cl; 56 229783126",
-    "producer": "Departamento de Geografía Universidad de Chile",
+    "producer": "Departamento de Geografía, Universidad de Chile",
     "publication_year": "2017",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -21,7 +21,7 @@
     },
     {
       "alternate_name": "",
-      "alternate_identifier": "{FC85D54E-34B7-416D-ABC3-E0E3FAC45A31}",
+      "alternate_identifier": "FC85D54E-34B7-416D-ABC3-E0E3FAC45A31",
       "alternate_identifier_type": "Local"
     }
   ],
@@ -33,27 +33,21 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Estudiantes",
-      "mediator": "Docente",
-      "education_level": "Pregrado",
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
       "instructional_method": "Estudio de caso"
     },
     {
-      "audience": "Docentes",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
       "instructional_method": "Clase guiada"
     }
   ],
@@ -100,16 +94,23 @@
       ]
     },
     {
-      "creator_name": "Herrera, M. J.",
+      "creator_name": "Herrera, MJ.",
       "creator_name_type": "Organizational",
-      "given_name": "M. J.",
+      "given_name": "MJ.",
       "family_name": "Herrera",
       "email": "",
       "genre": "",
       "type": "Organization",
       "contributor_type": "",
       "name_identifiers": [],
-      "affiliations": []
+      "affiliations": [
+        {
+          "affiliation": "Universidad de Chile",
+          "affiliation_identifier": "https://ror.org/047gc3g35",
+          "affiliation_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/"
+        }
+      ]
     },
     {
       "creator_name": "Meseguer-Ruiz, O.",
@@ -121,13 +122,25 @@
       "type": "Organization",
       "contributor_type": "",
       "name_identifiers": [],
-      "affiliations": []
+      "affiliations": [
+        {
+          "affiliation": "Universidad de Chile",
+          "affiliation_identifier": "https://ror.org/047gc3g35",
+          "affiliation_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org/"
+        }
+      ]
     }
   ],
   "dates": [
     {
       "date": "2017-01-12",
       "date_type": "Issued",
+      "date_information": ""
+    },
+    {
+      "date": "2017-01-01",
+      "date_type": "Collected",
       "date_information": ""
     }
   ],
@@ -150,36 +163,36 @@
     {
       "sizes": [],
       "physical_carrier": "digital",
-      "format": "application/zip",
-      "variable_measured": "Tipos de clima (precipitación, temperatura, altitud) según clasificación Köppen-Geiger",
+      "format": "application/xml",
+      "variable_measured": "Zonas climáticas, temperatura, precipitación",
       "checksum": "",
       "data_quality": "",
       "measurement_technique": "Clasificación climática de Köppen-Geiger",
-      "provenance": "Departamento de Geografía Universidad de Chile. Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73. Basado en coberturas climáticas de Pliscoff et al (2014).",
-      "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
+      "provenance": "Departamento de Geografía Universidad de Chile",
+      "file_uri": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
       "temporal_resolution": "monthly",
       "Collections": []
     },
     {
       "sizes": [],
       "physical_carrier": "digital",
-      "format": "application/xml",
-      "variable_measured": "",
+      "format": "application/zip",
+      "variable_measured": "Zonas climáticas, temperatura, precipitación",
       "checksum": "",
       "data_quality": "",
-      "measurement_technique": "",
+      "measurement_technique": "Clasificación climática de Köppen-Geiger",
       "provenance": "Departamento de Geografía Universidad de Chile",
-      "file_uri": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
-      "temporal_resolution": "",
+      "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
+      "temporal_resolution": "monthly",
       "Collections": []
     }
   ],
   "publishers": [
     {
-      "publisher_name": "Departamento de Geografía Universidad de Chile",
-      "publisher_identifier": "",
-      "publisher_identifier_scheme": "",
-      "scheme_uri": "",
+      "publisher_name": "Departamento de Geografía, Universidad de Chile",
+      "publisher_identifier": "https://ror.org/047gc3g35",
+      "publisher_identifier_scheme": "ROR",
+      "scheme_uri": "https://ror.org/",
       "lang": "es"
     }
   ],
@@ -187,7 +200,7 @@
     {
       "related_identifier": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
       "related_identifier_type": "URL",
-      "relation_type": "IsReferencedBy",
+      "relation_type": "IsDerivedFrom",
       "related_metadata_scheme": "",
       "scheme_uri": "",
       "scheme_type": "",
@@ -205,9 +218,9 @@
       "contact": ""
     },
     {
-      "related_identifier": "https://uchile.cl/carreras/4933/geografia",
+      "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BFC85D54E-34B7-416D-ABC3-E0E3FAC45A31%7D",
       "related_identifier_type": "URL",
-      "relation_type": "IsDerivedFrom",
+      "relation_type": "IsDocumentedBy",
       "related_metadata_scheme": "",
       "scheme_uri": "",
       "scheme_type": "",
@@ -228,25 +241,25 @@
   ],
   "subjects": [
     {
-      "classification_code": "",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "subject_name": "Clima -- Clasificación -- Chile",
+      "subject_name": "Climatología -- Clasificación -- Chile",
       "subject_scheme": "LCSH",
-      "value_uri": ""
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
     },
     {
-      "classification_code": "",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "subject_name": "Climatología -- Chile",
+      "subject_name": "Clima -- Chile -- Mapas",
       "subject_scheme": "LCSH",
-      "value_uri": ""
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
     },
     {
-      "classification_code": "",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "subject_name": "Köppen-Geiger -- Clasificación climática -- Chile",
       "subject_scheme": "LCSH",
-      "value_uri": ""
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
     }
   ],
   "titles": [

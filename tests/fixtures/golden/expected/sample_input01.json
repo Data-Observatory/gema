@@ -5,7 +5,7 @@
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "Ministerio de Hacienda - Gobierno de Chile",
     "contact": "",
-    "producer": "Ministerio de Hacienda - Gobierno de Chile",
+    "producer": "",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -44,10 +44,6 @@
     {
       "name": "Ciencias Sociales",
       "sub_category": "Economía y negocios"
-    },
-    {
-      "name": "Ciencias Sociales",
-      "sub_category": "Ciencias políticas"
     }
   ],
   "citations": [],
@@ -103,11 +99,11 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Ministerio de Hacienda",
+      "lang": "es",
       "publisher_identifier": "https://isni.org/isni/000000040628717X",
       "publisher_identifier_scheme": "ISNI",
-      "scheme_uri": "https://isni.org/",
-      "lang": "es"
+      "publisher_name": "Ministerio de Hacienda",
+      "scheme_uri": "https://isni.org/"
     }
   ],
   "related_identifiers": [],
@@ -132,13 +128,6 @@
     },
     {
       "subject_name": "Presupuesto público -- Corporaciones municipales -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    },
-    {
-      "subject_name": "Sector público local -- Egresos -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",

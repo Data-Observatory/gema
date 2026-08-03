@@ -10,6 +10,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
+from metadata_enricher.enrichers.iana_normalizer import IANANormalizer
 from metadata_enricher.types import AgentResult, MetadataDocument
 
 
@@ -50,6 +51,12 @@ class DataCiteSchema46:
     Normalization logic was migrated from merger.py and preserves the original
     behaviour exactly.  Custom extension fields are first-class citizens.
     """
+
+    def __init__(self) -> None:
+        # Loads the bundled IANA snapshot once; this class is a process-wide
+        # singleton (see schemas/__init__.py), so the 505KB JSON is parsed
+        # exactly once per run, not per media_files normalization call.
+        self._iana_normalizer = IANANormalizer()
 
     # ------------------------------------------------------------------
     # Language code mapping (migrated from Merger.LANG_CODE_MAP)
@@ -633,11 +640,16 @@ class DataCiteSchema46:
 
         for item in items:
             if isinstance(item, dict):
+                raw_format = item.get("format", "")
                 files.append(
                     {
                         "sizes": item.get("sizes", []),
                         "physical_carrier": item.get("physical_carrier", ""),
-                        "format": item.get("format", ""),
+                        "format": (
+                            self._iana_normalizer.normalize(raw_format)
+                            if isinstance(raw_format, str)
+                            else raw_format
+                        ),
                         "variable_measured": item.get("variable_measured", ""),
                         "checksum": item.get("checksum", ""),
                         "data_quality": item.get("data_quality", ""),

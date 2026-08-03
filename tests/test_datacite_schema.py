@@ -496,6 +496,25 @@ class TestNormalizeMediaFiles:
         result = schema._normalize_media_files("not a dict")
         assert result == []
 
+    def test_format_normalized_against_iana_registry(self) -> None:
+        """A short name / non-canonical format string is normalized via
+        IANANormalizer instead of passed through raw."""
+        schema = DataCiteSchema46()
+        result = schema._normalize_media_files([{"format": "CSV"}])
+        assert result[0]["format"] == "text/csv"
+
+    def test_format_uppercase_with_params_normalized(self) -> None:
+        schema = DataCiteSchema46()
+        result = schema._normalize_media_files([{"format": "TEXT/CSV; charset=utf-8"}])
+        assert result[0]["format"] == "text/csv"
+
+    def test_non_string_format_passed_through_unchanged(self) -> None:
+        """A non-string format value must never crash normalization —
+        IANANormalizer.normalize() assumes str, so this must be guarded."""
+        schema = DataCiteSchema46()
+        result = schema._normalize_media_files([{"format": 12345}])
+        assert result[0]["format"] == 12345
+
 
 class TestNormalizeResource:
     """Resource normalization."""

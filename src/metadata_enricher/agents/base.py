@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from metadata_enricher.enrichers.country_extractor import CountryExtractor
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.schemas.base import Schema
 from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
+
+# Stateless (no I/O, no config) — one shared instance for every agent/resource.
+_country_extractor = CountryExtractor()
 
 
 class SafeDict(dict[str, str]):
@@ -49,6 +53,15 @@ class BaseAgent:
         for key in ("url", "title", "description", "doi", "fetched_content"):
             val = getattr(resource, key, None)
             d[key] = val if val is not None else ""
+
+        # Deterministic hint from the URL/HTML — cheaper and more reliable
+        # than asking the LLM to guess a country from context. An explicit
+        # detected_country in the input (via model_extra below) still wins.
+        detected_country = _country_extractor.extract_country(
+            html_content=resource.fetched_content, url=resource.url
+        )
+        d["detected_country"] = detected_country or ""
+
         if resource.model_extra:
             for key, val in resource.model_extra.items():
                 d[key] = val if val is not None else ""

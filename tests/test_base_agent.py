@@ -155,6 +155,55 @@ class TestBaseAgent:
         assert "=== RECURSO A PROCESAR ===" in client.last_prompt
         assert "- title: No URL" in client.last_prompt
 
+    def test_detected_country_from_url_appears_in_prompt(self) -> None:
+        """CountryExtractor derives a country hint from the resource URL and
+        it's surfaced to the LLM as extra prompt context."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(url="https://datos.gob.cl/dataset/x", title="Hello")
+        agent.run(resource)
+        assert client.last_prompt is not None
+        assert "- detected_country: CL" in client.last_prompt
+
+    def test_explicit_detected_country_overrides_derived_value(self) -> None:
+        """An explicit detected_country in the input (model_extra) wins over
+        the value CountryExtractor would have derived from the URL."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(
+            url="https://datos.gob.cl/dataset/x", title="Hello", detected_country="AR"
+        )
+        agent.run(resource)
+        assert client.last_prompt is not None
+        assert "- detected_country: AR" in client.last_prompt
+
+    def test_no_country_detected_omits_hint_from_prompt(self) -> None:
+        """No URL/HTML to extract from -> empty hint, not printed as noise."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(title="Hello")
+        agent.run(resource)
+        assert client.last_prompt is not None
+        assert "detected_country" not in client.last_prompt
+
     def test_no_dspy_imports(self) -> None:
         source_path = (
             Path(__file__).resolve().parent.parent
