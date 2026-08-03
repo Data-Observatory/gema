@@ -26,11 +26,13 @@ class PipelineResult:
         document: MetadataDocument | None = None,
         error: str | None = None,
         source_path: str | None = None,
+        warnings: list[str] | None = None,
     ) -> None:
         self.resource = resource
         self.document = document
         self.error = error
         self.source_path = source_path
+        self.warnings = warnings or []
 
     @property
     def success(self) -> bool:
@@ -154,4 +156,12 @@ class Pipeline:
                 error="No fields extracted — all agents returned empty results",
             )
 
-        return PipelineResult(resource=resource, document=document)
+        # Some (not all — that case returned earlier) agents failed. The resource
+        # still produced a document, but it's missing whatever those agents were
+        # responsible for — surface this instead of reporting a clean success.
+        failed = [r for r in agent_results if r.error]
+        warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
+        if warnings:
+            logger.warning("Resource has incomplete fields: %s", "; ".join(warnings))
+
+        return PipelineResult(resource=resource, document=document, warnings=warnings)

@@ -204,6 +204,7 @@ def process(
         output.mkdir(parents=True, exist_ok=True)
 
     success_count = 0
+    incomplete_count = 0
     for result in results:
         source_path = getattr(result, "source_path", None)
         source_path = source_path if isinstance(source_path, str) else None
@@ -212,16 +213,24 @@ def process(
             assert result.document is not None
             output_writer.write(result.document, output_path=output, filename_hint=stem)
             success_count += 1
+            if result.warnings:
+                incomplete_count += 1
+                source = source_path or result.resource.url or "unknown"
+                typer.echo(f"Warning: {source} has incomplete fields:", err=True)
+                for w in result.warnings:
+                    typer.echo(f"  - {w}", err=True)
         else:
             source = source_path or result.resource.url or "unknown"
             typer.echo(f"Error processing {source}: {result.error}", err=True)
 
     total = len(results)
     typer.echo(f"Processed {success_count}/{total} resources successfully", err=True)
+    if incomplete_count:
+        typer.echo(f"{incomplete_count}/{total} resources have incomplete fields", err=True)
 
     if success_count == 0:
         raise typer.Exit(1)
-    if success_count < total:
+    if success_count < total or incomplete_count:
         raise typer.Exit(2)
 
 

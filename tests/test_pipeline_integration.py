@@ -202,3 +202,61 @@ class TestPipelineIntegration:
         assert result.error is not None
         assert "401" in result.error
         assert result.document is None
+
+    def test_pipeline_partial_agent_failure_reports_warnings(self, tmp_path):
+        """One agent succeeds, another fails (e.g. rate-limited) -> still a
+        'successful' document (per the all-agents-failed rule), but the
+        missing fields must surface as warnings instead of being silent.
+        """
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/resource",
+                "title": "Test Dataset",
+                "description": "A test dataset for integration testing",
+            },
+        )
+        config = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(
+                    id="titles-agent",
+                    name="Titles Agent",
+                    fields=["titles"],
+                    prompt="Extract titles from {url} {title} {description}",
+                    provider="mock-ok",
+                    model="mock-model",
+                ),
+                AgentConfig(
+                    id="descriptions-agent",
+                    name="Descriptions Agent",
+                    fields=["descriptions"],
+                    prompt="Extract descriptions from {url} {title} {description}",
+                    provider="mock-fail",
+                    model="mock-model",
+                ),
+            ],
+            providers=[
+                ProviderConfig(name="mock-ok", base_url="http://localhost", api_key_env="MOCK_KEY"),
+                ProviderConfig(
+                    name="mock-fail", base_url="http://localhost", api_key_env="MOCK_KEY"
+                ),
+            ],
+            default_provider="mock-ok",
+        )
+
+        def factory(provider, **kw):  # noqa: ARG001
+            return FakeLLMClient() if provider.name == "mock-ok" else AlwaysFailingLLMClient()
+
+        pipeline = Pipeline(config=config, llm_factory=factory)
+        source = FilesystemInputSource()
+        results = pipeline.run(source, pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+
+        assert result.success is True
+        assert result.document is not None
+        assert result.document.get_field("titles") is not None
+        assert len(result.warnings) == 1
+        assert "descriptions" in result.warnings[0]
+        assert "401" in result.warnings[0]

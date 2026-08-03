@@ -185,6 +185,7 @@ class TestProcessCommand:
             success_result = MagicMock()
             success_result.configure_mock(
                 success=True,
+                warnings=[],
                 document=mock_doc,
                 error=None,
             )
@@ -223,6 +224,7 @@ class TestProcessCommand:
             success_result = MagicMock()
             success_result.configure_mock(
                 success=True,
+                warnings=[],
                 document=mock_doc,
                 resource=ResourceDescription(url="test://good"),
                 error=None,
@@ -318,6 +320,7 @@ class TestProcessCommand:
             result_a = MagicMock()
             result_a.configure_mock(
                 success=True,
+                warnings=[],
                 document=doc_a,
                 resource=ResourceDescription(url="u1"),
                 error=None,
@@ -326,6 +329,7 @@ class TestProcessCommand:
             result_b = MagicMock()
             result_b.configure_mock(
                 success=True,
+                warnings=[],
                 document=doc_b,
                 resource=ResourceDescription(url="u2"),
                 error=None,
@@ -375,12 +379,12 @@ class TestProcessCommand:
             doc.set_field("titles", [{"title": "A"}])
             result_a = MagicMock()
             result_a.configure_mock(
-                success=True, document=doc, resource=ResourceDescription(url="u1"),
+                success=True, warnings=[], document=doc, resource=ResourceDescription(url="u1"),
                 error=None, source_path=str(input_dir / "alpha.json"),
             )
             result_b = MagicMock()
             result_b.configure_mock(
-                success=True, document=doc, resource=ResourceDescription(url="u2"),
+                success=True, warnings=[], document=doc, resource=ResourceDescription(url="u2"),
                 error=None, source_path=str(input_dir / "beta.json"),
             )
 
