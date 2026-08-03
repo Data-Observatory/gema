@@ -11,7 +11,7 @@ Base URL: https://api.ror.org/v2/organizations
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -75,7 +75,7 @@ class RORClient:
             if item.get("chosen") is True:
                 org = item.get("organization")
                 if org is not None:
-                    return org
+                    return cast("dict[str, Any]", org)
         return None
 
     def search_query(self, name: str, limit: int = 5) -> list[dict[str, Any]]:
@@ -131,7 +131,7 @@ class RORClient:
             headers["Client-Id"] = self._client_id
         response = self._client.get(self.BASE_URL, params=params, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return cast("dict[str, Any]", response.json())
 
 
 # ------------------------------------------------------------------
