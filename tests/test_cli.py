@@ -117,6 +117,20 @@ class TestListProvidersCommand:
             result = runner.invoke(app, ["list-providers"])
         assert result.exit_code == 1
 
+    def test_list_providers_config_not_found_gives_friendly_message(self) -> None:
+        """No config anywhere -> a plain-language error, not a raw traceback."""
+        from unittest.mock import patch
+
+        with patch(
+            "metadata_enricher.cli.find_config",
+            side_effect=FileNotFoundError("no configuration file found. Searched:\n  x"),
+        ):
+            result = runner.invoke(app, ["list-providers"])
+        assert result.exit_code == 1
+        assert "Traceback" not in result.stderr
+        assert "no configuration file found" in result.stderr
+        assert "--config" in result.stderr
+
 
 class TestProcessCommand:
     """process subcommand."""
@@ -126,6 +140,24 @@ class TestProcessCommand:
         result = runner.invoke(app, ["process", "/nonexistent/input.json"])
         assert result.exit_code == 1
         assert "Input not found" in result.stderr
+
+    def test_process_config_not_found_gives_friendly_message(self) -> None:
+        """No config anywhere -> a plain-language error, not a raw traceback."""
+        from unittest.mock import patch
+
+        input_path = _write_temp_input()
+        try:
+            with patch(
+                "metadata_enricher.cli.find_config",
+                side_effect=FileNotFoundError("no configuration file found. Searched:\n  x"),
+            ):
+                result = runner.invoke(app, ["process", input_path])
+            assert result.exit_code == 1
+            assert "Traceback" not in result.stderr
+            assert "no configuration file found" in result.stderr
+            assert "--config" in result.stderr
+        finally:
+            os.unlink(input_path)
 
     def test_process_missing_config(self) -> None:
         """Missing config file exits with code 1 when input exists."""
@@ -217,7 +249,9 @@ class TestProcessCommand:
                     ["process", input_path, "--config", config_path],
                 )
 
-                assert result.exit_code == 0
+                # Partial batch failure (1 success, 1 failure) exits 2, not 0 —
+                # callers must be able to distinguish "all good" from "some failed".
+                assert result.exit_code == 2
                 mock_writer.write.assert_called_once()
                 assert "Error processing test://bad: Something went wrong" in result.stderr
                 assert "Processed 1/2" in result.stderr
@@ -258,3 +292,131 @@ class TestProcessCommand:
         finally:
             os.unlink(input_path)
             os.unlink(config_path)
+
+    def test_process_batch_writes_distinct_files_named_from_input_stem(self, tmp_path) -> None:
+        """Multiple resources -> --output is treated as a directory, one file per
+        resource, named from its *input* filename (never from title/DOI, which can
+        collide or be missing).
+        """
+        import json as jsonlib
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_dir = tmp_path / "inputs"
+        input_dir.mkdir()
+        (input_dir / "alpha.json").write_text(jsonlib.dumps({"title": "A", "url": "u1"}))
+        (input_dir / "beta.json").write_text(jsonlib.dumps({"title": "A", "url": "u2"}))
+
+        config_path = _write_temp_config()
+        out_dir = tmp_path / "does_not_exist_yet"
+        try:
+            doc_a = MetadataDocument()
+            doc_a.set_field("titles", [{"title": "A"}])
+            doc_b = MetadataDocument()
+            doc_b.set_field("titles", [{"title": "A"}])
+
+            result_a = MagicMock()
+            result_a.configure_mock(
+                success=True,
+                document=doc_a,
+                resource=ResourceDescription(url="u1"),
+                error=None,
+                source_path=str(input_dir / "alpha.json"),
+            )
+            result_b = MagicMock()
+            result_b.configure_mock(
+                success=True,
+                document=doc_b,
+                resource=ResourceDescription(url="u2"),
+                error=None,
+                source_path=str(input_dir / "beta.json"),
+            )
+
+            with patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls:
+                mock_pipeline = mock_pipeline_cls.return_value
+                mock_pipeline.run.return_value = [result_a, result_b]
+
+                result = runner.invoke(
+                    app,
+                    [
+                        "process",
+                        str(input_dir),
+                        "--config",
+                        config_path,
+                        "--output",
+                        str(out_dir),
+                    ],
+                )
+
+            assert result.exit_code == 0, result.stderr
+            assert out_dir.is_dir()
+            written = {f.name for f in out_dir.iterdir()}
+            assert written == {"alpha.json", "beta.json"}
+        finally:
+            os.unlink(config_path)
+
+    def test_process_batch_rejects_existing_file_as_output(self, tmp_path) -> None:
+        """Multiple resources + --output pointing at an existing plain file ->
+        a clear error instead of silently overwriting it once per resource."""
+        import json as jsonlib
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_dir = tmp_path / "inputs"
+        input_dir.mkdir()
+        (input_dir / "alpha.json").write_text(jsonlib.dumps({"title": "A", "url": "u1"}))
+        (input_dir / "beta.json").write_text(jsonlib.dumps({"title": "B", "url": "u2"}))
+
+        config_path = _write_temp_config()
+        existing_file = tmp_path / "single_output.json"
+        existing_file.write_text("{}")
+        try:
+            doc = MetadataDocument()
+            doc.set_field("titles", [{"title": "A"}])
+            result_a = MagicMock()
+            result_a.configure_mock(
+                success=True, document=doc, resource=ResourceDescription(url="u1"),
+                error=None, source_path=str(input_dir / "alpha.json"),
+            )
+            result_b = MagicMock()
+            result_b.configure_mock(
+                success=True, document=doc, resource=ResourceDescription(url="u2"),
+                error=None, source_path=str(input_dir / "beta.json"),
+            )
+
+            with patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls:
+                mock_pipeline = mock_pipeline_cls.return_value
+                mock_pipeline.run.return_value = [result_a, result_b]
+
+                result = runner.invoke(
+                    app,
+                    [
+                        "process",
+                        str(input_dir),
+                        "--config",
+                        config_path,
+                        "--output",
+                        str(existing_file),
+                    ],
+                )
+
+            assert result.exit_code == 1
+            assert "directory" in result.stderr.lower()
+        finally:
+            os.unlink(config_path)
+
+
+class TestDotenvLoading:
+    """.env must actually be picked up — see docs/CLAUDE.md issue #1."""
+
+    def test_env_file_in_cwd_is_loaded(self, tmp_path, monkeypatch) -> None:
+        """A key defined only in ./.env becomes visible to the process via
+        os.environ after invoking any command (callback runs load_dotenv())."""
+        (tmp_path / ".env").write_text("METAGEN_TEST_DOTENV_VAR=from-dotenv\n")
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.delenv("METAGEN_TEST_DOTENV_VAR", raising=False)
+
+        result = runner.invoke(app, ["list-schemas"])
+
+        assert result.exit_code == 0
+        assert os.environ.get("METAGEN_TEST_DOTENV_VAR") == "from-dotenv"

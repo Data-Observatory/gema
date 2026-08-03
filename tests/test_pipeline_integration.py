@@ -33,6 +33,22 @@ class FakeLLMClient:
         return "mock raw response"
 
 
+class AlwaysFailingLLMClient:
+    """Mock LLM client that always raises — simulates a bad API key / unreachable provider."""
+
+    @property
+    def model(self) -> str:
+        return "mock-model"
+
+    def complete(
+        self, prompt: str, response_model: type, system_prompt: str | None = None, **kw: object
+    ) -> object:
+        raise RuntimeError("401 Unauthorized")
+
+    def complete_raw(self, prompt: str, system_prompt: str | None = None, **kw: object) -> str:
+        raise RuntimeError("401 Unauthorized")
+
+
 def make_test_config() -> PipelineConfig:
     """Create minimal PipelineConfig for testing."""
     return PipelineConfig(
@@ -163,3 +179,26 @@ class TestPipelineIntegration:
         assert result.document is not None
         assert result.error is None
         assert result.success is True
+
+    def test_pipeline_all_agents_failing_is_not_reported_as_success(self, tmp_path):
+        """Every agent erroring (bad key/unreachable provider) must be a failure,
+        never a 'successful' empty document.
+        """
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/resource",
+                "title": "Test Dataset",
+                "description": "A test dataset for integration testing",
+            },
+        )
+        failing_factory = lambda provider, **kw: AlwaysFailingLLMClient()  # noqa: E731
+        pipeline = Pipeline(config=make_test_config(), llm_factory=failing_factory)
+        source = FilesystemInputSource()
+        results = pipeline.run(source, pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is False
+        assert result.error is not None
+        assert "401" in result.error
+        assert result.document is None

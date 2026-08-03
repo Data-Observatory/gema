@@ -35,7 +35,12 @@ class OutputWriter:
                 ordered[key] = document.fields[key]
         return json.dumps(ordered, indent=2, ensure_ascii=False, default=str)
 
-    def write(self, document: MetadataDocument, output_path: Path | None = None) -> str:
+    def write(
+        self,
+        document: MetadataDocument,
+        output_path: Path | None = None,
+        filename_hint: str | None = None,
+    ) -> str:
         """Write document to file, directory, or stdout.
 
         Args:
@@ -43,7 +48,12 @@ class OutputWriter:
             output_path:
                 - None: print JSON to stdout, return the JSON string
                 - File path: write JSON to that file
-                - Directory path: write to <dir>/<resource_id>.json based on DOI or title
+                - Directory path: write to <dir>/<name>.json
+            filename_hint:
+                When writing into a directory, use this (e.g. the input file's
+                stem) as the filename instead of deriving one from the DOI/title.
+                Prevents distinct resources with the same/missing title or DOI
+                from silently overwriting each other.
 
         Returns:
             The JSON string that was written
@@ -55,21 +65,28 @@ class OutputWriter:
             return json_str
 
         if output_path.is_dir():
-            doi = document.get_field("doi") or document.get_field("identifiers")
-            title = document.get_field("titles")
-            if doi:
-                safe = str(doi).replace("/", "_").replace(":", "-")
-                filename = f"{safe}.json"
-            elif title:
-                title_str = (
-                    title[0].get("title", "untitled")
-                    if isinstance(title, list) and title
-                    else "untitled"
-                )
-                safe = "".join(c for c in title_str if c.isalnum() or c in "-_")[:50] or "untitled"
-                filename = f"{safe}.json"
+            if filename_hint:
+                safe = "".join(c for c in filename_hint if c.isalnum() or c in "-_")[:80]
+                filename = f"{safe or 'output'}.json"
             else:
-                filename = "output.json"
+                doi = document.get_field("doi") or document.get_field("identifiers")
+                title = document.get_field("titles")
+                if doi:
+                    safe = str(doi).replace("/", "_").replace(":", "-")
+                    filename = f"{safe}.json"
+                elif title:
+                    title_str = (
+                        title[0].get("title", "untitled")
+                        if isinstance(title, list) and title
+                        else "untitled"
+                    )
+                    safe = (
+                        "".join(c for c in title_str if c.isalnum() or c in "-_")[:50]
+                        or "untitled"
+                    )
+                    filename = f"{safe}.json"
+                else:
+                    filename = "output.json"
             target = output_path / filename
         else:
             target = output_path

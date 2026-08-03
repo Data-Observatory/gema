@@ -3,15 +3,13 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 # Ensure src/ takes priority over flat-layout metadata_enricher.py at repo root
 _src = str(Path(__file__).resolve().parent.parent / "src")
 if _src in sys.path:
     sys.path.remove(_src)
 sys.path.insert(0, _src)
-
-# Pre-import to cache correct module (avoid flat-layout shadowing)
-
-import pytest
 
 
 @pytest.fixture

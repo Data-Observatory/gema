@@ -148,3 +148,35 @@ class TestWrite:
         files = list(tmp_path.iterdir())
         assert len(files) == 1
         assert files[0].name == f"{expected_part}.json"
+
+    def test_write_to_directory_uses_filename_hint_over_doi(
+        self, writer: OutputWriter, tmp_path: Path
+    ):
+        """filename_hint takes priority over DOI/title-derived naming.
+
+        Prevents two distinct batch resources with the same/missing title or DOI
+        from silently overwriting each other.
+        """
+        doc = MetadataDocument(
+            fields={
+                "doi": "10.1234/example-doi",
+                "titles": [{"title": "Directory Test"}],
+            }
+        )
+        writer.write(doc, output_path=tmp_path, filename_hint="input_03")
+        target = tmp_path / "input_03.json"
+        assert target.exists()
+        files = list(tmp_path.iterdir())
+        assert len(files) == 1
+
+    def test_write_to_directory_two_resources_same_title_dont_collide(
+        self, writer: OutputWriter, tmp_path: Path
+    ):
+        """Two documents with identical (or missing) titles get distinct files
+        when each write() call passes a distinct filename_hint."""
+        doc_a = MetadataDocument(fields={"titles": [{"title": "Untitled"}]})
+        doc_b = MetadataDocument(fields={"titles": [{"title": "Untitled"}]})
+        writer.write(doc_a, output_path=tmp_path, filename_hint="resource_a")
+        writer.write(doc_b, output_path=tmp_path, filename_hint="resource_b")
+        files = {f.name for f in tmp_path.iterdir()}
+        assert files == {"resource_a.json", "resource_b.json"}

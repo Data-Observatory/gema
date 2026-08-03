@@ -383,8 +383,7 @@ agents:
     , \"lang\": \"es\"}\n  ]\n}\n\n--- EJEMPLO 6: Sin información ---\nEntrada: \"\
     Recurso sin autoría identificada.\"\nSalida:\n{\"creators\": [], \"publishers\"\
     : []}\n\nDevuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones"
-  depends_on:
-  - core_metadata
+  depends_on: []
   use_chain_of_thought: true
   model: glm-5.2
   provider: zai-coding-plan
@@ -518,8 +517,7 @@ agents:
     Entrada: \"Recurso sin descripción temática.\"\nSalida:\n{\"categories\": [],\
     \ \"subjects\": [], \"audiences\": []}\n\nDevuelve ÚNICAMENTE el JSON, sin texto\
     \ adicional ni explicaciones."
-  depends_on:
-  - creators_publishers
+  depends_on: []
   use_chain_of_thought: true
   model: glm-5.2
   provider: zai-coding-plan
@@ -631,8 +629,7 @@ agents:
     12\",\n      \"end_page\": \"25\",\n      \"edition\": \"\",\n      \"conference_place\"\
     : \"\",\n      \"conference_date\": \"\"\n    }\n  ]\n}\n\nDevuelve UNICAMENTE\
     \ el JSON, sin texto adicional ni explicaciones."
-  depends_on:
-  - classification
+  depends_on: []
   use_chain_of_thought: true
   model: glm-5.2
   provider: zai-coding-plan
@@ -737,8 +734,7 @@ agents:
     }\n\nEJEMPLO 6: Sin archivos\nContexto: \"Pagina web informativa sin archivos\
     \ descargables\"\n\nRESPUESTA:\n{\n  \"media_files\": []\n}\n\nDevuelve UNICAMENTE\
     \ el JSON, sin texto adicional ni explicaciones."
-  depends_on:
-  - rights_funding_citations
+  depends_on: []
   use_chain_of_thought: true
   model: glm-5.2
   provider: zai-coding-plan

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+from dotenv import find_dotenv, load_dotenv
 
 from metadata_enricher import __version__
 from metadata_enricher.config.loader import load_config, find_config
@@ -56,8 +57,27 @@ def callback(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable debug logging"),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Minimal output"),
 ) -> None:
+    # usecwd=True: search from the directory the user actually runs metagen from
+    # (not from this source file's location under site-packages/src).
+    load_dotenv(find_dotenv(usecwd=True))
     _setup_logging(verbose, quiet)
     ctx.obj = {"config_path": config, "verbose": verbose, "quiet": quiet}
+
+
+def _resolve_config_path(explicit: Optional[Path], ctx_config: Optional[Path]) -> Path:
+    """Resolve the config path to use, or exit with a friendly message.
+
+    Never lets ``find_config``'s ``FileNotFoundError`` surface as a raw traceback.
+    """
+    config_path = explicit or ctx_config
+    if config_path is not None:
+        return config_path
+    try:
+        return find_config()
+    except FileNotFoundError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        typer.echo("Use --config/-c to specify a config file explicitly.", err=True)
+        raise typer.Exit(1)
 
 
 @app.command(name="list-schemas")
@@ -80,14 +100,8 @@ def list_providers(
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
 ) -> None:
     """List providers defined in a config file."""
-    config_path = config
-    if config_path is None and ctx.obj:
-        config_path = ctx.obj.get("config_path")
-    if config_path is None:
-        config_path = find_config()
-    if config_path is None:
-        typer.echo("Error: No config file found. Use --config to specify.", err=True)
-        raise typer.Exit(1)
+    ctx_config = ctx.obj.get("config_path") if ctx.obj else None
+    config_path = _resolve_config_path(config, ctx_config)
     try:
         pipeline_config = load_config(config_path)
     except Exception as e:
@@ -153,14 +167,8 @@ def process(
         typer.echo(f"Error: Input not found: {input_path}", err=True)
         raise typer.Exit(1)
 
-    config_path = config
-    if config_path is None and ctx.obj:
-        config_path = ctx.obj.get("config_path")
-    if config_path is None:
-        config_path = find_config()
-    if config_path is None:
-        typer.echo("Error: No config file found. Use --config to specify.", err=True)
-        raise typer.Exit(1)
+    ctx_config = ctx.obj.get("config_path") if ctx.obj else None
+    config_path = _resolve_config_path(config, ctx_config)
 
     try:
         pipeline_config = load_config(config_path)
@@ -185,14 +193,27 @@ def process(
         typer.echo("No resources matched the input.", err=True)
         raise typer.Exit(1)
 
+    if len(results) > 1 and output is not None:
+        if output.exists() and not output.is_dir():
+            typer.echo(
+                f"Error: multiple resources were processed but --output '{output}' is a "
+                "single file. Pass a directory instead so each resource gets its own file.",
+                err=True,
+            )
+            raise typer.Exit(1)
+        output.mkdir(parents=True, exist_ok=True)
+
     success_count = 0
     for result in results:
+        source_path = getattr(result, "source_path", None)
+        source_path = source_path if isinstance(source_path, str) else None
+        stem = Path(source_path).stem if source_path else None
         if result.success:
             assert result.document is not None
-            output_writer.write(result.document, output_path=output)
+            output_writer.write(result.document, output_path=output, filename_hint=stem)
             success_count += 1
         else:
-            source = result.resource.url or "unknown"
+            source = source_path or result.resource.url or "unknown"
             typer.echo(f"Error processing {source}: {result.error}", err=True)
 
     total = len(results)
@@ -200,6 +221,8 @@ def process(
 
     if success_count == 0:
         raise typer.Exit(1)
+    if success_count < total:
+        raise typer.Exit(2)
 
 
 if __name__ == "__main__":

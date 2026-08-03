@@ -25,10 +25,12 @@ class PipelineResult:
         resource: ResourceDescription,
         document: MetadataDocument | None = None,
         error: str | None = None,
+        source_path: str | None = None,
     ) -> None:
         self.resource = resource
         self.document = document
         self.error = error
+        self.source_path = source_path
 
     @property
     def success(self) -> bool:
@@ -87,11 +89,13 @@ class Pipeline:
                     PipelineResult(
                         resource=ResourceDescription(),
                         error=f"Fetch failed: {exc}",
+                        source_path=source_path,
                     )
                 )
                 continue
 
             result = self._process_resource(resource)
+            result.source_path = source_path
             results.append(result)
 
         return results
@@ -125,6 +129,14 @@ class Pipeline:
             logger.error("Orchestrator failed: %s", exc)
             return PipelineResult(resource=resource, error=f"Orchestration failed: {exc}")
 
+        # Every agent errored (e.g. bad API key, unreachable provider) — this must
+        # surface as a failure, not a "successful" empty document.
+        if agent_results and all(r.error for r in agent_results):
+            distinct_errors = sorted({r.error for r in agent_results if r.error})
+            summary = "; ".join(distinct_errors[:3])
+            logger.error("All agents failed for resource: %s", summary)
+            return PipelineResult(resource=resource, error=f"All agents failed: {summary}")
+
         # 4. Merge agent results into a MetadataDocument
         try:
             merger = MetadataMerger(self._schema)
@@ -132,5 +144,12 @@ class Pipeline:
         except Exception as exc:
             logger.error("Merge failed: %s", exc)
             return PipelineResult(resource=resource, error=f"Merge failed: {exc}")
+
+        if not document.fields:
+            logger.error("No fields extracted for resource — refusing to report success")
+            return PipelineResult(
+                resource=resource,
+                error="No fields extracted — all agents returned empty results",
+            )
 
         return PipelineResult(resource=resource, document=document)
