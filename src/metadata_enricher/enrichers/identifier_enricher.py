@@ -47,7 +47,10 @@ class IdentifierEnricher:
             if not name:
                 continue
             name_identifiers = creator.get("name_identifiers", [])
-            if not name_identifiers:
+            has_real_id = isinstance(name_identifiers, list) and any(
+                isinstance(ni, dict) and ni.get("name_identifier") for ni in name_identifiers
+            )
+            if not has_real_id:
                 match = self._resolver.resolve(name)
                 if match and match.ror_id:
                     creator["name_identifiers"] = [
@@ -100,7 +103,10 @@ class IdentifierEnricher:
             if not isinstance(ref, dict):
                 continue
             funder_ids = ref.get("funder_identifiers", [])
-            if funder_ids:
+            has_real_id = isinstance(funder_ids, list) and any(
+                isinstance(fi, dict) and fi.get("funder_identifier") for fi in funder_ids
+            )
+            if has_real_id:
                 continue
             name = ref.get("funder_name", "")
             if not name:

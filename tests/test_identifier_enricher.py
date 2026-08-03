@@ -70,6 +70,25 @@ class TestEnrichCreators:
         enricher.enrich(doc)
         assert doc.get_field("creators")[0]["name_identifiers"] == existing
 
+    def test_blank_placeholder_name_identifiers_still_enriched(self) -> None:
+        """LLM sometimes emits a non-empty list of all-blank-string dicts
+        instead of []. That must not read as 'already has an identifier'.
+        """
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Ministerio del Medio Ambiente",
+                "creator_name_type": "Organizational",
+                "name_identifiers": [
+                    {"name_identifier": "", "name_identifier_scheme": "", "scheme_uri": ""}
+                ],
+            }]
+        })
+        enricher.enrich(doc)
+        identifiers = doc.get_field("creators")[0]["name_identifiers"]
+        assert identifiers[0]["name_identifier"] == "https://ror.org/01h6h5x94"
+
     def test_resolver_returns_none_leaves_empty(self) -> None:
         resolver = _mock_resolver(ror_id=None)
         enricher = IdentifierEnricher(resolver)
@@ -151,6 +170,19 @@ class TestEnrichFundingReferences:
         enricher.enrich(doc)
         ref = doc.get_field("funding_references")[0]
         assert len(ref["funder_identifiers"]) == 1
+        assert ref["funder_identifiers"][0]["funder_identifier"] == "https://ror.org/01h6h5x94"
+
+    def test_blank_placeholder_funder_identifiers_still_enriched(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{
+                "funder_name": "ANID",
+                "funder_identifiers": [{"funder_identifier": "", "funder_identifier_type": ""}],
+            }]
+        })
+        enricher.enrich(doc)
+        ref = doc.get_field("funding_references")[0]
         assert ref["funder_identifiers"][0]["funder_identifier"] == "https://ror.org/01h6h5x94"
 
     def test_funder_already_populated_preserved(self) -> None:
