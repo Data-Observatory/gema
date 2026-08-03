@@ -85,8 +85,16 @@ class RetryConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_retries: int = 3
-    """Maximum number of *retries* (so up to ``max_retries + 1`` total attempts)."""
+    max_retries: int = 6
+    """Maximum number of *retries* (so up to ``max_retries + 1`` total attempts).
+
+    Live testing against zai-coding-plan showed sustained 429 bursts that
+    outlast 3 retries' worth of backoff (a few seconds) but clear up within
+    roughly a minute — a resource that exhausted the old budget failed, and
+    the very next resource ran with zero 429s. 6 retries with exponential
+    backoff up to max_wait gives roughly 2 more minutes of runway before
+    giving up, which comfortably covers that recovery window.
+    """
 
     initial_wait: float = 1.0
     """Multiplier for the exponential backoff (seconds)."""

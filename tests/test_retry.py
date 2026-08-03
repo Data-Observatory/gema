@@ -325,7 +325,7 @@ class TestCustomConfig:
 
     def test_default_config_values(self) -> None:
         rc = RetryConfig()
-        assert rc.max_retries == 3
+        assert rc.max_retries == 6
         assert rc.initial_wait == 1.0
         assert rc.max_wait == 60.0
         assert rc.retry_on_status == [429, 500, 502, 503, 504]
