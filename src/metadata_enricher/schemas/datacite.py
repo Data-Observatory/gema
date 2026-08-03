@@ -364,7 +364,9 @@ class DataCiteSchema46:
                 if "creator_name" in item:
                     creator = {
                         "creator_name": item["creator_name"],
-                        "creator_name_type": item.get("creator_name_type", "Organizational"),
+                        "creator_name_type": item.get(
+                            "creator_name_type", item.get("name_type", "Organizational")
+                        ),
                         "given_name": item.get("given_name", ""),
                         "family_name": item.get("family_name", ""),
                         "email": item.get("email", ""),

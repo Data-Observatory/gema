@@ -211,6 +211,18 @@ class TestNormalizeCreators:
         assert result[0]["creator_name"] == "John Doe"
         assert result[0]["creator_name_type"] == "Personal"
 
+    def test_dict_with_creator_name_and_name_type_alias(self) -> None:
+        """The prompt's output format uses 'creator_name' + 'name_type' together
+        (not 'creator_name_type') — this must still classify Personal vs
+        Organizational correctly instead of silently defaulting to
+        Organizational for every creator.
+        """
+        schema = DataCiteSchema46()
+        result = schema._normalize_creators(
+            [{"creator_name": "Sarricolea, Pablo", "name_type": "Personal"}]
+        )
+        assert result[0]["creator_name_type"] == "Personal"
+
     def test_dict_without_creator_name_or_name(self) -> None:
         schema = DataCiteSchema46()
         result = schema._normalize_creators([{"unknown_key": "Fallback Org"}])
