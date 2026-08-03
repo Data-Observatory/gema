@@ -52,7 +52,7 @@ All `model_config = ConfigDict(extra="forbid")`.
 
 ## Migration (`migrate.py`)
 
-`migrate_json_to_yaml(Path("config/andrea_v3.json"))` → writes `.yaml` sibling.
+`migrate_json_to_yaml(Path("config/legacy/andrea_v3.json"))` → writes `.yaml` sibling.
 
 **Rules** (lines 90-94):
 - **NEVER modifies original JSON** — read-only.

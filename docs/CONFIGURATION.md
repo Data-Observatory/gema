@@ -65,14 +65,14 @@ providers:
 
 ## Migration from Legacy JSON
 
-Legacy JSON configuration files (`config/andrea_v3.json` and older formats) can
+Legacy JSON configuration files (`config/legacy/andrea_v3.json` and older formats) can
 be migrated to YAML using the built-in migration tool:
 
 ```python
 from pathlib import Path
 from metadata_enricher.config.migrate import migrate_json_to_yaml
 
-migrate_json_to_yaml(Path("config/andrea_v3.json"))
+migrate_json_to_yaml(Path("config/legacy/andrea_v3.json"))
 ```
 
 This generates a `.yaml` file alongside the original JSON, preserving both.

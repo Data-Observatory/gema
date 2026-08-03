@@ -117,7 +117,7 @@ The default config defines 5 agents running sequentially on a dependency chain:
 | `rights_funding_citations` | rights, funding_references, citations | classification |
 | `media_files` | media_files | rights_funding_citations |
 
-Legacy JSON configurations are preserved at `config/andrea_v3.json` (5 agents) and `config/agents_v2.json` (18 agents) for reference.
+Legacy JSON configurations are preserved at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents) for reference.
 
 ## Development
 
@@ -141,7 +141,7 @@ If you have existing JSON configurations, use the built-in migration tool:
 uv run python -c "
 from metadata_enricher.config.migrate import migrate_json_to_yaml
 from pathlib import Path
-migrate_json_to_yaml(Path('config/andrea_v3.json'))
+migrate_json_to_yaml(Path('config/legacy/andrea_v3.json'))
 "
 ```
 
