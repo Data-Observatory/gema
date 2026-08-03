@@ -157,6 +157,12 @@ def process(
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file or directory"),
     schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
+    allow_partial: bool = typer.Option(
+        False,
+        "--allow-partial",
+        help="Write best-effort output even if some agents failed, instead of "
+        "treating a resource with any failed field as a failure.",
+    ),
 ) -> None:
     """Process input resources and generate metadata.
 
@@ -183,7 +189,7 @@ def process(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
-    pipeline = Pipeline(config=pipeline_config)
+    pipeline = Pipeline(config=pipeline_config, allow_partial=allow_partial)
     output_writer = OutputWriter(schema=schema_obj)
     input_source = FilesystemInputSource()
 

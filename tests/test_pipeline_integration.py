@@ -203,20 +203,12 @@ class TestPipelineIntegration:
         assert "401" in result.error
         assert result.document is None
 
-    def test_pipeline_partial_agent_failure_reports_warnings(self, tmp_path):
-        """One agent succeeds, another fails (e.g. rate-limited) -> still a
-        'successful' document (per the all-agents-failed rule), but the
-        missing fields must surface as warnings instead of being silent.
+    @staticmethod
+    def _make_mixed_success_failure_config() -> PipelineConfig:
+        """PipelineConfig with 2 independent agents: one always succeeds
+        (provider 'mock-ok'), the other always fails (provider 'mock-fail').
         """
-        make_input_file(
-            tmp_path,
-            {
-                "url": "https://example.com/resource",
-                "title": "Test Dataset",
-                "description": "A test dataset for integration testing",
-            },
-        )
-        config = PipelineConfig(
+        return PipelineConfig(
             schema_name="datacite-4.6",
             agents=[
                 AgentConfig(
@@ -245,10 +237,53 @@ class TestPipelineIntegration:
             default_provider="mock-ok",
         )
 
-        def factory(provider, **kw):  # noqa: ARG001
-            return FakeLLMClient() if provider.name == "mock-ok" else AlwaysFailingLLMClient()
+    @staticmethod
+    def _mixed_factory(provider, **kw):  # noqa: ARG001, ANN001
+        return FakeLLMClient() if provider.name == "mock-ok" else AlwaysFailingLLMClient()
 
-        pipeline = Pipeline(config=config, llm_factory=factory)
+    def test_pipeline_partial_agent_failure_is_a_failure_by_default(self, tmp_path):
+        """One agent succeeds, another fails (e.g. rate-limited) -> by default
+        this must be a failure, not a half-complete document written silently.
+        """
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/resource",
+                "title": "Test Dataset",
+                "description": "A test dataset for integration testing",
+            },
+        )
+        pipeline = Pipeline(
+            config=self._make_mixed_success_failure_config(), llm_factory=self._mixed_factory
+        )
+        source = FilesystemInputSource()
+        results = pipeline.run(source, pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+
+        assert result.success is False
+        assert result.document is None
+        assert result.error is not None
+        assert "descriptions" in result.error
+        assert "401" in result.error
+
+    def test_pipeline_partial_agent_failure_allow_partial_reports_warnings(self, tmp_path):
+        """Same mixed success/failure, but with allow_partial=True: best-effort
+        document is written and the missing fields surface as warnings.
+        """
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/resource",
+                "title": "Test Dataset",
+                "description": "A test dataset for integration testing",
+            },
+        )
+        pipeline = Pipeline(
+            config=self._make_mixed_success_failure_config(),
+            llm_factory=self._mixed_factory,
+            allow_partial=True,
+        )
         source = FilesystemInputSource()
         results = pipeline.run(source, pattern=str(tmp_path / "*.json"))
         assert len(results) == 1

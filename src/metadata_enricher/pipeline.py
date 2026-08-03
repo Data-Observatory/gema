@@ -55,12 +55,14 @@ class Pipeline:
         schema_registry: SchemaRegistry | None = None,
         llm_factory: LLMClientFactory | None = None,
         max_workers: int = 4,
+        allow_partial: bool = False,
     ) -> None:
         self._config = config
         self._registry = schema_registry or get_registry()
         self._schema: Schema = self._registry.get(config.schema_name)
         self._llm_factory = llm_factory
         self._max_workers = max_workers
+        self._allow_partial = allow_partial
         self._validator = PreFlightValidator(self._schema, self._registry)
 
     def run(self, input_source: InputSource, pattern: str = "*.json") -> list[PipelineResult]:
@@ -156,12 +158,24 @@ class Pipeline:
                 error="No fields extracted — all agents returned empty results",
             )
 
-        # Some (not all — that case returned earlier) agents failed. The resource
-        # still produced a document, but it's missing whatever those agents were
-        # responsible for — surface this instead of reporting a clean success.
+        # Some (not all — that case returned earlier) agents failed. The resulting
+        # document is missing whatever those agents were responsible for. Default
+        # is to treat this as a failure too — a half-complete DataCite record
+        # written to disk looks legitimate and could be published as-is. Callers
+        # that want best-effort output anyway can opt in via allow_partial.
         failed = [r for r in agent_results if r.error]
-        warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
-        if warnings:
-            logger.warning("Resource has incomplete fields: %s", "; ".join(warnings))
+        if failed:
+            fields = sorted({r.field_name for r in failed})
+            distinct_errors = sorted({r.error for r in failed if r.error})
+            summary = "; ".join(distinct_errors[:3])
+            if not self._allow_partial:
+                logger.error("Partial agent failure for fields %s: %s", fields, summary)
+                return PipelineResult(
+                    resource=resource,
+                    error=f"Fields failed: {', '.join(fields)} ({summary})",
+                )
+            warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
+            logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
+            return PipelineResult(resource=resource, document=document, warnings=warnings)
 
-        return PipelineResult(resource=resource, document=document, warnings=warnings)
+        return PipelineResult(resource=resource, document=document)
