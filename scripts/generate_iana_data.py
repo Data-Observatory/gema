@@ -138,7 +138,7 @@ def main():
     print(f"\nWritten {OUTPUT_PATH}")
     print(f"Total entries: {total_count}")
     print(f"Name lookups (unique short names): {len(name_lookup)}")
-    print(f"\nBreakdown by top-level type:")
+    print("\nBreakdown by top-level type:")
     for t, count in sorted(type_breakdown.items()):
         print(f"  {t}: {count}")
 

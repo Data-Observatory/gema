@@ -317,6 +317,97 @@ class TestPipelineIntegration:
         assert "401" in result.warnings[0]
 
 
+class FailingInputSource:
+    """InputSource whose fetch() always raises — simulates a bad path/permissions/IO error."""
+
+    def __init__(self, sources: list[str]) -> None:
+        self._sources = sources
+
+    def fetch(self, source: str) -> ResourceDescription:
+        raise OSError("disk on fire")
+
+    def list_sources(self, pattern: str) -> list[str]:  # noqa: ARG002
+        return self._sources
+
+
+class TestPipelineDefensiveExceptBranches:
+    """Each pipeline stage isolates its own exceptions into a failed
+    PipelineResult rather than propagating and aborting the whole batch."""
+
+    def test_fetch_failure_is_isolated_as_a_result(self, llm_factory):
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        source = FailingInputSource(["bad-source.json"])
+        results = pipeline.run(source, pattern="*.json")
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is False
+        assert result.error is not None
+        assert "Fetch failed" in result.error
+        assert "disk on fire" in result.error
+        assert result.source_path == "bad-source.json"
+
+    def test_registry_build_failure_is_isolated_as_a_result(
+        self, tmp_path, llm_factory, monkeypatch
+    ):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+
+        def _boom(*args, **kwargs):
+            raise ValueError("bad agent config")
+
+        monkeypatch.setattr("metadata_enricher.pipeline.AgentRegistry", _boom)
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is False
+        assert result.error is not None
+        assert "Registry build failed" in result.error
+        assert "bad agent config" in result.error
+
+    def test_orchestrator_failure_is_isolated_as_a_result(
+        self, tmp_path, llm_factory, monkeypatch
+    ):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+
+        def _boom(*args, **kwargs):
+            raise RuntimeError("cycle detected")
+
+        monkeypatch.setattr("metadata_enricher.pipeline.Orchestrator", _boom)
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is False
+        assert result.error is not None
+        assert "Orchestration failed" in result.error
+        assert "cycle detected" in result.error
+
+    def test_merge_failure_is_isolated_as_a_result(self, tmp_path, llm_factory, monkeypatch):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+
+        def _boom(*args, **kwargs):
+            raise ValueError("schema mismatch")
+
+        monkeypatch.setattr("metadata_enricher.pipeline.MetadataMerger", _boom)
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is False
+        assert result.error is not None
+        assert "Merge failed" in result.error
+        assert "schema mismatch" in result.error
+
+
 class TestPipelinePidValidation:
     """Pipeline: automatic PID validation runs on every resource by default."""
 
