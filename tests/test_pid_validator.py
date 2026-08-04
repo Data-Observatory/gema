@@ -27,6 +27,10 @@ class TestValidatePidFormat:
             ("ISNI", "0000000121032683", True),  # real ISNI: Stanford University
             ("ISNI", "000000012103268X", False),  # wrong check digit
             ("ISNI", "0000 0001 2103 2683", True),
+            ("ORCID", "0000-0002-1825-0097", True),  # real ORCID iD
+            ("orcid", "https://orcid.org/0000-0002-1825-0097", True),
+            ("ORCID", "0000-0002-1825-0098", False),  # wrong check digit
+            ("ORCID", "not-an-orcid", False),
             ("UNKNOWN", "anything", True),  # unrecognized scheme — not our concern
         ],
     )
@@ -42,6 +46,10 @@ class TestValidatePidFormat:
         _, normalized = validate_pid_format("ISNI", "0000 0001 2103 2683")
         assert normalized == "0000000121032683"
 
+    def test_orcid_normalized_strips_url_prefix(self) -> None:
+        _, normalized = validate_pid_format("ORCID", "https://orcid.org/0000-0002-1825-0097")
+        assert normalized == "0000-0002-1825-0097"
+
 
 class TestExtractPids:
     def test_finds_ror_in_creator_name_identifiers(self) -> None:
@@ -52,6 +60,26 @@ class TestExtractPids:
         }
         triples = extract_pids(output)
         assert ("ROR", "https://ror.org/02sevrz47", "root.creators[0].name_identifiers[0]") in triples
+
+    def test_finds_orcid_in_creator_name_identifiers(self) -> None:
+        output = {
+            "creators": [
+                {
+                    "name_identifiers": [
+                        {
+                            "name_identifier": "https://orcid.org/0000-0002-1825-0097",
+                            "name_identifier_scheme": "ORCID",
+                        }
+                    ]
+                }
+            ]
+        }
+        triples = extract_pids(output)
+        assert (
+            "ORCID",
+            "https://orcid.org/0000-0002-1825-0097",
+            "root.creators[0].name_identifiers[0]",
+        ) in triples
 
     def test_finds_isni_in_affiliation(self) -> None:
         output = {
@@ -142,6 +170,28 @@ class TestResolvePid:
         client.get.side_effect = httpx.HTTPError("boom")
         assert resolve_pid(client, "ISNI", "0000000121032683") is None
 
+    def test_orcid_resolves_no_auth_needed(self) -> None:
+        client = MagicMock(spec=httpx.Client)
+        client.get.return_value = MagicMock(status_code=200)
+        assert resolve_pid(client, "ORCID", "0000-0002-1825-0097") is True
+        client.get.assert_called_once_with(
+            "https://orcid.org/0000-0002-1825-0097",
+            headers={"Accept": "application/orcid+json"},
+            follow_redirects=True,
+            timeout=15.0,
+        )
+
+    def test_orcid_url_form_strips_prefix_before_request(self) -> None:
+        client = MagicMock(spec=httpx.Client)
+        client.get.return_value = MagicMock(status_code=200)
+        resolve_pid(client, "ORCID", "https://orcid.org/0000-0002-1825-0097")
+        assert client.get.call_args[0][0] == "https://orcid.org/0000-0002-1825-0097"
+
+    def test_orcid_not_found(self) -> None:
+        client = MagicMock(spec=httpx.Client)
+        client.get.return_value = MagicMock(status_code=404)
+        assert resolve_pid(client, "ORCID", "0000-0002-1825-0097") is False
+
 
 class TestValidatePids:
     def test_no_pids_returns_empty(self) -> None:
@@ -180,3 +230,25 @@ class TestValidatePids:
     def test_unknown_scheme_ignored(self) -> None:
         output = {"publishers": [{"publisher_identifier": "12345", "publisher_identifier_scheme": "GRID"}]}
         assert validate_pids(output, resolve=False) == []
+
+    def test_orcid_checked_end_to_end_no_credentials_needed(self) -> None:
+        client = MagicMock(spec=httpx.Client)
+        client.get.return_value = MagicMock(status_code=200)
+        output = {
+            "creators": [
+                {
+                    "name_identifiers": [
+                        {
+                            "name_identifier": "https://orcid.org/0000-0002-1825-0097",
+                            "name_identifier_scheme": "ORCID",
+                        }
+                    ]
+                }
+            ]
+        }
+        checks = validate_pids(output, resolve=True, client=client)
+        assert len(checks) == 1
+        assert checks[0].scheme == "ORCID"
+        assert checks[0].format_ok is True
+        assert checks[0].resolved is True
+        assert checks[0].problem is None

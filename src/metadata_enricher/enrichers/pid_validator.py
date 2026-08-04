@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 DOI_RE = re.compile(r"^10\.\d{4,9}/\S+$", re.IGNORECASE)
 ROR_RE = re.compile(r"^https://ror\.org/0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$")
 ISNI_RE = re.compile(r"^\d{15}[\dX]$")
+ORCID_RE = re.compile(r"^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$")
 
-_KNOWN_SCHEMES = ("DOI", "ROR", "ISNI")
+_KNOWN_SCHEMES = ("DOI", "ROR", "ISNI", "ORCID")
 
 
 @dataclass
@@ -45,8 +46,12 @@ def _strip_doi_prefix(value: str) -> str:
     return re.sub(r"^(https?://)?(dx\.)?doi\.org/", "", value.strip(), flags=re.IGNORECASE)
 
 
-def _isni_checksum_ok(digits: str) -> bool:
-    """ISO 7064 MOD 11-2 check digit, as used by ISNI (last char may be 'X' = 10)."""
+def _strip_orcid_prefix(value: str) -> str:
+    return re.sub(r"^https?://orcid\.org/", "", value.strip(), flags=re.IGNORECASE)
+
+
+def _mod_11_2_checksum_ok(digits: str) -> bool:
+    """ISO 7064 MOD 11-2 check digit — used by both ISNI and ORCID (last char may be 'X' = 10)."""
     total = 0
     for ch in digits[:15]:
         total = (total + int(ch)) * 2
@@ -68,7 +73,12 @@ def validate_pid_format(scheme: str, value: str) -> tuple[bool, str]:
         digits = value.strip().replace(" ", "")
         if not ISNI_RE.match(digits):
             return False, digits
-        return _isni_checksum_ok(digits), digits
+        return _mod_11_2_checksum_ok(digits), digits
+    if scheme_norm == "ORCID":
+        stripped = _strip_orcid_prefix(value)
+        if not ORCID_RE.match(stripped):
+            return False, stripped
+        return _mod_11_2_checksum_ok(stripped.replace("-", "")), stripped
     return True, value  # unknown scheme — nothing to check
 
 
@@ -103,6 +113,15 @@ def resolve_pid(client: httpx.Client, scheme: str, value: str) -> bool | None:
         if scheme_norm == "ISNI":
             isni = value.strip().replace(" ", "")
             resp = client.get(f"https://isni.org/isni/{isni}", follow_redirects=True, timeout=15.0)
+            return _resolved_from_status(resp.status_code)
+        if scheme_norm == "ORCID":
+            orcid = _strip_orcid_prefix(value)
+            resp = client.get(
+                f"https://orcid.org/{orcid}",
+                headers={"Accept": "application/orcid+json"},
+                follow_redirects=True,
+                timeout=15.0,
+            )
             return _resolved_from_status(resp.status_code)
     except httpx.HTTPError as exc:
         logger.debug("PID resolution request failed for %s %s: %s", scheme, value, exc)
@@ -173,10 +192,11 @@ def validate_pids(
 ) -> list[PidCheck]:
     """Extract every PID from *output* and check its format (and, live registry).
 
-    ORCID is intentionally out of scope here — ORCID iDs are self-asserted
-    personal identifiers with no equivalent public "does this exist" check
-    the way DOI/ROR/ISNI have; format is a fixed 16-char ISO-7064 checksum
-    string, already covered by IdentifierResolver's own construction.
+    ORCID resolution uses orcid.org's public content-negotiation endpoint
+    (``Accept: application/orcid+json`` on ``https://orcid.org/{id}``) —
+    no OAuth token needed, unlike the search API used to *find* an ORCID
+    iD by name (see ``ORCIDClient.search_person``). Confirmed live: a
+    real ORCID iD returns 200 with no credentials.
 
     If *resolve* is True and *client* is None, a throwaway client is created
     and closed internally. Never raises — a failed resolution check becomes

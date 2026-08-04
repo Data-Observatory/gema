@@ -119,5 +119,5 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 - The ISNI SRU free endpoint has undocumented rate limiting (~300ms between requests recommended).
 - ROR API v1 was sunset December 2025. Only v2 is active (`/v2/organizations`).
 - ROR rate limit: 2000/5min per IP (2000/5min with Client-Id header, dropping to 50/5min unauthenticated in Q3 2026).
-- ORCID's public API is not fully anonymous like ROR/ISNI — it requires an OAuth `client_credentials` bearer token from a free self-service registration. Without `ORCID_CLIENT_ID`/`ORCID_CLIENT_SECRET`, ORCID resolution is a silent no-op.
-- `pid_validator.py` does not check ORCID — there's no public "does this ORCID exist" registry lookup equivalent to DOI/ROR/ISNI; format is already enforced by construction.
+- ORCID *search* (finding an unknown iD by name, `ORCIDClient.search_person`) requires an OAuth `client_credentials` bearer token from a free self-service registration. Without `ORCID_CLIENT_ID`/`ORCID_CLIENT_SECRET`, ORCID resolution is a silent no-op.
+- ORCID *lookup by known iD* is different and needs no token: `pid_validator.resolve_pid` hits `https://orcid.org/{id}` with `Accept: application/orcid+json` (content negotiation) — confirmed live to return 200 with no credentials. This is what makes ORCID PID validation possible even when `ORCID_CLIENT_ID`/`SECRET` are unset.
