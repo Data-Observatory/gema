@@ -9,12 +9,14 @@ enrichers/
 ├── __init__.py                  # Exports IdentifierEnricher, IdentifierResolver, IdentifierMatch
 ├── iana_normalizer.py           # MIME type normalization against IANA registry (standalone, not wired)
 ├── country_extractor.py         # ISO country code extraction from HTML/URL (standalone, not wired)
-├── identifier_types.py          # IdentifierMatch pydantic model (resolved org identifier)
+├── identifier_types.py          # IdentifierMatch pydantic model (resolved org/person identifier)
 ├── ror_client.py                # ROR API v2 client (affiliation + query endpoints)
-├── isni_client.py               # ISNI SRU client (XML parsing via httpx + ElementTree)
+├── isni_client.py                # ISNI SRU client (XML parsing via httpx + ElementTree)
+├── orcid_client.py               # ORCID Public API v3.0 client (OAuth client_credentials + person search)
 ├── fuzzy_matcher.py             # rapidfuzz WRatio org name matching + normalization
-├── identifier_resolver.py       # Fallback chain: ROR affiliation → ROR query+fuzzy → ISNI
-└── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding)
+├── identifier_resolver.py       # resolve() merges ROR+ISNI; resolve_person() for ORCID
+├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding)
+└── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI (shared by Pipeline + scripts/validate_real_output.py)
 ```
 
 ## WHERE TO LOOK
@@ -22,12 +24,13 @@ enrichers/
 | Task | Location |
 |------|----------|
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
-| Change resolution order | `IdentifierResolver._try_resolve()` (identifier_resolver.py) |
+| Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
+| Change org resolution order/merge | `IdentifierResolver._try_resolve()` / `_merge_org_matches()` (identifier_resolver.py) |
+| Change ORCID ambiguity policy | `IdentifierResolver._try_orcid()` — currently: >1 hit → `status="review"`, not auto-attached |
 | Change fuzzy threshold | `IdentifierResolver.__init__(fuzzy_threshold=90.0)` |
-| Change cache TTL | `IdentifierResolver.__init__(cache_ttl=timedelta(days=30))` |
-| Change cache dir | `IdentifierResolver.__init__(cache_dir=Path(...))` |
-| Add new identifier field | `IdentifierEnricher._enrich_*()` methods |
-| Skip certain creators | Check `creator_name_type` in `_enrich_creators()` |
+| Change cache TTL / dir | `IdentifierResolver.__init__(cache_ttl=..., cache_dir=...)` |
+| Add new identifier field to write | `IdentifierEnricher._enrich_*()` methods |
+| Add a new PID scheme to validate | `pid_validator.py` — `validate_pid_format()` / `resolve_pid()` / `_KNOWN_SCHEMES` |
 
 ## IDENTIFIER RESOLUTION ARCHITECTURE
 
@@ -37,26 +40,36 @@ Organization name → IdentifierResolver.resolve(name)
                        ├── 1. Check diskcache (~/.cache/metagen/identifiers/, 30-day TTL)
                        │      Hit? → return cached IdentifierMatch or None (negative cache)
                        │
-                       ├── 2. ROR ?affiliation= endpoint
-                       │      Returns chosen:true for best match → build IdentifierMatch
+                       ├── 2. ROR ?affiliation=, else ?query= + rapidfuzz WRatio (threshold 90)
+                       ├── 3. ISNI SRU pica.nw + rapidfuzz WRatio — ALWAYS attempted too,
+                       │      even if ROR already found something (they cover different orgs)
                        │
-                       ├── 3. ROR ?query= + rapidfuzz WRatio (threshold 90)
-                       │      Fuzzy match against candidate names → build IdentifierMatch
-                       │
-                       ├── 4. ISNI SRU pica.nw + rapidfuzz WRatio
-                       │      Fuzzy match → build IdentifierMatch (ISNI only, no ROR)
+                       ├── Both found? → merge into ONE IdentifierMatch carrying both
+                       │      ror_id and isni_id (ROR's own linked ISNI wins over an
+                       │      independently fuzzy-matched one)
                        │
                        └── Cache result (positive or negative) → return
+
+Person (given_name, family_name[, affiliation]) → IdentifierResolver.resolve_person(...)
+                       │
+                       ├── ORCID Public API v3.0 search (exact field-scoped query,
+                       │      requires ORCID_CLIENT_ID/SECRET — see identifier_types.py)
+                       ├── Exactly 1 hit  → status="auto"
+                       └── >1 hit          → status="review" (top candidate still
+                                             returned, but IdentifierEnricher will NOT
+                                             auto-attach it)
 ```
 
 ### Key Design Decisions
 
 - **ROR `chosen:true` only**: ROR explicitly says do NOT use `score` to select matches.
-- **Negative caching**: None results are cached to avoid repeated API calls for unknown orgs.
-- **Graceful degradation**: All API failures are caught — resolver never raises, returns None.
-- **Personal creators skipped**: `creator_name_type == "Personal"` → no ROR lookup (individuals).
+- **Check both registries, always**: `resolve()` never short-circuits on the first hit — ROR and ISNI are independent registries and either can know about an org the other doesn't.
+- **Write every identifier found, where the schema allows it**: `name_identifiers` and `funder_identifiers` are lists — a match carrying both ROR and ISNI writes both entries. `affiliation_identifier` and `publisher_identifier` are singular DataCite fields (0..1 cardinality) — ROR is preferred there when both are available.
+- **ORCID is conservative by design**: a wrong ORCID on a person is worse than a missing one. Ambiguous searches (`status == "review"`) are logged, never auto-attached.
+- **Negative caching**: `None` results are cached (both org and person lookups) to avoid repeated API calls for unknown names.
+- **Graceful degradation**: All API failures are caught — resolvers never raise, return `None`/empty on failure. Missing ORCID credentials → `ORCIDClient.enabled == False` → silent no-op, not an error.
 - **Preserve LLM values**: Enricher only fills EMPTY identifier fields. If the LLM already populated a field, it's preserved.
-- **httpx not requests**: Entire codebase uses httpx. ROR and ISNI clients both use httpx.Client.
+- **httpx not requests**: Entire codebase uses httpx.
 
 ### Pipeline Integration
 
@@ -66,19 +79,20 @@ Pipeline._process_resource():
   2. Build agent registry
   3. Orchestrator.run() → agent_results
   4. MetadataMerger.merge() → MetadataDocument
-  5. [NEW] IdentifierEnricher.enrich(document) → enriched document  ← only if enabled
+  5. IdentifierEnricher.enrich(document) → enriched document   ← only if enable_identifier_enrichment
+  6. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
 ```
 
-Enable via config:
+Step 6 runs on **every** `process` call, regardless of step 5 — it checks whatever
+PIDs are already in the document (LLM-provided or enrichment-added). It never fails
+the resource; problems become `PipelineResult.warnings`, same as an incomplete field.
+
+Enable identifier enrichment via config:
 ```yaml
 # config/agents.yaml
 enable_identifier_enrichment: true
-```
-
-Or programmatically:
-```python
-config = PipelineConfig(..., enable_identifier_enrichment=True)
-pipeline = Pipeline(config)
+validate_pids: true       # default — set false to disable entirely
+validate_pids_live: true  # default — set false to keep format checks but skip network
 ```
 
 ## CONVENTIONS
@@ -86,16 +100,17 @@ pipeline = Pipeline(config)
 - `from __future__ import annotations` first import in every module.
 - `model_config = ConfigDict(extra="forbid")` on IdentifierMatch (like all pydantic models except ResourceDescription/MetadataDocument).
 - `httpx.Client` for all HTTP calls (never `requests`).
-- `diskcache` for caching (SHA-256 key, TTL in seconds).
+- `diskcache` for caching (SHA-256 key, TTL in seconds). Cache keys are prefixed `org:`/`person:` — an org name and a person's name never collide.
 - `rapidfuzz` for fuzzy matching (WRatio scorer, threshold 90, gap 5 for review flagging).
 - ISNI format: 16-digit unspaced string (e.g. "000000040628717X"). ROR external_ids has spaces — normalized on extraction.
+- ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"), always written as `https://orcid.org/<id>` in `name_identifier`.
 
 ## ANTI-PATTERNS
 
 - **NEVER use ROR `score` to select matches** — only `chosen:true` from the affiliation endpoint.
-- **NEVER raise from the resolver** — all exceptions caught, return None on failure.
+- **NEVER raise from a resolver** — all exceptions caught, return None/empty on failure.
 - **NEVER overwrite populated identifier fields** — enricher only fills EMPTY fields.
-- **NEVER resolve Personal creators** — individuals don't have ROR IDs.
+- **NEVER auto-attach an ambiguous ORCID match** — `status == "review"` must not reach the document unattended.
 - **NEVER use `requests`** — this project uses `httpx` exclusively.
 
 ## NOTES
@@ -104,3 +119,5 @@ pipeline = Pipeline(config)
 - The ISNI SRU free endpoint has undocumented rate limiting (~300ms between requests recommended).
 - ROR API v1 was sunset December 2025. Only v2 is active (`/v2/organizations`).
 - ROR rate limit: 2000/5min per IP (2000/5min with Client-Id header, dropping to 50/5min unauthenticated in Q3 2026).
+- ORCID's public API is not fully anonymous like ROR/ISNI — it requires an OAuth `client_credentials` bearer token from a free self-service registration. Without `ORCID_CLIENT_ID`/`ORCID_CLIENT_SECRET`, ORCID resolution is a silent no-op.
+- `pid_validator.py` does not check ORCID — there's no public "does this ORCID exist" registry lookup equivalent to DOI/ROR/ISNI; format is already enforced by construction.

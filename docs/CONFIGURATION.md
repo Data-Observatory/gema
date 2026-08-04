@@ -1,5 +1,53 @@
 # Configuration Reference
 
+This is the config-and-CLI reference. For per-script flags (`record_golden.py`,
+`run_live_eval.py`, `compare_geoportal.py`, `validate_real_output.py`, ...), see
+[`../scripts/README.md`](../scripts/README.md) — flags live in one place per tool,
+not copied here.
+
+## `metagen` CLI
+
+```bash
+uv run metagen --help
+uv run metagen <command> --help
+```
+
+**Global options** (before the subcommand): `--config/-c PATH` (falls back to
+auto-discovery), `--verbose/-v` (DEBUG logging), `--quiet/-q` (WARNING-only),
+`--version`.
+
+| Command | Flags | Notes |
+|---------|-------|-------|
+| `list-schemas` | — | Lists registered schemas |
+| `list-providers` | `--config/-c` | Lists providers from a config |
+| `validate <file>` | `--schema/-s` | Pre-flight only, no LLM call, no API key needed |
+| `process <input_path>` | `--output/-o`, `--schema/-s`, `--config/-c`, `--allow-partial`, `--max-workers N` | The real run — costs API tokens |
+
+`process` is the one command that calls the LLM for real. `--allow-partial` writes
+best-effort output even when some agents failed on a resource, instead of treating
+any partial failure as a hard failure. `--max-workers` overrides the config's
+`max_workers` for this run — lower it first if a provider is rate-limiting (429s).
+
+```bash
+uv run metagen process examples/sample_input01.json -o output.json
+uv run metagen process tests/fixtures/geoportal/inputs -o reports/manual/ --max-workers 1
+```
+
+Exit codes for `process`: `0` all resources fully succeeded · `1` every resource
+failed · `2` a mix of success/failure/incomplete.
+
+## Testing — pick the right one
+
+| Suite | Command | Hits a real API? | Checks |
+|-------|---------|:---:|--------|
+| Unit + regression | `make test` | No | Component logic + cache-replayed golden outputs |
+| Live structural | `uv run pytest -m live` | Yes | Live pipeline returns *some* structured output |
+| Real output validation | `uv run python scripts/validate_real_output.py` | Yes | A specific real run is actually usable: valid JSON, real content, PIDs that format-check *and resolve* live |
+| Cross-model comparison | `uv run python scripts/compare_geoportal.py` | Yes | Several models scored against human-reviewed ground truth |
+| Semantic scoring | `uv run python scripts/run_live_eval.py` | Yes | LLM-as-judge similarity to golden outputs |
+
+Full flags for the scripted ones: [`../scripts/README.md`](../scripts/README.md).
+
 ## Pipeline Config (`agents.yaml`)
 
 The main pipeline configuration file defines the schema, agents, providers, and
@@ -15,6 +63,9 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `default_provider` | `str` | no | Provider name used when an agent omits the `provider` field |
 | `strategies` | `dict[str, str]` | no | Reserved for future strategy/override configuration |
 | `max_workers` | `int` | no | `4` | Max concurrent agent requests per resource (one wave's `ThreadPoolExecutor` size). Lower if the provider rate-limits (429s); override per-run with `metagen process --max-workers N` |
+| `enable_identifier_enrichment` | `bool` | no | `false` | Resolve creator/publisher/funder org names to ROR/ISNI (live API calls), and personal creators with a given/family name split to ORCID |
+| `validate_pids` | `bool` | no | `true` | Check every DOI/ROR/ISNI found in the output for correct format on **every run** — no flag needed. Problems become `PipelineResult.warnings`, never a hard failure |
+| `validate_pids_live` | `bool` | no | `true` | On top of the format check, actually look each PID up against doi.org/ror.org/isni.org to confirm it resolves. Set `false` to keep the format check but skip the live network calls |
 
 ### AgentConfig Fields
 
@@ -94,6 +145,7 @@ The migration handles:
 | `ZAI_API_KEY` | varies | API key for ZAI provider |
 | `OPENCODE_API_KEY` | varies | API key for OpenCode provider |
 | `ANTHROPIC_API_KEY` | varies | API key for Anthropic provider |
+| `ORCID_CLIENT_ID` / `ORCID_CLIENT_SECRET` | optional | Only needed for ORCID resolution of personal creators (part of `enable_identifier_enrichment`). Free self-service registration at [orcid.org/developer-tools](https://orcid.org/developer-tools) — unlike ROR/ISNI, ORCID's public API requires a bearer token even for read-only search. Without these set, ORCID lookups are silently skipped (never an error) |
 
 Which variables are required depends on which providers are referenced by the
 pipeline config.

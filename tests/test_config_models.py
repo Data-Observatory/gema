@@ -28,6 +28,7 @@ class TestProviderConfig:
         assert p.api_key_env == "OPENCODE_API_KEY"
         assert p.base_url is None
         assert p.default is False
+        assert p.seed is None
 
     def test_all_fields(self):
         """All fields provided."""
@@ -36,11 +37,13 @@ class TestProviderConfig:
             base_url="https://api.z.ai/api/coding/paas/v4",
             api_key_env="ZAI_API_KEY",
             default=True,
+            seed=42,
         )
         assert p.name == "zai-coding-plan"
         assert p.base_url == "https://api.z.ai/api/coding/paas/v4"
         assert p.api_key_env == "ZAI_API_KEY"
         assert p.default is True
+        assert p.seed == 42
 
     def test_rejects_unknown_fields(self):
         """extra='forbid' — unknown fields raise ValidationError."""
@@ -216,6 +219,25 @@ class TestPipelineConfig:
         assert p.default_provider is None
         assert p.strategies == {}
         assert p.max_workers == 4
+        assert p.enable_identifier_enrichment is False
+        assert p.validate_pids is True
+        assert p.validate_pids_live is True
+
+    def test_identifier_enrichment_and_pid_validation_overrides(self):
+        """Both PID-validation flags and identifier enrichment can be toggled."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+            enable_identifier_enrichment=True,
+            validate_pids=False,
+            validate_pids_live=False,
+        )
+        assert p.enable_identifier_enrichment is True
+        assert p.validate_pids is False
+        assert p.validate_pids_live is False
 
     def test_max_workers_override(self):
         """max_workers can be tuned down for tightly rate-limited providers."""

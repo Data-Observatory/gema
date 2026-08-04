@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from metadata_enricher.agents.registry import AgentRegistry, LLMClientFactory
 from metadata_enricher.config.models import PipelineConfig
@@ -13,6 +14,9 @@ from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema, SchemaRegistry
 from metadata_enricher.types import MetadataDocument, ResourceDescription
 from metadata_enricher.validation import PreFlightValidator
+
+if TYPE_CHECKING:
+    from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +60,7 @@ class Pipeline:
         llm_factory: LLMClientFactory | None = None,
         max_workers: int = 4,
         allow_partial: bool = False,
+        identifier_enricher: IdentifierEnricher | None = None,
     ) -> None:
         self._config = config
         self._registry = schema_registry or get_registry()
@@ -64,8 +69,12 @@ class Pipeline:
         self._max_workers = max_workers
         self._allow_partial = allow_partial
         self._validator = PreFlightValidator(self._schema, self._registry)
-        self._enricher = None
-        if config.enable_identifier_enrichment:
+        # Explicit injection (e.g. a fake in tests) always wins. Otherwise, build
+        # the real ROR/ISNI/ORCID-backed enricher only if the config asks for it —
+        # constructing it unconditionally would mean every Pipeline() call
+        # touches the network-backed IdentifierResolver's clients.
+        self._enricher = identifier_enricher
+        if self._enricher is None and config.enable_identifier_enrichment:
             from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
             from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 
@@ -190,5 +199,18 @@ class Pipeline:
                 document = self._enricher.enrich(document)
             except Exception as exc:
                 logger.warning("Identifier enrichment failed: %s", exc)
+
+        # 6. PID validation — every run, not just when explicitly requested.
+        # Never blocks success: a bad/unresolvable PID becomes a warning, same
+        # as an incomplete field. A registry being briefly unreachable must
+        # not fail an otherwise-good resource.
+        if self._config.validate_pids:
+            try:
+                from metadata_enricher.enrichers.pid_validator import validate_pids
+
+                pid_checks = validate_pids(document.fields, resolve=self._config.validate_pids_live)
+                warnings += [c.problem for c in pid_checks if c.problem is not None]
+            except Exception as exc:
+                logger.warning("PID validation failed: %s", exc)
 
         return PipelineResult(resource=resource, document=document, warnings=warnings)

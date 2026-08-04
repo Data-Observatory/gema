@@ -25,6 +25,20 @@ def _mock_resolver(ror_id: str | None = "https://ror.org/01h6h5x94") -> MagicMoc
     return resolver
 
 
+def _mock_isni_only_resolver(isni_id: str = "000000040628717X") -> MagicMock:
+    """A resolver whose match fell back to ISNI SRU — no ROR hit at all."""
+    resolver = MagicMock()
+    resolver.resolve.return_value = IdentifierMatch(
+        ror_id=None,
+        isni_id=isni_id,
+        org_name="Test Org",
+        confidence=0.95,
+        matched_via="isni_sru",
+        status="auto",
+    )
+    return resolver
+
+
 def _doc_with_fields(fields: dict) -> MetadataDocument:
     doc = MetadataDocument()
     for k, v in fields.items():
@@ -38,7 +52,8 @@ def _doc_with_fields(fields: dict) -> MetadataDocument:
 class TestEnrichCreators:
     """IdentifierEnricher: creator name_identifiers resolution."""
 
-    def test_organizational_creator_gets_name_identifier(self) -> None:
+    def test_organizational_creator_gets_all_found_identifiers(self) -> None:
+        """A match carrying both ROR and ISNI writes BOTH — not just one preferred scheme."""
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({
@@ -46,11 +61,14 @@ class TestEnrichCreators:
         })
         enricher.enrich(doc)
         identifiers = doc.get_field("creators")[0]["name_identifiers"]
-        assert len(identifiers) == 1
+        assert len(identifiers) == 2
         assert identifiers[0]["name_identifier"] == "https://ror.org/01h6h5x94"
         assert identifiers[0]["name_identifier_scheme"] == "ROR"
+        assert identifiers[1]["name_identifier"] == "000000040628717X"
+        assert identifiers[1]["name_identifier_scheme"] == "ISNI"
 
-    def test_personal_creator_skipped(self) -> None:
+    def test_personal_creator_without_name_split_not_resolved(self) -> None:
+        """No given_name/family_name split — nothing to search ORCID with."""
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({
@@ -59,6 +77,89 @@ class TestEnrichCreators:
         enricher.enrich(doc)
         assert doc.get_field("creators")[0]["name_identifiers"] == []
         resolver.resolve.assert_not_called()
+        resolver.resolve_person.assert_not_called()
+
+    def test_personal_creator_unambiguous_orcid_match_written(self) -> None:
+        resolver = _mock_resolver()
+        resolver.resolve_person.return_value = IdentifierMatch(
+            orcid_id="0000-0002-1825-0097",
+            org_name="Jane Roe",
+            confidence=1.0,
+            matched_via="orcid_search",
+            status="auto",
+        )
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Jane Roe",
+                "creator_name_type": "Personal",
+                "given_name": "Jane",
+                "family_name": "Roe",
+                "name_identifiers": [],
+            }]
+        })
+        enricher.enrich(doc)
+        identifiers = doc.get_field("creators")[0]["name_identifiers"]
+        resolver.resolve_person.assert_called_once_with("Jane", "Roe", None)
+        assert len(identifiers) == 1
+        assert identifiers[0]["name_identifier"] == "https://orcid.org/0000-0002-1825-0097"
+        assert identifiers[0]["name_identifier_scheme"] == "ORCID"
+
+    def test_personal_creator_passes_affiliation_to_orcid_search(self) -> None:
+        resolver = _mock_resolver()
+        resolver.resolve_person.return_value = None
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Jane Roe",
+                "creator_name_type": "Personal",
+                "given_name": "Jane",
+                "family_name": "Roe",
+                "affiliations": [{"affiliation": "Universidad de Chile"}],
+                "name_identifiers": [],
+            }]
+        })
+        enricher.enrich(doc)
+        resolver.resolve_person.assert_called_once_with("Jane", "Roe", "Universidad de Chile")
+
+    def test_personal_creator_ambiguous_orcid_match_not_written(self) -> None:
+        resolver = _mock_resolver()
+        resolver.resolve_person.return_value = IdentifierMatch(
+            orcid_id="0000-0002-1825-0097",
+            org_name="Jane Roe",
+            confidence=0.5,
+            matched_via="orcid_search",
+            status="review",
+        )
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Jane Roe",
+                "creator_name_type": "Personal",
+                "given_name": "Jane",
+                "family_name": "Roe",
+                "name_identifiers": [],
+            }]
+        })
+        enricher.enrich(doc)
+        assert doc.get_field("creators")[0]["name_identifiers"] == []
+
+    def test_personal_creator_with_existing_identifier_not_reresolved(self) -> None:
+        resolver = _mock_resolver()
+        existing = [{"name_identifier": "https://orcid.org/EXISTING", "name_identifier_scheme": "ORCID"}]
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Jane Roe",
+                "creator_name_type": "Personal",
+                "given_name": "Jane",
+                "family_name": "Roe",
+                "name_identifiers": existing,
+            }]
+        })
+        enricher.enrich(doc)
+        assert doc.get_field("creators")[0]["name_identifiers"] == existing
+        resolver.resolve_person.assert_not_called()
 
     def test_already_populated_name_identifiers_preserved(self) -> None:
         resolver = _mock_resolver()
@@ -88,6 +189,37 @@ class TestEnrichCreators:
         enricher.enrich(doc)
         identifiers = doc.get_field("creators")[0]["name_identifiers"]
         assert identifiers[0]["name_identifier"] == "https://ror.org/01h6h5x94"
+
+    def test_isni_only_match_still_written(self) -> None:
+        """When the resolver falls back to ISNI (no ROR hit), that ISNI must
+        land on the document — not be silently dropped."""
+        resolver = _mock_isni_only_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{"creator_name": "Test Org", "creator_name_type": "Organizational", "name_identifiers": []}]
+        })
+        enricher.enrich(doc)
+        identifiers = doc.get_field("creators")[0]["name_identifiers"]
+        assert len(identifiers) == 1
+        assert identifiers[0]["name_identifier"] == "000000040628717X"
+        assert identifiers[0]["name_identifier_scheme"] == "ISNI"
+        assert identifiers[0]["scheme_uri"] == "https://isni.org"
+
+    def test_affiliation_isni_only_match_still_written(self) -> None:
+        resolver = _mock_isni_only_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [{
+                "creator_name": "Test Org",
+                "creator_name_type": "Organizational",
+                "name_identifiers": [{"name_identifier": "exists"}],
+                "affiliations": [{"affiliation": "Parent Org", "affiliation_identifier": ""}],
+            }]
+        })
+        enricher.enrich(doc)
+        affil = doc.get_field("creators")[0]["affiliations"][0]
+        assert affil["affiliation_identifier"] == "000000040628717X"
+        assert affil["affiliation_identifier_scheme"] == "ISNI"
 
     def test_resolver_returns_none_leaves_empty(self) -> None:
         resolver = _mock_resolver(ror_id=None)
@@ -145,6 +277,18 @@ class TestEnrichPublishers:
         assert pub["publisher_identifier"] == "https://ror.org/01h6h5x94"
         assert pub["publisher_identifier_scheme"] == "ROR"
 
+    def test_publisher_isni_only_match_still_written(self) -> None:
+        resolver = _mock_isni_only_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "publishers": [{"publisher_name": "Ministerio", "publisher_identifier": ""}]
+        })
+        enricher.enrich(doc)
+        pub = doc.get_field("publishers")[0]
+        assert pub["publisher_identifier"] == "000000040628717X"
+        assert pub["publisher_identifier_scheme"] == "ISNI"
+        assert pub["publisher_scheme_uri"] == "https://isni.org"
+
     def test_publisher_already_populated_preserved(self) -> None:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
@@ -161,7 +305,7 @@ class TestEnrichPublishers:
 class TestEnrichFundingReferences:
     """IdentifierEnricher: funder_identifiers resolution."""
 
-    def test_funder_gets_identifiers(self) -> None:
+    def test_funder_gets_all_found_identifiers(self) -> None:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({
@@ -169,8 +313,10 @@ class TestEnrichFundingReferences:
         })
         enricher.enrich(doc)
         ref = doc.get_field("funding_references")[0]
-        assert len(ref["funder_identifiers"]) == 1
+        assert len(ref["funder_identifiers"]) == 2
         assert ref["funder_identifiers"][0]["funder_identifier"] == "https://ror.org/01h6h5x94"
+        assert ref["funder_identifiers"][1]["funder_identifier"] == "000000040628717X"
+        assert ref["funder_identifiers"][1]["funder_identifier_type"] == "ISNI"
 
     def test_blank_placeholder_funder_identifiers_still_enriched(self) -> None:
         resolver = _mock_resolver()
@@ -184,6 +330,17 @@ class TestEnrichFundingReferences:
         enricher.enrich(doc)
         ref = doc.get_field("funding_references")[0]
         assert ref["funder_identifiers"][0]["funder_identifier"] == "https://ror.org/01h6h5x94"
+
+    def test_funder_isni_only_match_still_written(self) -> None:
+        resolver = _mock_isni_only_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "ANID", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc)
+        ref = doc.get_field("funding_references")[0]
+        assert ref["funder_identifiers"][0]["funder_identifier"] == "000000040628717X"
+        assert ref["funder_identifiers"][0]["funder_identifier_type"] == "ISNI"
 
     def test_funder_already_populated_preserved(self) -> None:
         resolver = _mock_resolver()
@@ -210,10 +367,16 @@ class TestEnrichEdgeCases:
         resolver.resolve.assert_not_called()
 
     def test_no_creators_key(self) -> None:
+        """No 'creators' field at all — must not crash, and must not stop
+        the empty 'publishers' list from being handled too."""
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({"publishers": []})
-        enricher.enrich(doc)
+        result = enricher.enrich(doc)
+        assert result is doc
+        assert doc.get_field("creators") is None
+        assert doc.get_field("publishers") == []
+        resolver.resolve.assert_not_called()
 
     def test_creator_without_name_skipped(self) -> None:
         resolver = _mock_resolver()

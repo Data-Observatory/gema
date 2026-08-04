@@ -5,7 +5,7 @@
     "editor": "Data Observatory",
     "maintainer": "Data Observatory",
     "contact": "",
-    "producer": "",
+    "producer": "Data Observatory",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -22,22 +22,28 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Estudiantes",
-      "mediator": "Docente",
-      "education_level": "Pregrado",
-      "instructional_method": "Estudio de caso"
-    },
-    {
       "audience": "Profesionales",
-      "mediator": "Autodirigido",
+      "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Docentes",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Estudio de caso"
+    },
+    {
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
+      "instructional_method": "Estudio de caso"
     }
   ],
   "categories": [
@@ -74,7 +80,7 @@
   "dates": [],
   "descriptions": [
     {
-      "description": "Plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Contiene datos recopilados de fuentes científicas, permitiendo conocer características ecológicas de especies a una escala regional y nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie.",
+      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
       "description_type": "Abstract",
       "language": "es"
     }
@@ -119,14 +125,14 @@
       "classification_code": ""
     },
     {
-      "subject_name": "Biodiversidad -- Chile",
+      "subject_name": "Biodiversidad -- Plantas -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
       "classification_code": ""
     },
     {
-      "subject_name": "Plantas -- Chile",
+      "subject_name": "Ecología vegetal -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",

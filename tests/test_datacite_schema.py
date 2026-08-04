@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+import pytest
 from pydantic import BaseModel
 
 from metadata_enricher.schemas import DataCiteSchema46, get_registry
@@ -47,6 +50,203 @@ class TestSchemaProperties:
         assert "invalid_type" not in DataCiteSchema46.VALID_RESOURCE_TYPES
 
 
+class TestStringInputAcrossNormalizers:
+    """Every list-shaped normalizer accepts a bare string and wraps it into
+    one item, mapping the string onto that field's primary key.
+
+    This is the exact same branch (``isinstance(item, str) and item.strip()``)
+    repeated once per normalizer in datacite.py — one parametrized test here
+    covers what used to be 15 near-identical ``test_string_input`` methods,
+    one per field class.
+    """
+
+    @pytest.mark.parametrize(
+        "method_name,input_value,expected_subset",
+        [
+            pytest.param(
+                "_normalize_titles",
+                "Single Title",
+                {"name": "Single Title", "title_type": "MainTitle", "language": ""},
+                id="titles",
+            ),
+            pytest.param(
+                "_normalize_descriptions",
+                "A description string",
+                {"description": "A description string", "description_type": "Abstract", "language": ""},
+                id="descriptions",
+            ),
+            pytest.param(
+                "_normalize_languages",
+                "spanish",
+                {"lang_code": "es"},
+                id="languages_word_mapped_to_iso",
+            ),
+            pytest.param(
+                "_normalize_creators",
+                "John Doe",
+                {"creator_name": "John Doe", "creator_name_type": "Organizational"},
+                id="creators",
+            ),
+            pytest.param(
+                "_normalize_publishers",
+                "Some Publisher",
+                {
+                    "publisher_name": "Some Publisher",
+                    "publisher_identifier": "",
+                    "publisher_identifier_scheme": "",
+                    "publisher_scheme_uri": "",
+                },
+                id="publishers",
+            ),
+            pytest.param(
+                "_normalize_subjects",
+                "Climate Change",
+                {"subject_name": "Climate Change", "subject_scheme": ""},
+                id="subjects",
+            ),
+            pytest.param(
+                "_normalize_dates",
+                "2024-01-01",
+                {"date": "2024-01-01", "date_type": "Issued"},
+                id="dates",
+            ),
+            pytest.param(
+                "_normalize_geo_locations",
+                "Chile",
+                {"geo_location_place": "Chile"},
+                id="geo_locations",
+            ),
+            pytest.param(
+                "_normalize_rights",
+                "CC0 1.0",
+                {"rights": "CC0 1.0", "rights_uri": ""},
+                id="rights",
+            ),
+            pytest.param(
+                "_normalize_funding_references",
+                "NSF",
+                {"funder_name": "NSF"},
+                id="funding_references",
+            ),
+            pytest.param(
+                "_normalize_related_identifiers",
+                "https://example.com",
+                {"related_identifier": "https://example.com", "relation_type": "References"},
+                id="related_identifiers",
+            ),
+            pytest.param(
+                "_normalize_alternate_identifiers",
+                "LocalID",
+                {"alternate_name": "LocalID"},
+                id="alternate_identifiers",
+            ),
+            pytest.param(
+                "_normalize_audiences",
+                "General Public",
+                {"audience": "General Public"},
+                id="audiences",
+            ),
+            pytest.param(
+                "_normalize_categories",
+                "Engineering",
+                {"name": "Engineering", "sub_category": ""},
+                id="categories",
+            ),
+            pytest.param(
+                "_normalize_citations",
+                "Generic Citation",
+                {"title": "Generic Citation"},
+                id="citations",
+            ),
+        ],
+    )
+    def test_string_input_becomes_primary_field(
+        self, method_name: str, input_value: str, expected_subset: dict[str, Any]
+    ) -> None:
+        schema = DataCiteSchema46()
+        result = getattr(schema, method_name)(input_value)
+        assert len(result) == 1
+        for key, expected in expected_subset.items():
+            assert result[0][key] == expected, f"{method_name}: {key!r}"
+
+
+class TestFallbackToFirstValueAcrossNormalizers:
+    """Every list-shaped normalizer falls back to the dict's first value when
+    the field-specific primary key is missing — e.g. ``_normalize_titles``
+    falls back when neither ``name`` nor ``title`` is present.
+
+    One parametrized test covers what used to be 8 near-identical
+    ``test_dict_without_*`` methods, one per field class.
+    """
+
+    @pytest.mark.parametrize(
+        "method_name,input_item,expected_subset",
+        [
+            pytest.param(
+                "_normalize_titles",
+                {"other": "Fallback Title"},
+                {"name": "Fallback Title", "title_type": "MainTitle", "language": ""},
+                id="titles",
+            ),
+            pytest.param(
+                "_normalize_descriptions",
+                {"unknown": "fallback"},
+                {"description": "fallback", "description_type": "Abstract", "language": ""},
+                id="descriptions",
+            ),
+            pytest.param(
+                "_normalize_languages",
+                {"language": "German"},
+                {"lang_code": "de"},  # fallback value still passes through _to_iso_lang mapping
+                id="languages",
+            ),
+            pytest.param(
+                "_normalize_creators",
+                {"unknown_key": "Fallback Org"},
+                {"creator_name": "Fallback Org", "creator_name_type": "Organizational"},
+                id="creators",
+            ),
+            pytest.param(
+                "_normalize_publishers",
+                {"other": "Fallback Pub"},
+                {
+                    "publisher_name": "Fallback Pub",
+                    "publisher_identifier": "",
+                    "publisher_identifier_scheme": "",
+                    "publisher_scheme_uri": "",
+                },
+                id="publishers",
+            ),
+            pytest.param(
+                "_normalize_subjects",
+                {"other": "Fallback"},
+                {"subject_name": "Fallback"},
+                id="subjects",
+            ),
+            pytest.param(
+                "_normalize_dates",
+                {"other": "2024-01-01T00:00:00"},
+                {"date": "2024-01-01T00:00:00"},
+                id="dates",
+            ),
+            pytest.param(
+                "_normalize_geo_locations",
+                {"name": "Chile"},
+                {"geo_location_place": "Chile"},
+                id="geo_locations",
+            ),
+        ],
+    )
+    def test_dict_without_primary_key_uses_first_value(
+        self, method_name: str, input_item: dict[str, Any], expected_subset: dict[str, Any]
+    ) -> None:
+        schema = DataCiteSchema46()
+        result = getattr(schema, method_name)([input_item])
+        assert len(result) == 1
+        for key, expected in expected_subset.items():
+            assert result[0][key] == expected, f"{method_name}: {key!r}"
+
+
 class TestNormalizeTitles:
     """Title normalization."""
 
@@ -73,16 +273,6 @@ class TestNormalizeTitles:
         assert result[0] == {"name": "Main"}
         assert result[1]["name"] == "Second"
         assert result[1]["title_type"] == "AlternativeTitle"
-
-    def test_dict_without_name_or_title_uses_first_value(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_titles([{"other": "Fallback Title"}])
-        assert result == [{"name": "Fallback Title", "title_type": "MainTitle", "language": ""}]
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_titles("Single Title")
-        assert result == [{"name": "Single Title", "title_type": "MainTitle", "language": ""}]
 
     def test_multiple_strings(self) -> None:
         schema = DataCiteSchema46()
@@ -118,20 +308,6 @@ class TestNormalizeDescriptions:
         result = schema._normalize_descriptions([{"text": "Long text"}])
         assert result == [
             {"description": "Long text", "description_type": "Abstract", "language": ""}
-        ]
-
-    def test_dict_without_description_or_text(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_descriptions([{"unknown": "fallback"}])
-        assert result == [
-            {"description": "fallback", "description_type": "Abstract", "language": ""}
-        ]
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_descriptions("A description string")
-        assert result == [
-            {"description": "A description string", "description_type": "Abstract", "language": ""}
         ]
 
     def test_mixed_list(self) -> None:
@@ -185,16 +361,6 @@ class TestNormalizeLanguages:
         result = schema._normalize_languages([{"lang_code": "valyrian"}])
         assert result[0]["lang_code"] == "valyrian"
 
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_languages("spanish")
-        assert result[0]["lang_code"] == "es"
-
-    def test_dict_without_lang_code_or_code(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_languages([{"language": "German"}])
-        assert result[0]["lang_code"] == "de"
-
 
 class TestNormalizeCreators:
     """Creator normalization."""
@@ -223,12 +389,6 @@ class TestNormalizeCreators:
         )
         assert result[0]["creator_name_type"] == "Personal"
 
-    def test_dict_without_creator_name_or_name(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_creators([{"unknown_key": "Fallback Org"}])
-        assert result[0]["creator_name"] == "Fallback Org"
-        assert result[0]["creator_name_type"] == "Organizational"
-
     def test_with_identifiers_and_affiliations(self) -> None:
         schema = DataCiteSchema46()
         result = schema._normalize_creators(
@@ -246,12 +406,6 @@ class TestNormalizeCreators:
             {"name_identifier": "ror.org/01abc", "name_identifier_scheme": "ROR"}
         ]
         assert result[0]["affiliations"] == [{"affiliation": "UChile"}]
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_creators("John Doe")
-        assert result[0]["creator_name"] == "John Doe"
-        assert result[0]["creator_name_type"] == "Organizational"
 
     def test_full_personal_creator(self) -> None:
         schema = DataCiteSchema46()
@@ -288,22 +442,6 @@ class TestNormalizePublishers:
         result = schema._normalize_publishers([{"name": "Ministry"}])
         assert result[0]["publisher_name"] == "Ministry"
 
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_publishers("Some Publisher")
-        assert result[0]["publisher_name"] == "Some Publisher"
-        assert result[0]["publisher_identifier"] == ""
-        assert result[0]["publisher_identifier_scheme"] == ""
-        assert result[0]["publisher_scheme_uri"] == ""
-
-    def test_dict_without_publisher_name_or_name(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_publishers([{"other": "Fallback Pub"}])
-        assert result[0]["publisher_name"] == "Fallback Pub"
-        assert result[0]["publisher_identifier"] == ""
-        assert result[0]["publisher_identifier_scheme"] == ""
-        assert result[0]["publisher_scheme_uri"] == ""
-
 
 class TestNormalizeSubjects:
     """Subject normalization."""
@@ -318,17 +456,6 @@ class TestNormalizeSubjects:
         result = schema._normalize_subjects([{"name": "Health", "subject_scheme": "UNESCO"}])
         assert result[0]["subject_name"] == "Health"
         assert result[0]["subject_scheme"] == "UNESCO"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_subjects("Climate Change")
-        assert result[0]["subject_name"] == "Climate Change"
-        assert result[0]["subject_scheme"] == ""
-
-    def test_dict_without_subject_name_or_name(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_subjects([{"other": "Fallback"}])
-        assert result[0]["subject_name"] == "Fallback"
 
 
 class TestNormalizeDates:
@@ -365,17 +492,6 @@ class TestNormalizeDates:
         schema = DataCiteSchema46()
         result = schema._normalize_dates([{"date": "2024-01-01", "description": "Desc"}])
         assert result[0]["date_information"] == "Desc"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_dates("2024-01-01")
-        assert result[0]["date"] == "2024-01-01"
-        assert result[0]["date_type"] == "Issued"
-
-    def test_dict_without_date_uses_first_value(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_dates([{"other": "2024-01-01T00:00:00"}])
-        assert result[0]["date"] == "2024-01-01T00:00:00"
 
 
 class TestNormalizeTemporalEvents:
@@ -437,16 +553,6 @@ class TestNormalizeGeolocations:
         schema = DataCiteSchema46()
         result = schema._normalize_geo_locations([{"geo_description": "Metropolitan region"}])
         assert result[0]["geo_description"] == "Metropolitan region"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_geo_locations("Chile")
-        assert result[0]["geo_location_place"] == "Chile"
-
-    def test_dict_without_geo_fields(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_geo_locations([{"name": "Chile"}])
-        assert result[0]["geo_location_place"] == "Chile"
 
     def test_full_geometry(self) -> None:
         schema = DataCiteSchema46()
@@ -625,12 +731,6 @@ class TestNormalizeRights:
         assert result[0]["rights"] == "MIT"
         assert result[0]["rights_uri"] == "https://opensource.org/licenses/MIT"
 
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_rights("CC0 1.0")
-        assert result[0]["rights"] == "CC0 1.0"
-        assert result[0]["rights_uri"] == ""
-
 
 class TestNormalizeFundingReferences:
     """Funding references normalization."""
@@ -661,11 +761,6 @@ class TestNormalizeFundingReferences:
             [{"funder_name": "ANID", "project_title": "Research Project"}]
         )
         assert result[0]["award_title"] == "Research Project"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_funding_references("NSF")
-        assert result[0]["funder_name"] == "NSF"
 
     def test_with_funder_identifiers(self) -> None:
         schema = DataCiteSchema46()
@@ -710,12 +805,6 @@ class TestNormalizeRelatedIdentifiers:
         result = schema._normalize_related_identifiers([{"identifier": "https://example.com"}])
         assert result[0]["related_identifier"] == "https://example.com"
 
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_related_identifiers("https://example.com")
-        assert result[0]["related_identifier"] == "https://example.com"
-        assert result[0]["relation_type"] == "References"
-
 
 class TestNormalizeAlternateIdentifiers:
     """Alternate identifiers normalization."""
@@ -742,11 +831,6 @@ class TestNormalizeAlternateIdentifiers:
         schema = DataCiteSchema46()
         result = schema._normalize_alternate_identifiers([{"alternate_name": "Test"}])
         assert result[0]["alternate_identifier_type"] == "Local"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_alternate_identifiers("LocalID")
-        assert result[0]["alternate_name"] == "LocalID"
 
 
 class TestNormalizeAudiences:
@@ -777,11 +861,6 @@ class TestNormalizeAudiences:
         assert result[0]["education_level"] == "Professional"
         assert result[0]["instructional_method"] == "Workshop"
 
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_audiences("General Public")
-        assert result[0]["audience"] == "General Public"
-
 
 class TestNormalizeCategories:
     """Category normalization."""
@@ -803,12 +882,6 @@ class TestNormalizeCategories:
         schema = DataCiteSchema46()
         result = schema._normalize_categories([{"name": "Sciences", "subcategory": "Physics"}])
         assert result[0]["sub_category"] == "Physics"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_categories("Engineering")
-        assert result[0]["name"] == "Engineering"
-        assert result[0]["sub_category"] == ""
 
 
 class TestNormalizeCitations:
@@ -842,11 +915,6 @@ class TestNormalizeCitations:
         assert result[0]["title"] == "Important Study"
         assert result[0]["start_page"] == "100"
         assert result[0]["conference_place"] == "Santiago"
-
-    def test_string_input(self) -> None:
-        schema = DataCiteSchema46()
-        result = schema._normalize_citations("Generic Citation")
-        assert result[0]["title"] == "Generic Citation"
 
 
 class TestNormalizeFieldDispatch:

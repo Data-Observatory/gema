@@ -29,21 +29,88 @@ uv sync --extra dev
 2. The default config is at `config/agents.yaml` (5 agents for DataCite 4.6 metadata).
    Provider connection settings are defined in `config/providers.yaml`.
 
-### Usage
+## Processing your own dataset
+
+This is the real workflow — not a test fixture, an actual new resource you want
+DataCite metadata for. Everything here is `uv run metagen ...`; no test suite
+involved.
+
+**1. Describe the resource as JSON.** Minimum useful fields: `url`, `title`,
+`description`. Add `doi` if it already has one, `fetched_content` (raw HTML/text
+from the resource's landing page) if you have it — the agents use whatever you
+give them. Any other key you add is passed through too (`ResourceDescription`
+accepts extra fields, e.g. `publisher`, `frequency` — see `examples/sample_input01.json`
+for a real one).
+
+```json
+{
+  "url": "https://example.org/dataset/rainfall-2024",
+  "title": "Annual Rainfall Measurements 2024",
+  "description": "Monthly rainfall totals by station, national weather service.",
+  "publisher": "Servicio Meteorológico Nacional"
+}
+```
+
+Save it as e.g. `my_dataset.json`.
+
+**2. Pre-flight check it — no API key needed, no cost.**
 
 ```bash
-# List available schemas
-uv run metagen list-schemas
-
-# List providers from config
-uv run metagen list-providers --config config/agents.yaml
-
-# Validate an input file
-uv run metagen validate examples/sample_input01.json
-
-# Process a resource (requires API key)
-uv run metagen process examples/sample_input01.json --config config/agents.yaml --output output.json
+uv run metagen validate my_dataset.json
 ```
+
+Fixes anything the schema needs before you spend a real API call.
+
+**3. Run it for real.** This calls the LLM (costs tokens) and, if
+`enable_identifier_enrichment` is on in your config (it is by default in
+`config/agents.yaml`), also resolves creator/publisher/funder orgs against ROR/ISNI
+live, and every PID in the result gets checked for real (format + live registry
+lookup — see the testing-tiers table in [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)).
+
+```bash
+uv run metagen process my_dataset.json --output my_dataset_metadata.json
+```
+
+**4. Read the result.** `my_dataset_metadata.json` is the full DataCite 4.6 record.
+Check stderr too — that's where `metagen` prints anything worth knowing:
+
+```
+Processed 1/1 resources successfully
+```
+
+or, if something's off (a missing field, a PID that doesn't actually resolve):
+
+```
+Warning: my_dataset.json has incomplete fields:
+  - ROR does not resolve: 'https://ror.org/badid00' (creators[0].name_identifiers[0])
+```
+
+That warning does NOT mean the run failed — exit code is `2` (success with
+caveats) rather than `1` (hard failure). The file was still written; that specific
+field just needs a human look.
+
+**5. Got a whole folder of new datasets, not just one?** Point at the directory
+instead of a file — output then needs to be a directory too, one JSON per input:
+
+```bash
+uv run metagen process my_datasets/ --output my_datasets_output/
+```
+
+**6. Want the detailed human-reviewer-style report** (is the abstract real, are
+subjects/topics populated, every PID checked) **instead of just the warnings above?**
+
+```bash
+uv run python scripts/validate_real_output.py --input my_dataset.json
+```
+
+That's the tool from the previous section on this exact workflow — same live run,
+richer report. See [`scripts/README.md`](scripts/README.md#validate_real_outputpy).
+
+---
+
+For the full CLI/config flag reference: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
+For flags on `record_golden.py`, `run_live_eval.py`, `compare_geoportal.py`, and
+`validate_real_output.py`: [`scripts/README.md`](scripts/README.md).
 
 ## Architecture
 

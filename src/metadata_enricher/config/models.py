@@ -55,6 +55,8 @@ class PipelineConfig(BaseModel):
     strategies: dict[str, str] = {}
     max_workers: int = Field(default=4, ge=1)
     enable_identifier_enrichment: bool = False
+    validate_pids: bool = True
+    validate_pids_live: bool = True
 
     @model_validator(mode="after")
     def _validate_references(self) -> Self:

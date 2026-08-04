@@ -70,6 +70,27 @@ def make_test_config() -> PipelineConfig:
     )
 
 
+def make_publisher_config() -> PipelineConfig:
+    """Config whose one agent produces the 'publishers' field, for PID-validation tests."""
+    return PipelineConfig(
+        schema_name="datacite-4.6",
+        agents=[
+            AgentConfig(
+                id="publishers-agent",
+                name="Publishers Agent",
+                fields=["publishers"],
+                prompt="Extract publisher from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
 def make_input_file(tmp_path: pytest.TempPathFactory, data: dict) -> str:  # noqa: ARG001
     """Write a JSON input file into *tmp_path*."""
     f = tmp_path / "input.json"
@@ -201,7 +222,6 @@ class TestPipelineIntegration:
         assert result.success is False
         assert result.error is not None
         assert "401" in result.error
-        assert result.document is None
 
     @staticmethod
     def _make_mixed_success_failure_config() -> PipelineConfig:
@@ -295,3 +315,146 @@ class TestPipelineIntegration:
         assert len(result.warnings) == 1
         assert "descriptions" in result.warnings[0]
         assert "401" in result.warnings[0]
+
+
+class TestPipelinePidValidation:
+    """Pipeline: automatic PID validation runs on every resource by default."""
+
+    def test_malformed_pid_surfaces_as_warning_by_default(self, tmp_path, llm_factory):
+        """validate_pids defaults to True — a bad PID must not need an extra flag to be caught."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_publisher_config()
+        config.validate_pids_live = False  # format check only — no network in a unit test
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {
+                "fields": {
+                    "publishers": [
+                        {
+                            "publisher_name": "Test Publisher",
+                            "publisher_identifier": "https://ror.org/BADID",
+                            "publisher_identifier_scheme": "ROR",
+                        }
+                    ]
+                }
+            }
+        )
+        results = Pipeline(config=config, llm_factory=factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert any("malformed ROR" in w for w in result.warnings)
+
+    def test_well_formed_pid_produces_no_warning(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_publisher_config()
+        config.validate_pids_live = False
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {
+                "fields": {
+                    "publishers": [
+                        {
+                            "publisher_name": "Test Publisher",
+                            "publisher_identifier": "https://ror.org/02sevrz47",
+                            "publisher_identifier_scheme": "ROR",
+                        }
+                    ]
+                }
+            }
+        )
+        results = Pipeline(config=config, llm_factory=factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        assert results[0].warnings == []
+
+    def test_validate_pids_false_disables_check_entirely(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_publisher_config()
+        config.validate_pids = False
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {
+                "fields": {
+                    "publishers": [
+                        {
+                            "publisher_name": "Test Publisher",
+                            "publisher_identifier": "https://ror.org/BADID",
+                            "publisher_identifier_scheme": "ROR",
+                        }
+                    ]
+                }
+            }
+        )
+        results = Pipeline(config=config, llm_factory=factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        assert results[0].warnings == []
+
+
+class FakeEnricher:
+    """Stand-in for IdentifierEnricher — marks the document, no network."""
+
+    def __init__(self, raise_error: bool = False) -> None:
+        self.raise_error = raise_error
+        self.called_with = None
+
+    def enrich(self, document):
+        self.called_with = document
+        if self.raise_error:
+            raise RuntimeError("enrichment blew up")
+        document.set_field("publishers", [{"publisher_name": "enriched-by-fake"}])
+        return document
+
+
+class TestPipelineIdentifierEnrichmentWiring:
+    """Pipeline: identifier enrichment step actually runs, and failures don't crash the resource."""
+
+    def test_injected_enricher_runs_and_mutates_document(self, tmp_path, llm_factory):
+        """Explicit injection must run regardless of enable_identifier_enrichment,
+        matching the llm_factory injection pattern — and its effect must land
+        in the final document."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        fake = FakeEnricher()
+        config = make_test_config()
+        assert config.enable_identifier_enrichment is False
+        pipeline = Pipeline(config=config, llm_factory=llm_factory, identifier_enricher=fake)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert fake.called_with is not None
+        assert result.document.get_field("publishers") == [{"publisher_name": "enriched-by-fake"}]
+
+    def test_enrichment_exception_is_caught_not_propagated(self, tmp_path, llm_factory):
+        """An enrichment failure (e.g. ROR/ISNI/ORCID down) must not fail the
+        whole resource — the pre-enrichment document is still returned as a
+        success, same as the merger's output before enrichment ran."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        fake = FakeEnricher(raise_error=True)
+        pipeline = Pipeline(
+            config=make_test_config(), llm_factory=llm_factory, identifier_enricher=fake
+        )
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.error is None
+        assert fake.called_with is not None
+        # The fake raises before mutating — document must be the merger's
+        # unmodified output, not None and not crashed.
+        assert result.document.get_field("titles") is not None

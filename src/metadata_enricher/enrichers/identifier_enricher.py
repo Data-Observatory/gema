@@ -1,24 +1,66 @@
-"""Post-merge identifier enricher — resolves org names to ROR/ISNI."""
+"""Post-merge identifier enricher — resolves org/person names to ROR/ISNI/ORCID."""
 
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
+from metadata_enricher.enrichers.identifier_types import IdentifierMatch
 from metadata_enricher.types import MetadataDocument
 
 logger = logging.getLogger(__name__)
 
+_SCHEME_URI = {"ROR": "https://ror.org", "ISNI": "https://isni.org", "ORCID": "https://orcid.org"}
+
+# Fixed, stable output order — ROR first (most actionable for orgs), then ISNI,
+# then ORCID (person matches only; never co-occurs with ROR/ISNI on the same match).
+_SCHEME_ORDER = ("ROR", "ISNI", "ORCID")
+
+
+def _all_identifiers(match: IdentifierMatch | None) -> list[tuple[str, str]]:
+    """Every identifier *match* actually found, as (id_value, scheme) pairs.
+
+    A resolved org can carry both a ROR and an ISNI at once (``resolve``
+    merges independent hits from both registries) — this returns all of
+    them, not just one "preferred" scheme.
+    """
+    if match is None:
+        return []
+    by_scheme = {"ROR": match.ror_id, "ISNI": match.isni_id, "ORCID": match.orcid_id}
+    return [(value, scheme) for scheme in _SCHEME_ORDER if (value := by_scheme[scheme])]
+
+
+def _preferred_identifier(match: IdentifierMatch | None) -> tuple[str, str] | None:
+    """Single identifier for schema fields that only hold one (affiliation/publisher).
+
+    DataCite's affiliationIdentifier and publisherIdentifier are 0..1 fields —
+    unlike nameIdentifiers/funderIdentifiers, they cannot hold a second entry.
+    ROR is preferred there since it's the more actionable identifier for an
+    organization; ISNI is used only when ROR wasn't found.
+    """
+    identifiers = _all_identifiers(match)
+    return identifiers[0] if identifiers else None
+
 
 class IdentifierEnricher:
-    """Enriches a MetadataDocument with resolved ROR/ISNI identifiers.
+    """Enriches a MetadataDocument with resolved ROR/ISNI/ORCID identifiers.
 
     Walks creators, publishers, and funding_references after the LLM merge
     step. For each organization name without an identifier, calls
-    IdentifierResolver to look up the ROR/ISNI via API.
+    ``IdentifierResolver.resolve`` to look up ROR/ISNI via API. For personal
+    creators with a given/family name split, calls
+    ``IdentifierResolver.resolve_person`` to look up ORCID.
 
-    Personal creators (creator_name_type == "Personal") are skipped —
-    individuals don't have ROR IDs.
+    Every identifier a resolver call actually found is written where the
+    schema allows more than one (``name_identifiers``, ``funder_identifiers``).
+    Where the schema only allows one (``affiliation_identifier``,
+    ``publisher_identifier``), ROR is preferred over ISNI.
+
+    ORCID matches are only written when unambiguous (``status == "auto"``,
+    i.e. exactly one search hit) — a wrong ORCID on a person is worse than a
+    missing one, so ambiguous matches (``status == "review"``) are logged but
+    not attached.
 
     Fields already populated by the LLM are preserved — the enricher only
     fills EMPTY identifier fields.
@@ -41,25 +83,29 @@ class IdentifierEnricher:
             if not isinstance(creator, dict):
                 continue
             name_type = creator.get("creator_name_type", "")
-            if name_type == "Personal":
-                continue
-            name = creator.get("creator_name", "")
-            if not name:
-                continue
             name_identifiers = creator.get("name_identifiers", [])
             has_real_id = isinstance(name_identifiers, list) and any(
                 isinstance(ni, dict) and ni.get("name_identifier") for ni in name_identifiers
             )
-            if not has_real_id:
-                match = self._resolver.resolve(name)
-                if match and match.ror_id:
+
+            if name_type == "Personal":
+                if not has_real_id:
+                    self._enrich_personal_creator(creator)
+                continue
+
+            name = creator.get("creator_name", "")
+            if name and not has_real_id:
+                identifiers = _all_identifiers(self._resolver.resolve(name))
+                if identifiers:
                     creator["name_identifiers"] = [
                         {
-                            "name_identifier": match.ror_id,
-                            "name_identifier_scheme": "ROR",
-                            "scheme_uri": "https://ror.org",
+                            "name_identifier": id_value,
+                            "name_identifier_scheme": scheme,
+                            "scheme_uri": _SCHEME_URI[scheme],
                         }
+                        for id_value, scheme in identifiers
                     ]
+
             affiliations = creator.get("affiliations", [])
             if isinstance(affiliations, list):
                 for affil in affiliations:
@@ -71,10 +117,40 @@ class IdentifierEnricher:
                     affil_name = affil.get("affiliation", "")
                     if not affil_name:
                         continue
-                    match = self._resolver.resolve(affil_name)
-                    if match and match.ror_id:
-                        affil["affiliation_identifier"] = match.ror_id
-                        affil["affiliation_identifier_scheme"] = "ROR"
+                    identifier = _preferred_identifier(self._resolver.resolve(affil_name))
+                    if identifier:
+                        id_value, scheme = identifier
+                        affil["affiliation_identifier"] = id_value
+                        affil["affiliation_identifier_scheme"] = scheme
+
+    def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
+        given_name = creator.get("given_name", "")
+        family_name = creator.get("family_name", "")
+        if not given_name or not family_name:
+            return
+        affiliations = creator.get("affiliations", [])
+        affiliation_name = None
+        if isinstance(affiliations, list) and affiliations:
+            first = affiliations[0]
+            if isinstance(first, dict):
+                affiliation_name = first.get("affiliation") or None
+
+        match = self._resolver.resolve_person(given_name, family_name, affiliation_name)
+        if match is None or not match.orcid_id:
+            return
+        if match.status != "auto":
+            logger.info(
+                "ORCID match for %s %s is ambiguous (status=%s) — not auto-attaching",
+                given_name, family_name, match.status,
+            )
+            return
+        creator["name_identifiers"] = [
+            {
+                "name_identifier": f"https://orcid.org/{match.orcid_id}",
+                "name_identifier_scheme": "ORCID",
+                "scheme_uri": _SCHEME_URI["ORCID"],
+            }
+        ]
 
     def _enrich_publishers(self, document: MetadataDocument) -> None:
         publishers = document.get_field("publishers")
@@ -89,11 +165,12 @@ class IdentifierEnricher:
             name = publisher.get("publisher_name", "")
             if not name:
                 continue
-            match = self._resolver.resolve(name)
-            if match and match.ror_id:
-                publisher["publisher_identifier"] = match.ror_id
-                publisher["publisher_identifier_scheme"] = "ROR"
-                publisher["publisher_scheme_uri"] = "https://ror.org"
+            identifier = _preferred_identifier(self._resolver.resolve(name))
+            if identifier:
+                id_value, scheme = identifier
+                publisher["publisher_identifier"] = id_value
+                publisher["publisher_identifier_scheme"] = scheme
+                publisher["publisher_scheme_uri"] = _SCHEME_URI[scheme]
 
     def _enrich_funding_references(self, document: MetadataDocument) -> None:
         funding = document.get_field("funding_references")
@@ -111,12 +188,13 @@ class IdentifierEnricher:
             name = ref.get("funder_name", "")
             if not name:
                 continue
-            match = self._resolver.resolve(name)
-            if match and match.ror_id:
+            identifiers = _all_identifiers(self._resolver.resolve(name))
+            if identifiers:
                 ref["funder_identifiers"] = [
                     {
-                        "funder_identifier": match.ror_id,
-                        "funder_identifier_type": "ROR",
-                        "scheme_uri": "https://ror.org",
+                        "funder_identifier": id_value,
+                        "funder_identifier_type": scheme,
+                        "scheme_uri": _SCHEME_URI[scheme],
                     }
+                    for id_value, scheme in identifiers
                 ]
