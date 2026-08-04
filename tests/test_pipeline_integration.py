@@ -399,6 +399,27 @@ class TestPipelinePidValidation:
         )
         assert results[0].warnings == []
 
+    def test_pid_validation_exception_is_caught_not_propagated(self, tmp_path, llm_factory, monkeypatch):
+        """validate_pids() is defensive by design and shouldn't raise, but if
+        it somehow does (e.g. a future bug), that must not crash the whole
+        resource — same contract as the enrichment step's own try/except."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+
+        def _boom(*args, **kwargs):
+            raise RuntimeError("pid validator blew up")
+
+        monkeypatch.setattr("metadata_enricher.enrichers.pid_validator.validate_pids", _boom)
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.error is None
+        assert result.document.get_field("titles") is not None
+
 
 class FakeEnricher:
     """Stand-in for IdentifierEnricher — marks the document, no network."""

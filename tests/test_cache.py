@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 from pydantic import BaseModel
 
@@ -175,8 +176,16 @@ class TestCachedLLMClient:
         assert inner.call_count == 2
 
     def test_close_underlying_cache(self, tmp_path: Path) -> None:
+        """close() must actually close the underlying diskcache.Cache — not a
+        no-op. diskcache re-opens lazily on next access, so the only reliable
+        check is that close() was invoked on it, same pattern used for every
+        other client's close() test in this codebase (e.g. RORClient)."""
         cm = CacheManager(cache_dir=tmp_path)
         inner = MockLLMClient()
         cached = CachedLLMClient(inner, cm)
         cached.complete("test", SimpleOutput)
+
+        mock_diskcache = MagicMock()
+        cm._cache = mock_diskcache
         cm.close()
+        mock_diskcache.close.assert_called_once()
