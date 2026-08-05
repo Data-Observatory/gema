@@ -1,0 +1,59 @@
+name: ci
+
+# Fast, cheap checks — no installer builds, single OS (ubuntu-latest).
+# This is the "dev" tier of the branch flow: any branch -> dev (this
+# workflow gates the merge) -> main (this workflow AND visor-build.yml's
+# full multi-OS matrix gate that merge). See visor/BUILD.md for the full
+# branch strategy writeup.
+#
+# Deliberately never runs anything marked `live` (real LLM calls, real
+# cost) — that stays manual-only (`make test-visor-live`), regardless of
+# which branch this runs against.
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --extra visor --group visor-build
+      - run: uv run ruff check src/ tests/ scripts/ visor/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --extra visor --group visor-build
+      - run: uv run mypy src/
+      - run: uv run mypy visor --exclude visor/tests
+
+  test-library:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev
+      - run: uv run pytest -m "not live" --cov=metadata_enricher --cov-report=term-missing
+
+  test-visor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --extra visor --group visor-build
+      - run: make test-visor

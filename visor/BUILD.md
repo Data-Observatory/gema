@@ -184,17 +184,39 @@ dependency) from the `.app` bundle. `visor/visor.spec` explicitly adds a
 `COLLECT` alone produces just a folder on macOS too, not a real
 double-clickable `.app`.
 
-### CI (GitHub Actions)
+### CI (GitHub Actions) — branch strategy
 
-`.github/workflows/visor-build.yml` builds both installers **and** both
-portable executables on `windows-latest`/`macos-latest`, triggered manually
-(`workflow_dispatch`) or on push to the `visor` branch touching `visor/`,
-the library, or the config. It runs `make test-visor`, then the same
-PyInstaller + Inno-Setup/`hdiutil` steps above, and uploads four artifacts
-per run: `visor-windows-installer`, `visor-windows-portable`,
-`visor-macos-dmg`, `visor-macos-portable`. This is scoped entirely to
-visor — it does not change the core library's existing "no CI/CD, all
-checks via Makefile" convention.
+Two workflows, gating two different tiers of the branch flow:
+
+```
+feature/* branches --PR--> dev --PR--> main
+                     (ci.yml)     (ci.yml + visor-build.yml)
+```
+
+- **`.github/workflows/ci.yml`** — cheap checks: lint, mypy, the library's
+  own test suite, and `make test-visor`. Single OS (`ubuntu-latest`), no
+  installer build, nothing marked `live` (no real LLM calls, no cost).
+  Runs on every PR into `dev` or `main`, and on direct pushes to `dev`.
+  This is the "partial/functional" tier — fast feedback for day-to-day
+  work landing on `dev`.
+- **`.github/workflows/visor-build.yml`** — the expensive tier: builds
+  both installers **and** both portable executables on
+  `windows-latest`/`macos-latest`. Runs `make test-visor`, then the same
+  PyInstaller + Inno-Setup/`hdiutil` steps above, uploading four artifacts
+  per run: `visor-windows-installer`, `visor-windows-portable`,
+  `visor-macos-dmg`, `visor-macos-portable`. Triggered only on a PR
+  targeting `main` (i.e. the `dev` -> `main` promotion) or manually via
+  `workflow_dispatch` — deliberately **not** on every push to a feature
+  branch, since a real multi-OS PyInstaller + installer build is slow and
+  not worth running on work that hasn't passed the cheap tier yet.
+
+`main` is branch-protected: PRs required, direct pushes blocked, and both
+workflows' checks must pass before a merge is allowed. `dev` is
+intentionally lighter (no protection rule) — it's the fast-moving
+integration branch; `main` is the one that must always be in a shippable
+state. This is scoped entirely to visor — it does not change the core
+library's existing "no CI/CD, all checks via Makefile" convention for
+day-to-day local development.
 
 **Honest limitation of how this was built**: authored and validated from a
 Linux sandbox. What was actually verified here:

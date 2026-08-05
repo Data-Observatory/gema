@@ -5,11 +5,17 @@ name: visor-build
 # PyInstaller does not cross-compile: a Windows installer can only be built
 # on a Windows runner, a macOS one only on macOS, which is exactly why this
 # needs both runners rather than one machine doing both.
+#
+# This is the "main" tier of the branch flow (see visor/BUILD.md): the
+# expensive multi-OS installer/portable-exe build gates the dev -> main
+# promotion, not every push to a feature branch. Cheap checks (lint,
+# typecheck, unit tests) run on every PR via ci.yml instead — this job
+# only runs on a PR targeting main, or manually.
 
 on:
   workflow_dispatch: {}
-  push:
-    branches: [visor]
+  pull_request:
+    branches: [main]
     paths:
       - "visor/**"
       - "src/metadata_enricher/**"
