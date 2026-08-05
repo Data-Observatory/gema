@@ -7,13 +7,13 @@ instead — that content isn't duplicated here.
 
 ## `generate_iana_data.py`
 
-Fetches the IANA Media Types XML registry and generates `data/iana_media_types.json`.
+Fetches the IANA Media Types XML registry and generates `src/metadata_enricher/data/iana_media_types.json`.
 
 ```bash
 uv run python scripts/generate_iana_data.py
 ```
 
-Output: `data/iana_media_types.json` with `types` dict and `name_lookup` for MIME type resolution.
+Output: `src/metadata_enricher/data/iana_media_types.json` with `types` dict and `name_lookup` for MIME type resolution.
 
 No arguments. Internet connection required.
 

@@ -39,6 +39,7 @@ metagen = "metadata_enricher.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/metadata_enricher"]
+artifacts = ["src/metadata_enricher/data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

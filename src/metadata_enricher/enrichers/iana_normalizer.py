@@ -12,6 +12,7 @@ import logging
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from importlib import resources
 from pathlib import Path
 from typing import Any, cast
 
@@ -45,15 +46,17 @@ class IANANormalizer:
 
         Args:
             bundled_path: Path to the bundled IANA JSON snapshot.
-                          If None, resolves relative to this module's location.
+                          If None, resolves via importlib.resources against
+                          the installed metadata_enricher package — this
+                          works from an editable checkout, a built wheel, and
+                          a PyInstaller-frozen bundle alike, unlike a
+                          repo-root-relative path.
             cache_dir: Directory for cached data. Defaults to
                        ~/.cache/proj-metadata-agents/.
         """
         if bundled_path is None:
             bundled_path = str(
-                Path(__file__).resolve().parent.parent.parent.parent
-                / "data"
-                / "iana_media_types.json"
+                resources.files("metadata_enricher") / "data" / "iana_media_types.json"
             )
 
         if cache_dir is None:

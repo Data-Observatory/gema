@@ -308,6 +308,16 @@ class TestCache:
 # ---------------------------------------------------------------------------
 
 
+class TestDefaultBundledPathResolution:
+    def test_default_bundled_path_resolves_via_importlib_resources(self, tmp_path):
+        """No bundled_path override — must resolve the real shipped data file
+        via importlib.resources (freeze/wheel-safe), not a repo-root-relative
+        path that only exists in an editable checkout."""
+        n = IANANormalizer(cache_dir=str(tmp_path / "cache"))
+        assert len(n.types) > 100
+        assert n.normalize("application/json") == "application/json"
+
+
 class TestEdgeCases:
     def test_bundled_file_missing_graceful(self, tmp_path):
         """Missing bundled file → empty lookups, no crash."""
