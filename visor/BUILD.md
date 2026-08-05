@@ -91,26 +91,36 @@ wizard. `ui.tab_panels`' default `keep_alive=True` means switching tabs
 never destroys another tab's state (e.g. a run stays live in the Run tab
 while you flip over to Settings and back).
 
-- **Settings** — paste whichever API key your `config/agents.yaml`'s
-  default provider needs (only the providers actually referenced by an
-  agent are asked for, not every provider merely listed in the config —
-  see `visor/settings.py::required_env_vars`'s docstring for why that
-  distinction matters). Saved to a local `settings.json` (via
-  `platformdirs`, OS-appropriate location) — never to `.env` or
-  `config/agents.yaml`. Saving auto-switches you to the Run tab.
+- **Settings** — one API key input per *declared* provider (not just
+  providers an agent currently uses — see below), each captioned with
+  which agent IDs currently use it, or "not currently used by any agent"
+  if none do. Saved to a local `settings.json` (via `platformdirs`,
+  OS-appropriate location) — never to `.env` or `config/agents.yaml`.
+  Saving auto-switches you to the Run tab. No "default provider" selector
+  here — `PipelineConfig.default_provider` never actually chose which
+  provider an agent runs with (each `AgentConfig.provider`, set in the
+  Agents tab, is authoritative; `default_provider` is only ever read for
+  a CLI display label) — keeping both in the UI implied a control that
+  didn't exist, so it's gone. `visor/settings.py::required_env_vars`
+  (only providers actually referenced by an agent) still gates the
+  Run tab; the broader `all_provider_env_vars` (every declared provider)
+  is what Settings displays — deliberately different scopes for
+  deliberately different jobs.
 - **Agents** (`visor/pages/agents_page.py`) — each pipeline agent's
-  `model` and `temperature` as visible, editable fields (previously not
-  exposed in the UI at all). `model` is a free-text input, not a dropdown
-  — there's no enumerable "known models per provider" list anywhere in
-  this project's config (`config/providers.yaml` only has connection
+  `provider`, `model`, and `temperature` as visible, editable fields
+  (previously none of these were exposed in the UI). `provider` is a
+  select populated from `pipeline_config.providers` — always a valid
+  choice by construction. `model` is a free-text input, not a dropdown —
+  there's no enumerable "known models per provider" list anywhere in this
+  project's config (`config/providers.yaml` only has connection
   settings), so a fabricated model list would go stale and could imply
-  only listed models work. Everything else (prompt, provider, fields,
-  depends_on) is read-only in a collapsed "Advanced" section for
-  transparency. Download/Upload buttons round-trip the *entire*
-  `PipelineConfig` as JSON — Upload re-validates through the model's own
-  cross-reference validators before applying anything, so a bad file
-  never leaves a half-applied config. Edits are session-only (mutate the
-  shared `PipelineConfig` object in place) — never written back to
+  only listed models work. Everything else (prompt, fields, depends_on)
+  is read-only in a collapsed "Advanced" section for transparency.
+  Download/Upload buttons round-trip the *entire* `PipelineConfig` as
+  JSON — Upload re-validates through the model's own cross-reference
+  validators before applying anything, so a bad file never leaves a
+  half-applied config. Edits are session-only (mutate the shared
+  `PipelineConfig` object in place) — never written back to
   `config/agents.yaml`; download the JSON to keep changes for next time.
 - **Run** (`visor/pages/run_page.py`) — one tab, three in-place phases
   (never a separate "Result" tab — a disabled second tab is confusing for
@@ -124,13 +134,42 @@ while you flip over to Settings and back).
      `run.io_bound`; the handler puts formatted records on a thread-safe
      `queue.Queue` (`visor/log_stream.py`), and a `ui.timer` on the UI's
      own event loop drains it every 0.3s — never touching a NiceGUI
-     element directly from the worker thread.
+     element directly from the worker thread. `agents/base.py` now logs a
+     start/finish line per agent (with elapsed time and token count) —
+     previously only wave-level progress was logged, which made the
+     console look stuck for the entire run with no sense of progress.
+     A collapsed "Submitted input" panel shows exactly what was sent, so
+     it isn't lost once the form is out of view.
   3. *Result* — Download/"Run another" buttons pinned above a fixed-height
-     `ui.scroll_area` holding the JSON (or the error, on failure); the log
-     collapses into a "Show details (N lines)" expander, auto-expanded on
-     failure since that's exactly when it's the answer.
+     `ui.scroll_area` holding the JSON (or the error, on failure); a
+     token-usage line ("N in / M out, T total") when the pipeline reports
+     any; the "Submitted input" panel carries over from the running phase;
+     the log collapses into a "Show details (N lines)" expander,
+     auto-expanded on failure since that's exactly when it's the answer.
 
 These three decisions (in-place phases vs. a separate Result tab, cards+download/upload vs. a raw JSON editor for Agents, and confirming the fixed-height-scroll-with-pinned-actions pattern) were run past an Opus-level design consult before building, given a non-technical audience — see the commit history for the full rationale.
+
+### Token usage / cost estimation
+
+`TokenUsage` (`types.py`) already existed but every call site hardcoded
+zeros — nothing actually asked the LLM client for real usage. Fixed by
+adding `complete_with_usage()` as an **optional, duck-typed** extension
+(not part of the formal `LLMClient` Protocol) implemented by the real
+production chain (`InstructorLLMClient` via instructor's
+`create_with_completion()`, `RetryableLLMClient`, `CachedLLMClient`) —
+`agents/base.py` calls it via `hasattr` and falls back to plain
+`complete()` + zero usage for any mock/fake lacking it, so every existing
+test file's own Protocol-compliant mock keeps working completely
+unchanged. `pipeline.py::_aggregate_token_usage` sums real usage once per
+underlying LLM call (dedup by `TokenUsage` object identity — one agent
+call produces one `TokenUsage` shared across N `AgentResult`s, one per
+output field; summing naively would multiply that agent's cost by its
+field count) into `PipelineResult.token_usage`, surfaced in visor's
+Result phase. A cache hit reports zero new usage (nothing was actually
+called) — the number shown is "cost of running this now," not "value of
+the data." Cache entries written before this existed are read as legacy
+bare-shape values (no usage recorded) rather than breaking — confirmed
+directly against the real committed `tests/fixtures/golden/cache/cache.db`.
 
 ## Testing
 

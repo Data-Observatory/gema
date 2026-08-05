@@ -1,23 +1,27 @@
-"""Agents tab — per-agent model/temperature, visible and editable, plus a
-full-config JSON download/upload for backup or hand-editing outside the app.
+"""Agents tab — per-agent provider/model/temperature, visible and editable,
+plus a full-config JSON download/upload for backup or hand-editing outside
+the app.
 
-Model selection lives on AgentConfig.model (a free-text string passed
-straight through to the LLM client — see llm/factory.py). There is no
-enumerable "known models per provider" list anywhere in this project's
-config (config/providers.yaml only has connection settings, not model
-catalogs), so this is deliberately a text input with example placeholder
-text, not a dropdown — a fabricated model list would go stale and could
-imply only listed models work.
+Provider is a select populated from pipeline_config.providers — always a
+valid choice by construction, no free-text typo risk. Model selection
+lives on AgentConfig.model (a free-text string passed straight through to
+the LLM client — see llm/factory.py). There is no enumerable "known
+models per provider" list anywhere in this project's config
+(config/providers.yaml only has connection settings, not model catalogs),
+so model is deliberately a text input with example placeholder text, not
+a dropdown — a fabricated model list would go stale and could imply only
+listed models work. Whichever provider each agent is set to here is what
+Settings' "used by: ..." captions reflect — the two tabs describe the
+same underlying assignment from two different angles.
 
-Only model/temperature are edited via the per-agent cards; everything
-else (prompt, provider, fields, depends_on) is shown read-only in a
-collapsed "Advanced" section for transparency. Download/Upload operate on
-the *entire* PipelineConfig, not just what the cards expose — a user can
-download, hand-edit anything (including the prompt) in a text editor, and
-re-upload; the cards are a friendly view, not the only way to change
-things. Upload re-validates through PipelineConfig's own validators
-(cross-references between agents/providers included) before applying
-anything, so a bad upload never leaves a partially-applied config.
+Prompt/fields/depends_on are read-only in a collapsed "Advanced" section
+for transparency. Download/Upload operate on the *entire* PipelineConfig,
+not just what the cards expose — a user can download, hand-edit anything
+(including the prompt) in a text editor, and re-upload; the cards are a
+friendly view, not the only way to change things. Upload re-validates
+through PipelineConfig's own validators (cross-references between
+agents/providers included) before applying anything, so a bad upload
+never leaves a partially-applied config.
 
 Edits here are session-only, mutating the shared PipelineConfig object in
 place — never written back to config/agents.yaml (see visor/settings.py's
@@ -43,27 +47,39 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
     with container:
         ui.label("Agents").classes("text-h5")
         ui.label(
-            "Each step of the pipeline is handled by one agent. Set which model it "
-            "uses below — leave blank to use the provider's default model."
+            "Each step of the pipeline is handled by one agent. Set which provider "
+            "and model it uses below — leave model blank to use the provider's "
+            "default. Add the matching API key in the Settings tab."
         ).classes("text-caption")
 
-        with ui.row().classes("q-mt-sm"):
+        with ui.row().classes("q-mt-sm items-center"):
             ui.button(
                 "Download configuration (JSON)", on_click=lambda: _download(pipeline_config)
             ).props("outline").mark("agents-download")
+
             async def _on_upload(e: events.UploadEventArguments) -> None:
                 await _handle_upload(e, pipeline_config, cards.refresh)
 
+            # flat + a fixed width keeps this beside Download instead of a
+            # tall drop-zone with a big empty file-list area reserved below
+            # the button — auto_upload means that list is never shown anyway.
             ui.upload(
                 label="Upload configuration (JSON)",
                 auto_upload=True,
                 on_upload=_on_upload,
-            ).classes("w-64").mark("agents-upload")
+            ).props("flat bordered").classes("w-64").style("max-height: 44px; overflow: hidden").mark(
+                "agents-upload"
+            )
 
         @ui.refreshable
         def cards() -> None:
+            # Recomputed on every refresh, not hoisted above the
+            # refreshable — Upload can replace pipeline_config.providers
+            # entirely, and this must reflect that on the next render.
+            provider_names = [p.name for p in pipeline_config.providers]
             model_inputs: dict[str, ui.input] = {}
             temp_inputs: dict[str, ui.number] = {}
+            provider_selects: dict[str, ui.select] = {}
 
             for agent in pipeline_config.agents:
                 with ui.card().classes("w-full q-mt-md"):
@@ -71,29 +87,38 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
                     if agent.description:
                         ui.label(agent.description).classes("text-caption")
 
-                    model_inputs[agent.id] = (
-                        ui.input(
-                            "Model",
-                            value=agent.model or "",
-                            placeholder="e.g. gpt-4o, claude-opus-4, glm-4.6 — blank = provider default",
+                    with ui.row().classes("w-full items-end"):
+                        provider_selects[agent.id] = (
+                            ui.select(
+                                provider_names,
+                                value=agent.provider,
+                                label="Provider",
+                            )
+                            .classes("w-48")
+                            .mark(f"agent-provider-{agent.id}")
                         )
-                        .classes("w-full")
-                        .mark(f"agent-model-{agent.id}")
-                    )
-                    temp_inputs[agent.id] = (
-                        ui.number(
-                            "Temperature",
-                            value=agent.temperature,
-                            min=0.0,
-                            max=2.0,
-                            step=0.1,
+                        model_inputs[agent.id] = (
+                            ui.input(
+                                "Model",
+                                value=agent.model or "",
+                                placeholder="e.g. gpt-4o, claude-opus-4, glm-4.6 — blank = provider default",
+                            )
+                            .classes("flex-grow")
+                            .mark(f"agent-model-{agent.id}")
                         )
-                        .classes("w-40")
-                        .mark(f"agent-temperature-{agent.id}")
-                    )
+                        temp_inputs[agent.id] = (
+                            ui.number(
+                                "Temperature",
+                                value=agent.temperature,
+                                min=0.0,
+                                max=2.0,
+                                step=0.1,
+                            )
+                            .classes("w-32")
+                            .mark(f"agent-temperature-{agent.id}")
+                        )
 
                     with ui.expansion("Advanced", icon="tune").classes("w-full q-mt-sm"):
-                        ui.label(f"Provider: {agent.provider}")
                         ui.label(f"Runs after: {', '.join(agent.depends_on) or '(nothing — runs first)'}")
                         ui.label(f"Produces fields: {', '.join(agent.fields)}")
                         ui.label("Prompt (read-only here — edit via the downloaded JSON)").classes(
@@ -103,6 +128,7 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
 
             def _save() -> None:
                 for agent in pipeline_config.agents:
+                    agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None
                     agent.temperature = temp_inputs[agent.id].value
                 ui.notify("Agent settings updated for this session", type="positive")

@@ -53,3 +53,41 @@ async def test_agents_tab_json_download_reflects_model_edit(user: User, monkeypa
     payload = json.loads(response.content)
     agents_by_id = {a["id"]: a for a in payload["agents"]}
     assert agents_by_id["core_metadata"]["model"] == "test-model-xyz"
+
+
+async def test_agents_tab_provider_is_editable_per_agent(user: User, monkeypatch, tmp_path) -> None:
+    """Provider used to be read-only ("Advanced" section); this is the
+    other half of resolving the Settings/Agents confusion — an agent's
+    provider is set here, not via a global "default provider" picker."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    provider_select = user.find(marker="agent-provider-core_metadata")
+    provider_select.click()  # opens the dropdown
+    user.find("opencode", marker="agent-provider-core_metadata").click()  # picks the option
+    user.find(marker="agents-save").click()
+    user.find(marker="agents-download").click()
+
+    response = await user.download.next(timeout=5)
+    assert response.status_code == 200
+    payload = json.loads(response.content)
+    agents_by_id = {a["id"]: a for a in payload["agents"]}
+    assert agents_by_id["core_metadata"]["provider"] == "opencode"
+
+
+async def test_settings_tab_lists_key_input_for_every_declared_provider(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression: opencode (declared in config/providers.yaml but not
+    used by any agent by default) must still get a key input in Settings
+    — otherwise there's no way to ever enter its key before switching an
+    agent to it in the Agents tab."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")

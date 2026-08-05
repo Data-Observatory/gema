@@ -12,6 +12,7 @@ anything underneath.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -45,6 +46,7 @@ class _RunViewState:
     error: str | None = None
     log_lines: list[str] = field(default_factory=list)
     capture: LogCapture | None = None
+    submitted_text: str = ""
 
 
 def render_run_form(
@@ -148,16 +150,19 @@ def _render_form_phase(
                 if not any(data.get(k) for k in ("url", "title", "description")):
                     status.text = "Fill at least url, title, or description."
                     return
+                submitted_text = json.dumps(data, indent=2, ensure_ascii=False)
                 input_path = write_temp_input_from_dict(data)
             elif mode.value == "Paste JSON":
                 if not paste_area.value.strip():
                     status.text = "Paste some JSON first."
                     return
+                submitted_text = paste_area.value
                 input_path = write_temp_input_from_text(paste_area.value)
             else:
                 if not uploaded_text:
                     status.text = "Upload a file first."
                     return
+                submitted_text = uploaded_text[0]
                 input_path = write_temp_input_from_text(uploaded_text[0])
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
             status.text = f"Could not read input: {exc}"
@@ -165,6 +170,7 @@ def _render_form_phase(
 
         state.phase = "running"
         state.log_lines = []
+        state.submitted_text = submitted_text
         state.capture = start_capturing()
         refresh()
         await _execute(pipeline_config, input_path, state, refresh)
@@ -198,8 +204,28 @@ async def _execute(
         refresh()
 
 
+def _render_submitted_input(submitted_text: str) -> None:
+    if not submitted_text:
+        return
+    with ui.expansion("Submitted input", icon="description").classes("w-full q-mb-sm").mark(
+        "run-submitted-input"
+    ):
+        ui.code(submitted_text, language="json").classes("w-full")
+
+
+def _render_token_usage(result: PipelineResult) -> None:
+    usage = result.token_usage
+    if usage.total_tokens == 0:
+        return
+    ui.label(
+        f"Tokens used: {usage.prompt_tokens:,} in / {usage.completion_tokens:,} out "
+        f"({usage.total_tokens:,} total)"
+    ).classes("text-caption").mark("result-token-usage")
+
+
 def _render_running_phase(state: _RunViewState) -> None:
     ui.label("Running…").classes("text-h5")
+    _render_submitted_input(state.submitted_text)
     with ui.row().classes("items-center"):
         ui.spinner(size="lg")
         ui.label("This can take a minute or more — one LLM call per pipeline step.")
@@ -225,6 +251,7 @@ def _render_result_phase(schema: Schema, state: _RunViewState, refresh: Callable
         state.result = None
         state.error = None
         state.log_lines = []
+        state.submitted_text = ""
         refresh()
 
     with ui.row().classes("items-center q-mb-sm"):
@@ -233,6 +260,10 @@ def _render_result_phase(schema: Schema, state: _RunViewState, refresh: Callable
                 "Download JSON", on_click=lambda: _download(schema, state)
             ).mark("result-download")
         ui.button("Run another", on_click=_reset).mark("result-back")
+
+    _render_submitted_input(state.submitted_text)
+    if state.result is not None:
+        _render_token_usage(state.result)
 
     if state.result is not None and state.result.success:
         assert state.result.document is not None
