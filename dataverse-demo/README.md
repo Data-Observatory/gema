@@ -84,6 +84,61 @@ hand-written `dataset.json`. Once the translator exists, its output
 becomes a drop-in replacement for `example_dataset.json` at the
 "create dataset" step; nothing else in the script changes.
 
+## Sharing it over Tailscale (remote attendees)
+
+For a live workshop where attendees aren't on the same LAN, serve this over
+[Tailscale](https://tailscale.com) instead of exposing it to the public
+internet. Not verified from this sandbox (Tailscale isn't installed here) —
+this is configuration guidance, test it once yourself before relying on it
+live.
+
+1. **Run Tailscale on the machine running Docker** (not necessarily this
+   WSL distro — if you're on Docker Desktop for Windows, run Tailscale on
+   the Windows host) and join your tailnet. Get the address attendees will
+   use:
+
+   ```powershell
+   tailscale ip -4          # e.g. 100.x.y.z
+   ```
+
+   or use your MagicDNS name (`tailscale status`, or the Tailscale admin
+   console) if you have it enabled — e.g. `mymachine.tailnet-name.ts.net`.
+
+2. **Set `MACHINE_IP` in `.env` to that address.** This is the part that
+   actually matters — it's not just about whether the port is reachable.
+   `compose.yml` bakes `MACHINE_IP` into `DATAVERSE_SITEURL`
+   (`http://${MACHINE_IP:-localhost}:8080`), which Dataverse embeds into
+   generated links, redirects, and API response fields like
+   `persistentUrl`. Leave it as `localhost` and attendees get links that
+   mean nothing on their own machines.
+
+3. **Recreate the `dataverse` container** — env vars are baked in at
+   container start, not hot-reloaded:
+
+   ```bash
+   docker compose up -d --force-recreate dataverse
+   ```
+
+4. **Check your host firewall** allows inbound on 8080 for the Tailscale
+   interface (on Windows, Tailscale usually adds itself as a trusted zone
+   automatically, but confirm from a second device before the event —
+   don't find out live).
+
+5. **Change the default admin password before opening this up.**
+   `dataverseAdmin` / `admin1` is Dataverse's own publicly-documented demo
+   password — anyone on your tailnet who's read the same docs you did gets
+   full superuser access (create, delete, publish anything) the moment
+   they can reach the instance. Change it via the UI (account menu →
+   password), or scope your Tailscale ACLs to only the specific attendees'
+   devices, or both. Attendees uploading a dataset don't need admin at all
+   — the API-token workflow in the smoke test above, or a plain non-admin
+   account you create for them, is enough.
+
+6. **Test from a second device on the tailnet** — not the host itself —
+   before the live event: `curl http://<tailscale-address>:8080/api/info/version`
+   should return the real version JSON, same as the localhost check earlier
+   in this README.
+
 ## Resetting
 
 Data lives in `./data/` (gitignored). Stop the stack (`Ctrl-C` or
