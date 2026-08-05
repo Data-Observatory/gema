@@ -78,11 +78,30 @@ same instance — collection aliases must be unique, so re-running with the
 default alias against an already-populated instance fails at step 2 with
 a clear "such a collection already exists" error, not a bug.
 
-This does **not** need the DataCite → Dataverse translator (upcoming,
-separate branch) — it proves the API mechanism works with a small
-hand-written `dataset.json`. Once the translator exists, its output
-becomes a drop-in replacement for `example_dataset.json` at the
-"create dataset" step; nothing else in the script changes.
+This never needed the DataCite → Dataverse translator to prove the API
+mechanism works — that's `example_dataset.json`'s whole point, a small
+hand-written payload. The translator now exists
+(`metadata_enricher.exporters.dataverse`, separate branch) — use
+`scripts/export_from_metadata_enricher.py` to generate a real one from an
+actual metadata-enricher output instead:
+
+```bash
+cd /path/to/repo/root   # needs metadata_enricher importable
+uv run python dataverse-demo/scripts/export_from_metadata_enricher.py \
+  tests/fixtures/golden/expected/sample_input01.json \
+  --output dataverse-demo/scripts/example_dataset.json
+```
+
+Verified live: this exact command's output was POSTed to a real running
+instance and accepted (`{"status":"OK",...}`), producing a real dataset
+with the correct title/author pulled straight from actual DataCite
+output — not a synthetic example. Without `--classify`, Subject defaults
+to `"Other"` (no LLM call, no cost); add `--classify` to run the real
+classification call (needs the provider's API key set, same as running
+metadata-enricher itself). Either way it prints any warnings — e.g. no
+contact email found anywhere in the source metadata, a real gap between
+DataCite and Dataverse's required fields, not a bug — so check those
+before publishing.
 
 ## Sharing it over Tailscale (remote attendees)
 
@@ -145,15 +164,18 @@ Data lives in `./data/` (gitignored). Stop the stack (`Ctrl-C` or
 `docker compose down`) and delete `./data/` to start completely fresh —
 useful between practice runs before the actual live event.
 
-## What's next (separate branch)
+## The DataCite → Dataverse translator
 
-The DataCite JSON → Dataverse native JSON conversion is being built
-separately in `metadata_enricher` (own branch — see the main repo's
-`AGENTS.md`/commit history once that lands), as a small extra agent
-(config-driven like the existing 5, defaulting to a fast/cheap model,
-enable/disable-able on its own) that resolves the one genuinely ambiguous
-field — Dataverse's fixed Subject controlled vocabulary vs. DataCite's
-free-text subjects — everything else maps deterministically. That work will
-document the exact field mapping against this instance's real
-`/api/dataverses/:id/metadatablocks` output once it's running, rather than
-guessing Dataverse's schema from memory.
+Lives in `metadata_enricher.exporters.dataverse` (separate branch —
+`dataverse-export-agent`), not in this folder — this stays docker/API
+concerns only. Most fields map deterministically (DataCite already
+extracted them correctly); the one genuinely ambiguous field — Dataverse's
+required, fixed Subject controlled vocabulary vs. DataCite's free-text
+subjects — gets one optional LLM call, config-driven
+(`config/dataverse_export.yaml` at the repo root: provider/model/
+temperature, same shape as every pipeline agent) and independently
+enable/disable-able. `SUBJECT_CATEGORIES` and the `authorIdentifierScheme`
+controlled vocabulary in that module were verified live against *this*
+instance's real `/api/dataverses/:id/metadatablocks` output, not recalled
+from memory. See `scripts/export_from_metadata_enricher.py` above for how
+to actually run it.
