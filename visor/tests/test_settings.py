@@ -10,10 +10,12 @@ import pytest
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from visor.settings import (
     VisorSettings,
+    all_provider_env_vars,
     apply_to_environ,
     load_settings,
     missing_required,
     optional_env_vars,
+    providers_using,
     required_env_vars,
     save_settings,
 )
@@ -108,6 +110,35 @@ class TestRequiredEnvVars:
 
     def test_optional_env_vars_are_orcid_only(self):
         assert optional_env_vars() == ["ORCID_CLIENT_ID", "ORCID_CLIENT_SECRET"]
+
+
+class TestAllProviderEnvVars:
+    def test_includes_providers_not_used_by_any_agent(self):
+        """The opposite of required_env_vars — Settings must offer a key
+        input for opencode even if no agent is assigned to it yet, so
+        switching an agent's provider later in the Agents tab doesn't leave
+        no way to ever enter that provider's key."""
+        config = make_pipeline_config(
+            ("zai", "ZAI_API_KEY"), ("opencode", "OPENCODE_API_KEY"), used_by_agents=("zai",)
+        )
+        assert all_provider_env_vars(config) == ["OPENCODE_API_KEY", "ZAI_API_KEY"]
+
+    def test_dedupes_shared_env_var(self):
+        config = make_pipeline_config(("a", "SHARED_KEY"), ("b", "SHARED_KEY"))
+        assert all_provider_env_vars(config) == ["SHARED_KEY"]
+
+
+class TestProvidersUsing:
+    def test_lists_agent_ids_assigned_to_the_matching_provider(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"), ("openai", "OPENAI_API_KEY"))
+        assert providers_using(config, "ZAI_API_KEY") == ["a0"]
+        assert providers_using(config, "OPENAI_API_KEY") == ["a1"]
+
+    def test_empty_when_no_agent_uses_it(self):
+        config = make_pipeline_config(
+            ("zai", "ZAI_API_KEY"), ("opencode", "OPENCODE_API_KEY"), used_by_agents=("zai",)
+        )
+        assert providers_using(config, "OPENCODE_API_KEY") == []
 
 
 class TestApplyToEnviron:

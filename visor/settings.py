@@ -100,6 +100,23 @@ def required_env_vars(pipeline_config: PipelineConfig) -> list[str]:
     return sorted({by_name[name] for name in used_provider_names if name in by_name})
 
 
+def all_provider_env_vars(pipeline_config: PipelineConfig) -> list[str]:
+    """Every declared provider's api_key_env, not just the ones an agent
+    currently uses — for Settings' key-entry list. required_env_vars()
+    stays scoped to "actually needed right now" for the Run-tab gate;
+    this one is deliberately broader: switching an agent's provider in the
+    Agents tab (e.g. to opencode) must not leave no way to ever enter that
+    provider's key."""
+    return sorted({p.api_key_env for p in pipeline_config.providers})
+
+
+def providers_using(pipeline_config: PipelineConfig, api_key_env: str) -> list[str]:
+    """Agent IDs currently assigned to whichever provider(s) resolve to
+    *api_key_env* — for Settings' "used by: ..." caption."""
+    provider_names = {p.name for p in pipeline_config.providers if p.api_key_env == api_key_env}
+    return sorted(a.id for a in pipeline_config.agents if a.provider in provider_names)
+
+
 def optional_env_vars() -> list[str]:
     """Env vars that unlock optional features (ORCID search-by-name) but
     whose absence is a silent no-op, never a failure."""

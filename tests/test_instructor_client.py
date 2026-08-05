@@ -123,6 +123,56 @@ class TestInstructorLLMClient:
 
     @patch("metadata_enricher.llm.instructor_client.OpenAI")
     @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_with_usage_extracts_real_token_counts(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+
+        fake_response = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage.prompt_tokens = 42
+        fake_completion.usage.completion_tokens = 8
+        fake_completion.usage.total_tokens = 50
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_response,
+            fake_completion,
+        )
+
+        result, usage = client.complete_with_usage(prompt="hello", response_model=SimpleOutput)
+
+        assert result is fake_response
+        assert usage.prompt_tokens == 42
+        assert usage.completion_tokens == 8
+        assert usage.total_tokens == 50
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_with_usage_defaults_to_zero_when_provider_omits_usage(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        """Not every OpenAI-compatible provider returns a usage block —
+        must default to zero, never guess or crash."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+
+        fake_response = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_response,
+            fake_completion,
+        )
+
+        result, usage = client.complete_with_usage(prompt="hello", response_model=SimpleOutput)
+
+        assert result is fake_response
+        assert usage.prompt_tokens == 0
+        assert usage.completion_tokens == 0
+        assert usage.total_tokens == 0
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
     def test_complete_raw_returns_content(
         self, mock_instructor: MagicMock, mock_openai: MagicMock
     ) -> None:

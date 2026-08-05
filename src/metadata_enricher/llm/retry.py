@@ -31,7 +31,7 @@ the *root cause* instead of blanket-rejecting every InstructorRetryException.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import httpx
 import openai
@@ -47,6 +47,7 @@ from tenacity import (
 from tenacity.wait import wait_base
 
 from metadata_enricher.llm.base import LLMClient
+from metadata_enricher.types import TokenUsage
 
 if TYPE_CHECKING:
     # Avoid runtime deprecation warning from instructor.exceptions; imported
@@ -171,6 +172,42 @@ class RetryableLLMClient:
                     system_prompt=system_prompt,
                     **kwargs,
                 )
+        raise RuntimeError("unreachable")
+
+    def complete_with_usage(
+        self,
+        prompt: str,
+        response_model: type[BaseModel],
+        system_prompt: str | None = None,
+        **kwargs: object,
+    ) -> tuple[BaseModel, TokenUsage]:
+        """Structured completion + token usage, with transport-level retry.
+
+        Not part of the formal LLMClient Protocol — an optional, duck-typed
+        extension only the real production chain (Instructor/Retryable/
+        Cached) implements, so existing test mocks across the codebase never
+        need to grow this method. See agents/base.py's hasattr check.
+        """
+        inner_with_usage = getattr(self._inner, "complete_with_usage", None)
+        for attempt in self._retrying:
+            with attempt:
+                if inner_with_usage is not None:
+                    return cast(
+                        "tuple[BaseModel, TokenUsage]",
+                        inner_with_usage(
+                            prompt=prompt,
+                            response_model=response_model,
+                            system_prompt=system_prompt,
+                            **kwargs,
+                        ),
+                    )
+                result = self._inner.complete(
+                    prompt=prompt,
+                    response_model=response_model,
+                    system_prompt=system_prompt,
+                    **kwargs,
+                )
+                return result, TokenUsage()
         raise RuntimeError("unreachable")
 
     @staticmethod

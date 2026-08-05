@@ -1,4 +1,6 @@
-"""visor entry point — settings gate -> run form -> result, one NiceGUI page.
+"""visor entry point — Settings / Agents / Run as always-visible, freely
+navigable tabs (not a locked wizard): the user can hop between configuring
+things and running a resource at will.
 
 Imports only from metadata_enricher (the library), never from
 metadata_enricher.cli — see visor/AGENTS.md / the visor plan doc for why.
@@ -14,12 +16,11 @@ import os
 
 from nicegui import ui
 
-from metadata_enricher.pipeline import PipelineResult
 from visor.bootstrap import load_pipeline_config
-from visor.pages.result_page import render_result
+from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
-from visor.settings import VisorSettings, apply_to_environ, load_settings, missing_required
+from visor.settings import VisorSettings, apply_to_environ, load_settings
 
 logger = logging.getLogger(__name__)
 
@@ -28,44 +29,45 @@ _pipeline_config, _schema, _config_error = load_pipeline_config()
 
 @ui.page("/")
 def main_page() -> None:
-    content = ui.column().classes("w-full max-w-3xl mx-auto q-pa-md")
-
     if _pipeline_config is None or _schema is None:
-        with content:
-            ui.label("Configuration problem").classes("text-h5 text-negative")
-            ui.label(_config_error or "Unknown configuration error")
+        ui.label("Configuration problem").classes("text-h5 text-negative")
+        ui.label(_config_error or "Unknown configuration error")
         return
 
     pipeline_config = _pipeline_config
     schema = _schema
 
-    def show_run() -> None:
-        render_run_form(content, pipeline_config, on_result=show_result, on_error=show_error)
+    apply_to_environ(load_settings())
 
-    def show_result(result: PipelineResult) -> None:
-        render_result(content, result, schema, on_back=show_run)
+    with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
+        with ui.tabs().classes("w-full") as tabs:
+            settings_tab = ui.tab("Settings").mark("tab-settings")
+            agents_tab = ui.tab("Agents").mark("tab-agents")
+            run_tab = ui.tab("Run").mark("tab-run")
 
-    def show_error(message: str) -> None:
-        content.clear()
-        with content:
-            ui.label("Something went wrong").classes("text-h5 text-negative")
-            ui.label(message)
-            ui.button("Back", on_click=show_run)
+        with ui.tab_panels(tabs, value=run_tab).classes("w-full"):
+            settings_panel = ui.tab_panel(settings_tab)
+            agents_panel = ui.tab_panel(agents_tab)
+            run_panel = ui.tab_panel(run_tab)
 
-    def show_settings() -> None:
-        settings = load_settings()
-        render_settings(content, pipeline_config, settings, on_saved=_after_settings_saved)
+    def _go_to_settings() -> None:
+        tabs.set_value(settings_tab)
+
+    refresh_run_tab = render_run_form(
+        run_panel,
+        pipeline_config,
+        schema,
+        current_settings=load_settings,
+        on_go_to_settings=_go_to_settings,
+    )
 
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
-        show_run()
+        refresh_run_tab()
+        tabs.set_value(run_tab)
 
-    settings = load_settings()
-    apply_to_environ(settings)
-    if missing_required(pipeline_config, settings):
-        show_settings()
-    else:
-        show_run()
+    render_settings(settings_panel, pipeline_config, load_settings(), on_saved=_after_settings_saved)
+    render_agents(agents_panel, pipeline_config)
 
 
 def run() -> None:
