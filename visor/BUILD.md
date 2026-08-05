@@ -30,8 +30,16 @@ git checkout visor
 
 # 3. Install deps and smoke-test unfrozen (fastest way to check WebView2 etc.)
 uv sync --extra dev --extra visor --group visor-build
-uv run python visor\app.py
+uv run python -m visor.app
 ```
+
+Must be `-m visor.app`, not `python visor\app.py` / `python visor/app.py` —
+`app.py` does absolute imports (`from visor.bootstrap import ...`), and
+running it as a bare script path only puts `visor/` itself on `sys.path`,
+not the repo root, so `import visor` fails with `ModuleNotFoundError: No
+module named 'visor'`. `-m` runs it from the repo root as a package member
+instead, which resolves correctly. This bites on every OS, not just
+Windows — confirmed by actually hitting it from WSL.
 
 That last command opens a real pywebview native window on Windows — the one
 thing the Linux sandbox this project was built in cannot verify at all.
@@ -58,9 +66,23 @@ make test-visor        # Windows GitHub runners ship GNU Make; if your local
 
 ```bash
 uv sync --extra dev --extra visor --group visor-build
-uv run python visor/app.py            # opens a native pywebview window
-VISOR_NATIVE=0 uv run python visor/app.py   # serves plain HTTP on :8080 instead
+uv run python -m visor.app            # opens a native pywebview window
+VISOR_NATIVE=0 uv run python -m visor.app   # serves plain HTTP on :8080 instead
 ```
+
+**Under WSL specifically**: native mode fails —
+`webview.errors.WebViewException: You must have either QT or GTK with
+Python extensions installed` — WSL ships neither GUI toolkit by default,
+so `pywebview` can't open a window. Always use `VISOR_NATIVE=0` under WSL.
+It serves plain HTTP; from Windows, open a browser to whatever host/port
+it prints (`http://127.0.0.1:<port>` — WSL2 forwards this into Windows
+automatically on current builds; if that doesn't resolve, run
+`ip addr show eth0 | grep 'inet '` inside WSL and use that IP instead).
+This gets real app code and a real click flow, just NiceGUI's browser
+rendering instead of pywebview's native window — it won't catch
+native-window-specific issues (WebView2 presence on Windows, native window
+chrome). For those, run the Windows quick-start above from PowerShell
+directly, not WSL.
 
 First run: no local settings exist yet, so you'll land on **Settings** —
 paste whichever API key your `config/agents.yaml`'s default provider needs
