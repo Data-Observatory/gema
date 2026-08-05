@@ -10,6 +10,50 @@ enforced by `visor/tests/test_architecture.py` before changing how visor
 talks to the pipeline: it must always import `metadata_enricher` directly
 (the library), never `metadata_enricher.cli`.
 
+## Windows quick start (from a WSL machine or otherwise)
+
+WSL runs a Linux kernel — anything built inside WSL is a Linux binary, never
+a Windows `.exe`. To actually test Windows (native window, WebView2, a real
+installer), run these steps from **Windows PowerShell directly**, not the
+WSL bash shell.
+
+```powershell
+# 1. Install uv (Windows-native, one-time)
+irm https://astral.sh/uv/install.ps1 | iex
+
+# 2. Get the repo onto the Windows filesystem — clone fresh, don't work
+#    off \\wsl$\... (slow, and uv/PyInstaller can choke on cross-FS locking)
+cd C:\dev
+git clone <repo-url> proj-metadata-agents
+cd proj-metadata-agents
+git checkout visor
+
+# 3. Install deps and smoke-test unfrozen (fastest way to check WebView2 etc.)
+uv sync --extra dev --extra visor --group visor-build
+uv run python visor\app.py
+```
+
+That last command opens a real pywebview native window on Windows — the one
+thing the Linux sandbox this project was built in cannot verify at all.
+
+To build the actual installer (matches what CI produces):
+
+```powershell
+uv run pyinstaller visor\visor.spec --noconfirm
+choco install innosetup          # or download from jrsoftware.org
+iscc visor\installer\windows.iss
+```
+
+Produces `dist_installer\Visor-Setup.exe` — double-click it like a real user.
+
+To run the test suite the same way CI does:
+
+```powershell
+make test-visor        # Windows GitHub runners ship GNU Make; if your local
+                        # machine doesn't, run the pytest command make wraps
+                        # directly — see the Makefile target for the exact flags
+```
+
 ## Running from source (development)
 
 ```bash
@@ -122,13 +166,16 @@ Linux sandbox. What was actually verified here:
   running the frozen exe from a directory outside the repo with a fake
   `$HOME` and no config anywhere, and confirming it correctly copied the
   bundled default into `~/.config/metagen/agents.yaml`.
-- The `visor-build.yml` YAML is syntactically valid and its logic was
-  reasoned through carefully, but it has **not** actually been run on a
-  real `windows-latest`/`macos-latest` GitHub Actions runner. The Windows
-  `.exe`/installer and the macOS `.dmg` have never actually been produced or
-  opened by this work. That first real CI run (or a manual build on those
-  OSes) is the actual proof this pipeline works end to end — treat it as
-  the next concrete verification step, not a formality.
+- The `visor-build.yml` workflow has now run on a real `windows-latest`
+  runner. First run caught a real bug: the test step called
+  `uv run pytest visor/tests -v` directly instead of `make test-visor`,
+  so it ran without `-p nicegui.testing.user_plugin -o asyncio_mode=auto
+  -m "not live"` — the `user` fixture wasn't registered and
+  `test_app_e2e.py` errored (`fixture 'user' not found`) instead of being
+  deselected. Fixed by pointing the workflow at `make test-visor` so CI
+  and local runs share one flag set instead of two that can drift apart.
+  Still not yet verified: a full green run producing the actual Windows
+  `.exe`/installer artifact, and any macOS run at all.
 
 ## Known limitations (not solved here, by design)
 

@@ -37,7 +37,7 @@ jobs:
         run: uv sync --extra visor --group visor-build
 
       - name: Run visor test suite
-        run: uv run pytest visor/tests -v
+        run: make test-visor
 
       - name: Build PyInstaller bundle
         run: uv run pyinstaller visor/visor.spec --noconfirm
