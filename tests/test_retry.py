@@ -15,6 +15,7 @@ from pydantic import BaseModel, ValidationError
 
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.retry import RetryConfig, RetryableLLMClient
+from metadata_enricher.types import TokenUsage
 
 try:
     from instructor.core import InstructorRetryException
@@ -272,6 +273,50 @@ class TestProtocolAndDelegation:
 
         client = RetryableLLMClient(inner, _fast_config())
         assert isinstance(client, LLMClient)
+
+
+class TestCompleteWithUsage:
+    """complete_with_usage is an optional, duck-typed extension — not part
+    of the formal LLMClient Protocol (see retry.py's docstring)."""
+
+    def test_delegates_to_inner_when_available(self) -> None:
+        inner = MagicMock()
+        expected_usage = TokenUsage(prompt_tokens=10, completion_tokens=5)
+        inner.complete_with_usage.return_value = (SimpleModel(), expected_usage)
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_usage("test", SimpleModel)
+
+        assert isinstance(result, SimpleModel)
+        assert usage is expected_usage
+        assert inner.complete_with_usage.call_count == 1
+
+    def test_falls_back_to_plain_complete_with_zero_usage_when_inner_lacks_it(self) -> None:
+        inner = MagicMock()
+        del inner.complete_with_usage  # simulate a client without the method
+        inner.complete.return_value = SimpleModel()
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_usage("test", SimpleModel)
+
+        assert result is inner.complete.return_value
+        assert usage == TokenUsage()
+        assert inner.complete.call_count == 1
+
+    def test_retries_on_transport_error_then_succeeds(self) -> None:
+        inner = MagicMock()
+        expected_usage = TokenUsage(prompt_tokens=1)
+        inner.complete_with_usage.side_effect = [
+            openai.RateLimitError("429", response=_resp(429), body=None),
+            (SimpleModel(), expected_usage),
+        ]
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_usage("test", SimpleModel)
+
+        assert isinstance(result, SimpleModel)
+        assert usage is expected_usage
+        assert inner.complete_with_usage.call_count == 2
 
 
 class TestCustomConfig:

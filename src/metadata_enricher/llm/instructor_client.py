@@ -11,6 +11,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from metadata_enricher.llm.base import LLMConfig
+from metadata_enricher.types import TokenUsage
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,52 @@ class InstructorLLMClient:
         # instructor's create() return type can't be inferred through a
         # **dict[str, Any] spread; response_model guarantees a BaseModel.
         return cast(BaseModel, self._instructor_client.chat.completions.create(**create_kwargs))
+
+    def complete_with_usage(
+        self,
+        prompt: str,
+        response_model: type[BaseModel],
+        system_prompt: str | None = None,
+        **kwargs: Any,
+    ) -> tuple[BaseModel, TokenUsage]:
+        """Same as complete(), plus real token usage from the provider's
+        response. Uses instructor's create_with_completion() (returns the
+        parsed model *and* the raw completion instructor's plain create()
+        discards) instead of duplicating the request — one API call either
+        way. Not part of the formal LLMClient Protocol; see retry.py's
+        complete_with_usage for why."""
+        messages: list[dict[str, Any]] = []
+        if system_prompt is not None:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        create_kwargs: dict[str, Any] = {
+            "model": self._config.model,
+            "response_model": response_model,
+            "messages": messages,
+            "max_retries": self._max_retries,
+            "temperature": self._config.temperature,
+        }
+        if self._config.max_tokens is not None:
+            create_kwargs["max_tokens"] = self._config.max_tokens
+        if self._config.seed is not None:
+            create_kwargs["extra_body"] = {"seed": self._config.seed}
+        create_kwargs.update(kwargs)
+
+        result, completion = self._instructor_client.chat.completions.create_with_completion(
+            **create_kwargs
+        )
+        usage = getattr(completion, "usage", None)
+        token_usage = (
+            TokenUsage(
+                prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+                completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+                total_tokens=getattr(usage, "total_tokens", 0) or 0,
+            )
+            if usage is not None
+            else TokenUsage()
+        )
+        return cast(BaseModel, result), token_usage
 
     def complete_raw(
         self,

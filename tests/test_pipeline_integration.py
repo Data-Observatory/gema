@@ -9,8 +9,8 @@ import pytest
 
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
-from metadata_enricher.pipeline import Pipeline
-from metadata_enricher.types import ResourceDescription
+from metadata_enricher.pipeline import Pipeline, _aggregate_token_usage
+from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
 
 
 class FakeLLMClient:
@@ -570,3 +570,69 @@ class TestPipelineIdentifierEnrichmentWiring:
         # The fake raises before mutating — document must be the merger's
         # unmodified output, not None and not crashed.
         assert result.document.get_field("titles") is not None
+
+
+class TestAggregateTokenUsage:
+    """_aggregate_token_usage dedups by TokenUsage object identity — a
+    single agent's LLM call produces one AgentResult per output field, all
+    sharing the same TokenUsage instance (confirmed in test_base_agent.py);
+    summing naively would multiply that agent's real cost by its field
+    count."""
+
+    def test_sums_usage_once_per_shared_instance(self) -> None:
+        agent_a_usage = TokenUsage(prompt_tokens=100, completion_tokens=50)
+        agent_b_usage = TokenUsage(prompt_tokens=10, completion_tokens=5)
+        results = [
+            AgentResult(field_name="titles", token_usage=agent_a_usage),
+            AgentResult(field_name="descriptions", token_usage=agent_a_usage),
+            AgentResult(field_name="creators", token_usage=agent_b_usage),
+        ]
+        total = _aggregate_token_usage(results)
+        assert total.prompt_tokens == 110
+        assert total.completion_tokens == 55
+        assert total.total_tokens == 165
+
+    def test_empty_list_returns_zero(self) -> None:
+        assert _aggregate_token_usage([]) == TokenUsage()
+
+    def test_failed_agent_results_contribute_zero(self) -> None:
+        results = [AgentResult(field_name="titles", error="boom")]
+        assert _aggregate_token_usage(results) == TokenUsage()
+
+
+class TestPipelineResultTokenUsage:
+    """Real pipeline run, real end-to-end token accounting — not just the
+    aggregation helper in isolation."""
+
+    def test_successful_run_reports_usage_from_a_usage_aware_client(self, tmp_path) -> None:
+        class FakeLLMClientWithUsage(FakeLLMClient):
+            def complete_with_usage(self, prompt, response_model, system_prompt=None, **kw):  # noqa: ANN001, ANN201
+                return self.complete(prompt, response_model, system_prompt, **kw), TokenUsage(
+                    prompt_tokens=20, completion_tokens=10
+                )
+
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        factory = lambda provider, **kw: FakeLLMClientWithUsage(  # noqa: E731
+            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        assert results[0].token_usage.prompt_tokens == 20
+        assert results[0].token_usage.completion_tokens == 10
+        assert results[0].token_usage.total_tokens == 30
+
+    def test_client_without_usage_support_reports_zero(self, tmp_path, llm_factory) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        assert results[0].token_usage == TokenUsage()

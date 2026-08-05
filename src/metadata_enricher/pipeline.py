@@ -12,7 +12,7 @@ from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.orchestrator import Orchestrator
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema, SchemaRegistry
-from metadata_enricher.types import MetadataDocument, ResourceDescription
+from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescription, TokenUsage
 from metadata_enricher.validation import PreFlightValidator
 
 if TYPE_CHECKING:
@@ -31,16 +31,43 @@ class PipelineResult:
         error: str | None = None,
         source_path: str | None = None,
         warnings: list[str] | None = None,
+        token_usage: TokenUsage | None = None,
     ) -> None:
         self.resource = resource
         self.document = document
         self.error = error
         self.source_path = source_path
         self.warnings = warnings or []
+        self.token_usage = token_usage if token_usage is not None else TokenUsage()
 
     @property
     def success(self) -> bool:
         return self.error is None and self.document is not None
+
+
+def _aggregate_token_usage(agent_results: list[AgentResult]) -> TokenUsage:
+    """Sum token usage across agent_results, once per underlying LLM call.
+
+    BaseAgent.run() attaches the *same* TokenUsage instance to every
+    AgentResult it produces for a single call (one call -> N fields -> N
+    AgentResults) — summing naively would multiply every agent's real cost
+    by its field count. Dedup by object identity instead, which is exactly
+    what's shared across those N results (confirmed: pydantic reuses the
+    instance passed to a model field rather than copying it).
+    """
+    seen: set[int] = set()
+    total = TokenUsage()
+    for result in agent_results:
+        usage = result.token_usage
+        if id(usage) in seen:
+            continue
+        seen.add(id(usage))
+        total = TokenUsage(
+            prompt_tokens=total.prompt_tokens + usage.prompt_tokens,
+            completion_tokens=total.completion_tokens + usage.completion_tokens,
+            total_tokens=total.total_tokens + usage.total_tokens,
+        )
+    return total
 
 
 class Pipeline:
@@ -150,13 +177,17 @@ class Pipeline:
             logger.error("Orchestrator failed: %s", exc)
             return PipelineResult(resource=resource, error=f"Orchestration failed: {exc}")
 
+        token_usage = _aggregate_token_usage(agent_results)
+
         # Every agent errored (e.g. bad API key, unreachable provider) — this must
         # surface as a failure, not a "successful" empty document.
         if agent_results and all(r.error for r in agent_results):
             distinct_errors = sorted({r.error for r in agent_results if r.error})
             summary = "; ".join(distinct_errors[:3])
             logger.error("All agents failed for resource: %s", summary)
-            return PipelineResult(resource=resource, error=f"All agents failed: {summary}")
+            return PipelineResult(
+                resource=resource, error=f"All agents failed: {summary}", token_usage=token_usage
+            )
 
         # 4. Merge agent results into a MetadataDocument
         try:
@@ -164,13 +195,16 @@ class Pipeline:
             document = merger.merge(agent_results)
         except Exception as exc:
             logger.error("Merge failed: %s", exc)
-            return PipelineResult(resource=resource, error=f"Merge failed: {exc}")
+            return PipelineResult(
+                resource=resource, error=f"Merge failed: {exc}", token_usage=token_usage
+            )
 
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
             return PipelineResult(
                 resource=resource,
                 error="No fields extracted — all agents returned empty results",
+                token_usage=token_usage,
             )
 
         # Some (not all — that case returned earlier) agents failed. The resulting
@@ -189,6 +223,7 @@ class Pipeline:
                 return PipelineResult(
                     resource=resource,
                     error=f"Fields failed: {', '.join(fields)} ({summary})",
+                    token_usage=token_usage,
                 )
             warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
             logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
@@ -213,4 +248,6 @@ class Pipeline:
             except Exception as exc:
                 logger.warning("PID validation failed: %s", exc)
 
-        return PipelineResult(resource=resource, document=document, warnings=warnings)
+        return PipelineResult(
+            resource=resource, document=document, warnings=warnings, token_usage=token_usage
+        )
