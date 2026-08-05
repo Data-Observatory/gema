@@ -1,0 +1,84 @@
+{
+  "datasetVersion": {
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Smoke Test Dataset",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Enricher, Metadata",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorAffiliation": {
+                  "value": "Data Observatory",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "datasetContactEmail",
+                  "value": "demo@example.org"
+                },
+                "datasetContactName": {
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "datasetContactName",
+                  "value": "Enricher, Metadata"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "value": "A minimal dataset used to smoke-test the Dataverse API pathway (create, upload, publish) before wiring in real metadata-enricher output.",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "typeName": "dsDescriptionValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": ["Other"],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    }
+  }
+}

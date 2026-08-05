@@ -93,3 +93,32 @@ class PipelineConfig(BaseModel):
             raise ValueError(msg)
 
         return self
+
+
+class DataverseExportConfig(BaseModel):
+    """Config for the DataCite -> Dataverse export's one LLM-assisted step
+    (classifying into Dataverse's required, fixed Subject vocabulary —
+    see exporters/dataverse.py for why that's the only field genuinely
+    ambiguous enough to need one).
+
+    `agent` reuses AgentConfig as-is — the exact same provider/model/
+    temperature/prompt shape every pipeline agent uses, configurable the
+    same way — even though this never runs through the orchestrator (it's
+    a single classification call, not a multi-agent extraction, so there's
+    no PipelineConfig/schema/providers list of its own here; the provider
+    name is cross-validated against whichever providers list the caller
+    already loaded from config/providers.yaml).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = True
+    agent: AgentConfig
+
+    def validate_provider_exists(self, provider_names: set[str]) -> None:
+        if self.agent.provider not in provider_names:
+            msg = (
+                f"dataverse export agent references provider '{self.agent.provider}' "
+                f"which is not in providers. Available: {sorted(provider_names)}"
+            )
+            raise ValueError(msg)

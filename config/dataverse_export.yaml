@@ -1,0 +1,46 @@
+# Config for the DataCite -> Dataverse export's one LLM-assisted step:
+# classifying into Dataverse's required, fixed Subject controlled
+# vocabulary (Agricultural Sciences, Arts and Humanities, ... Other — see
+# exporters/dataverse.py's SUBJECT_CATEGORIES for the full list, verified
+# live against a real running Dataverse 6.11 instance on 2026-08-05).
+# Everything else in the export is a deterministic field mapping — this is
+# the one genuinely ambiguous piece.
+#
+# `enabled: false` skips the LLM call entirely and defaults subject to
+# ["Other"] with a warning — the one thing the user asked to be able to
+# turn off independently of the rest of the export.
+#
+# `agent` is the exact same shape as config/agents.yaml's agents — same
+# provider/model/temperature knobs, just never run through the
+# orchestrator (it's a single classification call, not a multi-agent
+# extraction). `provider` must be a name that exists in whichever
+# providers list the caller loaded (in practice, config/agents.yaml's own
+# `providers:` section — see load_dataverse_export_config()'s docstring).
+
+enabled: true
+agent:
+  id: dataverse_subject_classifier
+  name: Dataverse Subject Classifier
+  description: >-
+    Maps a resource's title/description/subjects onto Dataverse's fixed,
+    required Subject controlled vocabulary — the one field with no
+    DataCite equivalent to map deterministically.
+  fields:
+    - subject
+  provider: zai-coding-plan
+  # A fast/cheap tier is enough for a 14-way classification call — this
+  # exact model string is not verified against zai-coding-plan's live
+  # catalog (unlike the Subject vocabulary itself, which was). Confirm it
+  # resolves before relying on this in a live demo; swap to whatever your
+  # provider actually serves at that tier.
+  model: glm-4.6-flash
+  temperature: 0.0
+  prompt: |
+    Elige la categoría de Dataverse que mejor describe este recurso, a partir
+    de su título, descripción y materias ya extraídas.
+
+    Título: {dataverse_title}
+    Descripción: {dataverse_description}
+    Materias: {dataverse_subjects}
+
+    Responde con exactamente una de las categorías permitidas.
