@@ -84,13 +84,53 @@ native-window-specific issues (WebView2 presence on Windows, native window
 chrome). For those, run the Windows quick-start above from PowerShell
 directly, not WSL.
 
-First run: no local settings exist yet, so you'll land on **Settings** —
-paste whichever API key your `config/agents.yaml`'s default provider needs
-(only the providers actually referenced by an agent are asked for, not
-every provider merely listed in the config — see
-`visor/settings.py::required_env_vars`'s docstring for why that distinction
-matters). The key is saved to a local `settings.json` (via `platformdirs`,
-OS-appropriate location) — never to `.env` or `config/agents.yaml`.
+## UI structure — Settings / Agents / Run tabs
+
+Three tabs, always visible and freely clickable at any time — not a locked
+wizard. `ui.tab_panels`' default `keep_alive=True` means switching tabs
+never destroys another tab's state (e.g. a run stays live in the Run tab
+while you flip over to Settings and back).
+
+- **Settings** — paste whichever API key your `config/agents.yaml`'s
+  default provider needs (only the providers actually referenced by an
+  agent are asked for, not every provider merely listed in the config —
+  see `visor/settings.py::required_env_vars`'s docstring for why that
+  distinction matters). Saved to a local `settings.json` (via
+  `platformdirs`, OS-appropriate location) — never to `.env` or
+  `config/agents.yaml`. Saving auto-switches you to the Run tab.
+- **Agents** (`visor/pages/agents_page.py`) — each pipeline agent's
+  `model` and `temperature` as visible, editable fields (previously not
+  exposed in the UI at all). `model` is a free-text input, not a dropdown
+  — there's no enumerable "known models per provider" list anywhere in
+  this project's config (`config/providers.yaml` only has connection
+  settings), so a fabricated model list would go stale and could imply
+  only listed models work. Everything else (prompt, provider, fields,
+  depends_on) is read-only in a collapsed "Advanced" section for
+  transparency. Download/Upload buttons round-trip the *entire*
+  `PipelineConfig` as JSON — Upload re-validates through the model's own
+  cross-reference validators before applying anything, so a bad file
+  never leaves a half-applied config. Edits are session-only (mutate the
+  shared `PipelineConfig` object in place) — never written back to
+  `config/agents.yaml`; download the JSON to keep changes for next time.
+- **Run** (`visor/pages/run_page.py`) — one tab, three in-place phases
+  (never a separate "Result" tab — a disabled second tab is confusing for
+  a non-technical user, and this keeps the causal link between "I pressed
+  Run" and "the answer appeared" visible in one place):
+  1. *Form* — fill-a-form / paste-JSON (with a collapsed "what should
+     this look like?" example) / upload-a-file, same as before.
+  2. *Running* — a live log console (`ui.log`, fixed height, auto-scrolls)
+     fed by a `logging.Handler` on the `metadata_enricher` logger
+     namespace. `Pipeline.run()` executes on a background thread via
+     `run.io_bound`; the handler puts formatted records on a thread-safe
+     `queue.Queue` (`visor/log_stream.py`), and a `ui.timer` on the UI's
+     own event loop drains it every 0.3s — never touching a NiceGUI
+     element directly from the worker thread.
+  3. *Result* — Download/"Run another" buttons pinned above a fixed-height
+     `ui.scroll_area` holding the JSON (or the error, on failure); the log
+     collapses into a "Show details (N lines)" expander, auto-expanded on
+     failure since that's exactly when it's the answer.
+
+These three decisions (in-place phases vs. a separate Result tab, cards+download/upload vs. a raw JSON editor for Agents, and confirming the fixed-height-scroll-with-pinned-actions pattern) were run past an Opus-level design consult before building, given a non-technical audience — see the commit history for the full rationale.
 
 ## Testing
 
@@ -99,13 +139,29 @@ make test-visor
 ```
 
 Runs `visor/tests/` — settings roundtrip, form/paste/upload → temp file →
-`FilesystemInputSource` glue, the bootstrap/config-seeding logic, and the
-CLI-import-boundary architecture guard. Kept separate from `make test`
-(the library's own suite/coverage number) on purpose. Always passes
-`-m "not live"` — deterministically, not just "skip if no key is found":
-a real key showed up in `os.environ` inside a test run here even when a
-separate check in the same shell moments earlier showed none, so
+`FilesystemInputSource` glue, the bootstrap/config-seeding logic, the
+CLI-import-boundary architecture guard, `log_stream.py`'s capture/drain/
+level-restore logic (pure stdlib, no UI needed), and click-through UI
+tests (`test_ui_navigation.py`, via `nicegui.testing.User`) covering tab
+switching and the Agents tab's download-reflects-an-edit round trip — no
+real LLM call in any of these, so no API key needed. Kept separate from
+`make test` (the library's own suite/coverage number) on purpose. Always
+passes `-m "not live"` — deterministically, not just "skip if no key is
+found": a real key showed up in `os.environ` inside a test run here even
+when a separate check in the same shell moments earlier showed none, so
 skip-by-absence alone isn't a trustworthy cost guard in every environment.
+
+**Known gap, stated plainly**: the Agents tab's *Upload* path (parse +
+validate + apply) has no dedicated test — NiceGUI's test harness has no
+built-in helper for simulating a file upload (unlike `ui.download`, which
+`user.download.next()` supports directly), and building a full mocked
+5-agent pipeline run through the real production `config/agents.yaml` to
+exercise upload-then-run needs response models matching all five agents'
+`fields`, which wasn't worth the complexity for this pass. The actual
+parse/validate logic is two lines of stdlib `json.loads` + pydantic's own
+`PipelineConfig(**data)` — already covered by the library's own config
+model tests — so the residual risk is narrow, but it's a real gap, not a
+silent one.
 
 ```bash
 make test-visor-live
@@ -113,9 +169,11 @@ make test-visor-live
 
 Runs `visor/tests/test_app_e2e.py` — a real click-through of the whole app
 using NiceGUI's in-process user-simulation harness (`nicegui.testing.User`):
-opens the page, fills Settings, saves, fills the Run form, clicks Run (a
-real multi-agent LLM call), waits for Result, clicks Download, and asserts
-the exact bytes handed to `ui.download`. No browser, but real app code and
+opens the page (lands on Run, sees the "add an API key" gate since none is
+set), switches to the Settings tab, fills it, saves (auto-switches back to
+Run), fills the Run form, clicks Run (a real multi-agent LLM call, live log
+console visible while it runs), waits for Result, clicks Download, and
+asserts the exact bytes handed to `ui.download`. No browser, but real app code and
 real click handlers — the strongest test in this suite. Caught two real
 bugs during development: NiceGUI's test-simulation `Download.content()`
 doesn't do the str→bytes conversion the real implementation does (fixed by
