@@ -68,9 +68,15 @@ async def test_agents_tab_provider_is_editable_per_agent(user: User, monkeypatch
     user.find(marker="tab-agents").click()
     await user.should_see(marker="agents-save")
 
-    provider_select = user.find(marker="agent-provider-core_metadata")
-    provider_select.click()  # opens the dropdown
-    user.find("opencode", marker="agent-provider-core_metadata").click()  # picks the option
+    # find(text, marker=...) ignores the marker kwarg entirely when a
+    # positional text target is given (a real NiceGUI testing-harness
+    # quirk) and matches by page-wide text/content instead — it used to
+    # accidentally work because "opencode" was unique site-wide, but the
+    # Settings tab's merged Providers block now also shows that text (its
+    # provider name/URL), so this must target the uniquely-marked select
+    # element directly instead of relying on that coincidence.
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    provider_select.value = "opencode"
     user.find(marker="agents-save").click()
     user.find(marker="agents-download").click()
 
@@ -141,35 +147,26 @@ async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -
 # fixture's own setup, before any test-body monkeypatch could intercept it.
 
 
-async def test_settings_edit_existing_provider_via_picker(user: User, monkeypatch, tmp_path) -> None:
-    """Picking an already-configured provider (not just pool/custom ones)
-    prefills its real fields and updates it in place on submit, instead of
-    being rejected as a duplicate name."""
+async def test_settings_edit_existing_provider_base_url(user: User, monkeypatch, tmp_path) -> None:
+    """Providers and their keys are one merged block — an already-configured
+    provider's Base URL is directly editable in its own row (no separate
+    picker step needed), and Save & Continue persists it in place."""
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    await user.should_see(marker="settings-add-provider-choice")
+    await user.should_see(marker="settings-provider-url-opencode")
 
-    choice = user.find(marker="settings-add-provider-choice")
-    choice.click()
-    user.find("opencode", marker="settings-add-provider-choice").click()
-
-    name_field = list(user.find(marker="settings-add-provider-name").elements)[0]
-    url_field = list(user.find(marker="settings-add-provider-url").elements)[0]
-    assert name_field.value == "opencode"
+    url_field = list(user.find(marker="settings-provider-url-opencode").elements)[0]
     assert url_field.value == "https://opencode.ai/zen/go/v1"
-
     url_field.value = "https://opencode.example.com/v1"
-    user.find(marker="settings-add-provider-submit").click()
-    await user.should_see("Updated provider")
+    user.find(marker="settings-save").click()
 
-    # body.refresh() rebuilds the card with fresh elements — reselect
-    # "opencode" and confirm the picker now prefills the *updated* value,
-    # proving the edit landed on the live pipeline_config, not a stale copy.
-    user.find(marker="settings-add-provider-choice").click()
-    user.find("opencode", marker="settings-add-provider-choice").click()
-    rebuilt_url_field = list(user.find(marker="settings-add-provider-url").elements)[0]
+    # Save & Continue navigates to the Run tab — go back and confirm the
+    # rebuilt row (body.refresh() inside _save) shows the persisted edit.
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-url-opencode")
+    rebuilt_url_field = list(user.find(marker="settings-provider-url-opencode").elements)[0]
     assert rebuilt_url_field.value == "https://opencode.example.com/v1"
 
 

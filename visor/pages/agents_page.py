@@ -56,8 +56,8 @@ logger = logging.getLogger(__name__)
 # added via Settings) get an empty list, which still works fine with
 # with_input=True: the combobox just has no suggestions to offer.
 MODEL_CATALOG: dict[str, list[str]] = {
-    "zai-coding-plan": ["glm-4.6", "glm-4.6-flash", "glm-4.5"],
-    "opencode": ["gpt-4o", "claude-sonnet-5", "glm-4.6"],
+    "zai-coding-plan": ["glm-5.2", "glm-4.7", "glm-4.7-flash", "glm-4.6"],
+    "opencode": ["gpt-4o", "claude-sonnet-5", "glm-4.7"],
     "openai": ["gpt-5.1", "gpt-5.1-mini", "gpt-4o", "gpt-4o-mini", "o3"],
     "anthropic": ["claude-opus-5", "claude-sonnet-5", "claude-fable-5", "claude-haiku-4-5-20251001"],
 }
