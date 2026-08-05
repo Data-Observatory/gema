@@ -8,11 +8,14 @@ lives on AgentConfig.model (a free-text string passed straight through to
 the LLM client — see llm/factory.py). There is no enumerable "known
 models per provider" list anywhere in this project's config
 (config/providers.yaml only has connection settings, not model catalogs),
-so model is deliberately a text input with example placeholder text, not
-a dropdown — a fabricated model list would go stale and could imply only
-listed models work. Whichever provider each agent is set to here is what
-Settings' "used by: ..." captions reflect — the two tabs describe the
-same underlying assignment from two different angles.
+so Model is a combobox (ui.select with with_input=True): MODEL_CATALOG
+below offers a curated, best-effort, non-exhaustive shortlist per known
+provider name, but typing any other model id is always accepted — a
+fabricated "complete" list would go stale and could wrongly imply only
+listed models work. Switching an agent's Provider refreshes that agent's
+Model options to match. Whichever provider each agent is set to here is
+what Settings' "used by: ..." captions reflect — the two tabs describe
+the same underlying assignment from two different angles.
 
 Prompt/fields/depends_on are read-only in a collapsed "Advanced" section
 for transparency. Download/Upload operate on the *entire* PipelineConfig,
@@ -47,6 +50,29 @@ from nicegui import events, ui
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
 
 logger = logging.getLogger(__name__)
+
+# Curated, non-exhaustive — keyed by provider *name* as declared in
+# config/providers.yaml. Unknown/custom provider names (e.g. one just
+# added via Settings) get an empty list, which still works fine with
+# with_input=True: the combobox just has no suggestions to offer.
+MODEL_CATALOG: dict[str, list[str]] = {
+    "zai-coding-plan": ["glm-4.6", "glm-4.6-flash", "glm-4.5"],
+    "opencode": ["gpt-4o", "claude-sonnet-5", "glm-4.6"],
+    "openai": ["gpt-5.1", "gpt-5.1-mini", "gpt-4o", "gpt-4o-mini", "o3"],
+    "anthropic": ["claude-opus-5", "claude-sonnet-5", "claude-fable-5", "claude-haiku-4-5-20251001"],
+}
+
+
+def _model_options(provider_name: str, current_model: str) -> list[str]:
+    """The catalog for *provider_name*, plus *current_model* if it isn't
+    already in it — ui.select requires its initial value to be a member of
+    options even with with_input=True, and a model already configured
+    (e.g. hand-edited into agents.yaml, or just not in our curated list)
+    must never make the page fail to render."""
+    options = list(MODEL_CATALOG.get(provider_name, []))
+    if current_model not in options:
+        options.append(current_model)
+    return options
 
 
 def render_agents(
@@ -88,7 +114,7 @@ def render_agents(
             # refreshable — Upload can replace pipeline_config.providers
             # entirely, and this must reflect that on the next render.
             provider_names = [p.name for p in pipeline_config.providers]
-            model_inputs: dict[str, ui.input] = {}
+            model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
             provider_selects: dict[str, ui.select] = {}
 
@@ -109,13 +135,20 @@ def render_agents(
                             .mark(f"agent-provider-{agent.id}")
                         )
                         model_inputs[agent.id] = (
-                            ui.input(
-                                "Model",
+                            ui.select(
+                                _model_options(agent.provider, agent.model or ""),
                                 value=agent.model or "",
-                                placeholder="e.g. gpt-4o, claude-opus-4, glm-4.6 — blank = provider default",
+                                label="Model",
+                                with_input=True,
+                                new_value_mode="add-unique",
                             )
                             .classes("flex-grow")
                             .mark(f"agent-model-{agent.id}")
+                        )
+                        provider_selects[agent.id].on_value_change(
+                            lambda e, aid=agent.id: model_inputs[aid].set_options(
+                                _model_options(e.value, model_inputs[aid].value or "")
+                            )
                         )
                         temp_inputs[agent.id] = (
                             ui.number(
@@ -165,14 +198,27 @@ def render_agents(
                             .mark("dataverse-export-provider")
                         )
                         dataverse_model_input = (
-                            ui.input(
-                                "Model",
+                            ui.select(
+                                _model_options(
+                                    dataverse_export_config.agent.provider,
+                                    dataverse_export_config.agent.model or "",
+                                ),
                                 value=dataverse_export_config.agent.model or "",
-                                placeholder="a fast/cheap tier is enough for a 14-way classification",
+                                label="Model — a fast/cheap tier is enough for a 14-way classification",
+                                with_input=True,
+                                new_value_mode="add-unique",
                             )
                             .classes("flex-grow")
                             .mark("dataverse-export-model")
                         )
+                        _dataverse_model_select = dataverse_model_input
+
+                        def _on_dataverse_provider_change(e: events.ValueChangeEventArguments[str]) -> None:
+                            _dataverse_model_select.set_options(
+                                _model_options(e.value, _dataverse_model_select.value or "")
+                            )
+
+                        dataverse_provider_select.on_value_change(_on_dataverse_provider_change)
                         dataverse_temp_input = (
                             ui.number(
                                 "Temperature",

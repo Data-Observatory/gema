@@ -11,14 +11,18 @@ per-agent provider selector was confusing with no functional payoff, so
 it's gone; VisorSettings still accepts a saved value for backward
 compatibility with an existing settings.json, it's just never shown here.
 
-"Add a provider" lets a user add a brand-new entry to
-pipeline_config.providers (session-only, same mutate-in-place pattern as
-every other edit in this app) — either picked from a known pool
-(config/providers.yaml, autofills name/base URL/key env name) or fully
-custom for a provider that pool doesn't have. Once added, it shows up in
-the regular per-provider key-input list below automatically, since that
-list is always built fresh from pipeline_config.providers on every
-refresh — no special-casing needed for "the new one".
+"Add a provider" doubles as "add or edit a provider": the picker lists
+every already-configured provider *and* every not-yet-added pool entry
+(config/providers.yaml) in one list, plus "Other (custom)". Picking an
+already-configured one prefills its real current name/base URL/key env
+name so it can be edited in place (submit updates that ProviderConfig
+rather than appending a duplicate); picking a pool entry autofills the
+same fields as a starting point for a new one; "Other (custom)" starts
+blank. Session-only, same mutate-in-place pattern as every other edit in
+this app. Once added or edited, it shows up in the regular per-provider
+key-input list below automatically, since that list is always built
+fresh from pipeline_config.providers on every refresh — no
+special-casing needed for "the new one".
 """
 
 from __future__ import annotations
@@ -47,7 +51,6 @@ def render_settings(
 ) -> None:
     container.clear()
     known_providers = known_providers or []
-    known_by_name = {p.name: p for p in known_providers}
 
     with container:
         ui.label("Settings").classes("text-h5")
@@ -97,17 +100,26 @@ def render_settings(
                 )
 
             with ui.card().classes("w-full q-mt-md"):
-                ui.label("Add a provider").classes("text-subtitle1 text-bold")
+                ui.label("Add or edit a provider").classes("text-subtitle1 text-bold")
                 ui.label(
-                    "Pick one from the list to autofill its connection details, "
-                    "or choose \"Other (custom)\" for a provider not listed here."
+                    "Pick an already-configured provider to edit its connection "
+                    "details, pick one from the pool to autofill and add it, or "
+                    "choose \"Other (custom)\" for a provider not listed here."
                 ).classes("text-caption")
 
                 existing_names = {p.name for p in pipeline_config.providers}
+                # Existing providers first (so they're not "separated" from
+                # the pool), then not-yet-added pool entries, then custom.
                 pool_names = [p.name for p in addable_providers(known_providers, pipeline_config)]
-                choice_options = [*pool_names, "Other (custom)"]
+                choice_options = [*sorted(existing_names), *pool_names, "Other (custom)"]
+                # Pool entries as a baseline, overridden by the real
+                # current config for anything already added — the
+                # configured provider's own fields are authoritative.
+                known_by_name: dict[str, ProviderConfig] = {p.name: p for p in known_providers}
+                known_by_name.update({p.name: p for p in pipeline_config.providers})
 
-                choice_select = ui.select(choice_options, value=choice_options[0], label="Provider").classes(
+                CUSTOM = "Other (custom)"
+                choice_select = ui.select(choice_options, value=CUSTOM, label="Provider").classes(
                     "w-full"
                 ).mark("settings-add-provider-choice")
                 name_input = ui.input("Name").classes("w-full").mark("settings-add-provider-name")
@@ -122,6 +134,9 @@ def render_settings(
                     .classes("w-full")
                     .mark("settings-add-provider-key")
                 )
+                submit_button = ui.button("Add provider").classes("q-mt-sm").mark(
+                    "settings-add-provider-submit"
+                )
 
                 def _apply_choice() -> None:
                     preset = known_by_name.get(choice_select.value)
@@ -133,40 +148,54 @@ def render_settings(
                         name_input.value = ""
                         url_input.value = ""
                         env_name_input.value = ""
+                    submit_button.text = (
+                        "Update provider" if choice_select.value in existing_names else "Add provider"
+                    )
 
                 choice_select.on_value_change(_apply_choice)
                 _apply_choice()
 
-                def _add_provider() -> None:
+                def _add_or_update_provider() -> None:
                     name = name_input.value.strip()
                     if not name:
                         ui.notify("Provider name is required", type="negative")
                         return
-                    if name in existing_names:
-                        ui.notify(f"Provider '{name}' already exists", type="negative")
-                        return
+                    selected = choice_select.value
                     env_name_value = (
                         env_name_input.value.strip()
                         or f"{name.upper().replace('-', '_').replace(' ', '_')}_API_KEY"
                     )
-                    pipeline_config.providers.append(
-                        ProviderConfig(
-                            name=name,
-                            base_url=url_input.value.strip() or None,
-                            api_key_env=env_name_value,
+                    is_editing = selected != CUSTOM and selected in existing_names
+                    if is_editing:
+                        if name != selected and name in existing_names:
+                            ui.notify(f"Provider '{name}' already exists", type="negative")
+                            return
+                        provider = next(p for p in pipeline_config.providers if p.name == selected)
+                        provider.name = name
+                        provider.base_url = url_input.value.strip() or None
+                        provider.api_key_env = env_name_value
+                        message = f"Updated provider '{name}'"
+                    else:
+                        if name in existing_names:
+                            ui.notify(f"Provider '{name}' already exists", type="negative")
+                            return
+                        pipeline_config.providers.append(
+                            ProviderConfig(
+                                name=name,
+                                base_url=url_input.value.strip() or None,
+                                api_key_env=env_name_value,
+                            )
                         )
-                    )
+                        message = f"Added provider '{name}' — set its key below and Save"
                     if key_input.value:
                         # Pre-fill so the user doesn't have to type the key
                         # twice — it still isn't saved to disk until Save
                         # & Continue is clicked, same as every other key here.
                         current.env[env_name_value] = key_input.value
-                    ui.notify(f"Added provider '{name}' — set its key below and Save", type="positive")
+                    ui.notify(message, type="positive")
                     body.refresh()
 
-                ui.button("Add provider", on_click=_add_provider).classes("q-mt-sm").mark(
-                    "settings-add-provider-submit"
-                )
+                submit_button.on_click(_add_or_update_provider)
 
             def _save() -> None:
                 new_settings = VisorSettings(

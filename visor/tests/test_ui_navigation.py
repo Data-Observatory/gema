@@ -39,12 +39,15 @@ async def test_agents_tab_json_download_reflects_model_edit(user: User, monkeypa
     user.find(marker="tab-agents").click()
     await user.should_see(marker="agents-save")
 
-    # .type() appends keystrokes like a real browser would — replacing an
-    # existing value (core_metadata ships with a default model already set
-    # in config/agents.yaml) needs an explicit clear first, same as a user
-    # selecting-all before typing over an existing value.
-    user.find(marker="agent-model-core_metadata").clear()
-    user.find(marker="agent-model-core_metadata").type("test-model-xyz")
+    # Model is a combobox (ui.select with_input=True) — the interaction
+    # harness's .type() only supports ui.input/editor/codemirror. A plain
+    # `.value = ...` assignment for a value not already in .options gets
+    # silently reverted to None by ChoiceElement's own update() (same
+    # validation NiceGUI runs on every value change) — set_options(...,
+    # value=...) mirrors what the real client does when a user types a
+    # new value: add it to options *then* select it.
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    model_select.set_options([*model_select.options, "test-model-xyz"], value="test-model-xyz")
     user.find(marker="agents-save").click()
     user.find(marker="agents-download").click()
 
@@ -94,8 +97,10 @@ async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     await user.should_see(marker="dataverse-export-enabled")
 
     user.find(marker="dataverse-export-enabled").click()  # config/dataverse_export.yaml ships enabled: true
-    user.find(marker="dataverse-export-model").clear()
-    user.find(marker="dataverse-export-model").type("test-fast-model")
+    dataverse_model_select = list(user.find(marker="dataverse-export-model").elements)[0]
+    dataverse_model_select.set_options(
+        [*dataverse_model_select.options, "test-fast-model"], value="test-fast-model"
+    )
     user.find(marker="agents-save").click()
 
     rebuilt_checkbox = list(user.find(marker="dataverse-export-enabled").elements)[0]
@@ -134,6 +139,38 @@ async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -
 # providers list already covers every pool entry (see the test above),
 # and the relevant module-level state is computed during the `user`
 # fixture's own setup, before any test-body monkeypatch could intercept it.
+
+
+async def test_settings_edit_existing_provider_via_picker(user: User, monkeypatch, tmp_path) -> None:
+    """Picking an already-configured provider (not just pool/custom ones)
+    prefills its real fields and updates it in place on submit, instead of
+    being rejected as a duplicate name."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-choice")
+
+    choice = user.find(marker="settings-add-provider-choice")
+    choice.click()
+    user.find("opencode", marker="settings-add-provider-choice").click()
+
+    name_field = list(user.find(marker="settings-add-provider-name").elements)[0]
+    url_field = list(user.find(marker="settings-add-provider-url").elements)[0]
+    assert name_field.value == "opencode"
+    assert url_field.value == "https://opencode.ai/zen/go/v1"
+
+    url_field.value = "https://opencode.example.com/v1"
+    user.find(marker="settings-add-provider-submit").click()
+    await user.should_see("Updated provider")
+
+    # body.refresh() rebuilds the card with fresh elements — reselect
+    # "opencode" and confirm the picker now prefills the *updated* value,
+    # proving the edit landed on the live pipeline_config, not a stale copy.
+    user.find(marker="settings-add-provider-choice").click()
+    user.find("opencode", marker="settings-add-provider-choice").click()
+    rebuilt_url_field = list(user.find(marker="settings-add-provider-url").elements)[0]
+    assert rebuilt_url_field.value == "https://opencode.example.com/v1"
 
 
 async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:
