@@ -124,3 +124,83 @@ default_provider: p
         assert schema is None
         assert error is not None
         assert "no configuration file found" in error
+
+
+class TestDataverseExportBundledPath:
+    def test_none_when_not_frozen(self, monkeypatch):
+        monkeypatch.delattr("sys.frozen", raising=False)
+        assert bootstrap.dataverse_export_bundled_path() is None
+
+    def test_returns_path_when_frozen_and_file_exists(self, monkeypatch, tmp_path):
+        bundled_dir = tmp_path / "visor_default_config"
+        bundled_dir.mkdir()
+        (bundled_dir / "dataverse_export.yaml").write_text("enabled: true", encoding="utf-8")
+
+        monkeypatch.setattr("sys.frozen", True, raising=False)
+        monkeypatch.setattr("sys._MEIPASS", str(tmp_path), raising=False)
+
+        result = bootstrap.dataverse_export_bundled_path()
+        assert result == bundled_dir / "dataverse_export.yaml"
+
+
+class TestResolveDataverseExportConfigPath:
+    def test_prefers_repo_relative_path_when_present(self, monkeypatch, tmp_path):
+        (tmp_path / "config").mkdir()
+        (tmp_path / "config" / "dataverse_export.yaml").write_text("enabled: true", encoding="utf-8")
+        monkeypatch.chdir(tmp_path)
+
+        result = bootstrap.resolve_dataverse_export_config_path()
+        assert result == bootstrap.DATAVERSE_EXPORT_REPO_PATH
+
+    def test_falls_back_to_bundled_when_repo_path_missing(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)  # no ./config/dataverse_export.yaml here
+        bundled = tmp_path / "bundled_dataverse_export.yaml"
+        bundled.write_text("enabled: true", encoding="utf-8")
+        monkeypatch.setattr(bootstrap, "dataverse_export_bundled_path", lambda: bundled)
+
+        result = bootstrap.resolve_dataverse_export_config_path()
+        assert result == bundled
+
+    def test_raises_when_neither_found(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(bootstrap, "dataverse_export_bundled_path", lambda: None)
+
+        with pytest.raises(FileNotFoundError):
+            bootstrap.resolve_dataverse_export_config_path()
+
+
+class TestLoadDataverseExportConfigSafe:
+    def test_returns_config_on_success(self, monkeypatch, tmp_path):
+        config_path = tmp_path / "dataverse_export.yaml"
+        config_path.write_text(
+            """
+enabled: true
+agent:
+  id: dataverse_subject_classifier
+  name: Classifier
+  fields: [subject]
+  prompt: x
+  provider: p
+""",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(bootstrap, "resolve_dataverse_export_config_path", lambda: config_path)
+
+        config, error = bootstrap.load_dataverse_export_config_safe()
+
+        assert error is None
+        assert config is not None
+        assert config.enabled is True
+        assert config.agent.id == "dataverse_subject_classifier"
+
+    def test_returns_error_message_on_any_failure_not_a_crash(self, monkeypatch):
+        def _raise():
+            raise FileNotFoundError("not found anywhere")
+
+        monkeypatch.setattr(bootstrap, "resolve_dataverse_export_config_path", _raise)
+
+        config, error = bootstrap.load_dataverse_export_config_safe()
+
+        assert config is None
+        assert error is not None
+        assert "not found anywhere" in error

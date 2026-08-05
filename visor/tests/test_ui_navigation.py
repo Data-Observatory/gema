@@ -78,6 +78,32 @@ async def test_agents_tab_provider_is_editable_per_agent(user: User, monkeypatch
     assert agents_by_id["core_metadata"]["provider"] == "opencode"
 
 
+async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The Dataverse Export card has no download button of its own (it's
+    not part of pipeline_config) — verify persistence the same way Save
+    itself proves it: it refreshes the card, which rebuilds from
+    whatever's actually stored in the export config object. If Save had
+    written to the wrong object, the rebuilt checkbox would show the
+    stale (pre-edit) value instead of the one just saved."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="dataverse-export-enabled")
+
+    user.find(marker="dataverse-export-enabled").click()  # config/dataverse_export.yaml ships enabled: true
+    user.find(marker="dataverse-export-model").clear()
+    user.find(marker="dataverse-export-model").type("test-fast-model")
+    user.find(marker="agents-save").click()
+
+    rebuilt_checkbox = list(user.find(marker="dataverse-export-enabled").elements)[0]
+    rebuilt_model = list(user.find(marker="dataverse-export-model").elements)[0]
+    assert rebuilt_checkbox.value is False
+    assert rebuilt_model.value == "test-fast-model"
+
+
 async def test_settings_tab_lists_key_input_for_every_declared_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:

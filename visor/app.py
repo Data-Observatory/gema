@@ -16,7 +16,7 @@ import os
 
 from nicegui import ui
 
-from visor.bootstrap import load_pipeline_config
+from visor.bootstrap import load_dataverse_export_config_safe, load_pipeline_config
 from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
@@ -25,6 +25,12 @@ from visor.settings import VisorSettings, apply_to_environ, load_settings
 logger = logging.getLogger(__name__)
 
 _pipeline_config, _schema, _config_error = load_pipeline_config()
+# Optional extra — a failure here must never block the rest of the app
+# (unlike _pipeline_config, which is core functionality). Logged, and
+# the Dataverse-export UI just doesn't show up if this is None.
+_dataverse_export_config, _dataverse_export_error = load_dataverse_export_config_safe()
+if _dataverse_export_error is not None:
+    logger.warning("Dataverse export unavailable: %s", _dataverse_export_error)
 
 
 @ui.page("/")
@@ -59,6 +65,7 @@ def main_page() -> None:
         schema,
         current_settings=load_settings,
         on_go_to_settings=_go_to_settings,
+        dataverse_export_config=_dataverse_export_config,
     )
 
     def _after_settings_saved(settings: VisorSettings) -> None:
@@ -67,7 +74,7 @@ def main_page() -> None:
         tabs.set_value(run_tab)
 
     render_settings(settings_panel, pipeline_config, load_settings(), on_saved=_after_settings_saved)
-    render_agents(agents_panel, pipeline_config)
+    render_agents(agents_panel, pipeline_config, _dataverse_export_config)
 
 
 def run() -> None:

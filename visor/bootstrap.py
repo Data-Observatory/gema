@@ -15,7 +15,8 @@ import sys
 from pathlib import Path
 
 from metadata_enricher.config.loader import find_config, load_config
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
+from metadata_enricher.exporters.dataverse import load_dataverse_export_config
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
 
 BUNDLED_CONFIG_SUBPATH = Path("visor_default_config") / "agents.yaml"
 DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "metagen" / "agents.yaml"
+
+DATAVERSE_EXPORT_BUNDLED_SUBPATH = Path("visor_default_config") / "dataverse_export.yaml"
+DATAVERSE_EXPORT_REPO_PATH = Path("config") / "dataverse_export.yaml"
 
 
 def bundled_config_path() -> Path | None:
@@ -65,3 +69,38 @@ def load_pipeline_config(
         logger.exception("Failed to load pipeline configuration")
         return None, None, str(exc)
     return config, schema, None
+
+
+def dataverse_export_bundled_path() -> Path | None:
+    """Same bundling mechanism as bundled_config_path(), separate subpath."""
+    if not getattr(sys, "frozen", False):
+        return None
+    base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    candidate = base / DATAVERSE_EXPORT_BUNDLED_SUBPATH
+    return candidate if candidate.is_file() else None
+
+
+def resolve_dataverse_export_config_path() -> Path:
+    """No writable-user-copy step here, unlike resolve_config_path() —
+    edits to this config happen in-memory via the Agents tab (session-only,
+    same as pipeline_config.agents edits), never written back to any file
+    on disk, so there's nothing to seed a user copy from."""
+    if DATAVERSE_EXPORT_REPO_PATH.is_file():
+        return DATAVERSE_EXPORT_REPO_PATH
+    bundled = dataverse_export_bundled_path()
+    if bundled is not None:
+        return bundled
+    msg = f"dataverse_export.yaml not found at {DATAVERSE_EXPORT_REPO_PATH} or bundled"
+    raise FileNotFoundError(msg)
+
+
+def load_dataverse_export_config_safe() -> tuple[DataverseExportConfig | None, str | None]:
+    """Returns (config, error_message) — exactly one is set, never a mix.
+    Never fatal to the rest of the app if this fails — the Dataverse
+    export is an optional extra, not core pipeline functionality."""
+    try:
+        config = load_dataverse_export_config(resolve_dataverse_export_config_path())
+    except Exception as exc:  # noqa: BLE001 - surfaced in the UI, not hidden
+        logger.exception("Failed to load Dataverse export configuration")
+        return None, str(exc)
+    return config, None

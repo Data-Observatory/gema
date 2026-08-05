@@ -27,6 +27,13 @@ Edits here are session-only, mutating the shared PipelineConfig object in
 place — never written back to config/agents.yaml (see visor/settings.py's
 module docstring for why that file must stay off-limits to a
 non-programmer). Download the JSON to keep changes for next time.
+
+Below the 5 pipeline agent cards, a 6th card configures the Dataverse
+export's one LLM-assisted step (Subject classification) — same
+provider/model/temperature shape, plus an Enabled checkbox this is the
+only card that has, since it's the one thing meant to be independently
+toggleable (see exporters/dataverse.py). It never runs through the
+orchestrator, so it's edited here but not part of pipeline_config.agents.
 """
 
 from __future__ import annotations
@@ -37,12 +44,16 @@ from typing import Callable
 
 from nicegui import events, ui
 
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
 
 logger = logging.getLogger(__name__)
 
 
-def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> None:
+def render_agents(
+    container: ui.element,
+    pipeline_config: PipelineConfig,
+    dataverse_export_config: DataverseExportConfig | None = None,
+) -> None:
     container.clear()
     with container:
         ui.label("Agents").classes("text-h5")
@@ -126,12 +137,70 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
                         )
                         ui.code(agent.prompt, language=None).classes("w-full")
 
+            dataverse_enabled_checkbox = None
+            dataverse_provider_select = None
+            dataverse_model_input = None
+            dataverse_temp_input = None
+            if dataverse_export_config is not None:
+                with ui.card().classes("w-full q-mt-md"):
+                    ui.label("Dataverse Export — Subject Classifier").classes("text-subtitle1 text-bold")
+                    ui.label(
+                        "Optional: classifies this resource into Dataverse's required Subject "
+                        "category when you download a Dataverse-format JSON. Turn off to always "
+                        "use \"Other\" instead, with no extra LLM call."
+                    ).classes("text-caption")
+
+                    dataverse_enabled_checkbox = (
+                        ui.checkbox("Enabled", value=dataverse_export_config.enabled)
+                        .mark("dataverse-export-enabled")
+                    )
+                    with ui.row().classes("w-full items-end"):
+                        dataverse_provider_select = (
+                            ui.select(
+                                provider_names,
+                                value=dataverse_export_config.agent.provider,
+                                label="Provider",
+                            )
+                            .classes("w-48")
+                            .mark("dataverse-export-provider")
+                        )
+                        dataverse_model_input = (
+                            ui.input(
+                                "Model",
+                                value=dataverse_export_config.agent.model or "",
+                                placeholder="a fast/cheap tier is enough for a 14-way classification",
+                            )
+                            .classes("flex-grow")
+                            .mark("dataverse-export-model")
+                        )
+                        dataverse_temp_input = (
+                            ui.number(
+                                "Temperature",
+                                value=dataverse_export_config.agent.temperature,
+                                min=0.0,
+                                max=2.0,
+                                step=0.1,
+                            )
+                            .classes("w-32")
+                            .mark("dataverse-export-temperature")
+                        )
+
             def _save() -> None:
                 for agent in pipeline_config.agents:
                     agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None
                     agent.temperature = temp_inputs[agent.id].value
+                if dataverse_export_config is not None:
+                    assert dataverse_enabled_checkbox is not None
+                    assert dataverse_provider_select is not None
+                    assert dataverse_model_input is not None
+                    assert dataverse_temp_input is not None
+                    dataverse_export_config.enabled = dataverse_enabled_checkbox.value
+                    dataverse_export_config.agent.provider = dataverse_provider_select.value
+                    dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
+                    dataverse_export_config.agent.temperature = dataverse_temp_input.value
                 ui.notify("Agent settings updated for this session", type="positive")
+                cards.refresh()
 
             ui.button("Save changes", on_click=_save).classes("q-mt-md").mark("agents-save")
 
