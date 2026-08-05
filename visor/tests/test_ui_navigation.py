@@ -104,6 +104,51 @@ async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     assert rebuilt_model.value == "test-fast-model"
 
 
+async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -> None:
+    """The real default config already declares all 4 pool providers
+    (config/agents.yaml), so "Other (custom)" is the only reachable
+    choice out of the box — exactly the path a user adding a provider
+    the pool doesn't have would take."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-choice")
+
+    user.find(marker="settings-add-provider-name").type("groq")
+    user.find(marker="settings-add-provider-url").type("https://api.groq.com/openai/v1")
+    user.find(marker="settings-add-provider-env-name").type("GROQ_API_KEY")
+    user.find(marker="settings-add-provider-key").type("test-groq-key")
+    user.find(marker="settings-add-provider-submit").click()
+
+    await user.should_see(marker="settings-input-GROQ_API_KEY")
+    # The typed key pre-fills the new input so the user isn't asked twice.
+    new_key_input = list(user.find(marker="settings-input-GROQ_API_KEY").elements)[0]
+    assert new_key_input.value == "test-groq-key"
+
+
+# The pool-autofill logic (which entries are offered, name/URL/env-name
+# mapping) is unit-tested directly in test_settings.py's
+# TestAddableProviders — booting the whole app can't exercise "a pool
+# entry that isn't already added" since config/agents.yaml's real
+# providers list already covers every pool entry (see the test above),
+# and the relevant module-level state is computed during the `user`
+# fixture's own setup, before any test-body monkeypatch could intercept it.
+
+
+async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-choice")
+
+    user.find(marker="settings-add-provider-name").type("zai-coding-plan")  # already exists
+    user.find(marker="settings-add-provider-submit").click()
+
+    await user.should_see("already exists")
+
+
 async def test_settings_tab_lists_key_input_for_every_declared_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:

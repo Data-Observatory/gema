@@ -10,6 +10,7 @@ import pytest
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from visor.settings import (
     VisorSettings,
+    addable_providers,
     all_provider_env_vars,
     apply_to_environ,
     load_settings,
@@ -139,6 +140,44 @@ class TestProvidersUsing:
             ("zai", "ZAI_API_KEY"), ("opencode", "OPENCODE_API_KEY"), used_by_agents=("zai",)
         )
         assert providers_using(config, "OPENCODE_API_KEY") == []
+
+
+class TestAddableProviders:
+    """Settings' "Add a provider" picker offers exactly this list — see
+    settings_page.py. Deliberately unit-tested here rather than via a full
+    app boot: the real default config (config/agents.yaml) already
+    declares every entry in the real pool (config/providers.yaml), so a
+    click-through test can never actually exercise "a pool entry that's
+    still addable" against it.
+    """
+
+    def test_excludes_already_declared_providers(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        pool = [
+            ProviderConfig(name="zai", base_url="http://a", api_key_env="ZAI_API_KEY"),
+            ProviderConfig(name="groq", base_url="http://b", api_key_env="GROQ_API_KEY"),
+        ]
+        result = addable_providers(pool, config)
+        assert [p.name for p in result] == ["groq"]
+
+    def test_empty_when_pool_fully_covered(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"), ("groq", "GROQ_API_KEY"))
+        pool = [
+            ProviderConfig(name="zai", base_url="http://a", api_key_env="ZAI_API_KEY"),
+            ProviderConfig(name="groq", base_url="http://b", api_key_env="GROQ_API_KEY"),
+        ]
+        assert addable_providers(pool, config) == []
+
+    def test_preserves_pool_entry_fields_for_autofill(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        pool = [ProviderConfig(name="groq", base_url="https://api.groq.com/openai/v1", api_key_env="GROQ_API_KEY")]
+        result = addable_providers(pool, config)
+        assert result[0].base_url == "https://api.groq.com/openai/v1"
+        assert result[0].api_key_env == "GROQ_API_KEY"
+
+    def test_empty_pool_returns_empty(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        assert addable_providers([], config) == []
 
 
 class TestApplyToEnviron:

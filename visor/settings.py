@@ -23,7 +23,7 @@ from typing import Any
 
 from platformdirs import user_config_dir
 
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +115,21 @@ def providers_using(pipeline_config: PipelineConfig, api_key_env: str) -> list[s
     *api_key_env* — for Settings' "used by: ..." caption."""
     provider_names = {p.name for p in pipeline_config.providers if p.api_key_env == api_key_env}
     return sorted(a.id for a in pipeline_config.agents if a.provider in provider_names)
+
+
+def addable_providers(
+    known_providers: list[ProviderConfig], pipeline_config: PipelineConfig
+) -> list[ProviderConfig]:
+    """Known-pool entries not already in pipeline_config.providers — what
+    Settings' "Add a provider" picker offers as presets. Pulled out as its
+    own function (rather than inlined in settings_page.py) specifically so
+    it's testable without booting the whole app — the real default config
+    (config/agents.yaml) already declares every pool entry, so a full
+    click-through test can never actually exercise "a pool entry that's
+    still addable" against it.
+    """
+    existing_names = {p.name for p in pipeline_config.providers}
+    return [p for p in known_providers if p.name not in existing_names]
 
 
 def optional_env_vars() -> list[str]:

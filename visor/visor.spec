@@ -38,6 +38,7 @@ datas = [
     (str(repo_root / "src" / "metadata_enricher" / "data" / "iana_media_types.json"), "metadata_enricher/data"),
     (str(repo_root / "config" / "agents.yaml"), "visor_default_config"),
     (str(repo_root / "config" / "dataverse_export.yaml"), "visor_default_config"),
+    (str(repo_root / "config" / "providers.yaml"), "visor_default_config"),
 ]
 binaries = []
 hiddenimports = []
