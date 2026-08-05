@@ -21,8 +21,29 @@ metadata_enricher/
 ├── llm/                     # LLMClient middleware stack (see ./llm/AGENTS.md)
 ├── schemas/                 # Schema Protocol + DataCite 4.6 (see ./schemas/AGENTS.md)
 ├── enrichers/               # Post-merge enrichment: identifier resolver + IANA/country (see ./enrichers/AGENTS.md)
+├── exporters/               # Converters to other systems' native formats (currently: dataverse.py)
 └── input_sources/           # InputSource Protocol + FilesystemInputSource
 ```
+
+### `exporters/` — not a Schema Protocol implementation
+
+`exporters/dataverse.py` converts an already-finished `MetadataDocument`
+into Dataverse's native dataset-creation JSON. Deliberately **not** a
+second `Schema` implementation: the `Schema` Protocol builds a document
+from raw `AgentResult`s (extracts from scratch), which would mean
+re-running a full LLM extraction pass just to re-derive facts (title,
+dates, creators) the DataCite pipeline already got right. Most fields map
+deterministically; the one field with no DataCite equivalent — Dataverse's
+required, fixed Subject controlled vocabulary — gets one optional LLM
+call (`classify_subject()`), config-driven via `config/dataverse_export.yaml`
+(same `AgentConfig` shape as every pipeline agent — provider/model/
+temperature — even though it never runs through the orchestrator) and
+independently enable/disable-able (`enabled: false` in that config skips
+the call, defaults to `"Other"`). `SUBJECT_CATEGORIES` and the
+`authorIdentifierScheme` controlled vocabulary are hardcoded — verified
+live against a real running Dataverse 6.11 instance, not recalled from
+memory; re-verify against `/api/dataverses/:id/metadatablocks` if targeting
+a heavily customized installation.
 
 ## WHERE TO LOOK
 
