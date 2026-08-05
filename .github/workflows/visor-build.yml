@@ -1,0 +1,69 @@
+name: visor-build
+
+# Scoped entirely to visor/ — does not change the core library's existing
+# "no CI/CD, checks run manually via Makefile" convention (see AGENTS.md).
+# PyInstaller does not cross-compile: a Windows installer can only be built
+# on a Windows runner, a macOS one only on macOS, which is exactly why this
+# needs both runners rather than one machine doing both.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [visor]
+    paths:
+      - "visor/**"
+      - "src/metadata_enricher/**"
+      - "config/agents.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/visor-build.yml"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra visor --group visor-build
+
+      - name: Run visor test suite
+        run: uv run pytest visor/tests -v
+
+      - name: Build PyInstaller bundle
+        run: uv run pyinstaller visor/visor.spec --noconfirm
+
+      - name: Compile Windows installer (Inno Setup)
+        if: runner.os == 'Windows'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: visor/installer/windows.iss
+
+      - name: Build macOS .dmg
+        if: runner.os == 'macOS'
+        run: bash visor/installer/macos_build_dmg.sh
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visor-windows-installer
+          path: dist_installer/Visor-Setup.exe
+          if-no-files-found: error
+
+      - name: Upload macOS dmg
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visor-macos-dmg
+          path: dist/Visor.dmg
+          if-no-files-found: error

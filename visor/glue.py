@@ -1,0 +1,66 @@
+"""Glue between visor's UI state and the metadata_enricher library.
+
+Deliberately thin: every object here is imported straight from
+metadata_enricher (Pipeline, PipelineConfig, FilesystemInputSource) — never
+from metadata_enricher.cli. This module exists only to turn "JSON text from
+a form/paste/upload" into a temp file FilesystemInputSource can read, the
+same way a user's real input file would be read by `metagen process`.
+"""
+
+from __future__ import annotations
+
+import json
+import tempfile
+from pathlib import Path
+from typing import Any
+
+from metadata_enricher.agents.registry import LLMClientFactory
+from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.input_sources.filesystem import FilesystemInputSource
+from metadata_enricher.pipeline import Pipeline, PipelineResult
+
+
+def write_temp_input_from_text(json_text: str) -> Path:
+    """Write raw JSON text (pasted, or an uploaded file's decoded bytes) to a
+    temp file, unchanged — FilesystemInputSource.fetch() is the only JSON
+    parser in this path, matching how a real input file is read."""
+    fd = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    )
+    try:
+        fd.write(json_text)
+    finally:
+        fd.close()
+    return Path(fd.name)
+
+
+def write_temp_input_from_dict(data: dict[str, Any]) -> Path:
+    """Same as write_temp_input_from_text, for the structured run form's
+    field values collected into a dict."""
+    return write_temp_input_from_text(json.dumps(data))
+
+
+def run_single(
+    pipeline_config: PipelineConfig,
+    input_path: Path,
+    *,
+    max_workers: int | None = None,
+    llm_factory: LLMClientFactory | None = None,
+) -> PipelineResult:
+    """Run the pipeline on the single resource at *input_path*.
+
+    Mirrors cli.py's process() command's wiring (construct Pipeline, run
+    against a FilesystemInputSource) for exactly one resource — visor never
+    writes output to disk itself, it renders PipelineResult and offers a
+    download instead.
+    """
+    pipeline = Pipeline(
+        config=pipeline_config,
+        llm_factory=llm_factory,
+        max_workers=max_workers if max_workers is not None else pipeline_config.max_workers,
+    )
+    source = FilesystemInputSource()
+    results = pipeline.run(source, pattern=str(input_path))
+    if not results:
+        raise RuntimeError("Pipeline produced no result for the submitted resource")
+    return results[0]
