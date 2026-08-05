@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Fetch IANA Media Types XML and generate data/iana_media_types.json.
+Fetch IANA Media Types XML and generate src/metadata_enricher/data/iana_media_types.json.
 
 Usage:
     python scripts/generate_iana_data.py
 
 Output:
-    data/iana_media_types.json with types and name_lookup dictionaries.
+    src/metadata_enricher/data/iana_media_types.json with types and name_lookup dictionaries.
 """
 
 import json
@@ -16,7 +16,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 IANA_URL = "https://www.iana.org/assignments/media-types/media-types.xml"
-OUTPUT_PATH = "data/iana_media_types.json"
+OUTPUT_PATH = "src/metadata_enricher/data/iana_media_types.json"
 NS = {"ian": "http://www.iana.org/assignments"}
 
 

@@ -1,0 +1,91 @@
+name: visor-build
+
+# Scoped entirely to visor/ — does not change the core library's existing
+# "no CI/CD, checks run manually via Makefile" convention (see AGENTS.md).
+# PyInstaller does not cross-compile: a Windows installer can only be built
+# on a Windows runner, a macOS one only on macOS, which is exactly why this
+# needs both runners rather than one machine doing both.
+#
+# This is the "main" tier of the branch flow (see visor/BUILD.md): the
+# expensive multi-OS installer/portable-exe build gates the dev -> main
+# promotion, not every push to a feature branch. Cheap checks (lint,
+# typecheck, unit tests) run on every PR via ci.yml instead — this job
+# only runs on a PR targeting main, or manually.
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    branches: [main]
+    paths:
+      - "visor/**"
+      - "src/metadata_enricher/**"
+      - "config/agents.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/visor-build.yml"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra visor --group visor-build
+
+      - name: Run visor test suite
+        run: make test-visor
+
+      - name: Build PyInstaller bundle
+        run: uv run pyinstaller visor/visor.spec --noconfirm
+
+      - name: Compile Windows installer (Inno Setup)
+        if: runner.os == 'Windows'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
+        with:
+          path: visor/installer/windows.iss
+
+      - name: Build macOS .dmg
+        if: runner.os == 'macOS'
+        run: bash visor/installer/macos_build_dmg.sh
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-windows-installer
+          path: dist_installer/Visor-Setup.exe
+          if-no-files-found: error
+
+      - name: Upload Windows portable exe
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-windows-portable
+          path: dist/Visor-portable.exe
+          if-no-files-found: error
+
+      - name: Upload macOS dmg
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-macos-dmg
+          path: dist/Visor.dmg
+          if-no-files-found: error
+
+      - name: Upload macOS portable executable
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-macos-portable
+          path: dist/Visor-portable
+          if-no-files-found: error

@@ -33,12 +33,18 @@ dev = [
     "ruff>=0.5.0",
     "types-PyYAML>=6.0.0",
 ]
+visor = [
+    "nicegui>=1.4.0",
+    "pywebview>=5.0",
+    "platformdirs>=4.0.0",
+]
 
 [project.scripts]
 metagen = "metadata_enricher.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/metadata_enricher"]
+artifacts = ["src/metadata_enricher/data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -63,5 +69,8 @@ ignore_missing_imports = true
 [dependency-groups]
 dev = [
     "deepeval>=4.0.7",
+]
+visor-build = [
+    "pyinstaller>=6.0",
 ]
 
