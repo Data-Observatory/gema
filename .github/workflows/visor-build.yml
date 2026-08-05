@@ -26,10 +26,10 @@ jobs:
         os: [windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v9
         with:
           enable-cache: true
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Compile Windows installer (Inno Setup)
         if: runner.os == 'Windows'
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
         with:
           path: visor/installer/windows.iss
 
@@ -54,16 +54,32 @@ jobs:
 
       - name: Upload Windows installer
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visor-windows-installer
           path: dist_installer/Visor-Setup.exe
           if-no-files-found: error
 
+      - name: Upload Windows portable exe
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-windows-portable
+          path: dist/Visor-portable.exe
+          if-no-files-found: error
+
       - name: Upload macOS dmg
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visor-macos-dmg
           path: dist/Visor.dmg
+          if-no-files-found: error
+
+      - name: Upload macOS portable executable
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: visor-macos-portable
+          path: dist/Visor-portable
           if-no-files-found: error

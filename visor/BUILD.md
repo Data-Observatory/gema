@@ -108,11 +108,26 @@ make install-visor   # uv sync --extra visor --group visor-build
 make build-visor      # uv run pyinstaller visor/visor.spec --noconfirm
 ```
 
-Produces a **onedir** bundle at `dist/Visor/` (Linux/Windows) or
-`dist/Visor.app` (macOS) — not onefile; see `visor/visor.spec`'s docstring
-for why (startup speed, AV/SmartScreen scan surface, transparency for
-support). Always run PyInstaller through `uv run`, never a globally
-pip-installed one, so frozen deps match `uv.lock`.
+Produces **two** targets from one spec, in one PyInstaller run:
+
+- `dist/Visor/` (onedir, Linux/Windows) / `dist/Visor.app` (macOS) —
+  the primary target, fed into the installers below. Fast startup, no
+  extraction step per launch — see `visor/visor.spec`'s docstring for
+  the full rationale (AV/SmartScreen scan surface, support
+  transparency).
+- `dist/Visor-portable.exe` (Windows) / `dist/Visor-portable` (macOS/
+  Linux) — a single-file, no-install-step executable. Useful for
+  locked-down machines without admin rights to run an installer.
+  Measured on the Linux build: **76MB vs 223MB** for onedir — smaller
+  on disk (the onefile archive is zlib-compressed as a whole), but
+  self-extracts to a fresh temp dir on *every* launch, so it's slower
+  to start than onedir. Verified booting headless on Linux (HTTP 200,
+  same first-run config-seeding into `~/.config/metagen/agents.yaml`
+  as the onedir build) — not yet verified as a real double-click on
+  Windows/macOS.
+
+Always run PyInstaller through `uv run`, never a globally pip-installed
+one, so frozen deps match `uv.lock`.
 
 **Cross-compilation is not possible** — PyInstaller only builds for the OS
 it's running on. A Windows `.exe`/installer can only be produced on
@@ -149,13 +164,15 @@ double-clickable `.app`.
 
 ### CI (GitHub Actions)
 
-`.github/workflows/visor-build.yml` builds both installers on
-`windows-latest`/`macos-latest`, triggered manually (`workflow_dispatch`) or
-on push to the `visor` branch touching `visor/`, the library, or the config.
-It runs `make test-visor`-equivalent, then the same PyInstaller +
-Inno-Setup/`hdiutil` steps above, and uploads both installers as workflow
-artifacts. This is scoped entirely to visor — it does not change the core
-library's existing "no CI/CD, all checks via Makefile" convention.
+`.github/workflows/visor-build.yml` builds both installers **and** both
+portable executables on `windows-latest`/`macos-latest`, triggered manually
+(`workflow_dispatch`) or on push to the `visor` branch touching `visor/`,
+the library, or the config. It runs `make test-visor`, then the same
+PyInstaller + Inno-Setup/`hdiutil` steps above, and uploads four artifacts
+per run: `visor-windows-installer`, `visor-windows-portable`,
+`visor-macos-dmg`, `visor-macos-portable`. This is scoped entirely to
+visor — it does not change the core library's existing "no CI/CD, all
+checks via Makefile" convention.
 
 **Honest limitation of how this was built**: authored and validated from a
 Linux sandbox. What was actually verified here:

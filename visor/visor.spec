@@ -1,12 +1,28 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for visor — onedir build, not onefile (see visor/BUILD.md
-for why). Build via `make build-visor` (wraps `uv run pyinstaller
-visor/visor.spec`), never a globally pip-installed PyInstaller, so frozen
-deps match uv.lock.
+"""PyInstaller spec for visor — builds two targets from one Analysis:
 
-Real Windows .exe / macOS .app installers are produced from this spec's
-onedir output by the CI workflow (.github/workflows/visor-build.yml) or a
-manual build on that OS — PyInstaller does not cross-compile.
+1. Visor/ (onedir) — the primary target, fed into the Windows/macOS
+   installers. Faster startup, smaller AV/SmartScreen scan surface per
+   launch. See visor/BUILD.md for why this is the recommended default.
+2. Visor-portable(.exe) (onefile) — a single-file, no-install-step
+   executable for locked-down machines (no admin rights, USB stick,
+   etc). Self-extracts to a fresh temp dir on *every* launch, so startup
+   is noticeably slower than the onedir build. Measured on the Linux
+   build: smaller on disk than onedir (76MB vs 223MB) because the
+   onefile archive is zlib-compressed as a whole, while onedir's
+   COLLECT() step copies most files uncompressed — so the download-size
+   trade-off actually favors onefile here; the real cost is the
+   per-launch extraction time, not size. Pick per the "no install step"
+   requirement, not as a strict upgrade over onedir.
+
+Both build from a single `uv run pyinstaller visor/visor.spec` — PyInstaller
+builds every EXE()/COLLECT()/BUNDLE() target defined in a spec file in one
+run. Build via `make build-visor`, never a globally pip-installed
+PyInstaller, so frozen deps match uv.lock.
+
+Real Windows .exe / macOS .app installers are produced from the onedir
+target by the CI workflow (.github/workflows/visor-build.yml) or a manual
+build on that OS — PyInstaller does not cross-compile.
 """
 
 import sys
@@ -75,6 +91,28 @@ coll = COLLECT(  # noqa: F821
     upx=True,
     upx_exclude=[],
     name="Visor",
+)
+
+# Onefile portable build — exclude_binaries=False + no COLLECT() after is
+# what tells PyInstaller to embed everything into the single executable
+# instead of leaving it for a separate onedir step.
+exe_portable = EXE(  # noqa: F821
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.datas,
+    [],
+    name="Visor-portable",
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
 )
 
 if sys.platform == "darwin":
