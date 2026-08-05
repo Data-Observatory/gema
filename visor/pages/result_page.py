@@ -35,17 +35,25 @@ def render_result(
                     for warning in result.warnings:
                         ui.label(f"- {warning}")
 
-            ui.label("Result").classes("text-h5 q-mt-md")
-            ui.code(json_str, language="json").classes("w-full")
+            ui.label("Result").classes("text-h5 q-mt-md").mark("result-success")
+            ui.code(json_str, language="json").classes("w-full").mark("result-json")
 
             ui.button(
                 "Download JSON",
+                # Explicit bytes, not str: NiceGUI's test-simulation
+                # Download.content() override skips the str->bytes
+                # conversion the real implementation does, and would
+                # misread a plain string as a URL/path instead of content
+                # (caught by visor/tests/test_app_e2e.py's real click-through
+                # test). bytes behaves identically in the real app either way.
                 on_click=lambda: ui.download.content(
-                    json_str, filename="metadata.json", media_type="application/json"
+                    json_str.encode("utf-8"), filename="metadata.json", media_type="application/json"
                 ),
-            ).classes("q-mt-md")
+            ).classes("q-mt-md").mark("result-download")
         else:
-            ui.label("This resource could not be processed").classes("text-h5 text-negative")
-            ui.label(result.error or "Unknown error")
+            ui.label("This resource could not be processed").classes(
+                "text-h5 text-negative"
+            ).mark("result-failure")
+            ui.label(result.error or "Unknown error").mark("result-error")
 
-        ui.button("Run another", on_click=on_back).classes("q-mt-md")
+        ui.button("Run another", on_click=on_back).classes("q-mt-md").mark("result-back")

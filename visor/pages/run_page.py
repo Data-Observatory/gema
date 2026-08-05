@@ -35,7 +35,9 @@ def render_run_form(
         form_box = ui.column().classes("w-full")
         with form_box:
             inputs = {
-                name: ui.input(name.replace("_", " ").title()).classes("w-full")
+                name: ui.input(name.replace("_", " ").title())
+                .classes("w-full")
+                .mark(f"run-input-{name}")
                 for name in FORM_FIELDS
             }
         form_box.bind_visibility_from(mode, "value", value="Fill a form")
@@ -110,7 +112,12 @@ def render_run_form(
                     on_result(result)
             finally:
                 input_path.unlink(missing_ok=True)
-                run_button.enable()
-                spinner.set_visibility(False)
+                # on_result()/on_error() already cleared this container (and
+                # everything in it, including this button) to show the next
+                # screen — touching a deleted element only logs a harmless
+                # warning, but skipping it is cheap and exactly correct.
+                if not run_button.is_deleted:
+                    run_button.enable()
+                    spinner.set_visibility(False)
 
-        run_button = ui.button("Run", on_click=_run).classes("q-mt-md")
+        run_button = ui.button("Run", on_click=_run).classes("q-mt-md").mark("run-submit")

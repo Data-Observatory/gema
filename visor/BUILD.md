@@ -35,7 +35,27 @@ make test-visor
 Runs `visor/tests/` — settings roundtrip, form/paste/upload → temp file →
 `FilesystemInputSource` glue, the bootstrap/config-seeding logic, and the
 CLI-import-boundary architecture guard. Kept separate from `make test`
-(the library's own suite/coverage number) on purpose.
+(the library's own suite/coverage number) on purpose. Always passes
+`-m "not live"` — deterministically, not just "skip if no key is found":
+a real key showed up in `os.environ` inside a test run here even when a
+separate check in the same shell moments earlier showed none, so
+skip-by-absence alone isn't a trustworthy cost guard in every environment.
+
+```bash
+make test-visor-live
+```
+
+Runs `visor/tests/test_app_e2e.py` — a real click-through of the whole app
+using NiceGUI's in-process user-simulation harness (`nicegui.testing.User`):
+opens the page, fills Settings, saves, fills the Run form, clicks Run (a
+real multi-agent LLM call), waits for Result, clicks Download, and asserts
+the exact bytes handed to `ui.download`. No browser, but real app code and
+real click handlers — the strongest test in this suite. Caught two real
+bugs during development: NiceGUI's test-simulation `Download.content()`
+doesn't do the str→bytes conversion the real implementation does (fixed by
+always encoding to bytes before calling it — correct in both paths), and
+`run_page.py`'s cleanup touched an already-deleted button after the result
+screen replaced it (harmless in practice, fixed anyway).
 
 ## Building a frozen bundle
 

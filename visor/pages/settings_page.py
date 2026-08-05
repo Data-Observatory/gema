@@ -45,7 +45,7 @@ def render_settings(
                 password=True,
                 password_toggle_button=True,
                 value=current.env.get(env_name, ""),
-            ).classes("w-full")
+            ).classes("w-full").mark(f"settings-input-{env_name}")
 
         ui.label("Optional — lets ORCID be searched by author name").classes(
             "text-subtitle2 q-mt-md"
@@ -56,7 +56,7 @@ def render_settings(
                 password=True,
                 password_toggle_button=True,
                 value=current.env.get(env_name, ""),
-            ).classes("w-full")
+            ).classes("w-full").mark(f"settings-input-{env_name}")
 
         def _save() -> None:
             new_settings = VisorSettings(
@@ -67,4 +67,4 @@ def render_settings(
             ui.notify("Settings saved", type="positive")
             on_saved(new_settings)
 
-        ui.button("Save & Continue", on_click=_save).classes("q-mt-md")
+        ui.button("Save & Continue", on_click=_save).classes("q-mt-md").mark("settings-save")
