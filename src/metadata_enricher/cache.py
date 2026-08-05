@@ -14,7 +14,20 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from metadata_enricher.llm.base import LLMClient
 
+from metadata_enricher.types import TokenUsage
+
 logger = logging.getLogger(__name__)
+
+
+def _cached_data(cached: dict[str, Any]) -> dict[str, Any]:
+    """Cache entries written before token-usage tracking was added store the
+    bare model dump directly; entries written since wrap it as
+    {"data": ..., "usage": ...}. Accept both so already-committed golden
+    fixture caches (tests/fixtures/golden/cache/cache.db) keep working
+    without re-recording."""
+    if "data" in cached and "usage" in cached:
+        return cast("dict[str, Any]", cached["data"])
+    return cached
 
 
 class CacheManager:
@@ -104,12 +117,41 @@ class CachedLLMClient:
         cached = self._cache.get(key)
         if cached is not None:
             logger.debug("Cache HIT for key=%s", key[:12])
-            return response_model.model_validate(cached)
+            return response_model.model_validate(_cached_data(cached))
 
         logger.debug("Cache MISS for key=%s", key[:12])
         result = self._inner.complete(prompt, response_model, system_prompt, **kwargs)
-        self._cache.set(key, result.model_dump())
+        self._cache.set(key, {"data": result.model_dump(), "usage": TokenUsage().model_dump()})
         return result
+
+    def complete_with_usage(
+        self,
+        prompt: str,
+        response_model: type[BaseModel],
+        system_prompt: str | None = None,
+        **kwargs: object,
+    ) -> tuple[BaseModel, TokenUsage]:
+        """Same cache key as complete() — a cache hit recorded by either
+        method is visible to the other. A hit costs no new tokens (nothing
+        was actually called), so usage is 0 regardless of what the original
+        call recorded; only a real cache miss reports real usage."""
+        key = self._cache._make_key(
+            prompt, self.model, response_model.__name__, self._temperature, self._seed
+        )
+        cached = self._cache.get(key)
+        if cached is not None:
+            logger.debug("Cache HIT for key=%s", key[:12])
+            return response_model.model_validate(_cached_data(cached)), TokenUsage()
+
+        logger.debug("Cache MISS for key=%s", key[:12])
+        inner_with_usage = getattr(self._inner, "complete_with_usage", None)
+        if inner_with_usage is not None:
+            result, usage = inner_with_usage(prompt, response_model, system_prompt, **kwargs)
+        else:
+            result = self._inner.complete(prompt, response_model, system_prompt, **kwargs)
+            usage = TokenUsage()
+        self._cache.set(key, {"data": result.model_dump(), "usage": usage.model_dump()})
+        return result, usage
 
     def complete_raw(
         self,

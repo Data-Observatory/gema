@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
+import pytest
 from pydantic import BaseModel
 
 from metadata_enricher.agents.base import BaseAgent
-from metadata_enricher.types import AgentResult, ResourceDescription
+from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
 
 
 class FakeOutput(BaseModel):
@@ -123,6 +125,69 @@ class TestBaseAgent:
             assert r.error is not None
             assert "LLM failed" in r.error
             assert r.value is None
+
+    def test_run_defaults_to_zero_usage_when_client_lacks_complete_with_usage(self) -> None:
+        """MockLLMClient here only implements complete() — the fallback path
+        (agents/base.py) must report TokenUsage() zeros, never guess."""
+        agent = self._make_agent()
+        resource = ResourceDescription(url="https://example.com")
+        results = agent.run(resource)
+        for r in results:
+            assert r.token_usage == TokenUsage()
+
+    def test_run_uses_real_usage_when_client_provides_it(self) -> None:
+        class MockLLMClientWithUsage(MockLLMClient):
+            def complete_with_usage(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[object, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=100, completion_tokens=50
+                )
+
+        client = MockLLMClientWithUsage(
+            result=FakeOutput(titles=[{"title": "T1"}], descriptions=[{"desc": "D1"}])
+        )
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles", "descriptions"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(url="https://example.com", title="Test")
+        results = agent.run(resource)
+        assert len(results) == 2
+        for r in results:
+            assert r.token_usage.prompt_tokens == 100
+            assert r.token_usage.completion_tokens == 50
+            assert r.token_usage.total_tokens == 150
+        # Every field from one LLM call shares the same TokenUsage instance —
+        # pipeline.py's aggregation relies on this to avoid double-counting.
+        assert results[0].token_usage is results[1].token_usage
+
+    def test_run_logs_start_and_finish(self, caplog: pytest.LogCaptureFixture) -> None:
+        """visor's live log console (visor/log_stream.py) surfaces exactly
+        these records — without them the console looks stuck for the
+        entire duration of a run with no sense of progress."""
+        agent = self._make_agent()
+        resource = ResourceDescription(url="https://example.com")
+        with caplog.at_level(logging.INFO, logger="metadata_enricher.agents.base"):
+            agent.run(resource)
+        messages = [r.message for r in caplog.records]
+        assert any("test-agent' starting" in m for m in messages)
+        assert any("test-agent' finished" in m for m in messages)
+
+    def test_run_logs_failure_with_elapsed_time(self, caplog: pytest.LogCaptureFixture) -> None:
+        agent = self._make_agent(llm_raise=ValueError("boom"))
+        resource = ResourceDescription(url="https://example.com")
+        with caplog.at_level(logging.INFO, logger="metadata_enricher.agents.base"):
+            agent.run(resource)
+        messages = [r.message for r in caplog.records]
+        assert any("test-agent' failed" in m and "boom" in m for m in messages)
 
     def test_prompt_formatting_with_resource(self) -> None:
         client = MockLLMClient(result=FakeOutput())

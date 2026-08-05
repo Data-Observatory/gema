@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 from pydantic import BaseModel
 
 from metadata_enricher.cache import CachedLLMClient, CacheManager
+from metadata_enricher.types import TokenUsage
 
 
 class SimpleOutput(BaseModel):
@@ -174,6 +175,114 @@ class TestCachedLLMClient:
         cached.complete_raw("world")
 
         assert inner.call_count == 2
+
+    def test_complete_with_usage_calls_inner_and_caches(self, tmp_path: Path) -> None:
+        class MockLLMClientWithUsage(MockLLMClient):
+            def complete_with_usage(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[BaseModel, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=10, completion_tokens=5
+                )
+
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClientWithUsage()
+        cached = CachedLLMClient(inner, cm)
+
+        result, usage = cached.complete_with_usage("prompt-x", SimpleOutput)
+
+        assert result.name == "prompt-x"
+        assert usage.prompt_tokens == 10
+        assert inner.call_count == 1
+
+    def test_complete_with_usage_reports_zero_on_cache_hit(self, tmp_path: Path) -> None:
+        """A cache hit made no new call — reporting the original usage again
+        would double-count a resource's real cost across repeated runs."""
+
+        class MockLLMClientWithUsage(MockLLMClient):
+            def complete_with_usage(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[BaseModel, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=10, completion_tokens=5
+                )
+
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClientWithUsage()
+        cached = CachedLLMClient(inner, cm)
+
+        _, first_usage = cached.complete_with_usage("prompt-x", SimpleOutput)
+        _, second_usage = cached.complete_with_usage("prompt-x", SimpleOutput)
+
+        assert first_usage.prompt_tokens == 10
+        assert second_usage == TokenUsage()
+        assert inner.call_count == 1
+
+    def test_complete_with_usage_falls_back_to_zero_when_inner_lacks_it(
+        self, tmp_path: Path
+    ) -> None:
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClient()  # no complete_with_usage on this class at all
+        cached = CachedLLMClient(inner, cm)
+
+        result, usage = cached.complete_with_usage("prompt-x", SimpleOutput)
+
+        assert result.name == "prompt-x"
+        assert usage == TokenUsage()
+        assert inner.call_count == 1
+
+    def test_complete_with_usage_reads_legacy_bare_shape_cache_entry(self, tmp_path: Path) -> None:
+        """Entries written before token-usage tracking existed store the
+        bare model dump directly (no "data"/"usage" wrapper) — a real
+        committed fixture, not a hypothetical (tests/fixtures/golden/cache/
+        cache.db predates this feature). Must still be readable."""
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClient()
+        cached = CachedLLMClient(inner, cm)
+        key = cm._make_key("prompt-x", inner.model, SimpleOutput.__name__, 0.0, None)
+        cm.set(key, {"name": "legacy-value"})
+
+        result, usage = cached.complete_with_usage("prompt-x", SimpleOutput)
+
+        assert result.name == "legacy-value"
+        assert usage == TokenUsage()
+        assert inner.call_count == 0  # cache hit — inner never called
+
+    def test_plain_complete_reads_new_wrapped_shape_written_by_complete_with_usage(
+        self, tmp_path: Path
+    ) -> None:
+        """Forward compatibility the other direction: a plain complete()
+        call must still work against an entry complete_with_usage wrote."""
+
+        class MockLLMClientWithUsage(MockLLMClient):
+            def complete_with_usage(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[BaseModel, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=10
+                )
+
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClientWithUsage()
+        cached = CachedLLMClient(inner, cm)
+        cached.complete_with_usage("prompt-x", SimpleOutput)
+
+        result = cached.complete("prompt-x", SimpleOutput)
+
+        assert result.name == "prompt-x"
+        assert inner.call_count == 1  # second call was a cache hit
 
     def test_close_underlying_cache(self, tmp_path: Path) -> None:
         """close() must actually close the underlying diskcache.Cache — not a

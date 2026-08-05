@@ -33,20 +33,26 @@ pytestmark = [
 
 
 async def test_full_click_through_settings_to_download(user: User, monkeypatch, tmp_path) -> None:
-    """Settings (fresh, no saved key) -> fill required key -> Save ->
-    Run form -> fill url/title/description -> Run (real LLM call) ->
-    Result -> Download, asserting the exact bytes handed to ui.download."""
+    """Run tab (gated, no key yet) -> Settings tab -> fill key -> Save
+    (auto-switches back to Run) -> fill form -> Run (real LLM call, live
+    log visible while it runs) -> Result -> Download, asserting the exact
+    bytes handed to ui.download."""
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 
     await user.open("/")
-    await user.should_see(marker="settings-save")
+    await user.should_see(marker="tab-run")
+    await user.should_see(marker="run-settings-gate")
 
     real_key = os.environ.get("ZAI_API_KEY")
     if not real_key:
         pytest.skip("this pipeline config's default provider needs ZAI_API_KEY specifically")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
     user.find(marker="settings-input-ZAI_API_KEY").type(real_key)
     user.find(marker="settings-save").click()
 
+    # Saving switches the active tab back to Run automatically.
     await user.should_see(marker="run-submit")
 
     user.find(marker="run-input-url").type("https://datos.gob.cl/dataset/visor-e2e-smoke-test")
@@ -57,6 +63,8 @@ async def test_full_click_through_settings_to_download(user: User, monkeypatch, 
         "downloadable JSON result."
     )
     user.find(marker="run-submit").click()
+
+    await user.should_see(marker="run-log")
 
     # Real multi-agent LLM pipeline run — genuinely slow, not a UI delay.
     await user.should_see(marker="result-success", retries=1800)

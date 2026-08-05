@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
+import time
 from typing import Any, cast
 
 from metadata_enricher.enrichers.country_extractor import CountryExtractor
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.schemas.base import Schema
 from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
+
+logger = logging.getLogger(__name__)
 
 # Stateless (no I/O, no config) — one shared instance for every agent/resource.
 _country_extractor = CountryExtractor()
@@ -69,6 +73,8 @@ class BaseAgent:
 
     def run(self, resource: ResourceDescription) -> list[AgentResult]:
         """Format prompt, call LLM, extract+normalize fields per schema."""
+        started = time.monotonic()
+        logger.info("Agent '%s' starting (fields: %s)", self._name, ", ".join(self._fields))
         try:
             resource_dict = self._build_resource_dict(resource)
             formatted = self._prompt
@@ -85,11 +91,26 @@ class BaseAgent:
                     formatted += f"- {key}: {val}\n"
 
             output_model = self._schema.output_model
-            result = self._llm_client.complete(
-                prompt=formatted,
-                response_model=output_model,
-                system_prompt=self._system_prompt,
-            )
+            # complete_with_usage is an optional, duck-typed extension of the
+            # real production client chain (Instructor/Retryable/Cached) —
+            # not part of the formal LLMClient Protocol, so mocks/fakes that
+            # only implement complete() keep working unchanged, just without
+            # real token counts (see llm/retry.py's complete_with_usage
+            # docstring for the full rationale).
+            complete_with_usage = getattr(self._llm_client, "complete_with_usage", None)
+            if complete_with_usage is not None:
+                result, token_usage = complete_with_usage(
+                    prompt=formatted,
+                    response_model=output_model,
+                    system_prompt=self._system_prompt,
+                )
+            else:
+                result = self._llm_client.complete(
+                    prompt=formatted,
+                    response_model=output_model,
+                    system_prompt=self._system_prompt,
+                )
+                token_usage = TokenUsage()
 
             raw_json = result.model_dump_json()
             agent_results: list[AgentResult] = []
@@ -103,11 +124,20 @@ class BaseAgent:
                         # contract, but always yields a JSON-shaped value here.
                         value=cast("list[Any] | dict[str, Any] | str | None", normalized),
                         raw_llm_response=raw_json,
-                        token_usage=TokenUsage(),
+                        token_usage=token_usage,
                     )
                 )
+            elapsed = time.monotonic() - started
+            logger.info(
+                "Agent '%s' finished in %.1fs (%d tokens)",
+                self._name,
+                elapsed,
+                token_usage.total_tokens,
+            )
             return agent_results
         except Exception as exc:
+            elapsed = time.monotonic() - started
+            logger.error("Agent '%s' failed after %.1fs: %s", self._name, elapsed, exc)
             return [
                 AgentResult(field_name=field_name, error=str(exc)) for field_name in self._fields
             ]
