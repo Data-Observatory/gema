@@ -33,7 +33,7 @@ agent:
   # catalog (unlike the Subject vocabulary itself, which was). Confirm it
   # resolves before relying on this in a live demo; swap to whatever your
   # provider actually serves at that tier.
-  model: glm-4.6-flash
+  model: glm-4.7-flash
   temperature: 0.0
   prompt: |
     Elige la categoría de Dataverse que mejor describe este recurso, a partir

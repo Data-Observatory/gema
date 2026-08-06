@@ -14,8 +14,11 @@ import logging
 import sys
 from pathlib import Path
 
+import yaml
+
 from metadata_enricher.config.loader import find_config, load_config
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.exporters.dataverse import load_dataverse_export_config
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
@@ -24,16 +27,29 @@ logger = logging.getLogger(__name__)
 BUNDLED_CONFIG_SUBPATH = Path("visor_default_config") / "agents.yaml"
 DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "metagen" / "agents.yaml"
 
+DATAVERSE_EXPORT_BUNDLED_SUBPATH = Path("visor_default_config") / "dataverse_export.yaml"
+DATAVERSE_EXPORT_REPO_PATH = Path("config") / "dataverse_export.yaml"
+
+PROVIDERS_POOL_BUNDLED_SUBPATH = Path("visor_default_config") / "providers.yaml"
+PROVIDERS_POOL_REPO_PATH = Path("config") / "providers.yaml"
+
+
+def _bundled_path(subpath: Path) -> Path | None:
+    """Where visor.spec bundles a read-only default, if this is a frozen
+    build. None when running from source — a repo-relative path already
+    covers that case for each of this module's config files."""
+    if not getattr(sys, "frozen", False):
+        return None
+    base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    candidate = base / subpath
+    return candidate if candidate.is_file() else None
+
 
 def bundled_config_path() -> Path | None:
     """Where visor.spec bundles the read-only default, if this is a frozen
     build. None when running from source — find_config()'s own
     ./config/agents.yaml already covers that case."""
-    if not getattr(sys, "frozen", False):
-        return None
-    base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-    candidate = base / BUNDLED_CONFIG_SUBPATH
-    return candidate if candidate.is_file() else None
+    return _bundled_path(BUNDLED_CONFIG_SUBPATH)
 
 
 def resolve_config_path(user_config_path: Path | None = None) -> Path:
@@ -65,3 +81,65 @@ def load_pipeline_config(
         logger.exception("Failed to load pipeline configuration")
         return None, None, str(exc)
     return config, schema, None
+
+
+def dataverse_export_bundled_path() -> Path | None:
+    """Same bundling mechanism as bundled_config_path(), separate subpath."""
+    return _bundled_path(DATAVERSE_EXPORT_BUNDLED_SUBPATH)
+
+
+def resolve_dataverse_export_config_path() -> Path:
+    """No writable-user-copy step here, unlike resolve_config_path() —
+    edits to this config happen in-memory via the Agents tab (session-only,
+    same as pipeline_config.agents edits), never written back to any file
+    on disk, so there's nothing to seed a user copy from."""
+    if DATAVERSE_EXPORT_REPO_PATH.is_file():
+        return DATAVERSE_EXPORT_REPO_PATH
+    bundled = dataverse_export_bundled_path()
+    if bundled is not None:
+        return bundled
+    msg = f"dataverse_export.yaml not found at {DATAVERSE_EXPORT_REPO_PATH} or bundled"
+    raise FileNotFoundError(msg)
+
+
+def load_dataverse_export_config_safe() -> tuple[DataverseExportConfig | None, str | None]:
+    """Returns (config, error_message) — exactly one is set, never a mix.
+    Never fatal to the rest of the app if this fails — the Dataverse
+    export is an optional extra, not core pipeline functionality."""
+    try:
+        config = load_dataverse_export_config(resolve_dataverse_export_config_path())
+    except Exception as exc:  # noqa: BLE001 - surfaced in the UI, not hidden
+        logger.exception("Failed to load Dataverse export configuration")
+        return None, str(exc)
+    return config, None
+
+
+def providers_pool_bundled_path() -> Path | None:
+    return _bundled_path(PROVIDERS_POOL_BUNDLED_SUBPATH)
+
+
+def resolve_providers_pool_path() -> Path:
+    """Same no-writable-copy reasoning as resolve_dataverse_export_config_path()
+    — this file is only ever read, never edited; Settings' "Add a provider"
+    picker just offers its entries as autofill presets."""
+    if PROVIDERS_POOL_REPO_PATH.is_file():
+        return PROVIDERS_POOL_REPO_PATH
+    bundled = providers_pool_bundled_path()
+    if bundled is not None:
+        return bundled
+    msg = f"providers.yaml not found at {PROVIDERS_POOL_REPO_PATH} or bundled"
+    raise FileNotFoundError(msg)
+
+
+def load_providers_pool_safe() -> list[ProviderConfig]:
+    """Returns [] on any failure — the known-providers pool is a pure UX
+    nicety (autofill presets for Settings' "Add a provider" picker); losing
+    it must never block Settings from rendering, it just means the "Other
+    (custom)" path is the only option."""
+    try:
+        path = resolve_providers_pool_path()
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return [ProviderConfig.model_validate(p) for p in data["providers"]]
+    except Exception:  # noqa: BLE001 - non-fatal by design, see docstring
+        logger.exception("Failed to load providers pool — 'Add a provider' will offer custom-only")
+        return []

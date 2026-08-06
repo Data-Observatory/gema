@@ -19,7 +19,8 @@ from typing import Callable
 
 from nicegui import events, run, ui
 
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
+from metadata_enricher.exporters.dataverse import to_dataverse_json
 from metadata_enricher.output import OutputWriter
 from metadata_enricher.pipeline import PipelineResult
 from metadata_enricher.schemas.base import Schema
@@ -55,6 +56,7 @@ def render_run_form(
     schema: Schema,
     current_settings: Callable[[], VisorSettings],
     on_go_to_settings: Callable[[], None],
+    dataverse_export_config: DataverseExportConfig | None = None,
 ) -> Callable[[], object]:
     """Renders the Run tab and returns a zero-arg refresh function — call it
     after Settings are saved so a just-unblocked Run tab updates without
@@ -75,7 +77,7 @@ def render_run_form(
         elif state.phase == "running":
             _render_running_phase(state)
         else:
-            _render_result_phase(schema, state, body.refresh)
+            _render_result_phase(schema, state, body.refresh, pipeline_config, dataverse_export_config)
 
     with container:
         body()
@@ -245,7 +247,13 @@ def _render_running_phase(state: _RunViewState) -> None:
     timer = ui.timer(0.3, _poll)
 
 
-def _render_result_phase(schema: Schema, state: _RunViewState, refresh: Callable[[], object]) -> None:
+def _render_result_phase(
+    schema: Schema,
+    state: _RunViewState,
+    refresh: Callable[[], object],
+    pipeline_config: PipelineConfig,
+    dataverse_export_config: DataverseExportConfig | None,
+) -> None:
     def _reset() -> None:
         state.phase = "form"
         state.result = None
@@ -259,6 +267,11 @@ def _render_result_phase(schema: Schema, state: _RunViewState, refresh: Callable
             ui.button(
                 "Download JSON", on_click=lambda: _download(schema, state)
             ).mark("result-download")
+            if dataverse_export_config is not None:
+                ui.button(
+                    "Download Dataverse JSON",
+                    on_click=lambda: _download_dataverse(state, pipeline_config, dataverse_export_config),
+                ).props("outline").mark("result-download-dataverse")
         ui.button("Run another", on_click=_reset).mark("result-back")
 
     _render_submitted_input(state.submitted_text)
@@ -304,4 +317,47 @@ def _download(schema: Schema, state: _RunViewState) -> None:
     # caught by visor/tests/test_app_e2e.py's real click-through test.
     ui.download.content(
         json_str.encode("utf-8"), filename="metadata.json", media_type="application/json"
+    )
+
+
+async def _download_dataverse(
+    state: _RunViewState,
+    pipeline_config: PipelineConfig,
+    dataverse_export_config: DataverseExportConfig,
+) -> None:
+    assert state.result is not None and state.result.document is not None
+
+    provider = None
+    if dataverse_export_config.enabled:
+        provider = next(
+            (p for p in pipeline_config.providers if p.name == dataverse_export_config.agent.provider), None
+        )
+        if provider is None:
+            ui.notify(
+                f"Dataverse export provider '{dataverse_export_config.agent.provider}' not "
+                "found in this config — Subject will default to 'Other'",
+                type="warning",
+            )
+
+    try:
+        # to_dataverse_json() can make a real (blocking) LLM call when
+        # classification is enabled — offload it the same way the main
+        # pipeline run is offloaded, or the UI freezes for its duration.
+        export_result = await run.io_bound(
+            to_dataverse_json, state.result.document, dataverse_export_config, provider
+        )
+    except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
+        ui.notify(f"Could not build Dataverse JSON: {exc}", type="negative")
+        return
+
+    if export_result is None:  # run.io_bound()'s declared return type, never actually None here
+        ui.notify("Could not build Dataverse JSON: no result", type="negative")
+        return
+
+    for warning in export_result.warnings:
+        ui.notify(warning, type="warning")
+
+    json_str = json.dumps(export_result.dataset_json, ensure_ascii=False, indent=2)
+    ui.download.content(
+        json_str.encode("utf-8"), filename="dataverse_dataset.json", media_type="application/json"
     )
