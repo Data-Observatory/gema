@@ -5,17 +5,16 @@ the app.
 Provider is a select populated from pipeline_config.providers — always a
 valid choice by construction, no free-text typo risk. Model selection
 lives on AgentConfig.model (a free-text string passed straight through to
-the LLM client — see llm/factory.py). There is no enumerable "known
-models per provider" list anywhere in this project's config
-(config/providers.yaml only has connection settings, not model catalogs),
-so Model is a combobox (ui.select with with_input=True): MODEL_CATALOG
-below offers a curated, best-effort, non-exhaustive shortlist per known
-provider name, but typing any other model id is always accepted — a
-fabricated "complete" list would go stale and could wrongly imply only
-listed models work. Switching an agent's Provider refreshes that agent's
-Model options to match. Whichever provider each agent is set to here is
-what Settings' "used by: ..." captions reflect — the two tabs describe
-the same underlying assignment from two different angles.
+the LLM client — see llm/factory.py) and is a combobox (ui.select with
+with_input=True): no options until "Refresh models" is clicked, which
+fetches the real list from that provider's own `/models` endpoint (see
+model_catalog.py) using whatever key is saved in Settings for it — never
+a hardcoded/curated list, since that would go stale and wrongly imply
+only listed models work. Typing any other model id is always accepted
+regardless of whether a refresh has happened. Whichever provider each
+agent is set to here is what Settings' "used by: ..." captions reflect —
+the two tabs describe the same underlying assignment from two different
+angles.
 
 Prompt/fields/depends_on are read-only in a collapsed "Advanced" section
 for transparency. Download/Upload operate on the *entire* PipelineConfig,
@@ -43,36 +42,46 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from typing import Callable
 
-from nicegui import events, ui
+from nicegui import events, run, ui
 
-from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from visor.model_catalog import fetch_provider_models
+from visor.settings import load_settings
 
 logger = logging.getLogger(__name__)
 
-# Curated, non-exhaustive — keyed by provider *name* as declared in
-# config/providers.yaml. Unknown/custom provider names (e.g. one just
-# added via Settings) get an empty list, which still works fine with
-# with_input=True: the combobox just has no suggestions to offer.
-MODEL_CATALOG: dict[str, list[str]] = {
-    "zai-coding-plan": ["glm-5.2", "glm-4.7", "glm-4.7-flash", "glm-4.6"],
-    "opencode": ["gpt-4o", "claude-sonnet-5", "glm-4.7"],
-    "openai": ["gpt-5.1", "gpt-5.1-mini", "gpt-4o", "gpt-4o-mini", "o3"],
-    "anthropic": ["claude-opus-5", "claude-sonnet-5", "claude-fable-5", "claude-haiku-4-5-20251001"],
-}
+
+def _model_options(options: list[str], current_model: str) -> list[str]:
+    """*options* plus *current_model* if it isn't already in it — ui.select
+    requires its initial/updated value to be a member of options even
+    with with_input=True, and a model already configured (e.g.
+    hand-edited into agents.yaml, or not in a freshly fetched list) must
+    never make the page fail to render."""
+    result = list(options)
+    if current_model not in result:
+        result.append(current_model)
+    return result
 
 
-def _model_options(provider_name: str, current_model: str) -> list[str]:
-    """The catalog for *provider_name*, plus *current_model* if it isn't
-    already in it — ui.select requires its initial value to be a member of
-    options even with with_input=True, and a model already configured
-    (e.g. hand-edited into agents.yaml, or just not in our curated list)
-    must never make the page fail to render."""
-    options = list(MODEL_CATALOG.get(provider_name, []))
-    if current_model not in options:
-        options.append(current_model)
-    return options
+def _resolve_api_key(provider: ProviderConfig) -> str | None:
+    return load_settings().env.get(provider.api_key_env) or os.environ.get(provider.api_key_env)
+
+
+async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> None:
+    api_key = _resolve_api_key(provider)
+    try:
+        models = await run.io_bound(fetch_provider_models, provider, api_key)
+    except Exception as exc:  # noqa: BLE001 - surfaced to the user, never fatal
+        logger.warning("Could not fetch models for provider %s: %s", provider.name, exc)
+        ui.notify(f"Could not fetch models for '{provider.name}': {exc}", type="negative")
+        return
+    if models is None:  # run.io_bound's typing allows None; fetch_provider_models never returns it
+        models = []
+    model_select.set_options(_model_options(models, model_select.value or ""))
+    ui.notify(f"Loaded {len(models)} models for '{provider.name}'", type="positive")
 
 
 def render_agents(
@@ -136,7 +145,7 @@ def render_agents(
                         )
                         model_inputs[agent.id] = (
                             ui.select(
-                                _model_options(agent.provider, agent.model or ""),
+                                _model_options([], agent.model or ""),
                                 value=agent.model or "",
                                 label="Model",
                                 with_input=True,
@@ -145,11 +154,20 @@ def render_agents(
                             .classes("flex-grow")
                             .mark(f"agent-model-{agent.id}")
                         )
-                        provider_selects[agent.id].on_value_change(
-                            lambda e, aid=agent.id: model_inputs[aid].set_options(
-                                _model_options(e.value, model_inputs[aid].value or "")
+
+                        def _refresh_for_agent(aid: str = agent.id) -> object:
+                            provider = next(
+                                (p for p in pipeline_config.providers if p.name == provider_selects[aid].value),
+                                None,
                             )
-                        )
+                            if provider is None:
+                                ui.notify("Pick a provider first", type="negative")
+                                return None
+                            return _refresh_models(provider, model_inputs[aid])
+
+                        ui.button(icon="refresh", on_click=_refresh_for_agent).props("flat round").tooltip(
+                            "Fetch this provider's real model list"
+                        ).mark(f"agent-model-refresh-{agent.id}")
                         temp_inputs[agent.id] = (
                             ui.number(
                                 "Temperature",
@@ -199,10 +217,7 @@ def render_agents(
                         )
                         dataverse_model_input = (
                             ui.select(
-                                _model_options(
-                                    dataverse_export_config.agent.provider,
-                                    dataverse_export_config.agent.model or "",
-                                ),
+                                _model_options([], dataverse_export_config.agent.model or ""),
                                 value=dataverse_export_config.agent.model or "",
                                 label="Model — a fast/cheap tier is enough for a 14-way classification",
                                 with_input=True,
@@ -213,12 +228,21 @@ def render_agents(
                         )
                         _dataverse_model_select = dataverse_model_input
 
-                        def _on_dataverse_provider_change(e: events.ValueChangeEventArguments[str]) -> None:
-                            _dataverse_model_select.set_options(
-                                _model_options(e.value, _dataverse_model_select.value or "")
+                        def _refresh_dataverse_models() -> object:
+                            provider = next(
+                                (p for p in pipeline_config.providers if p.name == dataverse_provider_select.value),
+                                None,
                             )
+                            if provider is None:
+                                ui.notify("Pick a provider first", type="negative")
+                                return None
+                            return _refresh_models(provider, _dataverse_model_select)
 
-                        dataverse_provider_select.on_value_change(_on_dataverse_provider_change)
+                        ui.button(icon="refresh", on_click=_refresh_dataverse_models).props(
+                            "flat round"
+                        ).tooltip("Fetch this provider's real model list").mark(
+                            "dataverse-export-model-refresh"
+                        )
                         dataverse_temp_input = (
                             ui.number(
                                 "Temperature",

@@ -83,6 +83,7 @@ def main_page() -> None:
         load_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
+        dataverse_export_config=_dataverse_export_config,
     )
     render_agents(agents_panel, pipeline_config, _dataverse_export_config)
 

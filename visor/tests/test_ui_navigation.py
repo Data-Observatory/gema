@@ -7,6 +7,7 @@ real provider.
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 import pytest
@@ -87,6 +88,52 @@ async def test_agents_tab_provider_is_editable_per_agent(user: User, monkeypatch
     assert agents_by_id["core_metadata"]["provider"] == "opencode"
 
 
+async def test_agents_tab_refresh_models_populates_combobox(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Model has no hardcoded catalog — clicking "Refresh models" fetches
+    the real list from the provider's own API (mocked here, real network
+    call is model_catalog.fetch_provider_models's job, not this test's)
+    and offers it in the combobox."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["model-a", "model-b"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-model-refresh-core_metadata")
+    user.find(marker="agent-model-refresh-core_metadata").click()
+
+    await user.should_see("Loaded 2 models")
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    assert "model-a" in model_select.options
+    assert "model-b" in model_select.options
+
+
+async def test_agents_tab_refresh_models_failure_is_non_fatal(user: User, monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    def _boom(provider: object, api_key: object) -> list[str]:
+        raise RuntimeError("network is down")
+
+    monkeypatch.setattr(agents_page_module, "fetch_provider_models", _boom)
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-model-refresh-core_metadata")
+    user.find(marker="agent-model-refresh-core_metadata").click()
+
+    await user.should_see("Could not fetch models")
+    # The combobox itself must still work for manual typing after a failure.
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    model_select.set_options([*model_select.options, "typed-model"], value="typed-model")
+    assert model_select.value == "typed-model"
+
+
 async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -124,6 +171,8 @@ async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -
 
     await user.open("/")
     user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
     await user.should_see(marker="settings-add-provider-choice")
 
     user.find(marker="settings-add-provider-name").type("groq")
@@ -155,6 +204,8 @@ async def test_settings_edit_existing_provider_base_url(user: User, monkeypatch,
 
     await user.open("/")
     user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-opencode")
+    user.find(marker="settings-provider-edit-opencode").click()  # reveal its row
     await user.should_see(marker="settings-provider-url-opencode")
 
     url_field = list(user.find(marker="settings-provider-url-opencode").elements)[0]
@@ -162,12 +213,51 @@ async def test_settings_edit_existing_provider_base_url(user: User, monkeypatch,
     url_field.value = "https://opencode.example.com/v1"
     user.find(marker="settings-save").click()
 
-    # Save & Continue navigates to the Run tab — go back and confirm the
-    # rebuilt row (body.refresh() inside _save) shows the persisted edit.
+    # ui.refreshable.refresh(), called inside _save(), is unawaited there
+    # (fire-and-forget) — it schedules a background asyncio task rather
+    # than rebuilding inline, and only actually runs once the event loop
+    # gets a tick. await user.should_see(...) does NOT reliably provide
+    # that tick: its retry loop only sleeps if the target isn't already
+    # found on the very first (synchronous) check, and "settings-save" is
+    # trivially already present. An explicit sleep is needed here, or the
+    # next find() below would still see the pre-refresh element (same id,
+    # edit panel still open from earlier in this test) and clicking
+    # "edit" again would wrongly toggle it back closed.
+    await asyncio.sleep(0.1)
+
     user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-opencode")
+    user.find(marker="settings-provider-edit-opencode").click()  # rebuilt row starts collapsed again
     await user.should_see(marker="settings-provider-url-opencode")
     rebuilt_url_field = list(user.find(marker="settings-provider-url-opencode").elements)[0]
     assert rebuilt_url_field.value == "https://opencode.example.com/v1"
+
+
+async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-opencode")  # not used by any agent
+
+    user.find(marker="settings-provider-remove-opencode").click()
+
+    await user.should_see("Removed provider 'opencode'")
+
+
+async def test_settings_remove_provider_in_use_is_blocked(user: User, monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    # zai-coding-plan is config/agents.yaml's default provider — every
+    # agent uses it out of the box, so removing it must be refused.
+    await user.should_see(marker="settings-provider-remove-zai-coding-plan")
+
+    user.find(marker="settings-provider-remove-zai-coding-plan").click()
+
+    await user.should_see("Can't remove 'zai-coding-plan'")
+    await user.should_see(marker="settings-provider-remove-zai-coding-plan")  # still there
 
 
 async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:
@@ -175,6 +265,8 @@ async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypa
 
     await user.open("/")
     user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
     await user.should_see(marker="settings-add-provider-choice")
 
     user.find(marker="settings-add-provider-name").type("zai-coding-plan")  # already exists
@@ -195,4 +287,6 @@ async def test_settings_tab_lists_key_input_for_every_declared_provider(
     await user.open("/")
     user.find(marker="tab-settings").click()
     await user.should_see(marker="settings-save")
+    await user.should_see(marker="settings-provider-edit-opencode")
+    user.find(marker="settings-provider-edit-opencode").click()  # reveal its row
     await user.should_see(marker="settings-input-OPENCODE_API_KEY")
