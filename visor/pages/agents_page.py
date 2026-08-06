@@ -5,14 +5,16 @@ the app.
 Provider is a select populated from pipeline_config.providers — always a
 valid choice by construction, no free-text typo risk. Model selection
 lives on AgentConfig.model (a free-text string passed straight through to
-the LLM client — see llm/factory.py). There is no enumerable "known
-models per provider" list anywhere in this project's config
-(config/providers.yaml only has connection settings, not model catalogs),
-so model is deliberately a text input with example placeholder text, not
-a dropdown — a fabricated model list would go stale and could imply only
-listed models work. Whichever provider each agent is set to here is what
-Settings' "used by: ..." captions reflect — the two tabs describe the
-same underlying assignment from two different angles.
+the LLM client — see llm/factory.py) and is a combobox (ui.select with
+with_input=True): no options until "Refresh models" is clicked, which
+fetches the real list from that provider's own `/models` endpoint (see
+model_catalog.py) using whatever key is saved in Settings for it — never
+a hardcoded/curated list, since that would go stale and wrongly imply
+only listed models work. Typing any other model id is always accepted
+regardless of whether a refresh has happened. Whichever provider each
+agent is set to here is what Settings' "used by: ..." captions reflect —
+the two tabs describe the same underlying assignment from two different
+angles.
 
 Prompt/fields/depends_on are read-only in a collapsed "Advanced" section
 for transparency. Download/Upload operate on the *entire* PipelineConfig,
@@ -27,22 +29,66 @@ Edits here are session-only, mutating the shared PipelineConfig object in
 place — never written back to config/agents.yaml (see visor/settings.py's
 module docstring for why that file must stay off-limits to a
 non-programmer). Download the JSON to keep changes for next time.
+
+Below the 5 pipeline agent cards, a 6th card configures the Dataverse
+export's one LLM-assisted step (Subject classification) — same
+provider/model/temperature shape, plus an Enabled checkbox this is the
+only card that has, since it's the one thing meant to be independently
+toggleable (see exporters/dataverse.py). It never runs through the
+orchestrator, so it's edited here but not part of pipeline_config.agents.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import os
 from typing import Callable
 
-from nicegui import events, ui
+from nicegui import events, run, ui
 
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from visor.model_catalog import fetch_provider_models
+from visor.settings import load_settings
 
 logger = logging.getLogger(__name__)
 
 
-def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> None:
+def _model_options(options: list[str], current_model: str) -> list[str]:
+    """*options* plus *current_model* if it isn't already in it — ui.select
+    requires its initial/updated value to be a member of options even
+    with with_input=True, and a model already configured (e.g.
+    hand-edited into agents.yaml, or not in a freshly fetched list) must
+    never make the page fail to render."""
+    result = list(options)
+    if current_model not in result:
+        result.append(current_model)
+    return result
+
+
+def _resolve_api_key(provider: ProviderConfig) -> str | None:
+    return load_settings().env.get(provider.api_key_env) or os.environ.get(provider.api_key_env)
+
+
+async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> None:
+    api_key = _resolve_api_key(provider)
+    try:
+        models = await run.io_bound(fetch_provider_models, provider, api_key)
+    except Exception as exc:  # noqa: BLE001 - surfaced to the user, never fatal
+        logger.warning("Could not fetch models for provider %s: %s", provider.name, exc)
+        ui.notify(f"Could not fetch models for '{provider.name}': {exc}", type="negative")
+        return
+    if models is None:  # run.io_bound's typing allows None; fetch_provider_models never returns it
+        models = []
+    model_select.set_options(_model_options(models, model_select.value or ""))
+    ui.notify(f"Loaded {len(models)} models for '{provider.name}'", type="positive")
+
+
+def render_agents(
+    container: ui.element,
+    pipeline_config: PipelineConfig,
+    dataverse_export_config: DataverseExportConfig | None = None,
+) -> None:
     container.clear()
     with container:
         ui.label("Agents").classes("text-h5")
@@ -77,7 +123,7 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
             # refreshable — Upload can replace pipeline_config.providers
             # entirely, and this must reflect that on the next render.
             provider_names = [p.name for p in pipeline_config.providers]
-            model_inputs: dict[str, ui.input] = {}
+            model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
             provider_selects: dict[str, ui.select] = {}
 
@@ -98,14 +144,30 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
                             .mark(f"agent-provider-{agent.id}")
                         )
                         model_inputs[agent.id] = (
-                            ui.input(
-                                "Model",
+                            ui.select(
+                                _model_options([], agent.model or ""),
                                 value=agent.model or "",
-                                placeholder="e.g. gpt-4o, claude-opus-4, glm-4.6 — blank = provider default",
+                                label="Model",
+                                with_input=True,
+                                new_value_mode="add-unique",
                             )
                             .classes("flex-grow")
                             .mark(f"agent-model-{agent.id}")
                         )
+
+                        def _refresh_for_agent(aid: str = agent.id) -> object:
+                            provider = next(
+                                (p for p in pipeline_config.providers if p.name == provider_selects[aid].value),
+                                None,
+                            )
+                            if provider is None:
+                                ui.notify("Pick a provider first", type="negative")
+                                return None
+                            return _refresh_models(provider, model_inputs[aid])
+
+                        ui.button(icon="refresh", on_click=_refresh_for_agent).props("flat round").tooltip(
+                            "Fetch this provider's real model list"
+                        ).mark(f"agent-model-refresh-{agent.id}")
                         temp_inputs[agent.id] = (
                             ui.number(
                                 "Temperature",
@@ -126,12 +188,89 @@ def render_agents(container: ui.element, pipeline_config: PipelineConfig) -> Non
                         )
                         ui.code(agent.prompt, language=None).classes("w-full")
 
+            dataverse_enabled_checkbox = None
+            dataverse_provider_select = None
+            dataverse_model_input = None
+            dataverse_temp_input = None
+            if dataverse_export_config is not None:
+                with ui.card().classes("w-full q-mt-md"):
+                    ui.label("Dataverse Export — Subject Classifier").classes("text-subtitle1 text-bold")
+                    ui.label(
+                        "Optional: classifies this resource into Dataverse's required Subject "
+                        "category when you download a Dataverse-format JSON. Turn off to always "
+                        "use \"Other\" instead, with no extra LLM call."
+                    ).classes("text-caption")
+
+                    dataverse_enabled_checkbox = (
+                        ui.checkbox("Enabled", value=dataverse_export_config.enabled)
+                        .mark("dataverse-export-enabled")
+                    )
+                    with ui.row().classes("w-full items-end"):
+                        dataverse_provider_select = (
+                            ui.select(
+                                provider_names,
+                                value=dataverse_export_config.agent.provider,
+                                label="Provider",
+                            )
+                            .classes("w-48")
+                            .mark("dataverse-export-provider")
+                        )
+                        dataverse_model_input = (
+                            ui.select(
+                                _model_options([], dataverse_export_config.agent.model or ""),
+                                value=dataverse_export_config.agent.model or "",
+                                label="Model — a fast/cheap tier is enough for a 14-way classification",
+                                with_input=True,
+                                new_value_mode="add-unique",
+                            )
+                            .classes("flex-grow")
+                            .mark("dataverse-export-model")
+                        )
+                        _dataverse_model_select = dataverse_model_input
+
+                        def _refresh_dataverse_models() -> object:
+                            provider = next(
+                                (p for p in pipeline_config.providers if p.name == dataverse_provider_select.value),
+                                None,
+                            )
+                            if provider is None:
+                                ui.notify("Pick a provider first", type="negative")
+                                return None
+                            return _refresh_models(provider, _dataverse_model_select)
+
+                        ui.button(icon="refresh", on_click=_refresh_dataverse_models).props(
+                            "flat round"
+                        ).tooltip("Fetch this provider's real model list").mark(
+                            "dataverse-export-model-refresh"
+                        )
+                        dataverse_temp_input = (
+                            ui.number(
+                                "Temperature",
+                                value=dataverse_export_config.agent.temperature,
+                                min=0.0,
+                                max=2.0,
+                                step=0.1,
+                            )
+                            .classes("w-32")
+                            .mark("dataverse-export-temperature")
+                        )
+
             def _save() -> None:
                 for agent in pipeline_config.agents:
                     agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None
                     agent.temperature = temp_inputs[agent.id].value
+                if dataverse_export_config is not None:
+                    assert dataverse_enabled_checkbox is not None
+                    assert dataverse_provider_select is not None
+                    assert dataverse_model_input is not None
+                    assert dataverse_temp_input is not None
+                    dataverse_export_config.enabled = dataverse_enabled_checkbox.value
+                    dataverse_export_config.agent.provider = dataverse_provider_select.value
+                    dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
+                    dataverse_export_config.agent.temperature = dataverse_temp_input.value
                 ui.notify("Agent settings updated for this session", type="positive")
+                cards.refresh()
 
             ui.button("Save changes", on_click=_save).classes("q-mt-md").mark("agents-save")
 
