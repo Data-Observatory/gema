@@ -1,0 +1,219 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Administrators",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Funcionarios públicos y administradores presupuestarios"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores en economía y políticas públicas"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Analistas y consultores en finanzas públicas"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Legisladores y asesores parlamentarios"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Economía y negocios"
+        },
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Derecho"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2017-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Conjunto de datos que contiene la información presupuestaria a nivel nacional conforme a la Ley de Presupuestos de la República de Chile. Los datos representan la asignación presupuestaria aprobada por el Congreso Nacional para el sector público, desagregada por institución, programa, capítulo y partida presupuestaria.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "Ley de Presupuestos - Nivel Nacional \n Esta sección proporciona acceso a los datos de la Ley de Presupuestos a nivel nacional, correspondiente a la asignación presupuestaria aprobada para el sector público. Los datos están estructurados para facilitar el análisis de la distribución de recursos públicos conforme a la normativa presupuestaria vigente.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "Los datos están disponibles en dos formatos: XML estructurado según estándares de datos abiertos y CSV para análisis tabular.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "1 xml, 1 csv (517 KB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "Cobertura nacional del sector público",
+            "geo_description": "Alcance de la base de datos de Ley de Presupuestos",
+            "geo_location_place": "Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Archivo XML estructurado con los datos de la Ley de Presupuestos a nivel nacional. Contiene la asignación presupuestaria completa del sector público con metadatos extensivos.",
+            "file_uri": "https://www.dipres.gob.cl/597/articles-155375_doc_xml.xml",
+            "format": "application/xml",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por la Dirección de Presupuestos del Ministerio de Hacienda conforme a la Ley de Presupuestos aprobada por el Congreso Nacional.",
+            "sizes": [],
+            "temporal_resolution": "",
+            "title": "Ley de Presupuestos - Nacional (XML)",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Archivo CSV con los datos de la Ley de Presupuestos a nivel nacional. Formato tabular optimizado para análisis estadístico y procesamiento en herramientas de datos.",
+            "file_uri": "https://www.dipres.gob.cl/597/articles-155375_doc_csv.csv",
+            "format": "text/csv",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por la Dirección de Presupuestos del Ministerio de Hacienda conforme a la Ley de Presupuestos aprobada por el Congreso Nacional.",
+            "sizes": [
+                {
+                    "size": 517,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "articles-155375_doc_csv",
+            "variable_measured": ""
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "http://viaf.org/viaf/136023509",
+            "publisher_identifier_scheme": "VIAF",
+            "publisher_name": "Dirección de Presupuestos",
+            "publisher_scheme_uri": "https://viaf.org/es"
+        }
+    ],
+    "related_identifiers": [
+        {
+            "contact": "",
+            "related_identifier": "https://www.dipres.gob.cl/",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "relation_type": "IsPartOf",
+            "resource_type_genereal": "InteractiveResource",
+            "scheme_type": "",
+            "scheme_uri": ""
+        }
+    ],
+    "resource": {
+        "contact": "(56-2) 2826 2500",
+        "editor": "",
+        "identifier": "https://www.dipres.gob.cl/597/w3-multipropertyvalues-15145-23712.html",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Dirección de Presupuestos",
+        "producer": "",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2025"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution Share Alike 4.0 International",
+            "rights_condition": "",
+            "rights_holder": "",
+            "rights_identifier": "CC-BY-SA-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by-sa/4.0/legalcode",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [
+                {
+                    "affiliation_identifier": "https://isni.org/isni/0000000106574353",
+                    "affiliation_identifier_scheme": "ISNI",
+                    "affiliation_name": "Ministerio de Hacienda",
+                    "scheme_uri": ""
+                }
+            ],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [
+                {
+                    "name_identifier": "Dirección de Presupuestos",
+                    "name_identifier_scheme": "ISNI",
+                    "scheme_uri": "https://isni.org/isni/0000000107233091"
+                }
+            ],
+            "role_name": "Dirección de Presupuestos",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "HJ2005-HJ2199",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Budget -- Chile",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85017602"
+        },
+        {
+            "classification_code": "HJ9-HJ9995",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Finance, Public -- Chile",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85048270"
+        }
+    ],
+    "temporal_events": [],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Ley de Presupuestos",
+            "title_type": "MainTitle"
+        }
+    ]
+}
