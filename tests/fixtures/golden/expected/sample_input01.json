@@ -2,7 +2,7 @@
   "resource": {
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
-    "editor": "Ministerio de Hacienda",
+    "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "",
     "contact": "",
     "producer": "",
@@ -28,10 +28,10 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Ciudadanos",
+      "audience": "Periodistas",
       "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -72,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales registrada en el portal"
+      "date_information": "Última actualización del dataset de gastos municipales publicada en el portal datos.gob.cl"
     }
   ],
   "descriptions": [
@@ -130,7 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Egresos ejecutados -- Chile",
+      "subject_name": "Corporaciones municipales -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Egresos municipales -- Sector público local -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -141,7 +147,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso declara frecuencia de actualización mensual"
+      "description": "Frecuencia de actualización mensual declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [

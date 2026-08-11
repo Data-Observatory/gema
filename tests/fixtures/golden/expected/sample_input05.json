@@ -5,7 +5,7 @@
     "editor": "Oficina de Estudios y Políticas Agrarias",
     "maintainer": "",
     "contact": "",
-    "producer": "",
+    "producer": "Oficina de Estudios y Políticas Agrarias",
     "publication_year": "2007",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -25,13 +25,13 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Autoaprendizaje"
     },
     {
       "audience": "Administradores",
       "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -40,8 +40,8 @@
       "sub_category": "Agricultura, silvicultura y pesca"
     },
     {
-      "name": "Ciencias Sociales",
-      "sub_category": "Geografía económica y social"
+      "name": "Ciencias Agrícolas",
+      "sub_category": "Ciencia animal y lechería"
     }
   ],
   "citations": [],
@@ -76,12 +76,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el levantamiento de datos del VII Censo Nacional Agropecuario"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario cuyos antecedentes componen esta capa de información"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizó el trazado de límites de la capa de información según modificaciones efectuadas"
+      "date_information": "Año en que se actualizó el trazado de límites según modificaciones administrativas vigentes"
     }
   ],
   "descriptions": [
@@ -94,11 +94,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Isla de Pascua",
+      "geo_location_place": "Isla de Pascua, Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura geográfica correspondiente a la Isla de Pascua, asociada a cifras del Censo Agropecuario 2007 para ganado bovino",
+      "geo_description": "Cobertura geográfica correspondiente a la Isla de Pascua, con cifras estadísticas referidas a unidades administrativas del país y distritos censales INE",
       "coverage": "local"
     }
   ],
@@ -120,26 +120,22 @@
     }
   ],
   "related_identifiers": [],
-  "rights": [
-    {
-      "rights": "",
-      "rights_uri": "",
-      "rights_identifier": "",
-      "rights_identifier_scheme": "",
-      "scheme_uri": "",
-      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol)",
-      "rights_holder": "Oficina de Estudios y Políticas Agrarias"
-    }
-  ],
+  "rights": [],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo Agropecuario 2007 -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales -- Chile",
+      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Cartografía -- Capa vectorial -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
