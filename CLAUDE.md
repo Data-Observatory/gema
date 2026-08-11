@@ -55,7 +55,7 @@ Input JSON -> FilesystemInputSource -> ResourceDescription
 
 ### Agents are pure config, not code
 
-Agents are defined entirely in `config/agents.yaml` (id, fields, prompt, provider, model, temperature, `depends_on`, `use_chain_of_thought`) — `BaseAgent` is fully generic. Adding a new agent requires **no code**, only a new YAML entry. The default config wires 5 sequential agents for DataCite 4.6 (`core_metadata` -> `creators_publishers` -> `classification` -> `rights_funding_citations` -> `media_files`), each depending on the previous. Legacy JSON configs live at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents), migratable via `metadata_enricher.config.migrate.migrate_json_to_yaml()` (never modifies the source JSON — writes a `.yaml` sibling).
+Agents are defined entirely in `config/agents.yaml` (id, fields, prompt, provider, model, temperature, `depends_on`, `use_chain_of_thought`) — `BaseAgent` is fully generic. Adding a new agent requires **no code**, only a new YAML entry. The default config wires 5 agents for DataCite 4.6 (`core_metadata`, `creators_publishers`, `classification`, `rights_funding_citations`, `media_files`); none currently declares a `depends_on`, so all 5 run as a single parallel wave — `depends_on` stays available per-agent for whenever a future agent needs another's output first. Legacy JSON configs live at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents), migratable via `metadata_enricher.config.migrate.migrate_json_to_yaml()` (never modifies the source JSON — writes a `.yaml` sibling).
 
 ### Orchestrator
 

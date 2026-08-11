@@ -19,11 +19,6 @@ enough context to pick up cold; prune entries once actually done.
   agent in `config/agents.yaml`). Boilerplate ("NUNCA usar null",
   "Devolver SOLO JSON valido", chain-of-thought framing) is duplicated
   5x with no mechanism keeping the copies consistent.
-- **`depends_on: []` for all 5 agents vs. CLAUDE.md's documented sequential
-  pipeline** (`core_metadata -> creators_publishers -> ...`). Since no
-  agent's prompt references another agent's output, parallel (current
-  config) is probably correct and the doc is just stale — confirm and fix
-  the doc, or find a real dependency that got dropped.
 - **DOI-resolver enricher**: for DOI-identified resources, fetch real
   Crossref/DataCite metadata to backfill weak/missing fields, instead of
   relying purely on LLM extraction from title/description text. Flagged
@@ -46,21 +41,21 @@ enough context to pick up cold; prune entries once actually done.
   429s, ~3x wall-clock speedup per resource (18.7s vs ~57s summed). Safe to
   raise only if/when the default provider actually changes — don't touch it
   while still on glm-5.2.
-- **mimo-v2.5's pathological slowness on content-dense inputs.** Same DOI
-  resource (`136`, GFZ dataset, 6000-char fetched_content) caused a 1201s
-  stall for glm-5-turbo and a 3244s (54min) stall for mimo-v2.5 in the same
-  eval run. Investigate before treating mimo-v2.5 as a real production
-  candidate — a single bad input shouldn't be able to blow up wall-clock by
-  that much.
-- **Real production content-fetch, not just the eval harness's.** See
-  `feature/auto-content-fetch` branch (commit `af7c265`) — built, tested,
-  unmerged. Once merged, decide whether to default it on for do_catalog-like
-  callers and whether input size (max_len) needs tuning given the mimo-v2.5
-  finding above (large fetched_content correlates with the worst stalls).
+- **`mimo-v2.5` dropped from the eval model set** (decision, 2026-08-11): a
+  content-dense DOI resource (`136`, GFZ dataset, 6000-char fetched_content)
+  caused a 3244s (54min) stall for mimo-v2.5 vs. 1201s for glm-5-turbo on the
+  same eval run — too unreliable to keep as a production candidate. Eval/prod
+  model set going forward: `glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`.
+- **Real production content-fetch merged** (`feature/auto-content-fetch`,
+  PR #9, into `dev`). Still open: whether to default it ON for do_catalog-like
+  callers, and whether `max_len` needs tuning — content-dense inputs
+  correlate with the worst per-item stalls regardless of model (see the
+  dropped mimo-v2.5 finding above), so this is worth watching even with
+  mimo-v2.5 gone.
 
 ## Eval harness
 
-- **Full-100 do_catalog scale-up** — pilot (18 main + 20 ORCID) x2 (v1/v2)
-  complete; full 100 pre-approved in scope but not yet run. Cost/time should
-  be re-estimated now that `--fetch` is in the mix (real per-item network
-  latency) and given the mimo-v2.5 timing risk above.
+- **Full-100 do_catalog scale-up — delayed** (2026-08-11). Pilot (18 main +
+  20 ORCID) x2 (v1/v2) complete and reported; full 100 pre-approved in scope
+  but explicitly put on hold, not scheduled. Re-estimate cost/time before
+  resuming, now that `--fetch` is in the mix (real per-item network latency).
