@@ -3,7 +3,7 @@
     "identifier": "https://www.rasgos.cl/",
     "identifier_type": "URL",
     "editor": "Data Observatory",
-    "maintainer": "Data Observatory",
+    "maintainer": "",
     "contact": "",
     "producer": "",
     "publication_year": "",
@@ -13,7 +13,13 @@
     "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "Rasgos-CL",
+      "alternate_identifier": "Rasgos-CL",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -22,22 +28,16 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Docentes",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Estudiantes",
-      "mediator": "Docente",
-      "education_level": "Pregrado",
-      "instructional_method": "Estudio de caso"
-    },
-    {
-      "audience": "Tomadores de decisiones",
+      "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Educación continua",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -51,27 +51,7 @@
     }
   ],
   "citations": [],
-  "creators": [
-    {
-      "creator_name": "Rasgos-CL",
-      "creator_name_type": "Organizational",
-      "given_name": "",
-      "family_name": "",
-      "email": "",
-      "genre": "",
-      "type": "Organization",
-      "contributor_type": "",
-      "name_identifiers": [],
-      "affiliations": [
-        {
-          "affiliation": "Data Observatory",
-          "affiliation_identifier": "https://ror.org/027nn6b17",
-          "affiliation_identifier_scheme": "ROR",
-          "scheme_uri": ""
-        }
-      ]
-    }
-  ],
+  "creators": [],
   "dates": [],
   "descriptions": [
     {
@@ -87,7 +67,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional del territorio chileno, abarcando rasgos funcionales de especies de plantas a escala regional y nacional",
+      "geo_description": "Plataforma sobre rasgos funcionales de la biodiversidad de plantas en Chile, con cobertura a escala regional y nacional",
       "coverage": "nacional"
     }
   ],
@@ -95,7 +75,7 @@
     {
       "lang_code": "es",
       "language": "Spanish",
-      "description": ""
+      "description": "El recurso está disponible únicamente en español"
     }
   ],
   "media_files": [],
@@ -104,27 +84,30 @@
       "publisher_name": "Data Observatory",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
-      "scheme_uri": "",
-      "lang": "es",
-      "publisher_scheme_uri": "https://ror.org"
+      "publisher_scheme_uri": "https://ror.org",
+      "lang": "es"
     }
   ],
   "related_identifiers": [],
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Biodiversidad -- Plantas -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
+      "subject_name": "Rasgos funcionales -- Plantas -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
     },
     {
-      "subject_name": "Rasgos funcionales (Biología) -- Plantas -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
+      "subject_name": "Biodiversidad -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Papel ecológico -- Especies -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
     }
   ],
   "temporal_events": [
@@ -132,7 +115,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "yearly",
-      "description": "La plataforma se actualiza anualmente con nueva información sobre rasgos funcionales de la biodiversidad de plantas en Chile"
+      "description": "El recurso se actualiza anualmente"
     }
   ],
   "titles": [

@@ -24,6 +24,14 @@ class DataCiteOutputModel(BaseModel):
 
     model_config = {"extra": "allow"}
 
+    # Declared first so structured-output generation (Instructor/OpenAI
+    # tool-calling) produces this field's tokens before the data fields --
+    # the model reasons in prose here before committing to values. No agent
+    # config lists "reasoning" in its `fields`, so BaseAgent.run() never
+    # reads it back out; it's dropped after generation, same as
+    # `use_chain_of_thought` (now unused) was meant to enable but couldn't,
+    # since it was never wired to anything before this field existed.
+    reasoning: str = Field(default="")
     resource: dict[str, Any] = Field(default_factory=dict)
     alternate_identifiers: list[dict[str, Any]] = Field(default_factory=list)
     audiences: list[dict[str, Any]] = Field(default_factory=list)
@@ -646,7 +654,11 @@ class DataCiteSchema46:
                 files.append(
                     {
                         "sizes": item.get("sizes", []),
-                        "physical_carrier": item.get("physical_carrier", ""),
+                        # Every media_file this pipeline produces is a digital
+                        # download -- not a judgment call the model needs to
+                        # make, so it's enforced here instead of spending
+                        # prompt tokens on an invariant.
+                        "physical_carrier": "digital",
                         "format": (
                             self._iana_normalizer.normalize(raw_format)
                             if isinstance(raw_format, str)
