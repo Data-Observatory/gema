@@ -15,7 +15,7 @@ Usage:
         --ground-truth-dir tests/fixtures/do_catalog/ground_truth \
         --inputs-dir tests/fixtures/do_catalog/inputs \
         --output-root reports/do_catalog/pilot \
-        --models zai-coding-plan:glm-5.2,zai-coding-plan:glm-5-turbo,opencode:deepseek-v4-flash,opencode:mimo-v2.5 \
+        --models zai-coding-plan:glm-5.2,zai-coding-plan:glm-5-turbo,opencode:deepseek-v4-flash \
         --judge opencode:qwen3.7-plus
 """
 
