@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from unittest.mock import patch
 
 import pytest
 
@@ -570,6 +571,154 @@ class TestPipelineIdentifierEnrichmentWiring:
         # The fake raises before mutating — document must be the merger's
         # unmodified output, not None and not crashed.
         assert result.document.get_field("titles") is not None
+
+
+class PromptCapturingLLMClient(FakeLLMClient):
+    """FakeLLMClient that records every prompt it was called with, so tests
+    can verify what the agent actually saw (e.g. whether fetched_content
+    made it into the formatted prompt)."""
+
+    def __init__(self, response_data: dict | None = None) -> None:
+        super().__init__(response_data)
+        self.prompts: list[str] = []
+
+    def complete(
+        self, prompt: str, response_model: type, system_prompt: str | None = None, **kw: object
+    ) -> object:
+        self.prompts.append(prompt)
+        return super().complete(prompt, response_model, system_prompt, **kw)
+
+
+class TestPipelineContentFetchWiring:
+    """Pipeline: opt-in auto-fetch of resource.url into fetched_content,
+    wired to run once per resource before agent orchestration."""
+
+    def test_disabled_by_default_never_fetches(self, tmp_path, llm_factory) -> None:
+        """enable_content_fetch defaults to False -> zero behavior change
+        from today, fetch_page_content is never even called."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/resource", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        assert config.enable_content_fetch is False
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content"
+        ) as mock_fetch:
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        mock_fetch.assert_not_called()
+        assert len(results) == 1
+        assert results[0].resource.fetched_content is None
+
+    def test_enabled_with_empty_content_and_url_fetches_and_flows_to_agent(
+        self, tmp_path
+    ) -> None:
+        """enable_content_fetch=True + empty fetched_content + a url ->
+        fetch_page_content is called, and its result ends up both on the
+        resource and in the text the agent's prompt was built from."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/resource", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.enable_content_fetch = True
+
+        capturing_client = PromptCapturingLLMClient()
+        factory = lambda provider, **kw: capturing_client  # noqa: E731
+
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content",
+            return_value="Fetched page body text",
+        ) as mock_fetch:
+            pipeline = Pipeline(config=config, llm_factory=factory)
+            results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        mock_fetch.assert_called_once_with("https://example.com/resource")
+        assert len(results) == 1
+        assert results[0].success is True
+        assert results[0].resource.fetched_content == "Fetched page body text"
+        assert any("Fetched page body text" in p for p in capturing_client.prompts)
+
+    def test_enabled_but_content_already_present_does_not_fetch(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Caller-supplied fetched_content is never overwritten — fetch_page_content
+        must not even be called when content is already there."""
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/resource",
+                "title": "T",
+                "description": "D",
+                "fetched_content": "Caller-supplied content",
+            },
+        )
+        config = make_test_config()
+        config.enable_content_fetch = True
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content"
+        ) as mock_fetch:
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        mock_fetch.assert_not_called()
+        assert len(results) == 1
+        assert results[0].resource.fetched_content == "Caller-supplied content"
+
+    def test_enabled_but_no_url_does_not_fetch(self, tmp_path, llm_factory) -> None:
+        """No url on the resource -> nothing to fetch, no call at all."""
+        make_input_file(tmp_path, {"title": "T", "description": "D"})
+        config = make_test_config()
+        config.enable_content_fetch = True
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content"
+        ) as mock_fetch:
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        mock_fetch.assert_not_called()
+
+    def test_fetch_failure_returning_none_is_tolerated(self, tmp_path, llm_factory) -> None:
+        """fetch_page_content returning None (its documented failure contract)
+        must not fail the resource — processing continues with no fetched_content,
+        same as if the feature were off."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/resource", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.enable_content_fetch = True
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content",
+            return_value=None,
+        ):
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        assert results[0].success is True
+        assert results[0].resource.fetched_content is None
+
+    def test_unexpected_exception_from_fetcher_is_isolated_not_fatal(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Defense in depth: even if fetch_page_content somehow raised (it
+        shouldn't, by contract), the resource must still process successfully
+        with no fetched_content, matching the "one resource's failure never
+        blocks the batch" invariant."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/resource", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.enable_content_fetch = True
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content",
+            side_effect=RuntimeError("boom"),
+        ):
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        assert results[0].success is True
+        assert results[0].resource.fetched_content is None
 
 
 class TestAggregateTokenUsage:

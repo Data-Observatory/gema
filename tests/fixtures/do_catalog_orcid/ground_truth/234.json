@@ -1,0 +1,326 @@
+{
+    "resource": {
+        "identifier": "10.17882/74336",
+        "identifier_type": "DOI",
+        "publication_year": 2020,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": "",
+        "language": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Auger, Pierre-Amaël",
+            "role_name_type": "Personal",
+            "given_name": "Pierre-Amaël",
+            "family_name": "Auger",
+            "affiliations": [
+                {
+                    "affiliation_name": "Instituto Milenio de Oceanografía (IMO) and Escuela de Ciencias del Mar, Pontificia Universidad Católica de Valparaíso, Valparaíso, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                },
+                {
+                    "affiliation_name": "Univ. Brest, CNRS, IRD, Ifremer, Laboratoire d’Océanographie Physique et Spatiale (LOPS), IUEM, Brest, France",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-7644-4087",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Bento, Joaquim Pereira",
+            "role_name_type": "Personal",
+            "given_name": "Joaquim Pereira",
+            "family_name": "Bento",
+            "affiliations": [
+                {
+                    "affiliation_name": "Escuela de Ciencias del Mar, Pontificia Universidad Católica de Valparaíso, Valparaíso, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-4838-298X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Hormazabal, Samuel",
+            "role_name_type": "Personal",
+            "given_name": "Samuel",
+            "family_name": "Hormazabal",
+            "affiliations": [
+                {
+                    "affiliation_name": "Instituto Milenio de Oceanografía (IMO) and Escuela de Ciencias del Mar, Pontificia Universidad Católica de Valparaíso, Valparaíso, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-0019-5058",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Morales, Carmen Eliana",
+            "role_name_type": "Personal",
+            "given_name": "Carmen Eliana",
+            "family_name": "Morales",
+            "affiliations": [
+                {
+                    "affiliation_name": "Instituto Milenio de Oceanografía (IMO) and Departamento de Oceanografía, Facultad de Ciencias Naturales y Oceanográficas, Universidad de Concepción, Concepción, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4320-0937",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Bustamante, Adrian",
+            "role_name_type": "Personal",
+            "given_name": "Adrian",
+            "family_name": "Bustamante",
+            "affiliations": [
+                {
+                    "affiliation_name": "Instituto Milenio de Oceanografía (IMO) and Escuela de Ciencias del Mar, Pontificia Universidad Católica de Valparaíso, Valparaíso, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                },
+                {
+                    "affiliation_name": "Instituto de Fomento Pesquero (IFOP), División de Investigación Pesquera, Valparaíso, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4996-7768",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Temperature, salinity, density and dissolved oxygen profiles from the World Ocean Database and Argo floats in the eastern South Pacific over the 1928-2018 period",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "SEANOE",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Oxygen minimum zone (OMZ)",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Oxycline depth",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Subsurface eddy",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Intrathermocline eddy",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Mesoscale variability",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "OMZ boundaries",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2020-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier": "10.17882/42182",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier": "10.7289/v5nz85mt",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsCitedBy",
+            "related_identifier": "10.1029/2019jc015272",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "",
+            "file_uri": "https://www.seanoe.org/data/00631/74336/",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution Non Commercial 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by-nc/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-nc-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "In situ ocean vertical profiles of temperature, salinity, density and dissolved oxygen concentration in the eastern South Pacific were obtained over the period 1928-2018 from the World Ocean Database 2013 (18th september 1928 to 29th june 2015), the International Argo Program (23th november 2007 to 21st february 2018), and Argo profiles available from the Chilean community (31th october 2005 to 26th may 2011). Only quality controlled data were selected. The WOD2013 database is a compilation of profiles from ocean stations (OSD), some profiling floats not present in the Argo database (PFL), and CTD-O data (Conductivity-Temperature-Depth-Oxygen) obtained from several oceanographic cruises focused on the characterization of water-masses distribution from the mesoscale to regional-basin scales. Using WOD2013 and Argo data, the vertical variability of the oxygen minimum zone (OMZ) in the eastern South Pacific (ESP; 0-40°S) was characterized in terms of the influence exerted by anticyclonic intra-thermocline eddies (ITEs), subsurface intensified mesoscale features frequently generated in the coastal upwelling zone off Peru and Chile. The unique lens-shape signature that ITEs leave on temperature, salinity and dissolved oxygen vertical distributions was used as a proxy to assess their influence on the vertical OMZ boundaries and thickness. Correlation analyses were performed between anomalous depth (and vertical displacements) of oxyclines and isopycnals/isotherms, together with an objective eddy detection method based on satellite altimetry to identify the location of such profiles (i.e. outside or inside eddies of cyclonic and anticyclonic nature). Results indicate that most of the vertical fluctuations in the climatological OMZ take a lens-shape signature, and that those at mesoscale are largely due to ITEs. ITEs are a main driver of the upper oxycline variability in the coastal band and the coastal transition zone (3-10° from the coast) and also beyond it at mid-latitudes (12-26°S). The influence of ITEs on the upper and lower oxycline variability is mostly found within the horizontal (offshore) climatological boundary of the OMZ, suggesting that ITEs play a role in the OMZ offshore extension.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -140.0,
+                        0.0
+                    ],
+                    [
+                        -68.0,
+                        -40.0
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

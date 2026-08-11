@@ -1,0 +1,242 @@
+{
+    "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/35166/Accidentes%20en%20bicicleta%20a%C3%B1o%202014",
+        "identifier_type": "URL",
+        "editor": "Comisión Nacional de Seguridad de Tránsito",
+        "maintainer": "Comisión Nacional de Seguridad de Tránsito",
+        "contact": "56 2 2467 7500",
+        "producer": "Comisión Nacional de Seguridad de Tránsito",
+        "publication_year": "2015",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+    },
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Investigadores",
+            "mediator": "Autodirigido",
+            "education_level": "Postgrado",
+            "instructional_method": "Análisis"
+        },
+        {
+            "audience": "Tomadores de decisiones",
+            "mediator": "Analista",
+            "education_level": "Profesional",
+            "instructional_method": "Consultoría"
+        },
+        {
+            "audience": "Profesionales",
+            "mediator": "Autodirigido",
+            "education_level": "Profesional",
+            "instructional_method": "Autoaprendizaje"
+        },
+        {
+            "audience": "Ciudadanos",
+            "mediator": "Bibliotecario",
+            "education_level": "Aprendizaje permanente",
+            "instructional_method": "Autoaprendizaje"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Sociología"
+        },
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Geografía económica y social"
+        }
+    ],
+    "dates": [
+        {
+            "date": "2015-12-30",
+            "date_type": "Issued",
+            "date_information": ""
+        },
+        {
+            "date": "2014-01-01",
+            "date_type": "Collected",
+            "date_information": ""
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Siniestros de tránsito con participación de bicicletas en el Gran Santiago para el año 2014.",
+            "description_type": "Abstract",
+            "language": "es"
+        }
+    ],
+    "languages": [
+        {
+            "lang_code": "es",
+            "language": "Spanish",
+            "description": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "physical_carrier": "digital",
+            "format": "application/zip",
+            "variable_measured": "Accidentes de tránsito con participación de bicicletas",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "Comisión Nacional de Seguridad de Tránsito",
+            "file_uri": "https://geoportal.cl/geoportal/catalog/download/96ba39f0-ed9b-32aa-b1a3-a3fb6c5701f8",
+            "temporal_resolution": "yearly",
+            "Collections": []
+        },
+        {
+            "sizes": [],
+            "physical_carrier": "digital",
+            "format": "application/xml",
+            "variable_measured": "Accidentes de tránsito con participación de bicicletas",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "Comisión Nacional de Seguridad de Tránsito",
+            "file_uri": "https://geoportal.cl/geoserver/Accidentes_bicicleta_2014/wms?request=GetCapabilities",
+            "temporal_resolution": "yearly",
+            "Collections": []
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "Comisión Nacional de Seguridad de Tránsito",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "scheme_uri": "",
+            "lang": "es"
+        }
+    ],
+    "related_identifiers": [
+        {
+            "related_identifier": "https://geoportal.cl/geoserver/Accidentes_bicicleta_2014/wms?request=GetCapabilities",
+            "related_identifier_type": "URL",
+            "relation_type": "IsReferencedBy",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        },
+        {
+            "related_identifier": "https://geoportal.cl/geoportal/catalog/download/96ba39f0-ed9b-32aa-b1a3-a3fb6c5701f8",
+            "related_identifier_type": "URL",
+            "relation_type": "IsReferencedBy",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        },
+        {
+            "related_identifier": "https://www.conaset.cl/",
+            "related_identifier_type": "URL",
+            "relation_type": "IsReferencedBy",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Accidentes de tránsito -- Bicicletas -- Santiago (Chile)",
+            "subject_scheme": "LCSH",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Seguridad de tránsito -- Chile",
+            "subject_scheme": "LCSH",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Accidentes en bicicleta año 2014",
+            "title_type": "MainTitle",
+            "language": "es"
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_place": "Gran Santiago, Región Metropolitana de Santiago, Chile",
+            "geo_description": "",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "Área metropolitana del Gran Santiago, comprendida entre las coordenadas oeste -71.2039, este -69.7069, sur -33.9198 y norte -32.8979",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "",
+            "coverage": "regional",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.2039,
+                        -32.8979
+                    ],
+                    [
+                        -69.7069,
+                        -33.9198
+                    ]
+                ]
+            },
+            "geo_location_polygon": null
+        }
+    ],
+    "temporal_events": [],
+    "roles": [
+        {
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": "",
+            "type": "Creator",
+            "contributor_type": "",
+            "name_identifiers": [],
+            "affiliations": [
+                {
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": "",
+                    "scheme_uri": "",
+                    "affiliation_name": "Ministerio de Transportes y Telecomunicaciones"
+                }
+            ],
+            "role_name": "Comisión Nacional de Seguridad de Tránsito",
+            "role_name_type": "Organizational"
+        }
+    ],
+    "citations": [],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1
+}

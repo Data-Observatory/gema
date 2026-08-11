@@ -54,14 +54,16 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
     def _factory(
         provider: ProviderConfig,
         model: str,
-        temperature: float,
-        max_tokens: int | None,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        extra_body: dict[str, object] | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
             model=model,
             temperature=temperature,
             max_tokens=max_tokens,
+            extra_body=extra_body,
             cache_dir=cache_dir,
             cache_ttl=_GOLDEN_CACHE_TTL,
         )

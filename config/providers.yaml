@@ -12,6 +12,13 @@ providers:
     api_key_env: OPENCODE_API_KEY
     base_url: https://opencode.ai/zen/go/v1
     default: false
+    # No tight account rate limit observed (confirmed empirically: 5
+    # concurrent agent calls against opencode:deepseek-v4-flash produced
+    # zero 429s). zai-coding-plan has no override here — it inherits the
+    # global max_workers default in config/agents.yaml, tuned down for its
+    # tighter limit (see that file's own comment + git blame on commit
+    # 4101ac9).
+    max_workers: 5
 
   - name: openai
     api_key_env: OPENAI_API_KEY

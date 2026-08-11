@@ -1,0 +1,1230 @@
+{
+    "resource": {
+        "identifier": "10.5880/fidgeo.2024.049",
+        "identifier_type": "DOI",
+        "publication_year": 2024,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": "",
+        "language": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "López, Cristopher",
+            "role_name_type": "Personal",
+            "given_name": "Cristopher",
+            "family_name": "López",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-9606-1320",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Del Ventisette, Chiara",
+            "role_name_type": "Personal",
+            "given_name": "Chiara",
+            "family_name": "Del Ventisette",
+            "affiliations": [
+                {
+                    "affiliation_name": "Dipartimento di Scienze della Terra, Università di Firenze, Firenze, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-2429-7710",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Bonini, Marco",
+            "role_name_type": "Personal",
+            "given_name": "Marco",
+            "family_name": "Bonini",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4818-8076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Montanari, Domenico",
+            "role_name_type": "Personal",
+            "given_name": "Domenico",
+            "family_name": "Montanari",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1232-7230",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Maestrelli, Daniele",
+            "role_name_type": "Personal",
+            "given_name": "Daniele",
+            "family_name": "Maestrelli",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-3527-2394",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Martínez, Fernando",
+            "role_name_type": "Personal",
+            "given_name": "Fernando",
+            "family_name": "Martínez",
+            "affiliations": [
+                {
+                    "affiliation_name": "Escuela de Ciencias de la Tierra, Facultad de Ingeniería, Universidad Andres Bello, Campus República, Salvador Sanfuentes 2357, Santiago, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-4461-4392",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Rioseco, Mitchelle",
+            "role_name_type": "Personal",
+            "given_name": "Mitchelle",
+            "family_name": "Rioseco",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Cisternas, Renato",
+            "role_name_type": "Personal",
+            "given_name": "Renato",
+            "family_name": "Cisternas",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-8194-3291",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Espinoza, Sebastián",
+            "role_name_type": "Personal",
+            "given_name": "Sebastián",
+            "family_name": "Espinoza",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Herrera, Bastián",
+            "role_name_type": "Personal",
+            "given_name": "Bastián",
+            "family_name": "Herrera",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "González, Rodrigo",
+            "role_name_type": "Personal",
+            "given_name": "Rodrigo",
+            "family_name": "González",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "name_identifier": "56178750300",
+                    "name_identifier_scheme": "ScopusID",
+                    "scheme_uri": ""
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Riquelme, Rodrigo",
+            "role_name_type": "Personal",
+            "given_name": "Rodrigo",
+            "family_name": "Riquelme",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-2643-6158",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Navea, Matías",
+            "role_name_type": "Personal",
+            "given_name": "Matías",
+            "family_name": "Navea",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0002-3911-7807",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "López, Cristopher",
+            "role_name_type": "Personal",
+            "given_name": "Cristopher",
+            "family_name": "López",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-9606-1320",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "López, Cristopher",
+            "role_name_type": "Personal",
+            "given_name": "Cristopher",
+            "family_name": "López",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-9606-1320",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Del Ventisette, Chiara",
+            "role_name_type": "Personal",
+            "given_name": "Chiara",
+            "family_name": "Del Ventisette",
+            "affiliations": [
+                {
+                    "affiliation_name": "Dipartimento di Scienze della Terra, Università di Firenze, Firenze, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-2429-7710",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Del Ventisette, Chiara",
+            "role_name_type": "Personal",
+            "given_name": "Chiara",
+            "family_name": "Del Ventisette",
+            "affiliations": [
+                {
+                    "affiliation_name": "Dipartimento di Scienze della Terra, Università di Firenze, Firenze, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Supervisor",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-2429-7710",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Bonini, Marco",
+            "role_name_type": "Personal",
+            "given_name": "Marco",
+            "family_name": "Bonini",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4818-8076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Bonini, Marco",
+            "role_name_type": "Personal",
+            "given_name": "Marco",
+            "family_name": "Bonini",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Supervisor",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4818-8076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Montanari, Domenico",
+            "role_name_type": "Personal",
+            "given_name": "Domenico",
+            "family_name": "Montanari",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1232-7230",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Montanari, Domenico",
+            "role_name_type": "Personal",
+            "given_name": "Domenico",
+            "family_name": "Montanari",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Supervisor",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1232-7230",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Maestrelli, Daniele",
+            "role_name_type": "Personal",
+            "given_name": "Daniele",
+            "family_name": "Maestrelli",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-3527-2394",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Martínez, Fernando",
+            "role_name_type": "Personal",
+            "given_name": "Fernando",
+            "family_name": "Martínez",
+            "affiliations": [
+                {
+                    "affiliation_name": "Escuela de Ciencias de la Tierra, Facultad de Ingeniería, Universidad Andres Bello, Campus República, Salvador Sanfuentes 2357, Santiago, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-4461-4392",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Martínez, Fernando",
+            "role_name_type": "Personal",
+            "given_name": "Fernando",
+            "family_name": "Martínez",
+            "affiliations": [
+                {
+                    "affiliation_name": "Escuela de Ciencias de la Tierra, Facultad de Ingeniería, Universidad Andres Bello, Campus República, Salvador Sanfuentes 2357, Santiago, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Supervisor",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-4461-4392",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Rioseco, Mitchelle",
+            "role_name_type": "Personal",
+            "given_name": "Mitchelle",
+            "family_name": "Rioseco",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Cisternas, Renato",
+            "role_name_type": "Personal",
+            "given_name": "Renato",
+            "family_name": "Cisternas",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-8194-3291",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Espinoza, Sebastián",
+            "role_name_type": "Personal",
+            "given_name": "Sebastián",
+            "family_name": "Espinoza",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Herrera, Bastián",
+            "role_name_type": "Personal",
+            "given_name": "Bastián",
+            "family_name": "Herrera",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "González, Rodrigo",
+            "role_name_type": "Personal",
+            "given_name": "Rodrigo",
+            "family_name": "González",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "name_identifier": "56178750300",
+                    "name_identifier_scheme": "ScopusID",
+                    "scheme_uri": ""
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Riquelme, Rodrigo",
+            "role_name_type": "Personal",
+            "given_name": "Rodrigo",
+            "family_name": "Riquelme",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-2643-6158",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Navea, Matías",
+            "role_name_type": "Personal",
+            "given_name": "Matías",
+            "family_name": "Navea",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0002-3911-7807",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Tectonics Modelling Laboratory-Firenze (IGG-CNR, Italy)",
+            "role_name_type": "Personal",
+            "affiliations": [
+                {
+                    "affiliation_name": "IGG-CNR, Florence, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [
+                {
+                    "name_identifier": "5f7c8ccbe6dc7fa403b3f7c6041a76a8",
+                    "name_identifier_scheme": "labid",
+                    "scheme_uri": ""
+                }
+            ],
+            "type": "Contributor",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Dipartimento Di Scienze Della Terra",
+            "affiliations": [
+                {
+                    "affiliation_name": "Università di Firenze, Firenze, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "CNR‐IGG, Consiglio Nazionale Delle Ricerche",
+            "role_name_type": "Personal",
+            "given_name": "Consiglio Nazionale Delle Ricerche",
+            "family_name": "CNR‐IGG",
+            "affiliations": [
+                {
+                    "affiliation_name": "CNR‐IGG, Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse, U.O.S. Firenze, Italy",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Escuela De Ciencias De La Tierra, Facultad De Ingeniería",
+            "role_name_type": "Personal",
+            "given_name": "Facultad De Ingeniería",
+            "family_name": "Escuela De Ciencias De La Tierra",
+            "affiliations": [
+                {
+                    "affiliation_name": "Facultad de Ingeniería, Universidad Andres Bello, Santiago, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "López, Cristopher",
+            "role_name_type": "Personal",
+            "given_name": "Cristopher",
+            "family_name": "López",
+            "affiliations": [
+                {
+                    "affiliation_name": "Departamento de Ciencias Geológicas, Universidad Católica del Norte, Avenida Angamos, 0610 Antofagasta, Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "A database of physical experiments, fieldwork information, and a seismic line applied on the eastern Domeyko Cordillera, northern Chile",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "GFZ Data Services",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "seismic interpretation",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "seismic line",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "fieldwork",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "field analysis",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "tectonic inversion",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Chile",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Cordillera Domeyko",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "analog model",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EPOS",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "multi-scale laboratories",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "analogue models of geologic processes",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "analogue modelling results",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOMORPHIC LANDFORMS/PROCESSES &gt; TECTONIC PROCESSES",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOMORPHIC LANDFORMS/PROCESSES &gt; TECTONIC PROCESSES &gt; OROGENIC MOVEMENT",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOMORPHIC LANDFORMS/PROCESSES &gt; TECTONIC PROCESSES &gt; TECTONIC UPLIFT",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; TECTONICS",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; TECTONICS &gt; EARTHQUAKES &gt; SEISMIC PROFILE",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; TECTONICS &gt; PLATE TECTONICS",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; TECTONICS &gt; PLATE TECTONICS &gt; FAULT MOVEMENT",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments",
+            "subject_scheme": "GCMD Instruments",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Models/Analyses",
+            "subject_scheme": "GCMD Platforms",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2024-12-03",
+            "date_type": "Created",
+            "date_information": ""
+        },
+        {
+            "date": "2024-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.jsames.2020.102741",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1029/2022tc007378",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.3389/feart.2021.618258",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.jvolgeores.2021.107232",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.tecto.2018.07.016",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.jsg.2021.104494",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "",
+            "file_uri": "https://dataservices.gfz.de/panmetaworks/showshort.php?id=94e8e110-beee-11ef-967a-4ffbfe06208e",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This dataset contains a series of analog models for comparing and testing positive tectonic inversion mechanisms and wedge structure formation. Furthermore, it includes a 2-D seismic reflection profile that can be compared with the models presented here. Finally, several photos of some structural features that cab be associated with wedge structure are shown. Both seismic lines and photos are located on a segment of Andean forearc, specifically, in the eastern Domeyko Cordillera and the Salar de Atacama Basin in northern Chile. \n \nSpecifically, the models were deformed under extensional and compressional conditions, inducing a positive tectonic inversion, using a pure/simple-shear deformational apparatus. Our models intended to simulate the tectonic conditions presented in López et al. (2022), which illustrated the structural setting of the Domeyko Cordillera as resulting from the interplay between positive inversion tectonics and pure shortening faulting. Moreover, our models simulated three geological environments that developed sequentially through time: (a) syn-rift sedimentation, (b) post-rift and pre-shortening sedimentation, and (c) syn-shortening sedimentation. Post-rift and syn-shortening sedimentation incorporated a ductile layer (PDMS) during the shortening phase, simulating the presence of evaporitic deposits (i.e., gypsum) to test the conditions that could have controlled the formation of pure-shortening-related structures in the case study under consideration.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -68.5833,
+                        -22.4166
+                    ],
+                    [
+                        -68.1666,
+                        -23.0833
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Cordillera Domeyko, Southern Central Andes, Chile",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "funder_name": "Ministero dell’Istruzione, dell’Università e della Ricerca",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100003407",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "award_title": "FONDECYT",
+            "funder_name": "Ministerio de Educación, Gobierno de Chile",
+            "award_number": "1220987",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100002847",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "award_title": "Doctorado Nacional 2018",
+            "funder_name": "Ministerio de Educación, Gobierno de Chile",
+            "award_number": "2018–21180396",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100002847",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

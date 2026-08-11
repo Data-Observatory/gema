@@ -1,0 +1,700 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Administrators",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Magistrados y funcionarios judiciales"
+        },
+        {
+            "audience": "AllOtherSupportStaff",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Analistas de estadísticas judiciales"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Estudiantes y académicos de derecho"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Público general interesado en transparencia judicial"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores en ciencias jurídicas y políticas públicas"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Derecho"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2025-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2024-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2023-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2022-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2021-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2020-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2019-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2018-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2017-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2016-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2015-01-01",
+            "date_information": "",
+            "date_type": "Available"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Conjunto de datos estadísticos sobre el ingreso y tramitación de recursos judiciales en la Corte Suprema de Chile. Los datos incluyen información cuantitativa anual sobre los diferentes tipos de recursos que ingresan al máximo tribunal del país, permitiendo análisis de carga de trabajo, tendencias jurisdiccionales y eficiencia del sistema judicial.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "La información está desagregada por tipo de recurso, materia jurídica y fechas referidas a el ingreso de los recursos.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "Los datos están disponibles en formato Excel (CSV y XLSX) contenido dentro de los archivos ZIP, cubriendo el período desde 2015 hasta el año más reciente disponible. Cada archivo corresponde a un año específico y contiene varias filas con diferentes niveles de desagregación estadística.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "La información se obtiene de los sistemas de gestión de causas del Poder Judicial y es procesada y validada por la unidad de estadísticas judiciales antes de su publicación oficial.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "22 zip (20,5 MB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "Cobertura nacional de la actividad de la Corte Suprema",
+            "geo_description": "Alcance de la base de datos de Ingreso de recursos en Corte Suprema",
+            "geo_location_place": "Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2015 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/91cc3167-64e6-4818-b60a-614535795c54",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 208,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2015",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2015 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/7824ca04-ff6a-49c5-be9f-80b573def00c",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 833,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2015",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2016 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/3bc2490a-a4b3-42d9-b54e-86cb30b8de7e",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 425,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2016",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2016 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/03134b6b-4c9c-4859-8635-b451123ecfbc",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.271,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2016",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2017 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/afd5c416-fa16-4e30-ae01-474b4b554886",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 229,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2017",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2017 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/96f72fc0-7d56-4e85-b09f-ac035b02a311",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 839,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2017",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2018 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/4b447cbd-3aeb-42da-a3a1-c2cdbf3bdeee",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 196,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2018",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2018 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/dac240f6-e54b-4b20-ae11-f59331f1784b",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 850,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2018",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2019 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/89da7455-ce93-442f-ae42-65cba7a599da",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 241,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2019",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2019 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/ad9139fc-e8f8-41e1-8918-1b6571f686d7",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.263,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2019",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2020 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/9b79d293-195c-4595-a8a2-ef7dfa536bc6",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 541,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2020",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2020 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/b3a862f3-4d25-4e2e-9c82-6a3ec115930b",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.856,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2020",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2021 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/29779bf2-a008-4b90-896e-bccc10aa197f",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 405,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2021",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2021 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/a6a85470-6153-4c59-a22e-81dbba657377",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.241,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2021",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2022 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/60d00192-1e03-4264-8676-17a3b0418d59",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 719,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2022",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2022 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/e376a260-93e3-43cd-887d-10d7e94d7e5b",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 2.695,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2022",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2023 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/c3eacc35-ce5d-4450-b60e-723fdf8b51f4",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.0,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2023",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2023 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/0f804463-b89d-44f2-a908-c36a3f23bdf0",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 3.135,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2023",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2024 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/50e1ded6-ea2c-4191-bf1d-c3c5b7b04876",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 370,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2024",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2024 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/3a57756c-24cc-4737-a775-bde30180a09f",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 1.662,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Download-2024",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2025 en formato csv.",
+            "file_uri": "blob:https://numeros.pjud.cl/0424d197-9af8-4a42-86ac-4c87e1d1c80e",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 174,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Corte Suprema 2025",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Estadísticas de ingreso de recursos en la Corte Suprema correspondiente al año 2025 en formato xlsx.",
+            "file_uri": "blob:https://numeros.pjud.cl/e17a75c8-eb1d-48a5-b25c-e3eb9c03466d",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información generada por los sistemas de gestión de causas del Poder Judicial y procesada por la unidad de estadísticas judiciales.",
+            "sizes": [
+                {
+                    "size": 865,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "Corte Suprema 2025",
+            "variable_measured": ""
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_name": "Poder Judicial de Chile",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "contact": "",
+            "related_identifier": "https://numeros.pjud.cl/",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "relation_type": "IsPartOf",
+            "resource_type_genereal": "InteractiveResource",
+            "scheme_type": "",
+            "scheme_uri": ""
+        }
+    ],
+    "resource": {
+        "contact": "pjud@corporacion.pjud.cl",
+        "editor": "",
+        "identifier": "https://numeros.pjud.cl/Descargas",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Poder Judicial de Chile",
+        "producer": "",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2025"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+            "rights_condition": "Los datos estadísticos judiciales son de carácter público y pueden ser utilizados citando la fuente oficial. Para usos que involucren datos personales o casos específicos, se deben observar las disposiciones de la Ley de Transparencia y protección de datos.",
+            "rights_holder": "Poder Judicial de Chile",
+            "rights_identifier": "CC-BY-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [],
+            "contributor_type": "",
+            "email": "datosjudiciales@pjud.cl",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [],
+            "role_name": "Poder Judicial de Chile",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        },
+        {
+            "affiliations": [],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [
+                {
+                    "name_identifier": "https://isni.org/isni/0000000122238173",
+                    "name_identifier_scheme": "ISNI",
+                    "scheme_uri": "https://isni.org/"
+                }
+            ],
+            "role_name": "Corte Suprema de Justicia Chile",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Judicial statistics -- Chile",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85070967"
+        },
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Justice, Administration of -- Chile",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85071120"
+        },
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Law -- Chile -- Statistics",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85075119"
+        }
+    ],
+    "temporal_events": [
+        {
+            "description": "Datos estadísticos anuales sobre ingreso de recursos en la Corte Suprema de Chile. La información se actualiza anualmente con datos consolidados del año anterior, con series históricas disponibles desde 2015. La frecuencia de actualización corresponde al ciclo anual de procesamiento y validación de estadísticas judiciales.",
+            "frequency_number": "1",
+            "frequency_type": "year",
+            "start_date": "2015-01-01"
+        }
+    ],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Ingreso de recursos en Corte Suprema",
+            "title_type": "MainTitle"
+        }
+    ]
+}

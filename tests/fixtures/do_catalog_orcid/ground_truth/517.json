@@ -1,0 +1,391 @@
+{
+    "resource": {
+        "identifier": "10.5880/crc1211db.16",
+        "identifier_type": "DOI",
+        "publication_year": 2018,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [
+        {
+            "alternate_identifier": "https://www.crc1211db.uni-koeln.de/data.php?dataID=32",
+            "alternate_identifier_type": "URL",
+            "alternate_name": ""
+        }
+    ],
+    "roles": [
+        {
+            "role_name": "Hoffmeister, Dirk",
+            "role_name_type": "Personal",
+            "given_name": "Dirk",
+            "family_name": "Hoffmeister",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "name_identifier": "http://www.researcherid.com/rid/B-5321-2013",
+                    "name_identifier_scheme": "ResearcherID",
+                    "scheme_uri": ""
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Schween, Jan",
+            "role_name_type": "Personal",
+            "given_name": "Jan",
+            "family_name": "Schween",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geophysics and Meteorology",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "May, Matthias",
+            "role_name_type": "Personal",
+            "given_name": "Matthias",
+            "family_name": "May",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Possoch, Marcel",
+            "role_name_type": "Personal",
+            "given_name": "Marcel",
+            "family_name": "Possoch",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "RelatedPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Meine, Lennart",
+            "role_name_type": "Personal",
+            "given_name": "Lennart",
+            "family_name": "Meine",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "RelatedPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Gröbner, Marie",
+            "role_name_type": "Personal",
+            "given_name": "Marie",
+            "family_name": "Gröbner",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "RelatedPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Steininger, Florian",
+            "role_name_type": "Personal",
+            "given_name": "Florian",
+            "family_name": "Steininger",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "RelatedPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Wolf, Dennis ",
+            "role_name_type": "Personal",
+            "given_name": "Dennis ",
+            "family_name": "Wolf",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cologne, Institute of Geography",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "RelatedPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Meteorological and soil measurements of the permanent basic weather station 34 - Cerro Campana, Chile",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "CRC1211 Database (CRC1211DB)",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Terrestrial Observation",
+            "subject_scheme": "CRC 1211 keyword",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Meteorology",
+            "subject_scheme": "CRC 1211 keyword",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "weather monitoring",
+            "subject_scheme": "GEMET - Concepts",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "air temperature",
+            "subject_scheme": "GEMET - Concepts",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "atmospheric humidity",
+            "subject_scheme": "GEMET - Concepts",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "radiation",
+            "subject_scheme": "GEMET - Concepts",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "climatologyMeteorologyAtmosphere",
+            "subject_scheme": "ISO Topic Category",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Environmental monitoring facilities",
+            "subject_scheme": "GEMET - INSPIRE themes",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Atmospheric conditions",
+            "subject_scheme": "GEMET - INSPIRE themes",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "551 Geology, hydrology, meteorology",
+            "subject_scheme": "DDC",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2018-03-14",
+            "date_type": "Created",
+            "date_information": ""
+        },
+        {
+            "date": "2018-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "\n      https://www.crc1211db.uni-koeln.de/wd/index.php\n    ",
+            "resource_type_general": "Collection",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "\n      10.5880/crc1211db.1\n    ",
+            "resource_type_general": "Collection",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "",
+            "file_uri": "https://www.crc1211db.uni-koeln.de//DOI/doi.php?doiID=16",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons - Attribution-NonCommercial-ShareAlike 4.0 Intern.[CC BY-NC-SA 4.0]",
+            "rights_uri": "http://creativecommons.org/licenses/by-nc-sa/4.0"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This data link summarizes all meteorological and soil measurements of the permanent weather station \"34 - Cerro Campana\" in the Atacama desert in Chile. The measurement site is located in the southern transect of the research regions at the Cerro Campana. Recent data are available on the weather station website section (https://www.crc1211db.uni-koeln.de/wd/index.php). Additionaly, detailed information about the station configuration and mounted sensors is given at this website section. The data of this station is collected by GSM-based phone calls on a weekly basis. In addition, data stored in the station is acquired on a regular time basis, as documented in the section stated above. Please contact the contributor for all further details. Yearly datasets are additionally stored in this CRC1211-DB.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": null,
+            "geo_location_place": "",
+            "geo_location_point": {
+                "lat": -25.089,
+                "lon": -69.6483
+            },
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Southern focus area",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_uri": "http://gepris.dfg.de/gepris/projekt/268236062",
+            "award_title": "Earth - Evolution at the Dry Limit",
+            "funder_name": "Deutsche Forschungsgemeinschaft",
+            "award_number": "CRC 1211",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

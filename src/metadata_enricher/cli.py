@@ -196,10 +196,21 @@ def process(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
+    # AgentConfig.provider/model are the actual source of truth for what
+    # each agent runs against (default_provider only fills gaps at
+    # config-load time) — resolve concurrency against the first agent's
+    # provider+model, since in practice every agent in a pipeline run
+    # shares both.
+    resolved_provider = pipeline_config.agents[0].provider if pipeline_config.agents else None
+    resolved_model = pipeline_config.agents[0].model if pipeline_config.agents else None
     pipeline = Pipeline(
         config=pipeline_config,
         allow_partial=allow_partial,
-        max_workers=max_workers if max_workers is not None else pipeline_config.max_workers,
+        max_workers=(
+            max_workers
+            if max_workers is not None
+            else pipeline_config.effective_max_workers(resolved_provider, resolved_model)
+        ),
     )
     output_writer = OutputWriter(schema=schema_obj)
     input_source = FilesystemInputSource()

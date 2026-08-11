@@ -1,6 +1,0 @@
-{
-  "url": "https://geoportal.cl/geoportal/catalog/37171/Establecimientos%20de%20salud%20de%20Chile%20Febrero%202026",
-  "title": "Establecimientos de salud de Chile Febrero 2026",
-  "description": "La capa contiene la ubicación de los establecimientos de salud del país que, al 12 de febrero de 2026, se encuentran registrados oficialmente por el Ministerio de Salud como vigentes y abiertos (n=5.159). Lo anterior excluye aquellos establecimientos de salud que se encuentran cerrados. Estos datos fueron generados por el Departamento de Estadísticas e Información de Salud (DEIS), perteneciente a la División de Planificación Sanitaria de la Subsecretaría de Salud Pública. Para su confección, se utilizaron las direcciones oficiales de los establecimientos. La georreferenciación de los establecimientos de Atención Primaria de Salud (APS) estuvo a cargo del Departamento de Desarrollo e Integración en APS de la División de Atención Primaria perteneciente a la Subsecretaría de Redes Asistenciales. La georreferenciación de los restantes establecimientos estuvo a cargo del Departamento de Inteligencia Epidémica de la División de Emergencias Sanitarias perteneciente al Gabinete de Ministra de Salud. Escala 1:20.000.000 y SRC: 4326 WGS84 - Coordenadas Geográficas.",
-  "publisher": "Ministerio de Salud"
-}

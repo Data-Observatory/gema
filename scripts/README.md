@@ -69,7 +69,8 @@ offline regression testing.
 
 Runs the full `metagen` Pipeline with REAL API calls (no cache replay) against all
 golden inputs, scores each output against the expected golden output using LLM-as-judge
-(DeepEval `GEval` + per-field hand-rolled scorer), and writes a Markdown report.
+(DeepEval `GEval` + per-field hand-rolled scorer, both from `eval_common.py` — see
+above), and writes a Markdown report.
 
 **Prerequisites:**
 
@@ -153,7 +154,7 @@ uv run python scripts/validate_real_output.py
 uv run python scripts/validate_real_output.py --input examples/sample_input02.json
 
 # A batch from a directory (first 5 files)
-uv run python scripts/validate_real_output.py --input-dir tests/fixtures/geoportal/inputs --limit 5
+uv run python scripts/validate_real_output.py --input-dir tests/fixtures/golden/inputs --limit 5
 
 # Format-only PID checks, no live doi.org/ror.org/isni.org calls
 uv run python scripts/validate_real_output.py --no-resolve
@@ -189,56 +190,29 @@ uv run python scripts/validate_real_output.py --output-dir reports/real_validati
 **Exit codes:** 0 = no FAIL anywhere (WARN still passes), 1 = at least one FAIL,
 2 = environment not configured or no input files found.
 
-## `generate_geoportal_inputs.py`
+## `eval_common.py`
 
-One-off generator: reads a fixed list of human-reviewed Geoportal ground-truth files
-from `examples/Geoportal/`, strips them down to the minimal fields the pipeline takes
-as input (`url`, `title`, `description`, `publisher`), and writes them to
-`tests/fixtures/geoportal/inputs/`.
+Not a standalone script — shared, corpus-agnostic evaluation infrastructure imported
+by the other scripts on this page and by whichever corpus-specific comparison/judge
+scripts exist under `scripts/` (see the do_catalog eval harness). Two concerns live
+here:
 
-```bash
-uv run python scripts/generate_geoportal_inputs.py
-```
+1. **Pipeline execution for an arbitrary `provider:model` spec** — `parse_model_spec`,
+   `sanitize_label`, `run_pipeline_for_model` (retries flaky reasoning-model responses
+   up to 3 times, keeping whichever attempt had the highest field coverage), and
+   `MODEL_EXTRA_BODY` — a lookup table of confirmed provider/model request-body
+   overrides (e.g. `{"thinking": {"type": "disabled"}}` for models that default to a
+   "thinking mode" incompatible with Instructor's forced `tool_choice` — confirmed for
+   `deepseek-v4-flash`/`deepseek-v4-pro`/`qwen3.7-plus` this way; never assumed by
+   analogy for an untested model).
+2. **Scoring an actual output against a ground truth** — structurally
+   (`extract_creator_names`, `extract_ror_ids`, `extract_geo_places`, etc., `jaccard`,
+   `compare_outputs`, `WEIGHTS` — 9 weighted metrics: creator names, ROR match rate,
+   subjects, categories, rights, languages, geo places, media formats, field coverage)
+   or semantically (`score_overall_deepeval` — DeepEval `GEval` judge — and
+   `score_per_field_raw` — a hand-rolled per-field LLM-as-judge via `complete_raw()`).
 
-No flags — the list of source files is a constant in the script
-(`SELECTED_FILES`). No API key or network access needed. Re-run only if you add a
-new Geoportal ground-truth file to `examples/Geoportal/` and want it in the fixture set.
-
-## `compare_geoportal.py`
-
-Runs the full pipeline once per (model × Geoportal input) pair and scores each output
-against the human-reviewed Geoportal ground truth across 9 weighted metrics (creator
-names, ROR match rate, subjects, categories, rights, languages, geo places, media
-formats, field coverage). Retries flaky reasoning-model responses up to 3 times,
-keeping whichever attempt had the highest field coverage.
-
-**Prerequisites:** `ZAI_API_KEY` (all models run against the `zai-coding-plan`
-provider, regardless of what `config/agents.yaml` has configured — this script
-overrides `provider`/`model` on every agent).
-
-**Usage:**
-
-```bash
-# Default model sweep (glm-5.2, glm-5.1, glm-5, glm-5-turbo, glm-4.7)
-uv run python scripts/compare_geoportal.py
-
-# Specific models only
-uv run python scripts/compare_geoportal.py --models glm-5.2,glm-5
-
-# Also enable ROR/ISNI identifier enrichment (live API calls per creator/publisher)
-uv run python scripts/compare_geoportal.py --enrich
-
-# Verbose
-uv run python scripts/compare_geoportal.py -v
-```
-
-| Flag | Default | Description |
-|------|---------|--------------|
-| `--models` | `glm-5.2,glm-5.1,glm-5,glm-5-turbo,glm-4.7` | Comma-separated model names |
-| `--enrich` | off | Enable ROR/ISNI identifier enrichment |
-| `-v, --verbose` | off | Verbose logging |
-
-**What it writes:** `reports/geoportal/` (or `reports/geoportal_enriched/` with
-`--enrich`) — `comparison_data.json` (raw scores), `cross_model_comparison.md`
-(formatted report), `outputs/<model>/<input>.json` (raw pipeline outputs per model),
-`cache/<model>/` (per-model LLM response cache).
+Nothing in this module assumes a fixed input/ground-truth directory or a specific
+ground-truth JSON shape — callers pass paths and already-unwrapped/adapted dicts.
+`run_live_eval.py` (below) and any corpus-specific comparison script both build on
+this rather than duplicating it.

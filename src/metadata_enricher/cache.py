@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from datetime import timedelta
 from pathlib import Path
@@ -52,8 +53,14 @@ class CacheManager:
         response_model_name: str,
         temperature: float,
         seed: int | None,
+        extra_body: dict[str, Any] | None = None,
     ) -> str:
         raw = f"{prompt}:{model}:{response_model_name}:{temperature}:{seed}"
+        # Appended only when set, so keys for the (overwhelmingly common) no-override
+        # case stay identical to before extra_body existed — preserves committed
+        # golden-fixture cache entries (tests/fixtures/golden/cache/cache.db).
+        if extra_body:
+            raw += f":{json.dumps(extra_body, sort_keys=True)}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def get(self, key: str) -> dict[str, Any] | None:
@@ -99,6 +106,7 @@ class CachedLLMClient:
             raise RuntimeError(msg)
         self._temperature: float = getattr(config, "temperature", 0.0)
         self._seed: int | None = getattr(config, "seed", None)
+        self._extra_body: dict[str, Any] | None = getattr(config, "extra_body", None)
 
     @property
     def model(self) -> str:
@@ -112,7 +120,8 @@ class CachedLLMClient:
         **kwargs: object,
     ) -> BaseModel:
         key = self._cache._make_key(
-            prompt, self.model, response_model.__name__, self._temperature, self._seed
+            prompt, self.model, response_model.__name__, self._temperature, self._seed,
+            self._extra_body,
         )
         cached = self._cache.get(key)
         if cached is not None:
@@ -136,7 +145,8 @@ class CachedLLMClient:
         was actually called), so usage is 0 regardless of what the original
         call recorded; only a real cache miss reports real usage."""
         key = self._cache._make_key(
-            prompt, self.model, response_model.__name__, self._temperature, self._seed
+            prompt, self.model, response_model.__name__, self._temperature, self._seed,
+            self._extra_body,
         )
         cached = self._cache.get(key)
         if cached is not None:

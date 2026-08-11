@@ -5,7 +5,7 @@
     "editor": "Data Observatory",
     "maintainer": "Data Observatory",
     "contact": "",
-    "producer": "Data Observatory",
+    "producer": "",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -22,28 +22,22 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
       "audience": "Docentes",
       "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Estudio de caso"
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
     },
     {
       "audience": "Estudiantes",
       "mediator": "Docente",
       "education_level": "Pregrado",
       "instructional_method": "Estudio de caso"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -59,7 +53,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Data Observatory",
+      "creator_name": "Rasgos-CL",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -67,25 +61,36 @@
       "genre": "",
       "type": "Organization",
       "contributor_type": "",
-      "name_identifiers": [
+      "name_identifiers": [],
+      "affiliations": [
         {
-          "name_identifier": "https://ror.org/027nn6b17",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org"
+          "affiliation": "Data Observatory",
+          "affiliation_identifier": "https://ror.org/027nn6b17",
+          "affiliation_identifier_scheme": "ROR",
+          "scheme_uri": ""
         }
-      ],
-      "affiliations": []
+      ]
     }
   ],
   "dates": [],
   "descriptions": [
     {
-      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
+      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
       "description_type": "Abstract",
       "language": "es"
     }
   ],
   "funding_references": [],
+  "geo_locations": [
+    {
+      "geo_location_place": "Chile",
+      "geo_location_point": "",
+      "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
+      "geo_location_polygon": "",
+      "geo_description": "Cobertura nacional del territorio chileno, abarcando rasgos funcionales de especies de plantas a escala regional y nacional",
+      "coverage": "nacional"
+    }
+  ],
   "languages": [
     {
       "lang_code": "es",
@@ -105,25 +110,8 @@
     }
   ],
   "related_identifiers": [],
-  "rights": [
-    {
-      "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
-      "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
-      "rights_identifier": "CC-BY-4.0",
-      "rights_identifier_scheme": "SPDX",
-      "scheme_uri": "https://spdx.org/licenses/",
-      "rights_condition": "",
-      "rights_holder": "Data Observatory"
-    }
-  ],
+  "rights": [],
   "subjects": [
-    {
-      "subject_name": "Rasgos funcionales de plantas -- Chile",
-      "subject_scheme": "LCSH",
-      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
-      "value_uri": "",
-      "classification_code": ""
-    },
     {
       "subject_name": "Biodiversidad -- Plantas -- Chile",
       "subject_scheme": "LCSH",
@@ -132,11 +120,19 @@
       "classification_code": ""
     },
     {
-      "subject_name": "Ecología vegetal -- Chile",
+      "subject_name": "Rasgos funcionales (Biología) -- Plantas -- Chile",
       "subject_scheme": "LCSH",
       "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
       "value_uri": "",
       "classification_code": ""
+    }
+  ],
+  "temporal_events": [
+    {
+      "start_date": "",
+      "frequency_number": "",
+      "frequency_type": "yearly",
+      "description": "La plataforma se actualiza anualmente con nueva información sobre rasgos funcionales de la biodiversidad de plantas en Chile"
     }
   ],
   "titles": [
