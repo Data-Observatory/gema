@@ -1,0 +1,188 @@
+{
+  "resource": {
+    "identifier": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares",
+    "identifier_type": "URL",
+    "editor": "Instituto Nacional de Estadísticas (INE)",
+    "maintainer": "Instituto Nacional de Estadísticas (INE)",
+    "contact": "",
+    "producer": "Instituto Nacional de Estadísticas (INE)",
+    "publication_year": "",
+    "resource_type": "Dataset",
+    "resource_type_general": "Dataset",
+    "version": "",
+    "thumbnail": "",
+    "language": "es"
+  },
+  "alternate_identifiers": [
+    {
+      "alternate_name": "",
+      "alternate_identifier": "EPF",
+      "alternate_identifier_type": "Local"
+    }
+  ],
+  "audiences": [
+    {
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Profesionales",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
+      "instructional_method": "Estudio de caso"
+    },
+    {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ciencias Sociales",
+      "sub_category": "Economía y negocios"
+    },
+    {
+      "name": "Ciencias Sociales",
+      "sub_category": "Sociología"
+    }
+  ],
+  "citations": [],
+  "creators": [
+    {
+      "creator_name": "Instituto Nacional de Estadísticas",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/03ftrk873",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        },
+        {
+          "name_identifier": "0000000122544402",
+          "name_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org"
+        }
+      ],
+      "affiliations": [
+        {
+          "affiliation": "Ministerio de Economía, Desarrollo y Turismo",
+          "affiliation_identifier": "",
+          "affiliation_identifier_scheme": "",
+          "scheme_uri": ""
+        }
+      ]
+    }
+  ],
+  "dates": [
+    {
+      "date": "2021-01-01",
+      "date_type": "Collected",
+      "date_information": ""
+    }
+  ],
+  "descriptions": [
+    {
+      "description": "Conjunto de datos del Instituto Nacional de Estadísticas (INE) de Chile que reúne las bases de datos de la Encuesta de Presupuestos Familiares (EPF), proporcionando información sobre los ingresos y gastos de los hogares chilenos. El recurso incluye datos sobre estructura de gastos, patrones de consumo, ingresos familiares y otros aspectos relevantes del presupuesto familiar, permitiendo analizar el comportamiento económico de los hogares chilenos.",
+      "description_type": "Abstract",
+      "language": "es"
+    }
+  ],
+  "funding_references": [],
+  "geo_locations": [
+    {
+      "geo_location_place": "Chile",
+      "geo_location_point": "",
+      "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
+      "geo_location_polygon": "",
+      "geo_description": "Territorio nacional de Chile, con cobertura de capitales regionales para los indicadores de la encuesta",
+      "coverage": "nacional"
+    }
+  ],
+  "languages": [
+    {
+      "lang_code": "es",
+      "language": "Spanish",
+      "description": ""
+    }
+  ],
+  "media_files": [],
+  "publishers": [
+    {
+      "publisher_name": "Instituto Nacional de Estadísticas",
+      "publisher_identifier": "https://ror.org/03ftrk873",
+      "publisher_identifier_scheme": "ROR",
+      "scheme_uri": "",
+      "lang": "es",
+      "publisher_scheme_uri": "https://ror.org"
+    }
+  ],
+  "related_identifiers": [],
+  "rights": [],
+  "subjects": [
+    {
+      "subject_name": "Presupuestos familiares -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Ingresos -- Hogares -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Gastos -- Hogares -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Consumo -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    }
+  ],
+  "temporal_events": [
+    {
+      "start_date": "",
+      "frequency_number": "",
+      "frequency_type": "yearly",
+      "description": "La Encuesta de Presupuestos Familiares se levanta de manera periódica; los resultados más recientes corresponden al período 2021-2022"
+    }
+  ],
+  "titles": [
+    {
+      "name": "Encuesta de Presupuestos Familiares",
+      "title_type": "MainTitle",
+      "language": "es"
+    }
+  ]
+}

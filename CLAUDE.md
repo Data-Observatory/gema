@@ -14,8 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 uv sync --extra dev                                    # install (uv only — never pip install)
 
 make test                                               # pytest + coverage (--cov=metadata_enricher)
-make lint                                               # ruff check src/ tests/
-make typecheck                                          # mypy src/ (strict)
+make lint                                               # ruff check src/ tests/ scripts/
+make typecheck                                          # mypy src/ scripts/ (strict)
 make test-regression                                    # golden-output cache-replay, no API key needed
 make record-golden                                      # regenerate golden fixtures (needs API key)
 make live-eval                                          # real-API LLM-judge quality eval (needs API key)
@@ -31,7 +31,7 @@ uv run metagen validate examples/sample_input01.json
 uv run metagen process examples/sample_input01.json --config config/agents.yaml --output output.json
 ```
 
-No CI/CD, no Docker, no pre-commit hooks — all checks run manually via `Makefile`.
+No Docker, no pre-commit hooks. GitHub Actions CI exists (`.github/workflows/ci.yml` + `visor-build.yml`), gating the branch flow: any branch → PR into `dev` (`ci.yml`: ruff on `src/ tests/ scripts/ visor/`, mypy on `src/` and `visor --exclude visor/tests`, `pytest -m "not live" --cov=metadata_enricher`, `make test-visor`) → PR into `main` (same checks again, plus `visor-build.yml`'s full multi-OS build matrix). CI never runs anything marked `live` (real LLM calls/cost) — that stays manual-only. Note the ruff/mypy scope in CI includes `visor/` (a separate subpackage, undocumented here — this file covers `metadata_enricher` only); local `make lint`/`make typecheck` do not cover `visor/`, so a clean local run does not guarantee a clean CI run if `visor/` was touched.
 
 ## Architecture
 

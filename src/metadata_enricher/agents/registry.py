@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Protocol
+from typing import Any, Protocol
 
 from metadata_enricher.agents.base import BaseAgent
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
@@ -27,6 +27,7 @@ class LLMClientFactory(Protocol):
         model: str,
         temperature: float = ...,
         max_tokens: int | None = ...,
+        extra_body: dict[str, Any] | None = ...,
     ) -> LLMClient: ...
 
 
@@ -73,12 +74,16 @@ class AgentRegistry:
                     f"Agent '{agent_config.id}' has no model set. "
                     "Each agent must specify a model in the pipeline configuration."
                 )
-            llm_client = self._llm_factory(
-                provider,
-                model=agent_config.model,
-                temperature=agent_config.temperature,
-                max_tokens=agent_config.max_tokens,
-            )
+            factory_kwargs: dict[str, Any] = {
+                "model": agent_config.model,
+                "temperature": agent_config.temperature,
+                "max_tokens": agent_config.max_tokens,
+            }
+            # Only passed when set, so existing LLMClientFactory implementations
+            # (tests, scripts) that predate this field don't need updating.
+            if agent_config.extra_body is not None:
+                factory_kwargs["extra_body"] = agent_config.extra_body
+            llm_client = self._llm_factory(provider, **factory_kwargs)
 
             agent = BaseAgent(
                 name=agent_config.name,

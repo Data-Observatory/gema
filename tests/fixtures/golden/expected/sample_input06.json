@@ -1,0 +1,221 @@
+{
+  "resource": {
+    "identifier": "10.5880/GFZ.4.1.2020.012",
+    "identifier_type": "DOI",
+    "editor": "GFZ Data Services",
+    "maintainer": "GFZ Data Services",
+    "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
+    "producer": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+    "publication_year": "2020",
+    "resource_type": "Dataset",
+    "resource_type_general": "Dataset",
+    "version": "",
+    "thumbnail": "",
+    "language": "en"
+  },
+  "alternate_identifiers": [],
+  "audiences": [
+    {
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Científicos de datos",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Profesionales",
+      "mediator": "Supervisor",
+      "education_level": "Profesional",
+      "instructional_method": "Estudio de caso"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias de la Tierra"
+    }
+  ],
+  "citations": [
+    {
+      "title": "Active fault database for the Atacama Fault System (N-Chile) as basis for tracking forearc segmentation",
+      "volume": "",
+      "issue": "",
+      "start_page": "",
+      "end_page": "",
+      "edition": "",
+      "conference_place": "",
+      "conference_date": ""
+    }
+  ],
+  "creators": [
+    {
+      "creator_name": "Mittelstädt, Jana",
+      "creator_name_type": "Personal",
+      "given_name": "Jana",
+      "family_name": "Mittelstädt",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [],
+      "affiliations": [
+        {
+          "affiliation": "GFZ German Research Centre for Geosciences",
+          "affiliation_identifier": "",
+          "affiliation_identifier_scheme": "",
+          "scheme_uri": ""
+        }
+      ]
+    },
+    {
+      "creator_name": "Victor, Pia",
+      "creator_name_type": "Personal",
+      "given_name": "Pia",
+      "family_name": "Victor",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://orcid.org/0000-0003-2080-9176",
+          "name_identifier_scheme": "ORCID",
+          "scheme_uri": "https://orcid.org"
+        }
+      ],
+      "affiliations": [
+        {
+          "affiliation": "GFZ German Research Centre for Geosciences",
+          "affiliation_identifier": "",
+          "affiliation_identifier_scheme": "",
+          "scheme_uri": ""
+        }
+      ]
+    }
+  ],
+  "dates": [
+    {
+      "date": "2020-01-01",
+      "date_type": "Issued",
+      "date_information": ""
+    }
+  ],
+  "descriptions": [
+    {
+      "description": "The Atacama Fault System (AFS) in N-Chile is a complex fault system with a variety of fault segments showing different degrees of activity. Initiated as a trench-linked fault system during the Jurassic it is now exposed in the Coastal Cordillera in the forearc of the Nazca-South America convergent plate margin. Fault scarps and surface ruptures indicate varying degrees of reactivation of this fault system that most likely roots into the subduction zone interface at the downdip end of coupling. Therefore, the interaction of these two systems is evident though not well understood. The active fault database for the northernmost segment of the Atacama Fault System (AFS) is the result of creating a comprehensive catalogue of active faults in the forearc to investigate activity patterns of the forearc in relation with megathrust segmentation and upper plate seismicity in the Coastal Cordillera of N-Chile (19°12'S - 25°12'S). The dataset has been compiled in Arc-GIS and is available as .mpk as well as .kmz formats to be visualised in Google Earth. The activity patterns are mapped according to a well-defined set of criteria. The database for activity starts out from a thorough literature review and is supplemented by new evidences combining interpretation of remote sensing data, field work and upper plate seismicity from the Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) and a local seismic catalogues covering the area of the Salar Grande segment (Bloch et al., 2014). It also includes the available age data of offset geological units as references to bracket the chronology of fault activity.",
+      "description_type": "Abstract",
+      "language": "en"
+    }
+  ],
+  "funding_references": [],
+  "geo_locations": [
+    {
+      "geo_location_place": "Coastal Cordillera, Northern Chile (19°12'S - 25°12'S)",
+      "geo_location_point": "",
+      "geo_location_box": "-71.0,-25.2,-69.0,-19.2",
+      "geo_location_polygon": "",
+      "geo_description": "Cordillera de la Costa del norte de Chile, abarcando el segmento más septentrional del Sistema de Fallas de Atacama entre los 19°12'S y 25°12'S",
+      "coverage": "regional"
+    }
+  ],
+  "languages": [
+    {
+      "lang_code": "en",
+      "language": "English",
+      "description": ""
+    }
+  ],
+  "media_files": [
+    {
+      "sizes": [],
+      "physical_carrier": "digital",
+      "format": "application/zip",
+      "variable_measured": "Active faults, fault activity patterns",
+      "checksum": "",
+      "data_quality": "Subject to significant error due to slow slip rates (< 0.2mm/yr), few chronologically constrained fault offsets and lack of historically or instrumentally observed earthquakes along the fault segments",
+      "measurement_technique": "Literature review, interpretation of remote sensing data, field work, and upper plate seismicity from IPOC and local seismic catalogues, compiled in Arc-GIS",
+      "provenance": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+      "file_uri": "",
+      "temporal_resolution": "",
+      "Collections": []
+    }
+  ],
+  "publishers": [
+    {
+      "publisher_name": "GFZ Data Services",
+      "publisher_identifier": "",
+      "publisher_identifier_scheme": "",
+      "scheme_uri": "",
+      "lang": "en"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "related_identifier": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults",
+      "related_identifier_type": "URL",
+      "relation_type": "References",
+      "related_metadata_scheme": "",
+      "scheme_uri": "",
+      "scheme_type": "",
+      "resource_type_general": "Dataset",
+      "contact": ""
+    }
+  ],
+  "rights": [],
+  "subjects": [
+    {
+      "subject_name": "Faults (Geology) -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Plate tectonics -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Neotectonics -- Chile",
+      "subject_scheme": "LCSH",
+      "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "Atacama Fault System",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": "",
+      "classification_code": ""
+    },
+    {
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > PLATE TECTONICS > FAULT MOVEMENT",
+      "subject_scheme": "NASA/GCMD Earth Science Keywords",
+      "scheme_uri": "https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords",
+      "value_uri": "",
+      "classification_code": ""
+    }
+  ],
+  "temporal_events": [],
+  "titles": [
+    {
+      "name": "Active fault database for the Atacama Fault System (N-Chile) as basis for tracking forearc segmentation",
+      "title_type": "MainTitle",
+      "language": "en"
+    }
+  ]
+}

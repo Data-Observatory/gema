@@ -3,9 +3,9 @@
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
     "editor": "Ministerio de Hacienda - Gobierno de Chile",
-    "maintainer": "datos.gob.cl",
+    "maintainer": "Ministerio de Hacienda - Gobierno de Chile",
     "contact": "",
-    "producer": "",
+    "producer": "Ministerio de Hacienda - Gobierno de Chile",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -25,7 +25,7 @@
       "audience": "Administradores",
       "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Tomadores de decisiones",
@@ -50,6 +50,10 @@
     {
       "name": "Ciencias Sociales",
       "sub_category": "Economía y negocios"
+    },
+    {
+      "name": "Ciencias Sociales",
+      "sub_category": "Ciencias políticas"
     }
   ],
   "citations": [],
@@ -95,6 +99,16 @@
     }
   ],
   "funding_references": [],
+  "geo_locations": [
+    {
+      "geo_location_place": "Chile",
+      "geo_location_point": "",
+      "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
+      "geo_location_polygon": "",
+      "geo_description": "Territorio nacional de Chile, abarcando todos los municipios del país",
+      "coverage": "nacional"
+    }
+  ],
   "languages": [
     {
       "lang_code": "es",
@@ -148,11 +162,19 @@
       "classification_code": ""
     }
   ],
+  "temporal_events": [
+    {
+      "start_date": "",
+      "frequency_number": "",
+      "frequency_type": "monthly",
+      "description": "El recurso se actualiza mensualmente con los egresos ejecutados por los municipios"
+    }
+  ],
   "titles": [
     {
-      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }

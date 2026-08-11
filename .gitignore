@@ -38,8 +38,11 @@ output/
 reports/
 result.json
 
-# Geoportal ground truth is COMMITTED (302 human-reviewed outputs, ~3.4MB)
-# Required for multi-model comparison reproducibility
+# do_catalog full-scale corpus (~100 files pulled from s3://do-catalog-resources) —
+# regenerable via scripts/sample_corpus.py + manifest + AWS profile catalogo-admin.
+# The pilot subset + the small ORCID slice are committed under tests/fixtures/
+# instead (small, and needed for reproducibility without AWS access).
+data/do_catalog/
 
 # OS
 .DS_Store
@@ -60,3 +63,7 @@ htmlcov/
 
 # Sisyphus internal state (not for distribution)
 .sisyphus/
+
+# DeepEval local telemetry/state (not for distribution)
+.deepeval/
+.omo/

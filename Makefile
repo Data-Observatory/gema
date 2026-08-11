@@ -23,10 +23,10 @@ test-regression:
 	uv run pytest tests/test_regression.py -m regression -v
 
 lint:
-	uv run ruff check src/ tests/
+	uv run ruff check src/ tests/ scripts/
 
 typecheck:
-	uv run mypy src/
+	uv run mypy src/ scripts/
 
 run:
 	uv run metagen

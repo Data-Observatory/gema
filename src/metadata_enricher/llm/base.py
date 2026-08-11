@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, SecretStr
 
@@ -71,3 +71,4 @@ class LLMConfig(BaseModel):
     seed: int | None = None
     max_tokens: int | None = None
     timeout: float = 60.0
+    extra_body: dict[str, Any] | None = None

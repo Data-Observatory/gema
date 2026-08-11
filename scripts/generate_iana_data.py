@@ -9,6 +9,8 @@ Output:
     src/metadata_enricher/data/iana_media_types.json with types and name_lookup dictionaries.
 """
 
+from __future__ import annotations
+
 import json
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -26,10 +28,11 @@ def fetch_xml(url: str) -> str:
         headers={"User-Agent": "proj-metadata-agents/1.0"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8")
+        content: bytes = resp.read()
+        return content.decode("utf-8")
 
 
-def parse_reference(record) -> str:
+def parse_reference(record: ET.Element) -> str:
     """Extract a reference string from a record's xref elements."""
     xrefs = record.findall("ian:xref", NS)
     if not xrefs:
@@ -63,22 +66,22 @@ def parse_reference(record) -> str:
     return ref_str.strip()
 
 
-def deduplicate_name_lookup(types: dict) -> dict:
+def deduplicate_name_lookup(types: dict[str, dict[str, str]]) -> dict[str, str]:
     """Build name_lookup keeping only short names that map to exactly one type."""
-    name_to_types = defaultdict(list)
+    name_to_types: dict[str, list[str]] = defaultdict(list)
     for full_type in types:
         if "/" in full_type:
             short = full_type.split("/", 1)[1].lower()
             name_to_types[short].append(full_type)
 
-    lookup = {}
+    lookup: dict[str, str] = {}
     for short_name, full_types in name_to_types.items():
         if len(full_types) == 1:
             lookup[short_name] = full_types[0]
     return lookup
 
 
-def main():
+def main() -> None:
     print(f"Fetching IANA media types from {IANA_URL}...")
     xml_content = fetch_xml(IANA_URL)
 
@@ -86,8 +89,8 @@ def main():
     root = ET.fromstring(xml_content)
 
     total_count = 0
-    types = {}
-    type_breakdown = defaultdict(int)
+    types: dict[str, dict[str, str]] = {}
+    type_breakdown: dict[str, int] = defaultdict(int)
 
     for registry in root.findall("ian:registry", NS):
         registry_id = registry.get("id", "unknown")
