@@ -43,7 +43,7 @@ def _resolve_url(url: str) -> str:
     return url
 
 
-def clean_html_to_text(html: str, max_len: int = 6000) -> str:
+def clean_html_to_text(html: str, max_len: int = 8000) -> str:
     """Strip script/style/nav/header/footer blocks and all remaining tags,
     collapse whitespace, truncate to *max_len*.
 
@@ -59,7 +59,7 @@ def clean_html_to_text(html: str, max_len: int = 6000) -> str:
     return text[:max_len]
 
 
-def fetch_page_content(url: str, *, timeout: float = 15.0, max_len: int = 6000) -> str | None:
+def fetch_page_content(url: str, *, timeout: float = 15.0, max_len: int = 8000) -> str | None:
     """Best-effort live fetch + clean of *url*.
 
     Returns ``None`` on any failure (empty url, non-200, timeout, connection
