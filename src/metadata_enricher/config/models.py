@@ -7,7 +7,7 @@ with strict validation. No I/O, no parsing.
 from __future__ import annotations
 
 from collections import Counter
-from typing import Self
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -41,6 +41,11 @@ class AgentConfig(BaseModel):
     max_tokens: int | None = None
     depends_on: list[str] = []
     use_chain_of_thought: bool = False
+    # Passed straight through to the OpenAI-compatible request body. Needed for
+    # provider/model-specific knobs standard fields don't cover — e.g. disabling
+    # DeepSeek V4's "thinking mode" (extra_body={"thinking": {"type": "disabled"}}),
+    # required because Instructor's forced tool_choice isn't supported alongside it.
+    extra_body: dict[str, Any] | None = None
 
 
 class PipelineConfig(BaseModel):

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import SecretStr
 
@@ -53,13 +54,14 @@ def create_llm_client(
     use_retry: bool = True,
     cache_dir: Path | None = None,
     cache_ttl: timedelta | None = None,
+    extra_body: dict[str, Any] | None = None,
 ) -> LLMClient:
     """Create a fully configured LLM client from a provider config.
 
     Wraps InstructorLLMClient with retry middleware and disk cache.
     Client instances are cached by a composite key of provider + model +
-    temperature + seed + max_tokens + use_cache + use_retry — calling
-    with identical parameters returns the same client instance.
+    temperature + seed + max_tokens + use_cache + use_retry + extra_body —
+    calling with identical parameters returns the same client instance.
 
     Args:
         provider: ProviderConfig with base_url and api_key_env.
@@ -73,6 +75,9 @@ def create_llm_client(
         cache_ttl: Override the cache entry TTL. Only applies when *cache_dir* is
             also given (isolated cache, e.g. golden-fixture recording) — the
             shared default cache always uses CacheManager's own default TTL.
+        extra_body: Raw OpenAI-compatible request body overrides, merged in
+            alongside seed (e.g. {"thinking": {"type": "disabled"}} to work
+            around DeepSeek V4's thinking mode rejecting forced tool_choice).
 
     Returns:
         Configured LLMClient (wrapped with cache + retry).
@@ -80,7 +85,11 @@ def create_llm_client(
     Raises:
         ValueError: If the API key environment variable is not set.
     """
-    cache_key = f"{provider.name}|{model}|t={temperature}|seed={seed}|mt={max_tokens}|c={use_cache}|r={use_retry}"
+    extra_body_key = json.dumps(extra_body, sort_keys=True) if extra_body else None
+    cache_key = (
+        f"{provider.name}|{model}|t={temperature}|seed={seed}|mt={max_tokens}"
+        f"|c={use_cache}|r={use_retry}|eb={extra_body_key}"
+    )
     if cache_key in _client_cache:
         return _client_cache[cache_key]
 
@@ -95,6 +104,7 @@ def create_llm_client(
         temperature=temperature,
         seed=resolved_seed,
         max_tokens=max_tokens,
+        extra_body=extra_body,
     )
 
     client: LLMClient = InstructorLLMClient(config=config, max_retries=max_retries)

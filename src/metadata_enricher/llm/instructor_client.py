@@ -16,6 +16,17 @@ from metadata_enricher.types import TokenUsage
 logger = logging.getLogger(__name__)
 
 
+def _build_extra_body(config: LLMConfig) -> dict[str, Any] | None:
+    """Merge seed (OpenAI SDK requires it in extra_body, not top-level) with
+    any provider/model-specific overrides from config.extra_body."""
+    extra_body: dict[str, Any] = {}
+    if config.seed is not None:
+        extra_body["seed"] = config.seed
+    if config.extra_body:
+        extra_body.update(config.extra_body)
+    return extra_body or None
+
+
 def _patch_instructor_reask_tools_none_crash() -> None:
     """Work around a crash in instructor's TOOLS-mode retry-repair path.
 
@@ -122,9 +133,9 @@ class InstructorLLMClient:
         }
         if self._config.max_tokens is not None:
             create_kwargs["max_tokens"] = self._config.max_tokens
-        # OpenAI SDK requires seed in extra_body, not as top-level kwarg
-        if self._config.seed is not None:
-            create_kwargs["extra_body"] = {"seed": self._config.seed}
+        extra_body = _build_extra_body(self._config)
+        if extra_body is not None:
+            create_kwargs["extra_body"] = extra_body
         create_kwargs.update(kwargs)
 
         # instructor's create() return type can't be inferred through a
@@ -158,8 +169,9 @@ class InstructorLLMClient:
         }
         if self._config.max_tokens is not None:
             create_kwargs["max_tokens"] = self._config.max_tokens
-        if self._config.seed is not None:
-            create_kwargs["extra_body"] = {"seed": self._config.seed}
+        extra_body = _build_extra_body(self._config)
+        if extra_body is not None:
+            create_kwargs["extra_body"] = extra_body
         create_kwargs.update(kwargs)
 
         result, completion = self._instructor_client.chat.completions.create_with_completion(
@@ -189,10 +201,10 @@ class InstructorLLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        # OpenAI SDK requires seed in extra_body, not as top-level kwarg
         extra_kwargs: dict[str, Any] = {}
-        if self._config.seed is not None:
-            extra_kwargs["extra_body"] = {"seed": self._config.seed}
+        extra_body = _build_extra_body(self._config)
+        if extra_body is not None:
+            extra_kwargs["extra_body"] = extra_body
         response = self._raw_client.chat.completions.create(
             model=self._config.model,
             messages=cast("list[ChatCompletionMessageParam]", messages),
