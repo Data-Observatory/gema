@@ -1,5 +1,11 @@
 # Metadata Enricher (metagen)
 
+[![CI](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml)
+[![Visor Build](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![uv](https://img.shields.io/badge/managed%20by-uv-3d3d3d)](https://docs.astral.sh/uv/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Automatic metadata generation for scholarly resources using LLM agents.
 
 ## Quickstart
@@ -109,7 +115,8 @@ richer report. See [`scripts/README.md`](scripts/README.md#validate_real_outputp
 ---
 
 For the full CLI/config flag reference: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
-For flags on `record_golden.py`, `run_live_eval.py`, `compare_geoportal.py`, and
+For flags on `record_golden.py`, `run_live_eval.py`, `sample_corpus.py`,
+`generate_inputs.py`, `compare_models.py`, `judge_models.py`, and
 `validate_real_output.py`: [`scripts/README.md`](scripts/README.md).
 
 ## Architecture
@@ -174,23 +181,29 @@ See `config/agents.yaml` and `config/providers.yaml` for full examples.
 
 ## Agents (DataCite 4.6)
 
-The default config defines 5 agents running sequentially on a dependency chain:
+The default config defines 5 agents. None currently declares a `depends_on`, so
+all 5 run as a single parallel wave (Kahn topological sort collapses to one
+wave when there are no edges) — `depends_on` stays available per-agent for
+whenever a future agent needs another's output first.
 
-| Agent | Fields | Dependencies |
-|-------|--------|-------------|
-| `core_metadata` | resource, titles, descriptions, languages, dates, alt IDs, related IDs, temporal/geo | -- |
-| `creators_publishers` | creators, publishers | core_metadata |
-| `classification` | categories, subjects, audiences | creators_publishers |
-| `rights_funding_citations` | rights, funding_references, citations | classification |
-| `media_files` | media_files | rights_funding_citations |
+| Agent | Fields |
+|-------|--------|
+| `core_metadata` | resource, titles, descriptions, languages, dates, alternate_identifiers, related_identifiers, geo_locations, temporal_events |
+| `creators_publishers` | creators, publishers |
+| `classification` | categories, subjects, audiences |
+| `rights_funding_citations` | rights, funding_references, citations |
+| `media_files` | media_files |
 
 Legacy JSON configurations are preserved at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents) for reference.
 
 ## Development
 
 ```bash
-# Run tests
+# Run tests (unit + regression, mocked/cache-replay -- no API key needed)
 make test
+
+# Golden-output regression only (cache-replay against tests/fixtures/golden/)
+make test-regression
 
 # Lint and type check
 make lint
@@ -199,6 +212,11 @@ make typecheck
 # Install in development mode
 make install
 ```
+
+CI (`.github/workflows/ci.yml`) runs the same lint/typecheck/test-library jobs
+(plus `visor/`-specific ones) on every PR into `dev` and `main`; `main` PRs also
+gate on `visor-build.yml`'s full multi-OS build matrix. CI never runs anything
+marked `@pytest.mark.live` (real LLM calls, real cost) -- that stays manual-only.
 
 ## Migration from JSON
 
