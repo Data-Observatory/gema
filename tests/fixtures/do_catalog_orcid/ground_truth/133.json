@@ -1,0 +1,820 @@
+{
+    "resource": {
+        "identifier": "10.5880/gfz.3.3.2019.002",
+        "identifier_type": "DOI",
+        "publication_year": 2019,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "van Dongen, Renee",
+            "role_name_type": "Personal",
+            "given_name": "Renee",
+            "family_name": "van Dongen",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-7246-511X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Scherler, Dirk",
+            "role_name_type": "Personal",
+            "given_name": "Dirk",
+            "family_name": "Scherler",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3911-2803",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Wittmann, Hella",
+            "role_name_type": "Personal",
+            "given_name": "Hella",
+            "family_name": "Wittmann",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-1252-7059",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "von Blanckenburg, Friedhelm",
+            "role_name_type": "Personal",
+            "given_name": "Friedhelm",
+            "family_name": "von Blanckenburg",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                },
+                {
+                    "affiliation_name": "Freie Universität Berlin, Berlin, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-2964-717X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "van Dongen, Renee",
+            "role_name_type": "Personal",
+            "given_name": "Renee",
+            "family_name": "van Dongen",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-7246-511X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "van Dongen, Renee",
+            "role_name_type": "Personal",
+            "given_name": "Renee",
+            "family_name": "van Dongen",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-7246-511X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "van Dongen, Renee",
+            "role_name_type": "Personal",
+            "given_name": "Renee",
+            "family_name": "van Dongen",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Producer",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-7246-511X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Scherler, Dirk",
+            "role_name_type": "Personal",
+            "given_name": "Dirk",
+            "family_name": "Scherler",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3911-2803",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Scherler, Dirk",
+            "role_name_type": "Personal",
+            "given_name": "Dirk",
+            "family_name": "Scherler",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCurator",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3911-2803",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Scherler, Dirk",
+            "role_name_type": "Personal",
+            "given_name": "Dirk",
+            "family_name": "Scherler",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectLeader",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3911-2803",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Wittmann, Hella",
+            "role_name_type": "Personal",
+            "given_name": "Hella",
+            "family_name": "Wittmann",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-1252-7059",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "von Blanckenburg, Friedhelm",
+            "role_name_type": "Personal",
+            "given_name": "Friedhelm",
+            "family_name": "von Blanckenburg",
+            "affiliations": [
+                {
+                    "affiliation_name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                },
+                {
+                    "affiliation_name": "Freie Universität Berlin, Berlin, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectManager",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-2964-717X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "language": "en",
+            "name": "Data Supplement to: Cosmogenic 10Be in river sediment: where grain size matters and why",
+            "title_type": "MainTitle"
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "GFZ Data Services",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Denudation",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Grain size dependent 10Be-concentrations",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Chile",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Coastal Cordillera",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Global compilation",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Cosmogenic 10Be",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Cosmogenic nuclides",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "chemical element &gt; element of group II (alkaline earth metals) &gt; beryllium",
+            "subject_scheme": "GEMET",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOMORPHIC LANDFORMS/PROCESSES &gt; FLUVIAL PROCESSES &gt; ABRASION",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; ROCKS/MINERALS/CRYSTALS &gt; BEDROCK LITHOLOGY",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; LAND SURFACE &gt; EROSION/SEDIMENTATION &gt; LANDSLIDES",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; LAND SURFACE &gt; EROSION/SEDIMENTATION &gt; WEATHERING",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; LAND SURFACE &gt; EROSION/SEDIMENTATION &gt; SEDIMENT TRANSPORT",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "language": "en",
+            "subject_name": "EARTH SCIENCE &gt; LAND SURFACE &gt; EROSION/SEDIMENTATION &gt; EROSION",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2019-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.quageo.2013.01.011",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.epsl.2007.09.013",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/0012-821x(94)00249-x",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.quageo.2014.12.002",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/s0169-555x(01)00191-x",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.jseaes.2014.03.012",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "http://www.jstor.org/stable/30068190",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1002/esp.1859",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.2475/ajs.303.9.817",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.geomorph.2009.11.019",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1016/j.geomorph.2014.06.019",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1002/esp.1415",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "10.1002/esp.1259",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "HasPart",
+            "related_identifier": "http://www.uvm.edu/cosmolab/people/sullivan/sullivanms_thesis_final.pdf",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier": "10.5194/esurf-7-393-2019",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFRD10010",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFRD10011",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 4.0,
+                    "unit": "Files"
+                }
+            ],
+            "format": "application/octet-stream",
+            "file_uri": "https://dataservices.gfz.de/panmetaworks/showshort.php?id=escidoc:3466888",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "CC BY 4.0",
+            "rights_uri": "http://creativecommons.org/licenses/by/4.0"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Concentrations of in-situ-produced cosmogenic 10Be in river sediment are widely used to estimate catchment-average denudation rates. Typically, the 10Be concentrations are measured in the sand fraction of river sediment. However, the grain size of bedload sediment in most bedrock rivers covers a much wider range. Where 10Be concentrations depend on grain size, denudation rate estimates based on the sand fraction alone are potentially biased. To date, knowledge about catchment attributes that may induce grain-size-dependent 10Be concentrations is incomplete or has only been investigated in modelling studies. Here we present an empirical study on the occurrence of grain-size-dependent 10Be concentrations and the potential controls of hillslope angle, precipitation, lithology, and abrasion. \n      We first conducted a study focusing on the sole effect of precipitation in four granitic catchments located on a climate gradient in the Chilean Coastal Cordillera. We found that observed grain size dependencies of 10Be concentrations in the most-arid and most-humid catchments could be explained by the effect of precipitation on both the scouring depth of erosion processes and the depth of the mixed soil layer. Analysis of a global dataset of published 10Be concentrations in different grain sizes (n=73 catchments) – comprising catchments with contrasting hillslope angles, climate, lithology, and catchment size – revealed a similar pattern. Lower 10Be concentrations in coarse grains (defined as “negative grain size dependency”) emerge frequently in catchments which likely have thin soil and where deep-seated erosion processes (e.g. landslides) excavate grains over a larger depth interval. These catchments include steep (&gt; 25°) and humid catchments (&gt; 2000mm yr-1). Furthermore, we found that an additional cause of negative grain size dependencies may emerge in large catchments with weak lithologies and long sediment travel distances (&gt; 2300–7000 m, depending on lithology) where abrasion may lead to a grain size distribution that is not representative for the entire catchment. The results of this study can be used to evaluate whether catchment-average denudation rates are likely to be biased in particular catchments.\n      Samples from the Chilean Coastal Cordillera were processed in the Helmholtz Laboratory for the Geochemistry of the Earth Surface (HELGES). 10Be/9Be ratios were measured at the University of Cologne and normalized to the KN01-6-2 and KN01-5-3 standards. Denudation rates were calculated using a time-independent scaling scheme according to Lal (1991) and Stone (2002) (St scaling scheme) and the SLHL production rate of 4.01 at g-1 yr-1 as reported by Phillips et al. (2016)\n      The global compilation exists of studies that measured 10Be concentrations in different grain sizes from the same sample location. We only included river basins of &lt;5000 km2 which measured 10Be concentrations in at least one sand-sized fraction &lt;2 mm and at least one coarser fraction &gt;2 mm. Catchment parameters have been recalculated using a 90-m SRTM DEM.\n      The data are presented in Excel and csv tables. Table S1 describes the characteristics of the samples catchments, Table S2 includes the grain size dependent 10Be-concentrations measured during this study and Table 3 the global compilation of grain size dependent 10Be-concentrations. All samples of this study (the Chilean Coastal Cordillera) are assigned with International Geo Sample Numbers (IGSN). The IGSN links are included in Table S2 and in the Related References Section on the DOI Landing Page. The data are described in detail in the data description file and in van Dongen et al. (2018) to which they are supplementary material to.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -70.5503,
+                        -26.108
+                    ],
+                    [
+                        -70.5467,
+                        -26.119
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Parque Nacional Pan de Azúcar (PA)",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.1796,
+                        -29.7554
+                    ],
+                    [
+                        -71.1649,
+                        -29.7708
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Reserva Natural Santa Gracia (SG)",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.1796,
+                        -32.9455
+                    ],
+                    [
+                        -71.0087,
+                        -32.9715
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Parque Nacional La Campana (LC)",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -73.0382,
+                        -37.7843
+                    ],
+                    [
+                        -72.0007,
+                        -37.8278
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Parque Nacional Nahuelbuta (NB)",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_title": "SPP-1803 “EarthShape: Earth Surface Shaping by Biota”",
+            "funder_name": "Deutsche Forschungsgemeinschaft",
+            "award_number": "SCHE 1676/4-1",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias químicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

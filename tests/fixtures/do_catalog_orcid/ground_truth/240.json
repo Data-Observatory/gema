@@ -1,0 +1,1119 @@
+{
+    "resource": {
+        "identifier": "10.5285/afd8a811-6e5e-4441-a409-0e6924c36fc4",
+        "identifier_type": "DOI",
+        "publication_year": 2025,
+        "language": "en",
+        "version": "1.0",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Davey, Matthew P",
+            "given_name": "Matthew P",
+            "family_name": "Davey",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-5220-4174",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Thomson, Alex I",
+            "given_name": "Alex I",
+            "family_name": "Thomson",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-6958-0678",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Thomas, Naomi",
+            "given_name": "Naomi",
+            "family_name": "Thomas",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0002-4254-4236",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Gray, Andrew",
+            "given_name": "Andrew",
+            "family_name": "Gray",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1145-9741",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Smith, Alison",
+            "given_name": "Alison",
+            "family_name": "Smith",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cambridge",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-6511-5704",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Colesie, Claudia",
+            "given_name": "Claudia",
+            "family_name": "Colesie",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1136-0290",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Walshaw, Charlotte",
+            "given_name": "Charlotte",
+            "family_name": "Walshaw",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-6478-4076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Fretwell, Peter",
+            "given_name": "Peter",
+            "family_name": "Fretwell",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-1988-5844",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Peck, Lloyd",
+            "given_name": "Lloyd",
+            "family_name": "Peck",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3479-6791",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Moulton, Hannah",
+            "given_name": "Hannah",
+            "family_name": "Moulton",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Convey, Peter",
+            "given_name": "Peter",
+            "family_name": "Convey",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-8497-9903",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Davey, Matthew P",
+            "given_name": "Matthew P",
+            "family_name": "Davey",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-5220-4174",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Davey, Matthew P",
+            "given_name": "Matthew P",
+            "family_name": "Davey",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectLeader",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-5220-4174",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Davey, Matthew P",
+            "given_name": "Matthew P",
+            "family_name": "Davey",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-5220-4174",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Thomson, Alex I",
+            "given_name": "Alex I",
+            "family_name": "Thomson",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-6958-0678",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Thomson, Alex I",
+            "given_name": "Alex I",
+            "family_name": "Thomson",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-6958-0678",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Thomas, Naomi",
+            "given_name": "Naomi",
+            "family_name": "Thomas",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0002-4254-4236",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Thomas, Naomi",
+            "given_name": "Naomi",
+            "family_name": "Thomas",
+            "affiliations": [
+                {
+                    "affiliation_name": "Scottish Association For Marine Science",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0002-4254-4236",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Gray, Andrew",
+            "given_name": "Andrew",
+            "family_name": "Gray",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1145-9741",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Gray, Andrew",
+            "given_name": "Andrew",
+            "family_name": "Gray",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1145-9741",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Smith, Alison",
+            "given_name": "Alison",
+            "family_name": "Smith",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Cambridge",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-6511-5704",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Colesie, Claudia",
+            "given_name": "Claudia",
+            "family_name": "Colesie",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1136-0290",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Colesie, Claudia",
+            "given_name": "Claudia",
+            "family_name": "Colesie",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-1136-0290",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Walshaw, Charlotte",
+            "given_name": "Charlotte",
+            "family_name": "Walshaw",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-6478-4076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Walshaw, Charlotte",
+            "given_name": "Charlotte",
+            "family_name": "Walshaw",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Edinburgh",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Researcher",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-6478-4076",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Fretwell, Peter",
+            "given_name": "Peter",
+            "family_name": "Fretwell",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-1988-5844",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Peck, Lloyd",
+            "given_name": "Lloyd",
+            "family_name": "Peck",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-3479-6791",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Moulton, Hannah",
+            "given_name": "Hannah",
+            "family_name": "Moulton",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Moulton, Hannah",
+            "given_name": "Hannah",
+            "family_name": "Moulton",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Other",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Convey, Peter",
+            "given_name": "Peter",
+            "family_name": "Convey",
+            "affiliations": [
+                {
+                    "affiliation_name": "British Antarctic Survey",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ProjectMember",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-8497-9903",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "UK Polar Data Centre",
+            "affiliations": [
+                {
+                    "affiliation_name": "Natural Environment Research Council",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataManager",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Organizational",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "UK Polar Data Centre",
+            "affiliations": [
+                {
+                    "affiliation_name": "Natural Environment Research Council",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "Distributor",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Organizational",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "UK Polar Data Centre",
+            "affiliations": [
+                {
+                    "affiliation_name": "Natural Environment Research Council",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "role_name_type": "Organizational",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "language": "en-GB",
+            "name": "Locations, descriptors, cell observations and model output for snow algae samples, Robert Island, South shetland islands, 2023",
+            "title_type": "MainTitle"
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "NERC EDS UK Polar Data Centre",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "\"EARTH SCIENCE\",\"BIOLOGICAL CLASSIFICATION\",\"PROTISTS\",\"MACROALGAE (SEAWEEDS)\"",
+            "publisher_scheme_uri": "http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=xml",
+            "subject_scheme": "GCMD",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "\"EARTH SCIENCE\",\"BIOLOGICAL CLASSIFICATION\",\"PROTISTS\",\"MACROALGAE (SEAWEEDS)\",\"RED ALGAE\"",
+            "publisher_scheme_uri": "http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=xml",
+            "subject_scheme": "GCMD",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "\"EARTH SCIENCE\",\"TERRESTRIAL HYDROSPHERE\",\"SNOW/ICE\"",
+            "publisher_scheme_uri": "http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords/?format=xml",
+            "subject_scheme": "GCMD",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Antarctica",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Red Algae",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Microbiology",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "FOS: Biological sciences",
+            "publisher_scheme_uri": "http://www.oecd.org/science/inno/38235147.pdf",
+            "subject_scheme": "Fields of Science and Technology (FOS)",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Remote Sensing",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Robert Island",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Snow Algae",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2023-01-07",
+            "date_type": "Collected",
+            "date_information": ""
+        },
+        {
+            "date": "2023-02-18",
+            "date_type": "Collected",
+            "date_information": ""
+        },
+        {
+            "date": "2025-02-12",
+            "date_type": "Accepted",
+            "date_information": ""
+        },
+        {
+            "date": "2025-02-12",
+            "date_type": "Created",
+            "date_information": ""
+        },
+        {
+            "date": "2025-02-12",
+            "date_type": "Submitted",
+            "date_information": ""
+        },
+        {
+            "date": "2025-02-13",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "References",
+            "resource_type_general": "Dataset",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsReferencedBy",
+            "resource_type_general": "Dataset",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "References",
+            "resource_type_general": "Dataset",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsReferencedBy",
+            "resource_type_general": "Dataset",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "https://snowalgae.org/",
+            "resource_type_general": "InteractiveResource",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 4.0,
+                    "unit": "files"
+                },
+                {
+                    "size": 12.1,
+                    "unit": "MB"
+                }
+            ],
+            "format": "text/csv",
+            "file_uri": "https://data.bas.ac.uk/full-record.php?id=GB/NERC/BAS/PDC/02014",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "language": "en-GB",
+            "rights": "Open Government Licence V3.0",
+            "rights_uri": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+        }
+    ],
+    "descriptions": [
+        {
+            "language": "en-GB",
+            "description": "This dataset is a sequential list of all the terrestrial snow and ice samples taken at Robert Island, Antarctica from January 2023 to March 2023. Sample date, location, bloom colour and what the sample was subsequently used for (metabolomics, pigment, DNA, DOC, FTIR, CN), along with cell counts is provided. Cell counts and biometric measurements of Ancylonema are included in the dataset. The samples were taken by small 15ml or 50ml plastic tube sampling in the snow pack or on the icecap hard ice. This was to study the habitat and ecosystem progression over the season and linking this to other satellite or drone or vegetation data. A remote sensing output (red snow algae vector for Robert Island) was also produced. The expedition and sampling was carried out by Matthew Davey (PI), Alex Thomson, Andrew Gray, Hannah Moulton, Charlotte Walshaw with support from INACH, Chile and BAS. This was part of a wider project with Claudia Colesie, Naomi Thomas, Peter Convey, Alison G. Smith, Peter Fretwell, Lloyd Peck. Samples were transferred to UK (SAMS) for further analysis.\nThis project was funded by Standard NERC References: NE/V000764/1 and NE/V000896/1. The past, present and future of snow algae in Antarctica: a threatened terrestrial ecosystem?",
+            "description_type": "Abstract"
+        },
+        {
+            "language": "en-GB",
+            "description": "Snow algae and ice cap surface samples were collected in 50 ml sterile plastic sample tubes at locations across the north-west part of Robert Island's ice cap (South Shetland Islands, maritime Antarctic; 62°22'44.4''S 59°42'1.78''W) between 7 January 2023 and 18 February 2023. Sampling locations were chosen to encompass a range of snow and ice surface types.\n\n50 ml and 15 ml samples were taken from the top 3 cm of snow or ice weathering crust. Samples were transported within 1 - 3 h to the laboratory at the Chilean (INACH) station Luis Risopatron, Coppermine Cove, on Robert Island for sample processing, cell counts and field microscopy.\n\nSample tubes were thawed at air temperature (&lt;10 °C) within the research station within 1 - 5 h of sampling. Cell counts were obtained manually by counting auto-fluorescent cells in 2 x 10 µl aliquots from each sample on an Invitrogen Countess 3 FL Automated Cell Counter. The identification of algal cells was based on morphological features observed from the cell counter images. An additional 10 µl aliquot was taken for field microscopy and imaging of the fresh samples using a Dino-lite microscope (Taiwan). Samples for additional microscopy in the UK were prepared by centrifuging a 15 ml aliquot of the sample tube for 2 min at 3,000 rpm, removing the snow-melt supernatant, resuspending the pellet, and transferring it to a 2 ml microfuge tube before being stored at -20 °C. Sample pellets for the metabolomics, pigments, FTIR and total CN were freeze-dried on Robert Island for analysis in the UK. Samples were collected from Robert Island by the RRS Sir David Attenborough (SDA) on 24 February 2023 where they were stored at -20 °C and transported to the UK.\n\nAncylonema cell counts were obtained manually by identifying Ancylonema cells from the Countess 3 FL output images. Due to the poor resolution of the Countess images it was not possible to calculate individual cell counts of other species groups present. An additional 10 µl aliquot was taken for field microscopy and imaging of the fresh samples using a Dino-lite microscope (Taiwan). Biometric measurement of cell length and width for Ancylonema cells were taken from calibrated Dino-lite imagery (n = 570 cells from 37 samples).\n\nThe extent of algae on the Robert Island ice cap was determined within a WorldView 2 satellite image (Maxar Technologies), taken on 6 February 2023, coincident with our fieldwork. Using the methodology outlined in Gray, A., Krolikowski, M., Fretwell, P., Convey, P., Peck, L. S., Mendelova, M., Smith, A. G., Davey, M. P., 2021. Remote Sensing Phenology of Antarctic Green and Red Snow Algae Using WorldView Satellites. Frontiers in Plant Science, 12, 877-877. https://doi.org/10.3389/FPLS.2021.671981/BIBTEX, algal presence on the ice cap was classified based on chlorophyll-a absorbance within each pixel. This was calculated on a per-pixel basis using Equation 3, which describes the scaled integral of WorldView 2's Band 4 versus Band 3 and Band 5, the centres of which are located within and on either shoulder of the chlorophyll absorption feature.\n\nThough this method was originally optimised for detecting algae in snow, it successfully separated every HDRF sample from the background snow or weathering crust, when the equation in Gray et al. 2021 was applied to the collected HDRF spectra. However, an ice cap surface is more complex than a pure snow environment, with snow, weathering crust, glacial ice and different loadings of mineral debris. We do not have enough field spectra from this study to fully deconvolve cell densities based on chlorophyll- a absorption alone. Correlation between the equation in Gray et al. 2021 derived and measured cell densities for the HDRF samples we collected only had an R2 of 0.24. We therefore report a binary presence/absence classification of algal cells within each pixel where an algae-containing pixel has a value of greater than 5452 cells ml-1 (the y intercept of the integral versus cell density reported in Gray et al. 2021), rather than making a cell density estimate from the WorldView image. The ice cap was manually digitised within the image and only the algae present upon the ice cap included for analysis (see the attached 230206RobertIslandRedAlgaeExtent.gpkg). Bloom extent was calculated based on the sum of each pixel classified as containing algae.",
+            "description_type": "Methods"
+        },
+        {
+            "language": "en-GB",
+            "description": "Instrumentation:\nAutomated cell counter Thermo Countess 3. \nFreeze drier - HarvestRight Home Pro.",
+            "description_type": "TechnicalInfo"
+        },
+        {
+            "language": "en-GB",
+            "description": "Missing coordinate values are due to coordinates not taken on that field day or location due to weather conditions or battery of GPS unit.",
+            "description_type": "Other"
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_place": "Robert Island South Shetland Islands",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -60.09193,
+                        -62.3609
+                    ],
+                    [
+                        -59.68061,
+                        -62.63438
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_uri": "https://gtr.ukri.org/projects?ref=NE/V000764/1",
+            "publisher_scheme_uri": "https://ror.org",
+            "award_title": "The past, present and future of snow algae in Antarctica: a threatened terrestrial ecosystem?",
+            "funder_name": "Natural Environment Research Council",
+            "award_number": "NE/V000764/1",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://ror.org/02b5d8509",
+                    "funder_identifier_type": "ROR",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "award_uri": "https://gtr.ukri.org/projects?ref=NE/V000896/1",
+            "publisher_scheme_uri": "https://ror.org",
+            "award_title": "The past, present and future of snow algae in Antarctica: a threatened terrestrial ecosystem?",
+            "funder_name": "Natural Environment Research Council",
+            "award_number": "NE/V000896/1",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://ror.org/02b5d8509",
+                    "funder_identifier_type": "ROR",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias biológicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

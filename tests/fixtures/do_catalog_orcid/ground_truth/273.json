@@ -1,0 +1,1569 @@
+{
+    "resource": {
+        "identifier": "10.7288/v4/magic/17058",
+        "identifier_type": "DOI",
+        "publication_year": 2020,
+        "language": "en",
+        "version": "1",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Roperch, Pierrick",
+            "role_name_type": "Personal",
+            "given_name": "Pierrick",
+            "family_name": "Roperch",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Chauvin, Annick",
+            "role_name_type": "Personal",
+            "given_name": "Annick",
+            "family_name": "Chauvin",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Lara, Luis E.",
+            "role_name_type": "Personal",
+            "given_name": "Luis E.",
+            "family_name": "Lara",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Moreno, Hugo",
+            "role_name_type": "Personal",
+            "given_name": "Hugo",
+            "family_name": "Moreno",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Paléomagnétisme Géosciences Rennes (CNRS-Rennes 1 University, France)",
+            "role_name_type": "Personal",
+            "affiliations": [],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Secular variation of the Earth’s magnetic field and application to paleomagnetic dating of historical lava flows in Chile (Dataset)",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "Magnetics Information Consortium (MagIC)",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Extrusive",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Extrusive",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=geologic_classes",
+            "subject_scheme": "earthref.magic.geologic_classes",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Igneous",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Igneous",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=geologic_classes",
+            "subject_scheme": "earthref.magic.geologic_classes",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Archeologic",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Archeologic",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=geologic_classes",
+            "subject_scheme": "earthref.magic.geologic_classes",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Lava",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Lava",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=geologic_types",
+            "subject_scheme": "earthref.magic.geologic_types",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Brick",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Brick",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=geologic_types",
+            "subject_scheme": "earthref.magic.geologic_types",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Basaltic Andesite",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Basaltic Andesite",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=lithologies",
+            "subject_scheme": "earthref.magic.lithologies",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Baked Earths",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Baked Earths",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=lithologies",
+            "subject_scheme": "earthref.magic.lithologies",
+            "scheme_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "50",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=age_low",
+            "subject_scheme": "earthref.magic.age_low",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "550",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=age_high",
+            "subject_scheme": "earthref.magic.age_high",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Years BP",
+            "value_uri": "https://earthref.org/vocabularies/controlled?q=Years BP",
+            "publisher_scheme_uri": "https://earthref.org/MagIC/data-models/3.0?q=age_unit",
+            "subject_scheme": "earthref.magic.age_unit",
+            "scheme_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2020-12-28",
+            "date_type": "Available",
+            "date_information": ""
+        },
+        {
+            "date": "2020-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsCitedBy",
+            "related_identifier": "10.1016/j.pepi.2015.03.005",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "",
+            "file_uri": "https://earthref.org/MagIC/17058",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Paleomagnetic, rock magnetic, or geomagnetic data found in the MagIC data repository from a paper titled: Secular variation of the Earth’s magnetic field and application to paleomagnetic dating of historical lava flows in Chile",
+            "description_type": "Other",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -70.67,
+                        -33.45
+                    ],
+                    [
+                        -70.66,
+                        -33.46
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Casuchas Road Los Andes Mendoza",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.45,
+                        -37.37
+                    ],
+                    [
+                        -71.35,
+                        -37.4
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.53,
+                        -38.36
+                    ],
+                    [
+                        -71.525,
+                        -38.365
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Lonquimay volcano",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.65,
+                        -38.75
+                    ],
+                    [
+                        -71.61,
+                        -38.85
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.98,
+                        -39.35
+                    ],
+                    [
+                        -71.92,
+                        -39.38
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -72.54,
+                        -41.12
+                    ],
+                    [
+                        -72.51,
+                        -41.18
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -72.27,
+                        -41.3
+                    ],
+                    [
+                        -72.268,
+                        -41.31
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Cayutue",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Casuchas Road Los Andes Mendoza: 11CA",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -33.45742,
+                "lon": -70.6612
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Casuchas Road Los Andes Mendoza: 11JU",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -33.45742,
+                "lon": -70.6612
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 11CL53",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.37803,
+                "lon": -71.36329
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL02",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.3781,
+                "lon": -71.3738
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 11CL54",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.37833,
+                "lon": -71.37168
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL11",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.37902,
+                "lon": -71.36469
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL12",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.38352,
+                "lon": -71.3769
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL13",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.3865,
+                "lon": -71.3844
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL05",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.38838,
+                "lon": -71.39426
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL03",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.39634,
+                "lon": -71.4343
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Antuco volcano: 10CL04",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -37.39796,
+                "lon": -71.4267
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Lonquimay volcano: 12CL90",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.36335,
+                "lon": -71.5303
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL60",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.69345,
+                "lon": -71.6205
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 12C107",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.70505,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 12C108",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.70505,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 12C109",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.70505,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 12C105",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.70529,
+                "lon": -71.6528
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 12C106",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.70529,
+                "lon": -71.6528
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL62",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.74902,
+                "lon": -71.6505
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL63",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75272,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL64",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75272,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL65",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75272,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL66",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75272,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL67",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75272,
+                "lon": -71.65467
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL24",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75519,
+                "lon": -71.62458
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL19",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.75936,
+                "lon": -71.6295
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 11CL58",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.77202,
+                "lon": -71.6295
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL22",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.77308,
+                "lon": -71.6965
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL20",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.80249,
+                "lon": -71.68537
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL15",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.82779,
+                "lon": -71.65076
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL17",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.83234,
+                "lon": -71.655
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL16",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.83526,
+                "lon": -71.6552
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL14",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.84149,
+                "lon": -71.6552
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Llaima volcano: 10CL18",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -38.84186,
+                "lon": -71.65537
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 95VR21",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.34109,
+                "lon": -71.97107
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 10CL45",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.35288,
+                "lon": -71.9694
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 10CL43",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.3537,
+                "lon": -71.96827
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 10CL44",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.35439,
+                "lon": -71.9707
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 10CL46",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.3561,
+                "lon": -71.96396
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL72",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.35705,
+                "lon": -71.9622
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL73",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.35933,
+                "lon": -71.9665
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL74",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.37115,
+                "lon": -71.9595
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 10CL47",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.37148,
+                "lon": -71.95588
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL70",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.37543,
+                "lon": -71.94407
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL71",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.37543,
+                "lon": -71.94407
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL75",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.37687,
+                "lon": -71.95057
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL76",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.3797,
+                "lon": -71.94986
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 95VR20",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -39.381,
+                "lon": -71.9503
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Villarica volcano: 11CL78",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.12587,
+                "lon": -72.61466
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 10CL30",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.13281,
+                "lon": -72.53608
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 10CL29",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.13539,
+                "lon": -72.5392
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 10CL31",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.13702,
+                "lon": -72.538
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 10CL28",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.14903,
+                "lon": -72.51719
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 10CL32",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.16078,
+                "lon": -72.51148
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 11CL81",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.16697,
+                "lon": -72.5726
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 11CL82",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.1748,
+                "lon": -72.5577
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 11CL87",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.17845,
+                "lon": -72.5537
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Osorno volcano: 11CL83",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.20317,
+                "lon": -72.48987
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Cayutue: 12CL96",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_point": {
+                "lat": -41.30272,
+                "lon": -72.2695
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

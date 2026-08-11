@@ -1,0 +1,478 @@
+{
+    "resource": {
+        "identifier": "10.26023/g093-9ezv-vh0p",
+        "identifier_type": "DOI",
+        "publication_year": 2009,
+        "language": "en",
+        "version": "1.0",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [
+        {
+            "alternate_identifier": "89.107",
+            "alternate_identifier_type": "local",
+            "alternate_name": ""
+        }
+    ],
+    "roles": [
+        {
+            "role_name": "Munoz, R.",
+            "role_name_type": "Personal",
+            "given_name": "R.",
+            "family_name": "Munoz",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-4434-5620",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "National Science Foundation (NSF):National Center for Atmospheric Research (NCAR):Earth Observing Laboratory (EOL)",
+            "role_name_type": "Organizational",
+            "affiliations": [],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "NSF NCAR Earth Observing Laboratory; datahelp@eol.ucar.edu",
+            "affiliations": [],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://ror.org",
+                    "name_identifier": "https://ror.org/02b5sc606",
+                    "name_identifier_scheme": "ROR"
+                }
+            ],
+            "type": "Contributor",
+            "role_name_type": "Organizational",
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Garreaud, Rene",
+            "role_name_type": "Personal",
+            "given_name": "Rene",
+            "family_name": "Garreaud",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Chile",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "DataCollector",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-7875-2443",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "VOCALS: Paposo Chile Lower Site AWS Meteorological Data. Version 1.0",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "NSF NCAR Earth Observing Laboratory",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Land Based",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Surface",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Weather Stations",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ Land-based Platforms &gt; WEATHER STATIONS/NETWORKS &gt; WEATHER STATIONS &gt; &gt; 1551f765-cbb8-479f-a796-87c61868c509",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "1551f765-cbb8-479f-a796-87c61868c509",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Wind Vanes",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Current/Wind Meters &gt; &gt; &gt; WIND VANES &gt; &gt; 9039aa7d-2f28-49da-afe5-e7dff64693fe",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "9039aa7d-2f28-49da-afe5-e7dff64693fe",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Barometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Pressure/Height Meters &gt; &gt; &gt; BAROMETERS &gt; &gt; 0bf12743-3ab8-4be7-9b48-b565723ed0ad",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "0bf12743-3ab8-4be7-9b48-b565723ed0ad",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Hygrometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Temperature/Humidity Sensors &gt; Hygrometers &gt; &gt; HYGROMETERS &gt; &gt; 8a22fea1-f43e-4147-abca-13e44016a483",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "8a22fea1-f43e-4147-abca-13e44016a483",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Pyranometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Earth Remote Sensing Instruments &gt; Passive Remote Sensing &gt; Thermal/Radiation Detectors &gt; &gt; PYRANOMETERS &gt; &gt; 6bab9a56-28b2-44f3-9673-d9cd0bee44bc",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "6bab9a56-28b2-44f3-9673-d9cd0bee44bc",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Net Radiometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Spectrometers/Radiometers &gt; &gt; &gt; NET RADIOMETERS &gt; &gt; aa0f2b35-e7f2-47fe-a782-6c8040d5eb57",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "aa0f2b35-e7f2-47fe-a782-6c8040d5eb57",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Automated Weather System",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Recorders/Loggers &gt; &gt; &gt; AWS &gt; Automated Weather System &gt; 2fc6cda0-bc5f-4614-95f2-0abadee5d476",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "2fc6cda0-bc5f-4614-95f2-0abadee5d476",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Thermometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Temperature/Humidity Sensors &gt; Thermometers &gt; &gt; THERMOMETERS &gt; &gt; 1cf3fcba-3195-45b8-a14c-dbaf7111b6df",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "1cf3fcba-3195-45b8-a14c-dbaf7111b6df",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "Anemometers",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In Situ/Laboratory Instruments &gt; Current/Wind Meters &gt; &gt; &gt; ANEMOMETERS &gt; &gt; d0cf9340-dc51-447f-a151-f6cdad265d9a",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "d0cf9340-dc51-447f-a151-f6cdad265d9a",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC RADIATION &gt; SOLAR RADIATION",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "a0f3474e-9a54-4a82-97c4-43864b48df4c",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC WINDS &gt; SURFACE WINDS &gt; WIND SPEED",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "a92f49f3-e2ee-4ef4-b064-39311ffb95d3",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC RADIATION &gt; NET RADIATION",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "50ee8910-449b-46c8-a59b-1cd76d632b44",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC PRESSURE &gt; SURFACE PRESSURE",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "b54de5cd-4475-4c7b-acbc-4eb529b9396e",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC TEMPERATURE &gt; SURFACE TEMPERATURE &gt; AIR TEMPERATURE",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "f634ab55-de40-4d0b-93bc-691bf5408ccb",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC WATER VAPOR &gt; WATER VAPOR INDICATORS &gt; HUMIDITY &gt; RELATIVE HUMIDITY",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "a249c68f-8249-4285-aad2-020b3c5aefc3",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC WINDS &gt; SURFACE WINDS &gt; WIND DIRECTION",
+            "publisher_scheme_uri": "https://gcmd.nasa.gov/",
+            "subject_scheme": "GCMD",
+            "classification_code": "e987550e-d443-48eb-93eb-0bc47a62d4b4",
+            "scheme_uri": "",
+            "value_uri": ""
+        },
+        {
+            "subject_name": "VOCALS",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "VAMOS Ocean-Cloud-Atmosphere-Land Study",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2009-08-07",
+            "date_type": "Available",
+            "date_information": ""
+        },
+        {
+            "date": "2009-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsDocumentedBy",
+            "related_identifier": "https://data.eol.ucar.edu/file/download/41B39ABB038/DocumentationPaposoLowerSiteAWS.pdf",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsSupplementedBy",
+            "related_identifier": "https://www.eol.ucar.edu/field_projects/vocals",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDocumentedBy",
+            "related_identifier": "http://catalog.eol.ucar.edu/vocals/missions/missions.html",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDocumentedBy",
+            "related_identifier": "https://www.eol.ucar.edu/content/vocals-data-policy-draft",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDocumentedBy",
+            "related_identifier": "https://catalog.eol.ucar.edu/vocals/missions/missions.html",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 1.0,
+                    "unit": "data file"
+                },
+                {
+                    "size": 1.0,
+                    "unit": "ancillary/documentation file"
+                },
+                {
+                    "size": 803.0,
+                    "unit": "KiB"
+                }
+            ],
+            "format": "ASCII: ASCII Text (text/plain)",
+            "file_uri": "https://data.eol.ucar.edu/dataset/89.107",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "These data are available to be used subject to the University Corporation for Atmospheric Research (\"UCAR\") terms and conditions.",
+            "rights_uri": "https://www.ucar.edu/terms-of-use"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This dataset includes AWS Meteorological data collected from the lower Paposo site in Chile. There is a single data file in ascii format.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_point": {
+                "lat": -25.00993,
+                "lon": -70.4679
+            },
+            "geo_location_place": "",
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

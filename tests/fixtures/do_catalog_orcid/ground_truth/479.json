@@ -1,0 +1,349 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.874977",
+        "identifier_type": "DOI",
+        "publication_year": 2016,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Vossen, Kathrin",
+            "given_name": "Kathrin",
+            "family_name": "Vossen",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Diercks, Susann",
+            "given_name": "Susann",
+            "family_name": "Diercks",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Wurz, Erik",
+            "given_name": "Erik",
+            "family_name": "Wurz",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-8057-3738",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Laudien, Jürgen",
+            "given_name": "Jürgen",
+            "family_name": "Laudien",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-2663-4821",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Häussermann, Verena",
+            "given_name": "Verena",
+            "family_name": "Häussermann",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-9630-7477",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Försterra, Günter",
+            "given_name": "Günter",
+            "family_name": "Försterra",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Mass increase per year of Tethocyathus endesa from a crosstransplant experiment carried out in Comau Fjord, Chile",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Event label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LATITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LONGITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Site",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DEPTH, sediment/rock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sample ID",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DATE/TIME",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Tethocyathus endesa, buoyant mass",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Temperature, water",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Salinity",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Tethocyathus endesa, mass",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Tethocyathus endesa, mass difference",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Tethocyathus endesa, mass increase",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Monitoring station",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Bentho-Pelagic Processes @ AWI (AWI_BPP)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2016-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "10.1594/pangaea.874981",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "References",
+            "related_identifier": "10013/epic.48845.d001",
+            "related_identifier_type": "Handle",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 505.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.874977",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 3.0 Unported",
+            "rights_uri": "https://creativecommons.org/licenses/by/3.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-3.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "A crosstransplantation experiment between sites of high (Liliguapi) and low pH (XHuinayN) was started in 2014 with specimen of the scleractinian coral Tethocyathus endesa. After the initial collection in 2014 the corals were glued onto polyvinylchloride screws in order to be attached to holders that were installed at the collection sites. Originally 20 corals were collected at each site of which 10 were reinstalled at the same site and 10 were reinstalled at the respective other site. To measure the coral mass increase from 2014 to 2016, the buoyant weight technique was used. Corals were collected annually and each time the experiments were carried out in the laboratory of the Huinay Scientific Field Station. The coral specimen were weighed using a high-precision scale (CPA225D-OCE, Sartorius, Göttingen, Germany), which was set up on a weighing platform on concrete floor to ensure the most stable surroundings possible. A weighing basket was attached to the underside of the scale through tungsten filament. Below the scale, a 7 l aquarium was set up, which was filled high enough with filtered seawater from the holding aquaria of the corals so that the weighing basket was fully submerged. It was also made sure that any air bubbles adhering to the coral or the weighing basket were removed. The temperature of the water inside the weighing aquarium was kept at +/- 0.5 °C from the holding tanks and was regulated using cooling packs placed around the aquarium and a frequent exchange of water. Temperature and salinity of the water inside the weighing tank were measured for each coral to determine the density of the seawater inside the aquarium. The corals themselves were weighed three times each from which a mean value was calculated. Afterwards the coral's mass in air was calculated from the measured weight in water, the skeletal density of the corals and the density of the water inside the weighing aquarium. Data acquired in 2016 was used in combination with data from 2014 and 2015 to calculate the mass increase between 2014 and 2016.This dataset was generated within the framework of the co-operation between the Huinay Scientific Field Station (http://www.huinay.cl) and the Alfred Wegener Institute, Helmholtz Center for Polar and Marine Research (http://www.awi.de)",
+            "description_type": "TechnicalInfo",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -72.59857999999997,
+                        -42.16203
+                    ],
+                    [
+                        -72.46104000000003,
+                        -42.38726
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Comau Fjord, Patagonia, Chile",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias biológicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}
