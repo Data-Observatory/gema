@@ -220,6 +220,7 @@ class TestPipelineConfig:
         assert p.strategies == {}
         assert p.max_workers == 4
         assert p.enable_identifier_enrichment is False
+        assert p.enable_content_fetch is False
         assert p.validate_pids is True
         assert p.validate_pids_live is True
 
@@ -238,6 +239,20 @@ class TestPipelineConfig:
         assert p.enable_identifier_enrichment is True
         assert p.validate_pids is False
         assert p.validate_pids_live is False
+
+    def test_content_fetch_override(self):
+        """enable_content_fetch defaults off (no cost/behavior change for
+        existing users) and can be explicitly opted into, same pattern as
+        enable_identifier_enrichment."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+            enable_content_fetch=True,
+        )
+        assert p.enable_content_fetch is True
 
     def test_max_workers_override(self):
         """max_workers can be tuned down for tightly rate-limited providers."""

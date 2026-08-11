@@ -77,6 +77,7 @@ class PipelineConfig(BaseModel):
     strategies: dict[str, str] = {}
     max_workers: int = Field(default=4, ge=1)
     enable_identifier_enrichment: bool = False
+    enable_content_fetch: bool = False
     validate_pids: bool = True
     validate_pids_live: bool = True
 
