@@ -14,11 +14,18 @@ enough context to pick up cold; prune entries once actually done.
   calling), not a prompt tweak. Same underlying gap as the DOI-resolver idea
   below — nothing in this pipeline can currently "look things up," every
   agent call is a stateless completion over whatever text is in the prompt.
-- **Shared `system_prompt` to stop the 5 agent prompts drifting out of
-  sync.** `AgentConfig.system_prompt` exists but is unused (`None` for every
-  agent in `config/agents.yaml`). Boilerplate ("NUNCA usar null",
-  "Devolver SOLO JSON valido", chain-of-thought framing) is duplicated
-  5x with no mechanism keeping the copies consistent.
+- **Split `core_metadata` into two agents** (identified during the 2026-08-11
+  prompt review, not implemented). It's twice the size of any other agent
+  (9 reasoning steps, 9 output fields) and its weakest-quality fields
+  (`geo_locations`, `temporal_events`, `alternate_identifiers`,
+  `related_identifiers`) sit at the end, where a cheap model's instruction-
+  following is weakest. Candidate split: keep `core_metadata` for
+  resource/titles/descriptions/languages/dates, add a new agent for
+  geo/temporal/alternate+related identifiers. Config-only change
+  (`depends_on: []` either way, so no orchestration risk) but costs
+  wall-clock at `max_workers: 1` — weigh against the quality gain, or at
+  minimum reorder the existing prompt so the highest-value fields sit
+  closest to the appended resource data.
 - **DOI-resolver enricher**: for DOI-identified resources, fetch real
   Crossref/DataCite metadata to backfill weak/missing fields, instead of
   relying purely on LLM extraction from title/description text. Flagged
