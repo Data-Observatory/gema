@@ -1,0 +1,375 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.963190",
+        "identifier_type": "DOI",
+        "publication_year": 2023,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Steiner, Zvi",
+            "given_name": "Zvi",
+            "family_name": "Steiner",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-9584-4956",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Krahmann, Gerd",
+            "given_name": "Gerd",
+            "family_name": "Krahmann",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Schlundt, Michael",
+            "given_name": "Michael",
+            "family_name": "Schlundt",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-4462-8230",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Achterberg, Eric Pieter",
+            "given_name": "Eric Pieter",
+            "family_name": "Achterberg",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Physical oceanography during SONNE cruise SO289 (stainless steel CTD bottle closure data)",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "CTD",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Event label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DATE/TIME",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LATITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LONGITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sample code/label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Cast number",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Bottle number",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DEPTH, water",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Pressure, water",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Temperature, water",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Salinity",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Oxygen",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Fluorescence, chlorophyll",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Radiation, photosynthetically active",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Density, potential",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Density, sigma, in situ",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Turbidity (Nephelometric turbidity unit)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "CTD/Rosette",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "In situ pump",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "SO289",
+            "subject_scheme": "Campaign",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sonne_2",
+            "subject_scheme": "Basis",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Global marine biogeochemical cycles of trace elements and their isotopes (GEOTRACES)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2023-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "References",
+            "related_identifier": "10.1594/pangaea.953836",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 15947.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.963190",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "During RV Sonne cruise SO289 from Valparaiso, Chile to Nouméa, New Caledonia (GEOTRACES GP21 transect) during February – April 2022 two SeaBird SBE911Plus CTD were deployed at 44 different stations. One CTD was mounted on a stainless-steel rosette and was connected to the following sensors: Pressure (Digiquartz with TC), two temperature sensors (ITS90 °C), two conductivity sensors, oxygen (SBE43), PAR (Biospherical Licor Chelsea sensor), fluorometer (Wet Labs ECO-AFL/FL), turbidity (Wet Labs ECO-NTU) and an altimeter. The second CTD was mounted on a titanium rosette used for trace metal clean collection of water samples, and was connected to the following sensors: Pressure (Digiquartz with TC), two temperature sensors (ITS90 °C), two conductivity sensors, two oxygen sensors (SBE43), transmissometer (Wet Labs C-Star), turbidity (OBS Seapoint) and an altimeter. The oxygen and salinity data were calibrated against discrete water samples.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.72899999999998,
+                        -25.718
+                    ],
+                    [
+                        171.999,
+                        -33.608
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "South Pacific Ocean",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_title": "GEOTRACES GP21",
+            "funder_name": "Bundesministerium für Bildung und Forschung, Bonn",
+            "award_number": "03GPF 18-1_032",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100002347",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

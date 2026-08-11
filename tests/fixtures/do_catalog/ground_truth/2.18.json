@@ -1,0 +1,216 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Gobierno"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Ciudadanía"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Geografía económica y social"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2010-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2011-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2012-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2013-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2014-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2015-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2016-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2017-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2018-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2019-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2020-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2021-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2022-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Datos de la Municipalidad de Laja que registran los permisos de circulación vehicular emitidos en la comuna desde el año 2010 al 2022, con información por año sobre número de permisos, tipos de vehículos, fechas de vigencia y montos pagados.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "1 dataset; 1 csv (10,2 MB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "",
+            "geo_description": "Alcance de la base de datos de la Municipalidad de Laja",
+            "geo_location_place": "Laja, Región del Bío Bío, Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [
+        {
+            "Collections": [
+                {
+                    "file_url": "https://datos.gob.cl/dataset/aa30e1fb-b3ce-44b3-aba9-20f1ec818a4a/resource/f42bb7ba-0e8d-4a90-ab0f-670beca5c0b3/download/pcv2010-2022.csv",
+                    "format": "text/csv",
+                    "size": "10,1",
+                    "title": "pcv2010-2022.csv",
+                    "unit": "MB"
+                }
+            ],
+            "checksum": "",
+            "data_quality": "",
+            "description": "",
+            "file_uri": "https://datos.gob.cl/dataset/base-permisos-de-circulacion-laja",
+            "format": "collection",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "",
+            "sizes": [],
+            "temporal_resolution": "",
+            "title": "Base Permisos de Circulación Laja",
+            "variable_measured": ""
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "https://www.wikidata.org/wiki/Q108381608",
+            "publisher_identifier_scheme": "Wikidata",
+            "publisher_name": "Datos.Gob",
+            "publisher_scheme_uri": "https://www.wikidata.org/wiki/Wikidata:Main_Page"
+        }
+    ],
+    "related_identifiers": [],
+    "resource": {
+        "contact": "",
+        "editor": "",
+        "identifier": "https://datos.gob.cl/dataset/?q=permisos+de+circulaci%C3%B3n&fq=filter%28organization%3Amunicipalidad_de_laja%29",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Datos.Gob",
+        "producer": "",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2022"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution Non Commercial 4.0 International",
+            "rights_condition": "",
+            "rights_holder": "",
+            "rights_identifier": "cc-by-nc-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by-nc/4.0/legalcode",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [],
+            "role_name": "Municipalidad de Laja",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Traffic regulations",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "https://id.loc.gov/authorities/subjects/sh85136773.html"
+        }
+    ],
+    "temporal_events": [],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Permisos de circulación de la Municipalidad de Laja",
+            "title_type": "MainTitle"
+        }
+    ]
+}

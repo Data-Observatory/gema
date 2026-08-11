@@ -1,0 +1,772 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.982516",
+        "identifier_type": "DOI",
+        "publication_year": 2025,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": "",
+        "language": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Mallikarjun, Jhenkhar",
+            "given_name": "Jhenkhar",
+            "family_name": "Mallikarjun",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Göttingen",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-0838-200X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Gorbushina, Anna A",
+            "given_name": "Anna A",
+            "family_name": "Gorbushina",
+            "affiliations": [
+                {
+                    "affiliation_name": "Bundesanstalt für Materialforschung und -prüfung, Geschäftsbereich des Bun, Berl",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-7685-7797",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Kuzyakov, Yakov",
+            "given_name": "Yakov",
+            "family_name": "Kuzyakov",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Göttingen",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-9863-8461",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Koester, Moritz",
+            "given_name": "Moritz",
+            "family_name": "Koester",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Göttingen",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Castro, Rodrigo",
+            "given_name": "Rodrigo",
+            "family_name": "Castro",
+            "affiliations": [
+                {
+                    "affiliation_name": "Temuco Catholic University",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Yudina, Anna",
+            "given_name": "Anna",
+            "family_name": "Yudina",
+            "affiliations": [
+                {
+                    "affiliation_name": "V.V. Dokuchaev Soil Science Institute",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Matus, Francisco",
+            "given_name": "Francisco",
+            "family_name": "Matus",
+            "affiliations": [
+                {
+                    "affiliation_name": "Universidad de La Frontera",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Dippold, Michaela Anna",
+            "given_name": "Michaela Anna",
+            "family_name": "Dippold",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Tübingen",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-3657-4693",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Post-fire soil physical and chemical properties, temperate and mediterranean ecosystem of Chile",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "cations",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Chile",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Ecosystem",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Fire",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "historical",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "isotopes",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Mediterranean",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "nutrient",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "pH",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Physical properties",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "soil texture",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Temperate",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "wildfire",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Event label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Location of event",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Ecosystem",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Years, post-fire",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sample code/label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DATE/TIME",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LONGITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LATITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "ELEVATION",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Slope inclination, descriptive",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Aspect",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Time Stamp",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Instrument",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Device type",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Replicate",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Depth, soil, minimum",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Depth, soil, maximum",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DEPTH, soil",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Density, dry bulk",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Clay",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Silt",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sand",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "pH",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Carbon, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Nitrogen, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "δ13C",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "δ15N",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Phosphorus, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Calcium, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Magnesium, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sodium, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Potassium, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Manganese, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Iron, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Aluminum, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sulfur, stock",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Soil sample",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Gravimetric analysis (oven-dried at 105°C)",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Laser diffraction particle size analyzer, Microtrac, BLUEWAVE [Data processing with Microtrac Flex 11.0.0.1 software]",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Isotope ratio mass spectrometer, Thermo Fisher Scientific, Delta V Advantage with Conflo III interface; coupled to elemental analyzer, Thermo Fisher Scientific, Flash 2000",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Inductively coupled plasma–optical emission spectrometer (ICP-OES), Thermo Fisher Scientific, iCAP 7000",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2025-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier": "10.1016/j.catena.2025.109431",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "References",
+            "related_identifier": "10.1002/jpln.201000255",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 8143.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.982516",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This dataset comprises detailed measurements of soil physical and chemical properties from Mediterranean woodlands (La Campana) and humid temperate forests (Nahuelbuta) in Chile, collected along a 14-year post-fire chronosequence. Additionally, long-term unburnt reference sites—59 years for Nahuelbuta and 39 years for La Campana—were included for comparison. The data include soil physical properties, such as bulk density, measured gravimetrically for soil depths of 0-5 cm and 5-10 cm, and soil texture, with particle size distribution (clay, silt, sand fractions) determined using laser diffraction for depths of 0-2 cm, 2-5 cm, and 5-10 cm. For soil chemical properties, pH was measured in soil-water suspensions (1:2.5 ratio) for depths of 0-2 cm, 2-5 cm, and 5-10 cm. Carbon (C) and nitrogen (N) stocks were quantified using isotope ratio mass spectrometry (IRMS) for soil and litter horizons, while stable isotopes (δ13C and δ15N values) for soil and litter horizons provide insights into organic matter sources and nitrogen cycling processes. Nutrient stocks, including concentrations of base cations (Ca, Mg, K), phosphorus (P), sulfur (S), and trace elements (Fe, Mn, Al), were measured via inductively coupled plasma-optical emission spectroscopy (ICP-OES) for soil and litter horizons. Fire history (years post-fire) was derived from MODIS and VIIRS satellite data, which provided fire occurrence and timing information- used to select study sites in Nahuelbuta and La Campana. Mean annual precipitation is 1084 mm in Nahuelbuta and 436 mm yr⁻¹ in La Campana, while mean annual temperatures are 6.6 °C and 14.1 °C, respectively. The dominant soil types are Umbrisols in Nahuelbuta and Cambisols in La Campana. This dataset offers a valuable resource for studying post-fire soil recovery dynamics and ecosystem resilience.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -73.1,
+                        -32.87
+                    ],
+                    [
+                        -71.05,
+                        -37.86
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "La Campana, Valparaíso, Chile",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Nahuelbuta, Araucanía, Chile",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "funder_name": "German Research Foundation",
+            "award_number": "DI 2136/11-2",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "award_title": "CharStable",
+            "funder_name": "German Research Foundation",
+            "award_number": "DI 2136/15-1",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "award_title": "EarthShape: Earth Surface Shaping by Biota",
+            "funder_name": "German Research Foundation",
+            "award_number": "SPP 1803",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        },
+        {
+            "funder_name": "National Agency for Research and Development",
+            "award_number": "Anillo N◦ ACT210060",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100002848",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias biológicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias químicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

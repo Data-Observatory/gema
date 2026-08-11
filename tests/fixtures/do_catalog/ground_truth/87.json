@@ -1,0 +1,218 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Administrators",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Autoridades reguladoras del sistema de pensiones"
+        },
+        {
+            "audience": "AllOtherSupportStaff",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Analistas de datos del mercado previsional"
+        },
+        {
+            "audience": "AllOtherSupportStaff",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Técnicos especializados en prestaciones de emergencia y protección social"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores académicos en economía previsional y políticas de emergencia"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Administradoras de Fondos de Pensiones (AFP)"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Ciudadanía interesada en pensiones"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Economía y negocios"
+        },
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Derecho"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2021-12-30",
+            "date_information": "",
+            "date_type": "Available"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Conjunto de datos que difunde la Superintendencia de Pensiones con información sobre las solicitudes aprobadas y prestaciones pagadas en el marco de la Ley N° 21.227 y la Ley N° 21.263. El recurso incluye datos sobre las solicitudes aprobadas por el empleador y las prestaciones pagadas, permitiendo analizar el impacto y la implementación de estas medidas de protección social y apoyo económico durante situaciones de emergencia.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "Solicitudes aprobadas y prestaciones pagadas de la Ley N° 21.227 como de la Ley N° 21.263 \n Solicitudes aprobadas y prestaciones pagadas, Ley N° 21.227 (117,8 MB) \n Solicitudes aprobadas por el empleador, Ley N° 21.263 (74,5 MB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "Cada ZIP contiene 1 csv.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "2 zip (187 MB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "Cobertura nacional",
+            "geo_description": "Alcance de la base de datos de Solicitudes aprobadas y prestaciones pagadas de leyes N° 21.227 y N° 21.263",
+            "geo_location_place": "Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Solicitudes aprobadas y prestaciones pagadas, Ley N° 21.227",
+            "file_uri": "",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información registrada por la Superintendencia de Pensiones a partir de los registros administrativos del sistema de pensiones y las Administradoras de Fondos de Pensiones (AFP).",
+            "sizes": [
+                {
+                    "size": 117792.0,
+                    "unit": "KB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "sapp",
+            "variable_measured": ""
+        },
+        {
+            "Collections": [],
+            "checksum": "",
+            "data_quality": "",
+            "description": "Solicitudes aprobadas por el empleador, Ley N° 21.263",
+            "file_uri": "",
+            "format": "application/zip",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "Información registrada por la Superintendencia de Pensiones a partir de los registros administrativos del sistema de pensiones y las Administradoras de Fondos de Pensiones (AFP).",
+            "sizes": [
+                {
+                    "size": 74489.0,
+                    "unit": "MB"
+                }
+            ],
+            "temporal_resolution": "",
+            "title": "sapr",
+            "variable_measured": ""
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "http://viaf.org/viaf/169349777",
+            "publisher_identifier_scheme": "VIAF",
+            "publisher_name": "Chile. Superintendencia de Pensiones",
+            "publisher_scheme_uri": "https://viaf.org/"
+        }
+    ],
+    "related_identifiers": [],
+    "resource": {
+        "contact": "600 006 1013 (Centro de llamadas de la Superintendencia de Pensiones)",
+        "editor": "",
+        "identifier": "https://www.spensiones.cl/portal/institucional/594/w3-propertyname-621.html",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Superintendencia de Pensiones",
+        "producer": "Superintendencia de Pensiones",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2021"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution Share Alike 4.0 International",
+            "rights_condition": "Esta licencia permite compartir y adaptar el material, incluso con fines comerciales, siempre que se otorgue el crédito adecuado y se licencien las obras derivadas bajo los mismos términos.",
+            "rights_holder": "Superintendencia de Pensiones",
+            "rights_identifier": "CC-BY-SA-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by-sa/4.0/legalcode",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [
+                {
+                    "affiliation_identifier": "https://isni.org/isni/0000000106603732",
+                    "affiliation_identifier_scheme": "ISNI",
+                    "affiliation_name": "Ministerio del Trabajo y Previsión Social (Chile)",
+                    "scheme_uri": ""
+                }
+            ],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [
+                {
+                    "name_identifier": "Superintendencia de Pensiones",
+                    "name_identifier_scheme": "ISNI",
+                    "scheme_uri": "https://isni.org/isni/0000000404880463"
+                }
+            ],
+            "role_name": "Superintendencia de Pensiones",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Pensions -- Chile -- Statistics",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85099592"
+        }
+    ],
+    "temporal_events": [],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Solicitudes aprobadas y prestaciones pagadas de leyes N° 21.227 y N° 21.263",
+            "title_type": "MainTitle"
+        }
+    ]
+}

@@ -1,0 +1,273 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Gobierno"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Ciudadanía"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Geografía económica y social"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2024-08-28",
+            "date_information": "",
+            "date_type": "Updated"
+        },
+        {
+            "date": "2010-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2011-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2012-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2013-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2014-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2015-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2016-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2017-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2018-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2019-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2020-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2021-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2022-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2023-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        },
+        {
+            "date": "2024-01-01",
+            "date_information": "",
+            "date_type": "Collected"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Conjunto de datos de la Municipalidad de Santa Juana que registra los permisos de circulación vehicular emitidos en la comuna. \n Incluye información por año con detalles como patentes, año de giro, tipo de pagos, montos cancelados, entre otros.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "1 dataset; 7 csv (9,19 MB)",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "",
+            "geo_description": "Alcance de la base de datos de la Municipalidad de Santa Juana",
+            "geo_location_place": "Santa Juana, Región del Bío Bío, Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [
+        {
+            "Collections": [
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/45ea8f8c-5084-4bb3-bc08-dd691b4daea5/download/10_julio_27_agosto_2024.csv",
+                    "format": "text/csv",
+                    "size": "57,5",
+                    "title": "10_JULIO_27_AGOSTO_2024.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/153b83a9-4e63-48f1-b8b8-6f83d5d25b12/download/27_junio_09_julio_2024.csv",
+                    "format": "text/csv",
+                    "size": "6,02",
+                    "title": "27_JUNIO_09_JULIO_2024.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/6cfdc94c-02e2-48c9-ac31-46b9296c2157/download/03_de_junio_26_junio_2024.csv",
+                    "format": "text/csv",
+                    "size": "9,26",
+                    "title": "03_DE_JUNIO_26_JUNIO_2024.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/e8eacd1c-c676-4a5f-bc15-94ddefe3b482/download/20_mayo_02_junio.csv",
+                    "format": "text/csv",
+                    "size": "18,4",
+                    "title": "20_MAYO_02_JUNIO.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/be475de0-2ee8-4ad2-8bc3-9da1ebf3b52e/download/pcv_1_abril_19_mayo_2024.csv",
+                    "format": "text/csv",
+                    "size": "150",
+                    "title": "1_ABRIL_19_MAYO_2024.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/d21b22ae-b51e-487a-a1f8-2f85472e6f5e/download/enero-a-31-de-marzo-2024.csv",
+                    "format": "text/csv",
+                    "size": "953",
+                    "title": "ENERO A 31 DE MARZO 2024.csv",
+                    "unit": "KB"
+                },
+                {
+                    "file_url": "https://datos.gob.cl/dataset/961234df-d76d-443e-9878-c2c7b62822a4/resource/e5dced1c-7472-4f90-bfb2-8919b9739a4f/download/2010-2023.csv",
+                    "format": "text/csv",
+                    "size": "8,02",
+                    "title": "PCV 2010 A 2023 COMUNA DE SANTA JUANA",
+                    "unit": "MB"
+                }
+            ],
+            "checksum": "",
+            "data_quality": "",
+            "description": "",
+            "file_uri": "https://datos.gob.cl/dataset/permisos-de-circulacion-santa-juana",
+            "format": "collection",
+            "measurement_technique": "",
+            "physical_carrier": "",
+            "provenance": "",
+            "sizes": [],
+            "temporal_resolution": "",
+            "title": "Permisos de Circulación Santa Juana",
+            "variable_measured": ""
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "https://www.wikidata.org/wiki/Q108381608",
+            "publisher_identifier_scheme": "Wikidata",
+            "publisher_name": "Datos.Gob",
+            "publisher_scheme_uri": "https://www.wikidata.org/wiki/Wikidata:Main_Page"
+        }
+    ],
+    "related_identifiers": [],
+    "resource": {
+        "contact": "",
+        "editor": "",
+        "identifier": "https://datos.gob.cl/dataset/?q=permisos+de+circulaci%C3%B3n&fq=filter%28organization%3Amunicipalidad_de_santa_juana%29",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Datos.Gob",
+        "producer": "",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2024"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_condition": "",
+            "rights_holder": "",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [],
+            "role_name": "Municipalidad de Santa Juana",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Traffic regulations",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "https://id.loc.gov/authorities/subjects/sh85136773.html"
+        }
+    ],
+    "temporal_events": [],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Permisos de circulación de la Municipalidad de Santa Juana",
+            "title_type": "MainTitle"
+        }
+    ]
+}

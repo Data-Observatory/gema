@@ -1,0 +1,485 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.749247",
+        "identifier_type": "DOI",
+        "publication_year": 2010,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "García-Herrera, Ricardo",
+            "given_name": "Ricardo",
+            "family_name": "García-Herrera",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Können, Gunther P",
+            "given_name": "Gunther P",
+            "family_name": "Können",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Wheeler, Dennis A",
+            "given_name": "Dennis A",
+            "family_name": "Wheeler",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Prieto, Maria del Rosario",
+            "given_name": "Maria del Rosario",
+            "family_name": "Prieto",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Jones, Philip D",
+            "given_name": "Philip D",
+            "family_name": "Jones",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-5032-5493",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Koek, Frits B",
+            "given_name": "Frits B",
+            "family_name": "Koek",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Archivo Museo Naval Madrid, Spain",
+            "role_name_type": "Personal",
+            "given_name": "Spain",
+            "family_name": "Archivo Museo Naval Madrid",
+            "affiliations": [],
+            "contributor_type": "HostingInstitution",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Meteorological observations during EUROPA cruise from Cadiz to Concepcion de Chile started at 1795-11-22",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "DATE/TIME",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LATITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LONGITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Wind direction",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Wind speed",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Pressure, atmospheric",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Landmark",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "-",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Course",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Distance",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Comment",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Comment 2 (continued)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Comment 3 (continued)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Comment 4 (continued)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Declination",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sensor reading",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Wind direction description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Current direction description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Current speed description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Wind force description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Present weather",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Precipitation description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "State of the sea description",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Gusts",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Precipitation/Rain",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Fog",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Snow type",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Thunder",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Hail",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sea ice",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Identification",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Underway cruise track measurements",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Cliwoc_cruise",
+            "subject_scheme": "Campaign",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Climatological Database for the Worlds Oceans: 1750-1854 (CLIWOC)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2010-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "10.1594/pangaea.611088",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "References",
+            "related_identifier": "10.1007/s10584-005-6952-6",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 1193.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.749247",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 3.0 Unported",
+            "rights_uri": "https://creativecommons.org/licenses/by/3.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-3.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "1796-03-06T17:00: LLEGA EL NAVIO SAN PEDRO. DICE QUE LAS ALTERACIONES DEL BAROMETRO Y TERMOMETRO HAN SIDO ANOTADAS CONSTANTEMENTE CADA 4 HORAS POR LOS OFICIALES DE GUARDIA. HABLA DE LA UTILIDAD DE ESTOS INSTRUMENTOS PARA LA NAVEGACION, ESPECIALMENTE EN LAS GRANDES LATITUDES, ADVERTIRE DE PASO QUE DESDE LA LATITUD DE 44º S BAJO EL MERCURIO A 27 PULGADAS Y 6 LINEAS DE LA MEDIDAD FRANCESA Y EN ESTE ESTADO INDICO SIEMPRE EL BUEN TIEMPO CON VIENTOS MODERADOS SIENDO EXCESO DE BONDAD LAS POCAS VECES QUE PASO DE AQUEL TERMINO. EN LOS TEMPORALES EL DESCENSO FUE SIEMPRE GRANDE RESPECTO A LO EXPERIMENTADO EN NUESTROS CLIMAS Y EL MAS CONSIDERABLE DE 26 PULGADAS, 4 LINEAS Y 8 DECIMAS SE ADVIRTIO EL 18 DE FEBRERO POR LOS 57º 50 DE LATITUD SUR. ESTE INSTRUMENTO, CONSTRUIDO POR DOLLOND, PREDIJO EXACTAMENTE LOS HURACANES O VIENTOS DE EXTRAORDINARIA FUERZA Y SIEMPRE CON LA ANTICIPACION NECESARIA PARA PODERSE PRECAVER Y EVITAR DESCALABROS. NUNCA MEDIARON MENOS DE DOS HORAS DEL ANUNCIO A LA SUCESION DEL TIEMPO Y, EN EL FUERTE QUE SUFRIMOS EL 14 DE FEBRERO Y LA LATITUD DE 56º 30 SUR, LO INDICO OCHO HORAS ANTES, BIEN QUE A LA SAZON SOPLABA EL VIENTO DEL NORDESTE, QUE EN ESTOS PARAJES IMPREGNA MUCHO LA ATMOSFERA, PUDIENDO POR ÚLTIMO ASEGURAR QUE EN MUCHOS AÑOS QUE ME ACOMPAÑA ESTE INSTRUMENTO JAMAS ME FUE TAN UTIL COMO EN LA ACTUAL CAMPAÑA. MARCHA PARA TALCAHUANO DESDE DONDE REDACTA EL DIARIO. ACOMPAÑA UN PRECIOSO MAPA DERROTERO DONDE INDICA ALGUNAS ANOTACIONES DE FECHAS, POSICIONES, ETC.",
+            "description_type": "TechnicalInfo",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -81.55,
+                        23.8
+                    ],
+                    [
+                        -18.07,
+                        -57.93
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_uri": "https://cordis.europa.eu/project/id/EVK2-CT-2000-00090",
+            "award_title": "Climatological Database for the Worlds Oceans: 1750-1854",
+            "funder_name": "Fifth Framework Programme",
+            "award_number": "EVK2-CT-2000-00090",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/100011104",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

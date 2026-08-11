@@ -1,0 +1,487 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.965806",
+        "identifier_type": "DOI",
+        "publication_year": 2024,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": "",
+        "language": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Achterberg, Eric Pieter",
+            "given_name": "Eric Pieter",
+            "family_name": "Achterberg",
+            "affiliations": [
+                {
+                    "affiliation_name": "GEOMAR - Helmholtz Centre for Ocean Research Kiel",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Galley, Christopher G",
+            "given_name": "Christopher G",
+            "family_name": "Galley",
+            "affiliations": [
+                {
+                    "affiliation_name": "University of Ottawa",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0002-6045-777X",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Schumacher, Mia",
+            "given_name": "Mia",
+            "family_name": "Schumacher",
+            "affiliations": [
+                {
+                    "affiliation_name": "GEOMAR - Helmholtz Centre for Ocean Research Kiel",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0009-0007-5920-0719",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Multibeam bathymetry raw data (Kongsberg EM 122 entire dataset) of RV SONNE during cruise SO289",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Bathymetry",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DAM",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EM122",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Multibeam",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "raw data",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Event label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Binary Object",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Binary Object (Media Type)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Binary Object (File Size)",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Kongsberg datagram raw file name",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "File content",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Data file recording duration",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Data file recording distance",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Ship speed",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Number of pings",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Start of data file recording, date/time",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Start of data file recording, latitude",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Start of data file recording, longitude",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Start of data file, heading",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Start of data file, depth",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Stop of data file recording, date/time",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Stop of data file recording, latitude",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Stop of data file recording, longitude",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Stop of data file, heading",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Stop of data file, depth",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DATE/TIME",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LATITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "LONGITUDE",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "ELEVATION",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Comment",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EM122 multibeam echosounder",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Extracted from file",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Extracted with MB-System",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "SO289",
+            "subject_scheme": "Campaign",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Sonne_2",
+            "subject_scheme": "Basis",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DAM Underway Research Data (DAM_Underway)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "DataHub Earth and Environment of the Helmholtz Association (DataHub)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2024-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "References",
+            "related_identifier": "10.1594/pangaea.965807",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "References",
+            "related_identifier": "10.48433/cr_so289",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 13528.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.965806",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Raw multibeam bathymetry data were collected aboard RV SONNE during cruise SO289 using a Kongsberg EM 122 multibeam echosounder. The expedition took place during 18.2.2022 - 8.4.2022 from Valparaíso (Chile) – Nouméa (New Caledonia) across the central Pacific Ocean. The main objective of SO289 was to determine the distributions of trace elements and their isotopes (TEIs), quantify their sources from the four major ocean boundaries (rivers, atmosphere, exchange with sediments, ocean crust), and determine their biogeochemical cycling and relationships to large scale ocean circulation along a cruise track in the South Pacific Ocean (SPO). Data were recorded within the Chilean EEZ and outside EEZs. Sound velocity profiles (SVP) were applied on the data for calibration. Please see environmental data and the cruise report for details. The data are unprocessed and can therefore contain incorrect depth measurements (artifacts) if not further processed. Note that refraction errors may occur when no proper SVP is applied. Acquisition and provision of the data are part of the DAM Underway Project and published according to the FAIR principles.",
+            "description_type": "Abstract",
+            "language": ""
+        },
+        {
+            "description": "These data should not be used for navigational purposes.",
+            "description_type": "TechnicalInfo",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.7290481,
+                        -25.718165
+                    ],
+                    [
+                        171.9990094,
+                        -33.60757485
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "South Pacific Ocean",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

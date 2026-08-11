@@ -1,0 +1,256 @@
+{
+    "resource": {
+        "identifier": "10.1594/pangaea.907664",
+        "identifier_type": "DOI",
+        "publication_year": 2019,
+        "language": "en",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Verse, Leander",
+            "given_name": "Leander",
+            "family_name": "Verse",
+            "affiliations": [],
+            "name_identifiers": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Laudien, Jürgen",
+            "given_name": "Jürgen",
+            "family_name": "Laudien",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0003-2663-4821",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Häussermann, Verena",
+            "given_name": "Verena",
+            "family_name": "Häussermann",
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-9630-7477",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Respiration of Primnoella chilensis colonies under sediment exposure of 18 hours",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "PANGAEA",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Event label",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Number",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Treatment",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Oxygen saturation",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Oxygen",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Duration",
+            "subject_scheme": "Parameter",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Monitoring station",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "CTD, handheld",
+            "subject_scheme": "Method",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Bentho-Pelagic Processes @ AWI (AWI_BPP)",
+            "subject_scheme": "Project",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2019-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "10.1594/pangaea.905477",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [
+                {
+                    "size": 126.0,
+                    "unit": "data points"
+                }
+            ],
+            "format": "text/tab-separated-values",
+            "file_uri": "https://doi.pangaea.de/10.1594/PANGAEA.907664",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "To determine respiration of Primnoella chilensis colonies, they were exposed to turbid seawater in individual respiration chambers of 600 mL for approx. 18 hours (Treatment 1: equals sedimentation rate of 225 mm/y; Treatment 2: equals sedimentation rate of 450 mm/y; control group: ambient seawater). The incubation time of 18 h was chosen to ensure normoxic conditions with an oxygen saturation of &gt; 70 %. Oxygen concentration was measured immediately before and after the experiment using a needle-type oxygen microsensor connected to a temperature-compensated oxygen meter.",
+            "description_type": "Abstract",
+            "language": ""
+        },
+        {
+            "description": "This dataset was generated in the frame of the co-operation between the Huinay Scientific Field Station (http://www.huinay.cl), the Instituto de Acuicultura of Universidad Austral de Chile Sede Puerto Montt (http://iacui.uach.cl/) and the Alfred Wegener Institute, Helmholtz Center for Polar and Marine Research (http://www.awi.de).",
+            "description_type": "TechnicalInfo",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -72.4574,
+                        -42.37983
+                    ],
+                    [
+                        -72.41550000000001,
+                        -42.409833
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Comau Fjord, Patagonia, Chile",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

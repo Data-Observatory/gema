@@ -1,0 +1,165 @@
+{
+    "resource": {
+        "identifier": "10.26022/ieda/316839",
+        "identifier_type": "DOI",
+        "publication_year": 2012,
+        "language": "en",
+        "version": "1",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "thumbnail": ""
+    },
+    "alternate_identifiers": [
+        {
+            "alternate_identifier": "http://www.marine-geo.org/tools/search/Files.php?data_set_uid=16839",
+            "alternate_identifier_type": "URL",
+            "alternate_name": ""
+        }
+    ],
+    "roles": [
+        {
+            "role_name": "GMRT,  ",
+            "given_name": " ",
+            "family_name": "GMRT",
+            "name_identifiers": [
+                {
+                    "name_identifier": "GMRT",
+                    "name_identifier_scheme": "MGDS",
+                    "scheme_uri": ""
+                }
+            ],
+            "affiliations": [],
+            "type": "Creator",
+            "role_name_type": "Personal",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Processed ship-based Multibeam Sonar Data (version 2) acquired along the Central America Subduction Zone and the Peru-Chile Trench Subduction Zone during the Melville expedition PANR02MV (1997)",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "Interdisciplinary Earth Data Alliance (IEDA)",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Bathymetry:Swath",
+            "subject_scheme": "MGDS",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2010-11-20",
+            "date_type": "Created",
+            "date_information": ""
+        },
+        {
+            "date": "2022-03-27",
+            "date_type": "Issued",
+            "date_information": ""
+        },
+        {
+            "date": "2012-12-27",
+            "date_type": "Available",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsPartOf",
+            "related_identifier": "http://www.marine-geo.org/tools/search/entry.php?id=PANR02MV",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "application/octet-stream",
+            "file_uri": "https://www.marine-geo.org/doi/10.26022/IEDA/316839",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution-NonCommercial-Share Alike 3.0 United States [CC BY-NC-SA 3.0]",
+            "rights_uri": "http://creativecommons.org/licenses/by-nc-sa/3.0/us/"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This data set was acquired with a ship-based SeaBeam 2000 Multibeam Sonar system during Melville expedition PANR02MV conducted in 1997 (Chief Scientist: Dr. Nancy Kanjorski). These data files are of MBSystem format and include Swath Bathymetry data and were processed by the GMRT Team using the open source MB-System multibeam sonar processing software as part of the GMRT Synthesis effort. These data are included in the GMRT Synthesis, version 2.0.",
+            "description_type": "Abstract",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -99.999157,
+                        16.833721
+                    ],
+                    [
+                        -77.245093,
+                        -12.037333
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias químicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

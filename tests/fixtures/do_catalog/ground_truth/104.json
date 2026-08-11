@@ -1,0 +1,243 @@
+{
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Administrators",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Autoridades de políticas económicas y sociales"
+        },
+        {
+            "audience": "Administrators",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Ministerio de Desarrollo Social"
+        },
+        {
+            "audience": "AllOtherSupportStaff",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Analistas de estadísticas de ingresos y gastos"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Investigadores académicos en economía familiar y consumo"
+        },
+        {
+            "audience": "Other",
+            "education_level": "",
+            "instructional_method": "",
+            "mediator": "Organizaciones de estudio de mercado y consumo"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Economía y negocios"
+        },
+        {
+            "name": "Ciencias Sociales",
+            "sub_category": "Sociología"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2023-03-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2024-02-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2021-10-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2022-09-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2016-07-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2017-06-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2011-11-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2012-10-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2006-11-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "2007-10-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "1996-08-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "1997-07-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "1987-12-01",
+            "date_information": "",
+            "date_type": "Available"
+        },
+        {
+            "date": "1988-11-01",
+            "date_information": "",
+            "date_type": "Available"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Conjunto de datos del Instituto Nacional de Estadísticas (INE) de Chile que reúne las bases de datos de la Encuesta de Presupuestos Familiares (EPF), proporcionando información sobre los ingresos y gastos de los hogares chilenos. El recurso incluye datos sobre estructura de gastos, patrones de consumo, ingresos familiares y otros aspectos relevantes del presupuesto familiar, permitiendo analizar el comportamiento económico de los hogares chilenos.",
+            "description_type": "Abstract",
+            "language": "es"
+        },
+        {
+            "description": "Encuesta de Presupuestos Familiares \n La Encuesta de Presupuestos Familiares es un estudio socioeconómico aplicado a hogares, cuyo objetivo es identificar la estructura y características del gasto en consumo final y la estructura del ingreso total disponible de los hogares urbanos, en las capitales regionales y sus principales zonas conurbadas, con un período de referencia de un año. \n Como resultado, esta medición de la realidad socioeconómica de los hogares permite actualizar la canasta de bienes y servicios del Índice de Precios al Consumidor (IPC) y la Canasta Básica Alimentaria, referente monetario de suficiencia para la construcción de las líneas de pobreza y pobreza extrema del país. \n Actualmente, el INE está preparando la 10a versión de la EPF y, como parte del proceso, efectuará su Prueba de Campo entre julio y octubre de 2025. Esta prueba tiene como objetivo testear posibles mejoras metodológicas, especialmente referidas a las preguntas incluidas en los cuestionarios de la encuesta y al uso de dispositivos digitales (Tablet) para el registro de la información recolectada.",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "Encuesta de Presupuestos Familiares \n BASES DE DATOS \n Piloto EPF Aysén (marzo 2023 - febrero 2024) \n IX EPF (octubre 2021 - septiembre 2022) \n VIII EPF (julio 2016 - junio 2017) \n VII EPF (noviembre 2011 - octubre 2012) \n VI EPF (noviembre 2006 - octubre 2007) \n V EPF (agosto 1966 - julio 1997) \n IV EPF (diciembre 1987 - noviembre 1988).",
+            "description_type": "Technical_info",
+            "language": "es"
+        },
+        {
+            "description": "Se pueden encontrar archivos de distinto tipo: STATA, csv, xlsx, sav, DTA, pdf y RAR.",
+            "description_type": "Technical_info",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "geo_locations": [
+        {
+            "coverage": "",
+            "geo_description": "Alcance de la base de datos de Encuesta de Presupuestos Familiares",
+            "geo_location_place": "Chile"
+        }
+    ],
+    "languages": [
+        {
+            "description": "Chilean Spanish",
+            "lang_code": "es-cl",
+            "language": "Spanish"
+        }
+    ],
+    "media_files": [],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1,
+    "publishers": [
+        {
+            "publisher_identifier": "http://viaf.org/viaf/154434202",
+            "publisher_identifier_scheme": "VIAF",
+            "publisher_name": "Instituto Nacional de Estadísticas (Chile)",
+            "publisher_scheme_uri": "https://viaf.org/es"
+        }
+    ],
+    "related_identifiers": [],
+    "resource": {
+        "contact": "",
+        "editor": "",
+        "identifier": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares",
+        "identifier_type": "URL",
+        "language": "es",
+        "maintainer": "Instituto Nacional de Estadísticas",
+        "producer": "",
+        "publication_year": "2025",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "thumbnail": "",
+        "version": "2024"
+    },
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution Share Alike 4.0 International",
+            "rights_condition": "",
+            "rights_holder": "",
+            "rights_identifier": "CC-BY-SA-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "rights_uri": "https://creativecommons.org/licenses/by-sa/4.0/legalcode",
+            "scheme_uri": "https://spdx.org/licenses/"
+        }
+    ],
+    "roles": [
+        {
+            "affiliations": [
+                {
+                    "affiliation_identifier": "https://ror.org/00as45r68",
+                    "affiliation_identifier_scheme": "ROR",
+                    "affiliation_name": "Ministry of Economy, Development and Tourism",
+                    "scheme_uri": "https://ror.org"
+                }
+            ],
+            "contributor_type": "",
+            "email": "",
+            "family_name": "",
+            "genre": "",
+            "given_name": "",
+            "name_identifiers": [
+                {
+                    "name_identifier": "Instituto Nacional de Estadísticas (Chile)",
+                    "name_identifier_scheme": "ISNI",
+                    "scheme_uri": "https://isni.org/isni/0000000122977777"
+                }
+            ],
+            "role_name": "Instituto Nacional de Estadísticas (Chile)",
+            "role_name_type": "Organizational",
+            "type": "Creator"
+        }
+    ],
+    "subjects": [
+        {
+            "classification_code": "HB849.49",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "subject_name": "Household surveys - Chile",
+            "subject_scheme": "Library of Congress Subject Headings (LCSH)",
+            "value_uri": "http://id.loc.gov/authorities/subjects/sh85062593"
+        }
+    ],
+    "temporal_events": [
+        {
+            "description": "Serie histórica de la Encuesta de Presupuestos Familiares (EPF) del INE, compuesta por rondas no periódicas. Incluye levantamientos en 1987/1988, 1996/1997, 2006/2007, 2011/2012, 2016/2017, 2021/2022 y 2023/2024.",
+            "frequency_number": "",
+            "frequency_type": "",
+            "start_date": "1987-01-01"
+        }
+    ],
+    "titles": [
+        {
+            "language": "es",
+            "name": "Encuesta de Presupuestos Familiares",
+            "title_type": "MainTitle"
+        }
+    ]
+}

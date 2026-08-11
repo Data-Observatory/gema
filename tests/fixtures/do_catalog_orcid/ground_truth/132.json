@@ -1,0 +1,948 @@
+{
+    "resource": {
+        "identifier": "10.5880/fidgeo.2021.036",
+        "identifier_type": "DOI",
+        "publication_year": 2021,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "resource_type": "",
+        "resource_type_general": "",
+        "version": "",
+        "thumbnail": "",
+        "language": ""
+    },
+    "alternate_identifiers": [],
+    "roles": [
+        {
+            "role_name": "Schaller, Mirjam",
+            "role_name_type": "Personal",
+            "given_name": "Mirjam",
+            "family_name": "Schaller",
+            "affiliations": [
+                {
+                    "affiliation_name": "Department of Geosciences, University of Tübingen, Tübingen, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier_scheme": "ORCID",
+                    "name_identifier": ""
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Ehlers, Todd A.",
+            "role_name_type": "Personal",
+            "given_name": "Todd A.",
+            "family_name": "Ehlers",
+            "affiliations": [
+                {
+                    "affiliation_name": "Department of Geosciences, University of Tübingen, Tübingen, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "name_identifiers": [
+                {
+                    "scheme_uri": "https://orcid.org",
+                    "name_identifier": "https://orcid.org/0000-0001-9436-0303",
+                    "name_identifier_scheme": "ORCID"
+                }
+            ],
+            "type": "Creator",
+            "email": "",
+            "genre": "",
+            "contributor_type": ""
+        },
+        {
+            "role_name": "Schaller, Mirjam",
+            "role_name_type": "Personal",
+            "given_name": "Mirjam",
+            "family_name": "Schaller",
+            "affiliations": [
+                {
+                    "affiliation_name": "Department of Geosciences, University of Tübingen, Tübingen, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        },
+        {
+            "role_name": "Ehlers, Todd",
+            "role_name_type": "Personal",
+            "given_name": "Todd",
+            "family_name": "Ehlers",
+            "affiliations": [
+                {
+                    "affiliation_name": "Department of Geosciences, University of Tübingen, Tübingen, Germany",
+                    "affiliation": "",
+                    "affiliation_identifier": "",
+                    "affiliation_identifier_scheme": ""
+                }
+            ],
+            "contributor_type": "ContactPerson",
+            "name_identifiers": [],
+            "type": "Contributor",
+            "email": "",
+            "genre": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "New Chilean and a global compilation of soil production, chemical weathering, and physical erosion rates from soil-mantled hillslopes",
+            "title_type": "MainTitle",
+            "language": ""
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "GFZ Data Services",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "publisher_scheme_uri": ""
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "EarthShape",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Chile",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Coastal Cordillera",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "soil production rate",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "chemical weathering rate",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "physical erosion rate",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "National Parc Pan de Azucar",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Private Reserve Santa Gracia",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "National Parc La Campana",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "National Parc Nahuelbuta",
+            "subject_scheme": "",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOCHEMISTRY &gt; GEOCHEMICAL PROCESSES &gt; CHEMICAL WEATHERING",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "EARTH SCIENCE &gt; SOLID EARTH &gt; GEOMORPHIC LANDFORMS/PROCESSES",
+            "subject_scheme": "NASA/GCMD Earth Science Keywords",
+            "scheme_uri": "",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "dates": [
+        {
+            "date": "2021-01-01",
+            "date_type": "Issued",
+            "date_information": ""
+        }
+    ],
+    "related_identifiers": [
+        {
+            "relation_type": "IsSupplementTo",
+            "related_identifier_type": "DOI",
+            "related_identifier": "",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.geomorph.2016.07.014",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1175/jamc-d-13-0356.1",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.1443",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.1764",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.3749",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.1836",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.epsl.2012.01.010",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1029/2011jf002231",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.3133/70039916",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1038/41056",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1130/0091-7613(2000)28%3c787:spoare%3e2.0.co;2",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/s1040-6182(01)00038-6",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1130/g21868.1",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1130/2006.2398(10)",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.1859",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1038/ngeo1380",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.4725",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1038/sdata.2017.122",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "https://www.researchgate.net/publication/236770186",
+            "related_identifier_type": "URL",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1126/science.1244908",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.5194/esurf-6-271-2018",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.gca.2010.06.019",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.1961",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.catena.2018.06.002",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.2083",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.3878",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/2015ms000526",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1002/esp.3339",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.epsl.2004.05.019",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.geomorph.2010.12.023",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.5067/modis/mod17a3h.006",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1016/j.epsl.2018.02.026",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.3334/ornldaac/929",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "Cites",
+            "related_identifier": "10.1029/2003jf000049",
+            "related_identifier_type": "DOI",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001G",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE10007",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001H",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE10006",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001N",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1000A",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001P",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1000B",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001Q",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1000C",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001R",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1000D",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001J",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001K",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001S",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE10008",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001L",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE1001M",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        },
+        {
+            "relation_type": "IsDerivedFrom",
+            "related_identifier": "GFTE10009",
+            "related_identifier_type": "IGSN",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "",
+            "contact": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "format": "",
+            "file_uri": "https://dataservices.gfz.de/panmetaworks/showshort.php?id=3e1cfe0b-514a-11ec-958d-ed2b0fcbcc9b",
+            "physical_carrier": "",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "",
+            "description": "",
+            "temporal_resolution": "",
+            "collections": []
+        }
+    ],
+    "rights_list": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "publisher_scheme_uri": "https://spdx.org/licenses/",
+            "rights_identifier": "cc-by-4.0",
+            "rights_identifier_scheme": "SPDX"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "This data publication contains new and recalculated soil production, chemical weathering, and physical erosion rates for granitoid soil-mantled hillslopes in the Chilean Coastal Cordillera. For further comparison and data discussion the data publication presents global rates from granitoid soil-mantled hillslopes combined with a suite of parameters at the sample location (e.g., slope, precipitation, temperature, vegetation cover). The data were collected within the DFG Priority Program 1803 \"EarthShape - Earth Surface Shaping by Biota\". The data publication contains one excel table including tables S1 to S9. In addition, these nine sub-tables are available as txt files in a zip-file. They are supplementary material to Schaller et al. (2021).",
+            "description_type": "Abstract",
+            "language": ""
+        },
+        {
+            "description": "The DFG Priority Program 1803 \"EarthShape - Earth Surface Shaping by Biota\" (2016-2022; https://www.earthshape.net/) explored between scientific disciplines and includes geoscientists and biologists to study from different viewpoints the complex question how microorganisms, animals, and plants influence the shape and development of the Earth’s surface over time scales from the present-day to the young geologic past. All study sites are located in the north-to-south trending Coastal Cordillera mountains of Chile, South America. These sites span from the Atacama Desert in the north to the Araucaria forests approximately 1300 km to the south. The site selection contains a large ecological and climate gradient ranging from very dry to humid climate conditions.",
+            "description_type": "Other",
+            "language": ""
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -70.5492,
+                        -26.1094
+                    ],
+                    [
+                        -70.5491,
+                        -26.1103
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "National Park Pan de Azúcar",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.1672,
+                        -29.7563
+                    ],
+                    [
+                        -71.1656,
+                        -29.7612
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "Private Reserve Santa Gracia",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -71.0642,
+                        -32.9558
+                    ],
+                    [
+                        -71.0633,
+                        -32.9572
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "National Park La Campana",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -73.0138,
+                        -37.8074
+                    ],
+                    [
+                        -73.0128,
+                        -37.809
+                    ]
+                ]
+            },
+            "geo_location_place": "",
+            "geo_location_point": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        },
+        {
+            "geo_location_place": "National Park Nahuelbuta",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null,
+            "geo_description": "",
+            "coverage": ""
+        }
+    ],
+    "funding_references": [
+        {
+            "award_title": "EarthShape",
+            "funder_name": "Deutsche Forschungsgemeinschaft",
+            "award_number": "SPP1803",
+            "funding_references": [
+                {
+                    "funder_identifier": "https://doi.org/10.13039/501100001659",
+                    "funder_identifier_type": "Crossref Funder ID",
+                    "scheme_uri": ""
+                }
+            ]
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias biológicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias físicas"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        }
+    ],
+    "origin_priority": 2,
+    "origin_name": "DataCite",
+    "audiences": [],
+    "citations": [],
+    "funding_reference": [],
+    "languages": [],
+    "rights": [],
+    "temporal_events": []
+}

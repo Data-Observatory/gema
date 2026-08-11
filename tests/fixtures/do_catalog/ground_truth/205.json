@@ -1,0 +1,243 @@
+{
+    "resource": {
+        "identifier": "https://geoportal.cl/geoportal/catalog/34867/Acu%C3%ADferos%20y%20Vegas%20protegidas",
+        "identifier_type": "URL",
+        "editor": "Ministerio de Obras Públicas",
+        "maintainer": "Ministerio de Obras Públicas",
+        "contact": "562 2449 4000; https://siac.mop.gob.cl",
+        "producer": "",
+        "publication_year": "",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+    },
+    "alternate_identifiers": [],
+    "audiences": [
+        {
+            "audience": "Investigadores",
+            "mediator": "Autodirigido",
+            "education_level": "Postgrado",
+            "instructional_method": "Análisis"
+        },
+        {
+            "audience": "Tomadores de decisiones",
+            "mediator": "Analista",
+            "education_level": "Profesional",
+            "instructional_method": "Consultoría"
+        },
+        {
+            "audience": "Profesionales",
+            "mediator": "Autodirigido",
+            "education_level": "Profesional",
+            "instructional_method": "Autoaprendizaje"
+        },
+        {
+            "audience": "Trabajadores de ONG",
+            "mediator": "Coordinador",
+            "education_level": "Profesional",
+            "instructional_method": "Estudio de caso"
+        }
+    ],
+    "categories": [
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias de la Tierra"
+        },
+        {
+            "name": "Ciencias Naturales y Exactas",
+            "sub_category": "Ciencias medioambientales"
+        }
+    ],
+    "citations": [],
+    "dates": [
+        {
+            "date": "2019-12-01",
+            "date_type": "Created",
+            "date_information": ""
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "Cubierta georreferenciada de vegas protegidas y acuíferos.",
+            "description_type": "Abstract",
+            "language": "es"
+        }
+    ],
+    "funding_references": [],
+    "languages": [
+        {
+            "lang_code": "es",
+            "language": "Spanish",
+            "description": ""
+        }
+    ],
+    "media_files": [
+        {
+            "sizes": [],
+            "physical_carrier": "digital",
+            "format": "application/zip",
+            "variable_measured": "",
+            "checksum": "",
+            "data_quality": "",
+            "measurement_technique": "",
+            "provenance": "Ministerio de Obras Públicas",
+            "file_uri": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/AcuiferosVegasProtegidas.zip",
+            "temporal_resolution": "",
+            "Collections": []
+        }
+    ],
+    "publishers": [
+        {
+            "publisher_name": "Ministerio de Obras Públicas",
+            "publisher_identifier": "",
+            "publisher_identifier_scheme": "",
+            "scheme_uri": "",
+            "lang": "es"
+        }
+    ],
+    "related_identifiers": [
+        {
+            "related_identifier": "https://dga.mop.gob.cl/uploads/sites/13/2024/07/AcuiferosVegasProtegidas.zip",
+            "related_identifier_type": "URL",
+            "relation_type": "HasPart",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        },
+        {
+            "related_identifier": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BAAF9C9E3-8E13-46D8-AC68-30E857AF1ED5%7D",
+            "related_identifier_type": "URL",
+            "relation_type": "IsMetadataFor",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        },
+        {
+            "related_identifier": "https://siac.mop.gob.cl",
+            "related_identifier_type": "URL",
+            "relation_type": "IsHostedBy",
+            "related_metadata_scheme": "",
+            "scheme_uri": "",
+            "scheme_type": "",
+            "resource_type_general": "Dataset",
+            "contact": ""
+        }
+    ],
+    "rights": [
+        {
+            "rights": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+            "rights_uri": "https://creativecommons.org/licenses/by/4.0/",
+            "rights_identifier": "CC-BY-4.0",
+            "rights_identifier_scheme": "SPDX",
+            "scheme_uri": "https://spdx.org/licenses/",
+            "rights_condition": "",
+            "rights_holder": "Ministerio de Obras Públicas"
+        }
+    ],
+    "subjects": [
+        {
+            "subject_name": "Acuíferos -- Protección -- Chile",
+            "subject_scheme": "LCSH",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Vegas protegidas -- Chile",
+            "subject_scheme": "LCSH",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "value_uri": "",
+            "classification_code": ""
+        },
+        {
+            "subject_name": "Recursos hídricos -- Conservación -- Chile",
+            "subject_scheme": "LCSH",
+            "scheme_uri": "https://id.loc.gov/authorities/subjects.html",
+            "value_uri": "",
+            "classification_code": ""
+        }
+    ],
+    "titles": [
+        {
+            "name": "Acuíferos y Vegas protegidas",
+            "title_type": "MainTitle",
+            "language": "es"
+        }
+    ],
+    "geo_locations": [
+        {
+            "geo_location_place": "Norte de Chile",
+            "geo_description": "",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "Área del norte de Chile que contiene vegas protegidas y acuíferos, abarcando aproximadamente la región de Antofagasta",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "",
+            "coverage": "regional",
+            "geo_location_point": null,
+            "geo_location_box": null,
+            "geo_location_polygon": null
+        },
+        {
+            "geo_location_place": "",
+            "geo_description": "",
+            "coverage": "",
+            "geo_location_point": null,
+            "geo_location_box": {
+                "type": "envelope",
+                "coordinates": [
+                    [
+                        -69.051,
+                        -18.823
+                    ],
+                    [
+                        -66.703,
+                        -25.197
+                    ]
+                ]
+            },
+            "geo_location_polygon": null
+        }
+    ],
+    "temporal_events": [],
+    "roles": [
+        {
+            "given_name": "",
+            "family_name": "",
+            "email": "",
+            "genre": "",
+            "type": "Creator",
+            "contributor_type": "",
+            "name_identifiers": [],
+            "affiliations": [
+                {
+                    "affiliation_identifier": "https://ror.org/02sevrz47",
+                    "affiliation_identifier_scheme": "ROR",
+                    "scheme_uri": "https://ror.org/",
+                    "affiliation_name": "Gobierno de Chile"
+                }
+            ],
+            "role_name": "Ministerio de Obras Públicas",
+            "role_name_type": "Organizational"
+        }
+    ],
+    "origin_name": "Data Observatory",
+    "origin_priority": 1
+}
