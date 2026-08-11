@@ -266,10 +266,11 @@ def run_pipeline_on(
                 model: str,
                 temperature: float = 0.0,
                 max_tokens: int | None = None,
+                extra_body: dict[str, Any] | None = None,
             ) -> LLMClient:
                 return create_llm_client(
                     provider, model=model, temperature=temperature, max_tokens=max_tokens,
-                    cache_dir=cache_dir,
+                    extra_body=extra_body, cache_dir=cache_dir,
                 )
 
         pipeline = Pipeline(config=config, llm_factory=llm_factory, max_workers=config.max_workers)

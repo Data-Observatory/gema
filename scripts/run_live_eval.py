@@ -58,41 +58,9 @@ from metadata_enricher.pipeline import Pipeline, PipelineResult
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
+from eval_common import score_overall_deepeval, score_per_field_raw
+
 logger = logging.getLogger(__name__)
-
-# ── Scoring prompt template (used for per-field breakdown) ──────────────────
-
-_SCORING_PROMPT = """\
-You are a metadata quality evaluator for DataCite 4.6 metadata records.
-Your task: compare a CANDIDATE metadata output against a REFERENCE (golden) output,
-given the original RESOURCE description as context.
-
-=== RESOURCE DESCRIPTION (what the metadata describes) ===
-{resource_description}
-
-=== REFERENCE OUTPUT (golden expected) ===
-{expected_output}
-
-=== CANDIDATE OUTPUT (actual from pipeline) ===
-{actual_output}
-
-For each top-level metadata field present in either the reference or the candidate,
-score the candidate on a 0.0–1.0 scale considering:
-
-1. **Accuracy** — Does the candidate contain correct values (no hallucinations)?
-2. **Completeness** — Does the candidate capture all fields present in the reference?
-3. **Coherence** — Is the candidate's data logically consistent and well-structured?
-
-The score for each field should be the average of these three dimensions.
-Extra fields in the candidate beyond the reference are notes but do NOT penalize the score
-unless they contain fabricated data.
-
-Return a JSON object with these keys:
-- "overall": float (0.0–1.0) — mean of all field scores, weighted equally
-- "fields": object mapping field_name (string) to score (float 0.0–1.0)
-- "notes": string — brief qualitative observations (max 300 chars)
-
-Respond with ONLY the JSON object. No markdown fences, no surrounding text."""
 
 
 @dataclass
@@ -144,14 +112,16 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
     def _factory(
         provider: ProviderConfig,
         model: str,
-        temperature: float,
-        max_tokens: int | None,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        extra_body: dict[str, object] | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
             model=model,
             temperature=temperature,
             max_tokens=max_tokens,
+            extra_body=extra_body,
             cache_dir=cache_dir,
         )
 
@@ -236,140 +206,6 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Enable DEBUG logging.",
     )
     return parser.parse_args(argv)
-
-
-# ── DeepEval overall scorer ──────────────────────────────────────────────────
-
-
-def _score_overall_deepeval(
-    *,
-    actual_json: str,
-    expected_json: str,
-    resource_json: str,
-    judge_model: str,
-    api_key: str,
-    base_url: str | None,
-) -> tuple[float, str]:
-    """Score overall semantic quality using DeepEval GEval.
-
-    Returns (score, reason). Raises on failure (treated as non-fatal upstream).
-    """
-    from deepeval.metrics import GEval  # noqa: PLC0415 — optional dep
-    from deepeval.models import GPTModel  # noqa: PLC0415
-    from deepeval.test_case import LLMTestCase  # noqa: PLC0415
-
-    gpt_model = GPTModel(
-        model=judge_model,
-        api_key=api_key,
-        base_url=base_url,
-        temperature=0.0,
-    )
-
-    metric = GEval(
-        name="DataCite Semantic Quality",
-        criteria=(
-            "Evaluate if the candidate DataCite 4.6 metadata is accurate, complete, "
-            "and coherent compared to the reference (golden) output, given the "
-            "original resource description as context."
-        ),
-        evaluation_steps=[
-            "Read the resource description to understand what metadata should be present.",
-            "Compare the candidate and reference outputs field by field.",
-            "Check accuracy: does the candidate avoid hallucinations (fabricated data)?",
-            "Check completeness: does the candidate capture all fields present in the reference?",
-            "Check coherence: is the candidate logically consistent and well-structured?",
-            "Assign an overall score from 0.0 (completely wrong/missing) to 1.0 (perfect match).",
-        ],
-        model=gpt_model,
-        threshold=0.5,
-    )
-
-    test_case = LLMTestCase(
-        input=resource_json,
-        actual_output=actual_json,
-        expected_output=expected_json,
-    )
-
-    score = metric.measure(test_case)
-    reason = getattr(metric, "reason", "") or ""
-    return score, reason
-
-
-# ── Per-field scorer via raw LLM call ────────────────────────────────────────
-
-
-def _score_per_field_raw(
-    *,
-    judge_client: LLMClient,
-    actual_json: str,
-    expected_json: str,
-    resource_json: str,
-) -> tuple[float, dict[str, float], str]:
-    """Score each field via a raw LLM-as-judge prompt.
-
-    Returns (overall_score, field_scores, notes). Falls back to a structural
-    comparison if the LLM call or JSON parsing fails.
-    """
-    system = (
-        "You are a precise metadata quality evaluator. "
-        "Return ONLY valid JSON, no explanation, no markdown fences."
-    )
-
-    prompt = _SCORING_PROMPT.format(
-        resource_description=resource_json,
-        expected_output=expected_json,
-        actual_output=actual_json,
-    )
-
-    response = judge_client.complete_raw(prompt, system_prompt=system)
-
-    # Try to extract JSON from response (handle markdown fence wrapping)
-    json_str = response.strip()
-    if json_str.startswith("```"):
-        lines = json_str.splitlines()
-        if lines[0].startswith("```"):
-            lines = lines[1:]
-        if lines and lines[-1].strip() == "```":
-            lines = lines[:-1]
-        json_str = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(json_str)
-        overall = float(parsed.get("overall", 0.0))
-        fields_raw = parsed.get("fields", {})
-        field_scores: dict[str, float] = {
-            str(k): float(v) for k, v in fields_raw.items() if isinstance(v, (int, float))
-        }
-        notes = str(parsed.get("notes", ""))[:500]
-        return overall, field_scores, notes
-    except (json.JSONDecodeError, TypeError, ValueError) as exc:
-        logger.warning(
-            "Failed to parse per-field judge response as JSON: %s. Response: %.200s",
-            exc,
-            response,
-        )
-        # Fallback: simple structural field overlap
-        try:
-            actual_obj = json.loads(actual_json)
-            expected_obj = json.loads(expected_json)
-            all_fields = set(actual_obj.keys()) | set(expected_obj.keys())
-            common = set(actual_obj.keys()) & set(expected_obj.keys())
-            only_actual = set(actual_obj.keys()) - set(expected_obj.keys())
-
-            field_scores = {}
-            for f in all_fields:
-                if f in common:
-                    field_scores[f] = 0.5  # present in both, can't judge quality
-                elif f in only_actual:
-                    field_scores[f] = 0.3  # extra field (candidate has it, ref does not)
-                else:
-                    field_scores[f] = 0.0  # missing field (ref has it, candidate does not)
-
-            overall = sum(field_scores.values()) / max(len(field_scores), 1)
-            notes = "⚠ Per-field scoring fell back to structural comparison (LLM response could not be parsed)."
-            return overall, field_scores, notes
-        except (json.JSONDecodeError, TypeError):
-            return 0.0, {}, f"Per-field scoring failed: {exc}"
 
 
 # ── Report writer ────────────────────────────────────────────────────────────
@@ -592,7 +428,7 @@ def main(argv: list[str] | None = None) -> None:
         deepeval_score: float | None = None
         deepeval_reason: str | None = None
         try:
-            deepeval_score, deepeval_reason = _score_overall_deepeval(
+            deepeval_score, deepeval_reason = score_overall_deepeval(
                 actual_json=actual_json,
                 expected_json=expected_json,
                 resource_json=resource_json,
@@ -606,7 +442,7 @@ def main(argv: list[str] | None = None) -> None:
 
         # Score: Per-field via raw LLM call
         try:
-            field_overall, field_scores, notes = _score_per_field_raw(
+            field_overall, field_scores, notes = score_per_field_raw(
                 judge_client=judge_client,
                 actual_json=actual_json,
                 expected_json=expected_json,
