@@ -142,11 +142,49 @@ class Pipeline:
                 )
                 continue
 
+            # Auto-fetch page content (opt-in) BEFORE orchestration — agents read
+            # resource.fetched_content synchronously while formatting their prompt,
+            # so it must be populated before the orchestrator's wave executes.
+            resource = self._maybe_fetch_content(resource)
+
             result = self._process_resource(resource)
             result.source_path = source_path
             results.append(result)
 
         return results
+
+    def _maybe_fetch_content(self, resource: ResourceDescription) -> ResourceDescription:
+        """Best-effort, opt-in auto-fetch of *resource.url*'s page text into
+        ``resource.fetched_content``.
+
+        Only fetches when all of the following hold:
+        - ``config.enable_content_fetch`` is True (off by default — no
+          behavior/cost/determinism change for existing users unless they
+          explicitly opt in).
+        - ``resource.fetched_content`` is empty/None — caller-supplied content
+          is never overwritten; this stays a passthrough field by default.
+        - ``resource.url`` is non-empty — nothing to fetch otherwise.
+
+        A fetch failure (``fetch_page_content`` returns None on any error, by
+        contract) is silently tolerated: resource processing continues with
+        no ``fetched_content``, exactly as it does today. Wrapped in a
+        try/except anyway — defense in depth, since this must never become a
+        new way for a single resource's failure to abort the batch.
+        """
+        if not self._config.enable_content_fetch:
+            return resource
+        if resource.fetched_content or not resource.url:
+            return resource
+        try:
+            from metadata_enricher.enrichers.content_fetcher import fetch_page_content
+
+            content = fetch_page_content(resource.url)
+        except Exception as exc:
+            logger.warning("Content fetch failed for %s: %s", resource.url, exc)
+            return resource
+        if content:
+            resource.fetched_content = content
+        return resource
 
     def _process_resource(self, resource: ResourceDescription) -> PipelineResult:
         """Process a single resource through the full pipeline."""

@@ -6,7 +6,8 @@ Post-merge enrichment modules. Deterministic transforms applied to `MetadataDocu
 
 ```
 enrichers/
-├── __init__.py                  # Exports IdentifierEnricher, IdentifierResolver, IdentifierMatch
+├── __init__.py                  # Exports IdentifierEnricher, IdentifierResolver, IdentifierMatch, fetch_page_content
+├── content_fetcher.py           # Best-effort live URL fetch -> cleaned text for ResourceDescription.fetched_content (pre-orchestration, opt-in)
 ├── iana_normalizer.py           # MIME type normalization against IANA registry (standalone, not wired)
 ├── country_extractor.py         # ISO country code extraction from HTML/URL (standalone, not wired)
 ├── identifier_types.py          # IdentifierMatch pydantic model (resolved org/person identifier)
@@ -23,6 +24,7 @@ enrichers/
 
 | Task | Location |
 |------|----------|
+| Enable auto content-fetch (populate `fetched_content` from `resource.url`) | `PipelineConfig.enable_content_fetch = True` (config/models.py); wired in `pipeline.py:Pipeline._maybe_fetch_content` |
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
 | Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
 | Change org resolution order/merge | `IdentifierResolver._try_resolve()` / `_merge_org_matches()` (identifier_resolver.py) |
@@ -74,6 +76,10 @@ Person (given_name, family_name[, affiliation]) → IdentifierResolver.resolve_p
 ### Pipeline Integration
 
 ```
+Pipeline.run() [per resource]:
+  0. fetch_page_content(resource.url) → resource.fetched_content   ← only if enable_content_fetch,
+                                                                        AND fetched_content is empty,
+                                                                        AND resource.url is non-empty
 Pipeline._process_resource():
   1. Validate resource
   2. Build agent registry
@@ -83,13 +89,23 @@ Pipeline._process_resource():
   6. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
 ```
 
+Step 0 runs in `Pipeline._maybe_fetch_content` (pipeline.py), before validation and
+before any agent sees the resource — agents read `fetched_content` synchronously while
+formatting their prompt (`agents/base.py::BaseAgent._build_resource_dict`), so it must
+be populated before the orchestrator's wave executes. It never overwrites
+caller-supplied `fetched_content` (this stays a passthrough field by default), and a
+failed fetch (`fetch_page_content` returns `None` on any error, by contract) is
+silently tolerated — same as not having the feature at all.
+
 Step 6 runs on **every** `process` call, regardless of step 5 — it checks whatever
 PIDs are already in the document (LLM-provided or enrichment-added). It never fails
 the resource; problems become `PipelineResult.warnings`, same as an incomplete field.
 
-Enable identifier enrichment via config:
+Enable auto content-fetch and/or identifier enrichment via config:
 ```yaml
 # config/agents.yaml
+enable_content_fetch: true          # default false — off by default: no cost/behavior
+                                     # change for existing users unless opted in
 enable_identifier_enrichment: true
 validate_pids: true       # default — set false to disable entirely
 validate_pids_live: true  # default — set false to keep format checks but skip network
