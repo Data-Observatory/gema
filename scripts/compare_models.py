@@ -65,13 +65,11 @@ def run_comparison(
         from metadata_enricher.llm.factory import reset_client_cache
         reset_client_cache()
 
-        model_results: list[dict[str, Any]] = []
-
-        for ii, input_path in enumerate(input_files):
+        def _process(ii: int, input_path: Path) -> dict[str, Any]:
             gt_path = ground_truth_dir / input_path.name
             if not gt_path.exists():
                 print(f"  [{ii + 1}/{len(input_files)}] {input_path.stem[:50]}... SKIP (no ground truth)")
-                continue
+                return {"input": input_path.name, "error": "no ground truth", "scores": {}}
 
             truth_raw = json.loads(gt_path.read_text(encoding="utf-8"))
             truth = do_catalog_common.adapt_ground_truth(truth_raw)
@@ -86,13 +84,11 @@ def run_comparison(
                 )
             except Exception as e:
                 print(f"ERROR ({e})")
-                model_results.append({"input": input_path.name, "error": str(e), "scores": {}})
-                continue
+                return {"input": input_path.name, "error": str(e), "scores": {}}
 
             if actual is None:
                 print("FAIL (empty)")
-                model_results.append({"input": input_path.name, "error": "empty output", "scores": {}})
-                continue
+                return {"input": input_path.name, "error": "empty output", "scores": {}}
 
             scores = do_catalog_common.compare_outputs(truth, actual)
             elapsed = time.time() - t0
@@ -106,9 +102,33 @@ def run_comparison(
                 json.dumps(actual, indent=2, ensure_ascii=False), encoding="utf-8"
             )
 
-            model_results.append({
-                "input": input_path.name, "scores": scores, "elapsed_s": round(elapsed, 1),
-            })
+            return {"input": input_path.name, "scores": scores, "elapsed_s": round(elapsed, 1)}
+
+        # Cross-item concurrency here tracks the same config-driven
+        # global/provider/model cascade used for per-resource agent
+        # concurrency (config/providers.yaml) — no hardcoded provider name.
+        # A provider/model resolving to max_workers <= 1 (e.g.
+        # zai-coding-plan's tight account rate limit) stays fully
+        # sequential; anything above that runs items concurrently, capped
+        # at 3 to avoid multiplying total in-flight requests too far past
+        # what was actually verified safe. Order of completion is not
+        # preserved (prints interleave) but model_results is re-sorted back
+        # to input order before scoring, so reports are unaffected.
+        item_workers = min(eval_common.resolve_max_workers(provider, model), 3)
+        if item_workers > 1:
+            from concurrent.futures import ThreadPoolExecutor
+
+            with ThreadPoolExecutor(max_workers=item_workers) as executor:
+                futures = {
+                    executor.submit(_process, ii, input_path): ii
+                    for ii, input_path in enumerate(input_files)
+                }
+                indexed_results = sorted(
+                    ((futures[f], f.result()) for f in futures), key=lambda pair: pair[0]
+                )
+            model_results = [r for _, r in indexed_results]
+        else:
+            model_results = [_process(ii, input_path) for ii, input_path in enumerate(input_files)]
 
         valid = [r for r in model_results if r.get("scores")]
         if valid:

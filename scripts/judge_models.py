@@ -106,14 +106,13 @@ def run_judging(
         label = eval_common.sanitize_label(spec)
         print(f"\n{'=' * 60}\n  Judging {mi + 1}/{len(models)}: {spec}\n{'=' * 60}")
 
-        model_results: list[dict[str, Any]] = []
-        for ii, input_path in enumerate(input_files):
+        def _judge_one(ii: int, input_path: Path) -> dict[str, Any] | None:
             stem = input_path.name
             actual_path = output_root / "outputs" / label / stem
             gt_path = ground_truth_dir / stem
             if not actual_path.exists() or not gt_path.exists():
                 print(f"  [{ii + 1}/{len(input_files)}] {stem}... SKIP (no saved output or ground truth)")
-                continue
+                return None
 
             actual_json = actual_path.read_text(encoding="utf-8")
             truth_raw = json.loads(gt_path.read_text(encoding="utf-8"))
@@ -144,7 +143,7 @@ def run_judging(
             else:
                 print(f"geval={geval_score:.3f} field_overall={field_overall:.3f}")
 
-            model_results.append({
+            return {
                 "input": stem,
                 "geval_score": geval_score,
                 "geval_reason": geval_reason,
@@ -152,7 +151,31 @@ def run_judging(
                 "field_overall": field_overall,
                 "field_scores": field_scores,
                 "notes": notes,
-            })
+            }
+
+        # Every judging call goes to the judge client (judge_provider_name/
+        # judge_model), regardless of which candidate model's outputs are
+        # being scored — resolve concurrency against the judge's own
+        # provider/model, same config-driven cascade as compare_models.py,
+        # no hardcoded provider name.
+        item_workers = min(eval_common.resolve_max_workers(judge_provider_name, judge_model), 3)
+        if item_workers > 1:
+            from concurrent.futures import ThreadPoolExecutor
+
+            with ThreadPoolExecutor(max_workers=item_workers) as executor:
+                futures = {
+                    executor.submit(_judge_one, ii, input_path): ii
+                    for ii, input_path in enumerate(input_files)
+                }
+                indexed_results = sorted(
+                    ((futures[f], f.result()) for f in futures), key=lambda pair: pair[0]
+                )
+            model_results = [r for _, r in indexed_results if r is not None]
+        else:
+            model_results = [
+                r for ii, input_path in enumerate(input_files)
+                if (r := _judge_one(ii, input_path)) is not None
+            ]
 
         succeeded = [r for r in model_results if r["geval_error"] is None]
         n_failed = len(model_results) - len(succeeded)

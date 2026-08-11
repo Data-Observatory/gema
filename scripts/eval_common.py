@@ -77,6 +77,18 @@ def sanitize_label(spec: str) -> str:
     return spec.replace(".", "_").replace(":", "__").replace("/", "_")
 
 
+def resolve_max_workers(provider: str, model: str, config_path: Path = CONFIG_PATH) -> int:
+    """PipelineConfig.effective_max_workers for *provider*/*model*, without
+    building a full Pipeline. Callers deciding whether/how much to
+    parallelize (e.g. cross-item concurrency in
+    compare_models.py/judge_models.py) read this instead of hardcoding a
+    provider or model name — the global/provider/model override cascade
+    lives in config/providers.yaml, this is just the lookup."""
+    from metadata_enricher.config.loader import load_config
+
+    return load_config(config_path).effective_max_workers(provider, model)
+
+
 # ---------------------------------------------------------------------------
 # Pipeline execution
 # ---------------------------------------------------------------------------
@@ -133,7 +145,20 @@ def run_pipeline_for_model(
     def llm_factory(provider: ProviderConfig, model: str, **kwargs: Any) -> LLMClient:
         return create_llm_client(provider, model, cache_dir=cache_dir, **kwargs)
 
-    pipeline = Pipeline(config=config, llm_factory=cast("LLMClientFactory", llm_factory))
+    # BUG FIXED: this call previously passed no max_workers at all, so it
+    # silently used Pipeline's own constructor default (4) regardless of
+    # config.max_workers (1, tuned for zai-coding-plan's tight rate limit —
+    # see config/agents.yaml). Every eval run against zai-coding-plan this
+    # session ran at unintended concurrency=4, not the intended 1. Resolve
+    # per-provider via PipelineConfig.effective_max_workers (global default,
+    # overridable per-provider in config/providers.yaml) — the same
+    # resolution path production's cli.py uses, no hardcoded provider name
+    # anywhere in this file.
+    pipeline = Pipeline(
+        config=config,
+        llm_factory=cast("LLMClientFactory", llm_factory),
+        max_workers=config.effective_max_workers(provider, model),
+    )
     source = FilesystemInputSource()
 
     schema = get_registry().get(schema_name)

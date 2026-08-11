@@ -12,6 +12,21 @@ from typing import Any, Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class ModelOverride(BaseModel):
+    """Per-model setting override, scoped to one provider.
+
+    Keyed by model name only within a single ProviderConfig's own
+    model_overrides list — the same model name can exist under different
+    providers with different characteristics (rate limits, concurrency
+    tolerance), so an override must never be looked up by model name alone.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    model: str = Field(..., min_length=1)
+    max_workers: int | None = Field(default=None, ge=1)
+
+
 class ProviderConfig(BaseModel):
     """LLM provider connection settings."""
 
@@ -22,6 +37,8 @@ class ProviderConfig(BaseModel):
     api_key_env: str
     default: bool = False
     seed: int | None = None
+    max_workers: int | None = Field(default=None, ge=1)
+    model_overrides: list[ModelOverride] = Field(default_factory=list)
 
 
 class AgentConfig(BaseModel):
@@ -62,6 +79,38 @@ class PipelineConfig(BaseModel):
     enable_identifier_enrichment: bool = False
     validate_pids: bool = True
     validate_pids_live: bool = True
+
+    def effective_max_workers(
+        self, provider_name: str | None = None, model_name: str | None = None
+    ) -> int:
+        """Resolve concurrency with 3-level cascading precedence: this
+        config's global max_workers (least specific) -> the named
+        provider's own max_workers override -> that provider's per-model
+        override for *model_name* (most specific).
+
+        model_name is looked up ONLY within provider_name's own
+        model_overrides — the same model name can mean something different
+        under a different provider, so it is never matched globally.
+
+        This is the single place that resolves the effective value; no
+        caller should hardcode a provider or model name to special-case its
+        concurrency.
+        """
+        effective = self.max_workers
+
+        if provider_name is not None:
+            for provider in self.providers:
+                if provider.name != provider_name:
+                    continue
+                if provider.max_workers is not None:
+                    effective = provider.max_workers
+                if model_name is not None:
+                    for override in provider.model_overrides:
+                        if override.model == model_name and override.max_workers is not None:
+                            effective = override.max_workers
+                break
+
+        return effective
 
     @model_validator(mode="after")
     def _validate_references(self) -> Self:
