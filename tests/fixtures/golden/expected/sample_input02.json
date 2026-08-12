@@ -13,13 +13,7 @@
     "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
   },
-  "alternate_identifiers": [
-    {
-      "alternate_name": "Rasgos-CL",
-      "alternate_identifier": "Rasgos-CL",
-      "alternate_identifier_type": "Local"
-    }
-  ],
+  "alternate_identifiers": [],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -35,9 +29,9 @@
     },
     {
       "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Educación continua",
-      "instructional_method": "Autoaprendizaje"
+      "mediator": "Supervisor",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -58,6 +52,11 @@
       "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
       "description_type": "Abstract",
       "language": "es"
+    },
+    {
+      "description": "Es una plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
+      "description_type": "Abstract",
+      "language": "es"
     }
   ],
   "funding_references": [],
@@ -67,7 +66,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Plataforma sobre rasgos funcionales de la biodiversidad de plantas en Chile, con cobertura a escala regional y nacional",
+      "geo_description": "Plataforma con cobertura de rasgos funcionales de plantas a escala regional y nacional en Chile",
       "coverage": "nacional"
     }
   ],
@@ -113,9 +112,9 @@
   "temporal_events": [
     {
       "start_date": "",
-      "frequency_number": "",
+      "frequency_number": "1",
       "frequency_type": "yearly",
-      "description": "El recurso se actualiza anualmente"
+      "description": "El recurso se actualiza con frecuencia anual"
     }
   ],
   "titles": [

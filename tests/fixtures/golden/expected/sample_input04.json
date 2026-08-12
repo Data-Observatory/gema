@@ -5,8 +5,8 @@
     "editor": "Instituto Nacional de Estadísticas (Chile)",
     "maintainer": "",
     "contact": "",
-    "producer": "Instituto Nacional de Estadísticas (INE) de Chile",
-    "publication_year": "2022",
+    "producer": "Instituto Nacional de Estadísticas (INE)",
+    "publication_year": "2021",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
     "version": "",
@@ -16,7 +16,7 @@
   "alternate_identifiers": [
     {
       "alternate_name": "EPF",
-      "alternate_identifier": "",
+      "alternate_identifier": "EPF",
       "alternate_identifier_type": "Local"
     }
   ],
@@ -34,10 +34,10 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Periodistas",
-      "mediator": "Autodirigido",
+      "audience": "Consultores",
+      "mediator": "Supervisor",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Estudio de caso"
     }
   ],
   "categories": [
@@ -87,7 +87,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de datos de la Encuesta de Presupuestos Familiares, según los indicadores mostrados en el portal (gasto per cápita e ingreso disponible, años 2021-2022)"
+      "date_information": "Período de levantamiento de datos de la EPF, según los indicadores publicados en la página del recurso (gasto per cápita e ingreso disponible per cápita para los años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -104,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: hogares chilenos en capitales regionales, datos sobre ingresos y gastos familiares",
+      "geo_description": "Cobertura nacional, hogares chilenos en total de capitales regionales",
       "coverage": "nacional"
     }
   ],
@@ -129,19 +129,19 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Presupuestos familiares -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
       "subject_name": "Ingresos y gastos -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Patrones de consumo -- Chile",
+      "subject_name": "Presupuesto familiar -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Patrones de consumo -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

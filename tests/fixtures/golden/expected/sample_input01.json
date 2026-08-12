@@ -2,7 +2,7 @@
   "resource": {
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
-    "editor": "Ministerio de Hacienda",
+    "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "",
     "contact": "",
     "producer": "",
@@ -16,16 +16,16 @@
   "alternate_identifiers": [],
   "audiences": [
     {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    },
-    {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     },
     {
       "audience": "Ciudadanos",
@@ -72,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales registrada en el portal"
+      "date_information": "Última actualización del dataset de gastos municipales según el portal"
     }
   ],
   "descriptions": [
@@ -130,7 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Egresos ejecutados -- Chile",
+      "subject_name": "Corporaciones municipales -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Egresos ejecutados -- Municipios -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -141,7 +147,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso declara frecuencia de actualización mensual"
+      "description": "El recurso se actualiza mensualmente según la frecuencia declarada en el portal"
     }
   ],
   "titles": [

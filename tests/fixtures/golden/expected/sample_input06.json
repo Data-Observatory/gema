@@ -4,7 +4,7 @@
     "identifier_type": "DOI",
     "editor": "GFZ Data Services",
     "maintainer": "",
-    "contact": "",
+    "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
     "producer": "GFZ German Research Centre for Geosciences",
     "publication_year": "2020",
     "resource_type": "Dataset",
@@ -25,12 +25,12 @@
       "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Laboratorio"
     },
     {
       "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Educación continua",
+      "mediator": "Supervisor",
+      "education_level": "Profesional",
       "instructional_method": "Autoaprendizaje"
     }
   ],
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Coastal Cordillera, Northern Chile (19°12'S - 25°12'S)",
+      "geo_location_place": "Northern Chile, Coastal Cordillera (19°12'S – 25°12'S)",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Northernmost segment of the Atacama Fault System in the Coastal Cordillera of N-Chile, covering latitudes from 19°12'S to 25°12'S",
+      "geo_description": "Cobertura regional del segmento norte del Atacama Fault System en la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S",
       "coverage": "regional"
     }
   ],
@@ -125,7 +125,7 @@
   ],
   "related_identifiers": [
     {
-      "related_identifier": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults",
+      "related_identifier": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con",
       "related_identifier_type": "URL",
       "relation_type": "References",
       "related_metadata_scheme": "",
@@ -138,13 +138,7 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "active faults",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Atacama Fault System",
+      "subject_name": "Active faults -- Atacama Fault System -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -156,20 +150,14 @@
       "value_uri": ""
     },
     {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
+      "subject_name": "Tectonics -- Plate tectonics",
+      "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > PLATE TECTONICS > FAULT MOVEMENT",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
+      "subject_name": "Neotectonics",
+      "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     }

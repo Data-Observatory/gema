@@ -13,7 +13,13 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "",
+      "alternate_identifier": "35414",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -22,26 +28,26 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Científicos de datos",
+      "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Basado en proyectos"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
+      "audience": "Científicos de datos",
+      "mediator": "Supervisor",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
     {
       "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias de la Tierra"
+      "sub_category": "Ciencias medioambientales"
     },
     {
       "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias medioambientales"
+      "sub_category": "Ciencias de la Tierra"
     }
   ],
   "citations": [
@@ -58,9 +64,9 @@
   ],
   "creators": [
     {
-      "creator_name": "Sarricolea, Pablo",
+      "creator_name": "Sarricolea, P.",
       "creator_name_type": "Personal",
-      "given_name": "Pablo",
+      "given_name": "P.",
       "family_name": "Sarricolea",
       "email": "",
       "genre": "",
@@ -96,9 +102,9 @@
       ]
     },
     {
-      "creator_name": "Meseguer-Ruiz, Oliver",
+      "creator_name": "Meseguer-Ruiz, O.",
       "creator_name_type": "Personal",
-      "given_name": "Oliver",
+      "given_name": "O.",
       "family_name": "Meseguer-Ruiz",
       "email": "",
       "genre": "",
@@ -119,7 +125,7 @@
     {
       "date": "2017-01-12",
       "date_type": "Issued",
-      "date_information": "Fecha de publicación del mapa de zonas climáticas en el Geoportal de Chile"
+      "date_information": "Fecha de publicación del mapa de zonas climáticas de Chile según Köppen-Geiger en el Geoportal de Chile"
     }
   ],
   "descriptions": [
@@ -136,7 +142,7 @@
       "geo_location_point": "",
       "geo_location_box": "-76.5337,-56.7392,-69.0261,-16.9754",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de Chile continental según el ámbito espacial del metadato",
+      "geo_description": "Cobertura nacional: Chile continental, incluyendo sus 25 tipos de clima según la clasificación Köppen-Geiger",
       "coverage": "nacional"
     }
   ],
@@ -165,10 +171,10 @@
       "sizes": [],
       "physical_carrier": "digital",
       "format": "application/zip",
-      "variable_measured": "Zonas climáticas de Chile según Köppen-Geiger (25 tipos de clima, temperatura, precipitación, altitud)",
+      "variable_measured": "Clasificación climática de Köppen-Geiger (25 tipos de clima), precipitación promedio, temperatura promedio, altitud mínima y máxima",
       "checksum": "",
       "data_quality": "",
-      "measurement_technique": "Clasificación climática de Köppen-Geiger sobre cubiertas de temperatura y precipitación mensual de 1 km² de resolución",
+      "measurement_technique": "",
       "provenance": "Departamento de Geografía Universidad de Chile",
       "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
       "temporal_resolution": "",
@@ -176,6 +182,13 @@
     }
   ],
   "publishers": [
+    {
+      "publisher_name": "Geoportal de Chile",
+      "publisher_identifier": "",
+      "publisher_identifier_scheme": "",
+      "publisher_scheme_uri": "",
+      "lang": "es"
+    },
     {
       "publisher_name": "Departamento de Geografía, Universidad de Chile",
       "publisher_identifier": "https://ror.org/047gc3g35",
@@ -221,7 +234,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Regionalización climática -- Chile continental",
+      "subject_name": "Tipos de clima -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

@@ -5,7 +5,7 @@
     "editor": "Oficina de Estudios y Políticas Agrarias",
     "maintainer": "",
     "contact": "",
-    "producer": "",
+    "producer": "Oficina de Estudios y Políticas Agrarias",
     "publication_year": "2007",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -13,7 +13,13 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "Geoportal Catálogo 35497",
+      "alternate_identifier": "35497",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -22,26 +28,26 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
+      "audience": "Administradores",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Administradores",
-      "mediator": "Gerente",
+      "audience": "Profesionales",
+      "mediator": "Supervisor",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Agricultura, silvicultura y pesca"
+      "sub_category": "Ciencia animal y lechería"
     },
     {
-      "name": "Ciencias Sociales",
-      "sub_category": "Geografía económica y social"
+      "name": "Ciencias Agrícolas",
+      "sub_category": "Agricultura, silvicultura y pesca"
     }
   ],
   "citations": [],
@@ -81,7 +87,7 @@
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizó el trazado de límites de la capa de información según modificaciones efectuadas"
+      "date_information": "Año en que se actualizaron los trazados de límites según modificaciones efectuadas"
     }
   ],
   "descriptions": [
@@ -98,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura geográfica correspondiente a la Isla de Pascua, asociada a cifras del Censo Agropecuario 2007 para ganado bovino",
+      "geo_description": "Cobertura geográfica correspondiente a Isla de Pascua, asociada a cifras estadísticas del Censo Agropecuario 2007 para unidades administrativas y distritos censales INE",
       "coverage": "local"
     }
   ],
@@ -120,26 +126,16 @@
     }
   ],
   "related_identifiers": [],
-  "rights": [
-    {
-      "rights": "",
-      "rights_uri": "",
-      "rights_identifier": "",
-      "rights_identifier_scheme": "",
-      "scheme_uri": "",
-      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol)",
-      "rights_holder": "Oficina de Estudios y Políticas Agrarias"
-    }
-  ],
+  "rights": [],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales -- Chile",
+      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
