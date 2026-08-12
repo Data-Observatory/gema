@@ -33,31 +33,58 @@ agents:
     - EDITOR (editor, y equivalente a "publisher" en creators/publishers): quien publica o distribuye el recurso. Usa el MISMO nombre de institución en "editor" y en "publishers" cuando se refieren a la misma entidad — no inventes variantes distintas del mismo nombre.
     - MANTENEDOR (maintainer): quien mantiene el recurso actualizado en línea, SOLO si el texto distingue explícitamente a alguien distinto del editor (ej. un departamento operador del portal). Si no hay esa evidencia, deja "maintainer" vacío — no copies el editor.
   prompt: |
-    Tu tarea: extraer la metadata fundamental del recurso — información del recurso, títulos, descripciones, idiomas, fechas, identificadores alternativos, identificadores relacionados, y datos temporales/geográficos.
+    Tu tarea: extraer la metadata fundamental del recurso — información del recurso, identificadores alternativos y relacionados, datos temporales/geográficos, contactos e instituciones, títulos, descripciones, idiomas y fechas.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
     PASO 1 — IDENTIFICA EL RECURSO
       - identifier = el valor de "url" (o "doi" si el recurso lo trae, en cuyo caso identifier_type = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae uno.
       - identifier_type = "URL" o "DOI" según corresponda
-      - publication_year: se reconcilia con las fechas — ver PASO 5
+      - publication_year: se reconcilia con las fechas — ver PASO 8
       - resource_type y resource_type_general: lista cerrada — ver REGLAS CRÍTICAS
       - version: si el texto la menciona (ej. "v2.1", "1.0")
       - thumbnail: SOLO si una URL de imagen aparece literalmente en el contenido (og:image, miniatura del catálogo). NUNCA construyas ni adivines una URL — si no hay ninguna en el texto, deja thumbnail vacío.
-      - language: idioma detectado del contenido (ver PASO 4); usa "es" solo si no hay evidencia del idioma del recurso
+      - language: idioma detectado del contenido (ver PASO 7); usa "es" solo si no hay evidencia del idioma del recurso
 
-    PASO 2 — CONTACTOS E INSTITUCIONES
+    PASO 2 — IDENTIFICADORES ALTERNATIVOS (alternate_identifiers)
+      Códigos internos, IDs locales o abreviaciones DEL RECURSO (no identificadores externos como DOI — esos van en el PASO 1).
+      - alternate_name: la abreviatura o nombre corto (ej. "EPF"), si el texto la usa
+      - alternate_identifier: el código/ID en sí
+      - alternate_identifier_type: uno de: Local, DOI, Handle, ISBN, PURL, URN, Other — usa "Local" para códigos internos de portal
+      - NUNCA uses un GUID/UUID opaco de la plataforma como alternate_identifier si no aporta información útil a un lector externo — en ese caso prefiere dejar el campo fuera.
+      Ejemplo: {"alternate_name": "EPF", "alternate_identifier": "EPF-2021", "alternate_identifier_type": "Local"}
+
+    PASO 3 — IDENTIFICADORES RELACIONADOS (related_identifiers)
+      APIs, documentación o datasets relacionados mencionados explícitamente en el texto.
+      - related_identifier: la URL/DOI/handle del recurso relacionado
+      - related_identifier_type: uno de: DOI, URL, Handle, ISBN, ISSN, PURL, ARK, URN, Other
+      - relation_type: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
+      Ejemplo: {"related_identifier": "https://api.datos.gob.cl/v1/gastos", "related_identifier_type": "URL", "relation_type": "IsDescribedBy"}
+
+    PASO 4 — INFORMACIÓN TEMPORAL Y GEOGRÁFICA
+      a) geo_locations — crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
+        - geo_location_place: nombre del lugar (evidenciado en el texto)
+        - geo_description: descripción del área (evidenciada en el texto)
+        - coverage: "nacional" | "regional" | "comunal" | "local", solo si puedes inferirlo con evidencia
+        - geo_location_box: bounding box "oeste,sur,este,norte" — SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso deja geo_location_box vacío — un campo vacío es mejor que una caja inventada.
+      b) temporal_events — crea un objeto SOLO si el texto declara EXPLÍCITAMENTE una frecuencia de actualización ("se actualiza mensualmente", "datos anuales", "actualización trimestral"). NO infieras la frecuencia a partir del tipo de recurso.
+        - frequency_type: uno de: daily, weekly, monthly, quarterly, yearly
+        - frequency_number: si el texto lo menciona (ej. "cada 2 años" → frequency_type: "yearly", frequency_number: "2")
+        - description: SIEMPRE obligatorio si creas el objeto — cita o resume la frase de la fuente que declara la frecuencia
+        - Sin evidencia explícita de una frecuencia declarada → temporal_events: []
+
+    PASO 5 — CONTACTOS E INSTITUCIONES
       a) EDITOR: busca "Publicado por", "Editor", "Publisher", "Publicado en", "Fuente:". Ejemplo: "Publicado por el Ministerio de Educación" → editor = "Ministerio de Educación".
       b) MANTENEDOR: solo si el texto distingue explícitamente a alguien que actualiza el recurso, diferente del editor (ver definición compartida arriba).
       c) PRODUCTOR: busca "Producido por", "Generado por", "Fuente original". Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → producer = "Unidad de Estadísticas, Ministerio de Educación".
       d) CONTACTO: busca ACTIVAMENTE en TODO el texto correos (cualquier dirección con @), teléfonos y formularios de contacto asociados a ESTE recurso. Concatena múltiples contactos con "; " (ej. "email@ejemplo.cl; 600 600 2626").
 
-    PASO 3 — TÍTULOS Y DESCRIPCIONES
+    PASO 6 — TÍTULOS Y DESCRIPCIONES
       - SIEMPRE crea al menos un título usando el texto de "title" (title_type = "MainTitle"). titles es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido.
       - SIEMPRE crea al menos una descripción usando el texto de "description" (description_type = "Abstract") si "description" trae contenido.
       - language de cada título/descripción: el idioma real de ese texto.
 
-    PASO 4 — IDIOMA
+    PASO 7 — IDIOMA
       - lang_code: ISO 639-1 de dos letras ("es", "en", "pt")
       - description: una oración clara indicando si el recurso es monolingüe, bilingüe o multilingüe. NUNCA la dejes vacía cuando hay información de idioma disponible. Ejemplos:
           * Solo español → "El recurso está disponible únicamente en español"
@@ -65,7 +92,7 @@ agents:
           * Bilingüe es/en → "El recurso está disponible en español e inglés (bilingüe)"
           * Multilingüe → "El recurso contiene contenido en español, inglés y portugués"
 
-    PASO 5 — FECHAS
+    PASO 8 — FECHAS
       Busca TODOS los tipos de fecha en el texto, título y descripción.
       TIPOS A BUSCAR:
       - "Issued": fecha en que el recurso fue publicado oficialmente
@@ -81,33 +108,6 @@ agents:
       - Para CADA fecha incluye date, date_type y date_information: una nota legible y contextualizada al recurso específico (NUNCA genérica como "fecha de publicación"). Ejemplo: "Fecha en que el dataset fue publicado oficialmente en el portal datos.gob.cl".
       - NUNCA inventar fechas que no aparezcan en el contenido, título o descripción.
       - publication_year = el año de la fecha "Issued"; si no hay, el de "Created"; si no hay ninguna de esas, el año más antiguo entre las fechas que extrajiste; si no extrajiste ninguna fecha pero el año aparece en la URL o el título, usa ese año. NUNCA lo dejes vacío si hay algún año identificable en tu propia salida o en la URL/título.
-
-    PASO 6 — IDENTIFICADORES ALTERNATIVOS (alternate_identifiers)
-      Códigos internos, IDs locales o abreviaciones DEL RECURSO (no identificadores externos como DOI — esos van en el PASO 1).
-      - alternate_name: la abreviatura o nombre corto (ej. "EPF"), si el texto la usa
-      - alternate_identifier: el código/ID en sí
-      - alternate_identifier_type: uno de: Local, DOI, Handle, ISBN, PURL, URN, Other — usa "Local" para códigos internos de portal
-      - NUNCA uses un GUID/UUID opaco de la plataforma como alternate_identifier si no aporta información útil a un lector externo — en ese caso prefiere dejar el campo fuera.
-      Ejemplo: {"alternate_name": "EPF", "alternate_identifier": "EPF-2021", "alternate_identifier_type": "Local"}
-
-    PASO 7 — IDENTIFICADORES RELACIONADOS (related_identifiers)
-      APIs, documentación o datasets relacionados mencionados explícitamente en el texto.
-      - related_identifier: la URL/DOI/handle del recurso relacionado
-      - related_identifier_type: uno de: DOI, URL, Handle, ISBN, ISSN, PURL, ARK, URN, Other
-      - relation_type: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
-      Ejemplo: {"related_identifier": "https://api.datos.gob.cl/v1/gastos", "related_identifier_type": "URL", "relation_type": "IsDescribedBy"}
-
-    PASO 8 — INFORMACIÓN TEMPORAL Y GEOGRÁFICA
-      a) geo_locations — crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
-        - geo_location_place: nombre del lugar (evidenciado en el texto)
-        - geo_description: descripción del área (evidenciada en el texto)
-        - coverage: "nacional" | "regional" | "comunal" | "local", solo si puedes inferirlo con evidencia
-        - geo_location_box: bounding box "oeste,sur,este,norte" — SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso deja geo_location_box vacío — un campo vacío es mejor que una caja inventada.
-      b) temporal_events — crea un objeto SOLO si el texto declara EXPLÍCITAMENTE una frecuencia de actualización ("se actualiza mensualmente", "datos anuales", "actualización trimestral"). NO infieras la frecuencia a partir del tipo de recurso.
-        - frequency_type: uno de: daily, weekly, monthly, quarterly, yearly
-        - frequency_number: si el texto lo menciona (ej. "cada 2 años" → frequency_type: "yearly", frequency_number: "2")
-        - description: SIEMPRE obligatorio si creas el objeto — cita o resume la frase de la fuente que declara la frecuencia
-        - Sin evidencia explícita de una frecuencia declarada → temporal_events: []
 
     === REGLAS CRÍTICAS ===
     - NUNCA inventar URLs, DOIs, emails, teléfonos, fechas, lugares o cajas geográficas
