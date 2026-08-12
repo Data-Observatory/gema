@@ -132,6 +132,41 @@ class TestListProvidersCommand:
         assert "--config" in result.stderr
 
 
+class TestListKnownProvidersCommand:
+    """list-known-providers subcommand -- reads config/providers.yaml (the
+    autofill preset pool visor's Settings picker uses), not runtime config."""
+
+    def test_list_known_providers_shows_pool_entries(self) -> None:
+        result = runner.invoke(app, ["list-known-providers"])
+        assert result.exit_code == 0
+        assert "autofill presets" in result.stdout
+
+    def test_list_known_providers_missing_pool_file(self) -> None:
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with patch("metadata_enricher.cli.PROVIDERS_POOL_PATH", Path("/nonexistent/providers.yaml")):
+            result = runner.invoke(app, ["list-known-providers"])
+        assert result.exit_code == 1
+        assert "not found" in result.stderr
+
+    def test_list_known_providers_invalid_yaml_gives_friendly_message(self) -> None:
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+
+        f = tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False)
+        f.write("not: a: valid: providers: pool")
+        f.close()
+        try:
+            with patch("metadata_enricher.cli.PROVIDERS_POOL_PATH", Path(f.name)):
+                result = runner.invoke(app, ["list-known-providers"])
+            assert result.exit_code == 1
+            assert "Traceback" not in result.stderr
+        finally:
+            os.unlink(f.name)
+
+
 class TestProcessCommand:
     """process subcommand."""
 
