@@ -49,11 +49,38 @@ enough context to pick up cold; prune entries once actually done.
   weakest. **Minimum-effort fix done** (2026-08-11): reordered the existing
   prompt so those 4 fields are now PASO 2-4, right after resource
   identification, instead of PASO 6-8 at the end — no new agent, no
-  wall-clock cost, golden fixtures re-recorded. The **full split into two
-  agents is still not done** — still worth considering separately if the
-  reorder alone doesn't move the needle enough (weigh the quality gain
-  against the added wall-clock at `max_workers: 1`); re-run the do_catalog
-  pilot to see whether the reorder alone was sufficient before pursuing it.
+  wall-clock cost, golden fixtures re-recorded.
+
+  **Re-measured against the do_catalog 18-pilot (deepseek-only, 2026-08-11)
+  — full split NOT recommended on current evidence.** Aggregate structural
+  score was flat (0.530 → 0.516/0.521, noise-level either way) but that
+  metric can't isolate these 4 fields (`alternate_identifiers` is blended
+  into a 15%-weight `field_coverage` blob and structurally unmeasurable on
+  this corpus anyway — ground truth has it empty 0/18 times). Checked
+  field-level output vs. truth directly instead:
+  - `geo_locations`: 16/18 — fine.
+  - `related_identifiers`: 7/18 (truth itself only has it 10/18) — moderate.
+  - `alternate_identifiers`: model 1/18 vs. truth 0/18 — unmeasurable, truth
+    never has any.
+  - `temporal_events`: model 0/18 vs. truth 6/18 — the one real-looking gap.
+
+  But spot-checking those 6 truth entries: several assign
+  `frequency_type: "yearly"` to one-off resources (e.g. a single 2007
+  census) with no explicit frequency statement in the description text the
+  model was given. The prompt explicitly forbids inferring frequency from
+  resource type (correct DataCite behavior) — so 0/18 may be the model
+  correctly refusing to guess, not a prompt-position weakness. Same
+  root-cause class as the "rights always 0.000" finding elsewhere in this
+  corpus: ground truth may carry info the do_catalog input never exposes.
+  **Before spending on the full split** (or on any further prompt work
+  targeting these fields): pick 2-3 of those 6 `temporal_events` ground
+  truth records (`tests/fixtures/do_catalog/ground_truth/`, look for
+  non-empty `temporal_events`) and check the real source page/dataset to
+  confirm whether the ground truth's frequency claim is actually correct
+  and, if so, whether the *original* full record (not the reverse-extracted
+  eval input) states it explicitly anywhere. If ground truth turns out to
+  be noise (inferred from resource type, not a real declared frequency),
+  this whole "weak field" framing may not need a code fix at all.
 - **DOI-resolver enricher — done** (2026-08-11): `DOIResolverEnricher`
   (`enrichers/doi_resolver.py`) backfills titles/creators/publisher/an
   Issued date from Crossref's public Works API for DOI-identified
