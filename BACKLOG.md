@@ -40,7 +40,18 @@ enough context to pick up cold; prune entries once actually done.
   source data (do_catalog's raw VIAF/Wikidata/malformed-ISNI identifiers
   aren't reliable as strict ROR-only ground truth — the eval's scoring
   adapter works around this with scheme-aware matching, but the underlying
-  source data quality issue is untouched).
+  source data quality issue is untouched). **Semi-automated helper built**
+  (2026-08-11): `scripts/curate_ror_isni.py` queries ROR's API for
+  candidate matches against every org name without an existing ROR
+  identifier and writes a review file — nothing is auto-applied. The
+  actual curation step (a human picks or rejects each candidate, then
+  the ground truth files get updated) is still not done — this only
+  removes the "look each one up by hand" grunt work.
+  While building it, found and fixed a real, unrelated production bug:
+  `RORClient.search_query` was sending an illegal `limit` param to ROR's
+  live `?query=` endpoint, silently swallowed into "no results" for
+  every query-endpoint fallback lookup since the client was written —
+  see `fix(enrichers): stop sending an illegal limit param...`.
 
 ## Pipeline / infra
 
