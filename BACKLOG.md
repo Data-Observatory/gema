@@ -22,17 +22,18 @@ enough context to pick up cold; prune entries once actually done.
   the same cheap deepseek-only do_catalog comparison used tonight before
   deciding whether it's worth the added latency/cost.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
-  prompt review, not implemented). It's twice the size of any other agent
-  (9 reasoning steps, 9 output fields) and its weakest-quality fields
-  (`geo_locations`, `temporal_events`, `alternate_identifiers`,
-  `related_identifiers`) sit at the end, where a cheap model's instruction-
-  following is weakest. Candidate split: keep `core_metadata` for
-  resource/titles/descriptions/languages/dates, add a new agent for
-  geo/temporal/alternate+related identifiers. Config-only change
-  (`depends_on: []` either way, so no orchestration risk) but costs
-  wall-clock at `max_workers: 1` — weigh against the quality gain, or at
-  minimum reorder the existing prompt so the highest-value fields sit
-  closest to the appended resource data.
+  prompt review). It's twice the size of any other agent (9 reasoning
+  steps, 9 output fields) and its weakest-quality fields (`geo_locations`,
+  `temporal_events`, `alternate_identifiers`, `related_identifiers`) used
+  to sit at the end, where a cheap model's instruction-following is
+  weakest. **Minimum-effort fix done** (2026-08-11): reordered the existing
+  prompt so those 4 fields are now PASO 2-4, right after resource
+  identification, instead of PASO 6-8 at the end — no new agent, no
+  wall-clock cost, golden fixtures re-recorded. The **full split into two
+  agents is still not done** — still worth considering separately if the
+  reorder alone doesn't move the needle enough (weigh the quality gain
+  against the added wall-clock at `max_workers: 1`); re-run the do_catalog
+  pilot to see whether the reorder alone was sufficient before pursuing it.
 - **DOI-resolver enricher — done** (2026-08-11): `DOIResolverEnricher`
   (`enrichers/doi_resolver.py`) backfills titles/creators/publisher/an
   Issued date from Crossref's public Works API for DOI-identified
