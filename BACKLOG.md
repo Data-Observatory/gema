@@ -15,12 +15,32 @@ enough context to pick up cold; prune entries once actually done.
   enricher (above, done) and identifier enrichment work around post-hoc —
   neither helps the model get the name right in the first place, only
   resolves an identifier for whatever name it already produced. **Scoped,
-  not implemented** (2026-08-11): see `DESIGN_grounded_lookup_tool.md` at
-  repo root — recommends reusing `RORClient` as the tool backend (live,
-  free, already tested) over a new web-search integration, scoped to
-  `creators_publishers` only, with a bounded tool-call-round cap. Pilot via
-  the same cheap deepseek-only do_catalog comparison used tonight before
-  deciding whether it's worth the added latency/cost.
+  not implemented** (2026-08-11):
+  - Real architecture change, not a prompt tweak: today every agent call is
+    one stateless `LLMClient.complete()` producing a fully-formed
+    `DataCiteOutputModel`. A tool the model can *choose* to call mid-
+    reasoning needs a proper tool-call loop (send messages with `tools=`,
+    execute any tool calls, append results, repeat until the model stops
+    calling tools, then a final forced-structured-output call) — a new
+    method on `InstructorLLMClient` (same optional/duck-typed pattern as
+    `complete_with_usage`), a new optional `tools` param on `BaseAgent`,
+    and a new YAML field so only `creators_publishers` opts in.
+  - Recommended backend: reuse `RORClient` (already built, tested, and had
+    a real bug fixed today) over a new web-search integration — ROR covers
+    a huge range of orgs including many government ministries, it's free,
+    live, and it's the *same* registry `IdentifierEnricher` already
+    resolves against post-hoc, so a name confirmed during generation also
+    resolves cleanly afterward. A static gazetteer (today's ~15-entry table,
+    just callable) doesn't fix the actual coverage gap. Live web search
+    needs a new dependency/API key/cost line for uncertain quality gain —
+    revisit only if ROR coverage proves insufficient.
+  - Scope narrowly to `creators_publishers` only; cap tool-call rounds
+    (e.g. 2) so a stuck model can't loop indefinitely — each round is a
+    full extra LLM request, roughly 2x latency/cost worst case.
+  - Rollout: pilot via the same cheap deepseek-only do_catalog comparison
+    used tonight, on `creators_publishers` alone, before deciding whether
+    it's worth the added latency/cost — and before considering it for any
+    other agent.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
   prompt review). It's twice the size of any other agent (9 reasoning
   steps, 9 output fields) and its weakest-quality fields (`geo_locations`,
