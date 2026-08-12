@@ -11,9 +11,16 @@ enough context to pick up cold; prune entries once actually done.
   `creators_publishers`'s hardcoded Chile-ministry→affiliation lookup table
   only covers ~15 agencies; anything else, the model guesses from memory,
   ungrounded. Real fix needs actual tool-calling (Instructor/OpenAI function
-  calling), not a prompt tweak. Same underlying gap as the DOI-resolver idea
-  below — nothing in this pipeline can currently "look things up," every
-  agent call is a stateless completion over whatever text is in the prompt.
+  calling), not a prompt tweak. Same underlying gap the DOI-resolver
+  enricher (above, done) and identifier enrichment work around post-hoc —
+  neither helps the model get the name right in the first place, only
+  resolves an identifier for whatever name it already produced. **Scoped,
+  not implemented** (2026-08-11): see `DESIGN_grounded_lookup_tool.md` at
+  repo root — recommends reusing `RORClient` as the tool backend (live,
+  free, already tested) over a new web-search integration, scoped to
+  `creators_publishers` only, with a bounded tool-call-round cap. Pilot via
+  the same cheap deepseek-only do_catalog comparison used tonight before
+  deciding whether it's worth the added latency/cost.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
   prompt review, not implemented). It's twice the size of any other agent
   (9 reasoning steps, 9 output fields) and its weakest-quality fields
