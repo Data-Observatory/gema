@@ -26,10 +26,13 @@ enough context to pick up cold; prune entries once actually done.
   wall-clock at `max_workers: 1` — weigh against the quality gain, or at
   minimum reorder the existing prompt so the highest-value fields sit
   closest to the appended resource data.
-- **DOI-resolver enricher**: for DOI-identified resources, fetch real
-  Crossref/DataCite metadata to backfill weak/missing fields, instead of
-  relying purely on LLM extraction from title/description text. Flagged
-  out of scope during the do_catalog eval work.
+- **DOI-resolver enricher — done** (2026-08-11): `DOIResolverEnricher`
+  (`enrichers/doi_resolver.py`) backfills titles/creators/publisher/an
+  Issued date from Crossref's public Works API for DOI-identified
+  resources, opt-in via `enable_doi_resolution` (default off). Scope is
+  narrow by design (only what Crossref reliably returns; abstracts
+  skipped) — runs before identifier enrichment so backfilled
+  creators/publishers still get a shot at ROR/ISNI resolution.
 
 ## Identifier enrichment
 
