@@ -41,6 +41,20 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Pipeline / infra
 
+- **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
+  an earlier "dead/orphaned, delete-or-wire-in" note). It's read by
+  `visor/bootstrap.py:load_providers_pool_safe()`, which only feeds Settings'
+  "Add a provider" autofill picker — never wired into pipeline execution,
+  never edited. Runtime provider config for both the CLI and visor is still
+  `config/agents.yaml` (same `find_config()`/`load_config()` path for both).
+  No functional gap between CLI and visor here: adding a provider by hand-
+  editing `config/agents.yaml`'s `providers:` list achieves the exact same
+  end state visor's picker does — the pool is a UX nicety (autofill), not a
+  capability. Evaluated and rejected: plumbing `providers.yaml` into the
+  pipeline itself — nothing to wire in, since visor doesn't feed it into
+  execution either. Only real option, low priority: a `metagen
+  list-known-providers` CLI command reading the same pool, purely for
+  discoverability parity of the autofill convenience — not urgent.
 - **`max_workers` bump when production model moves off zai-coding-plan.**
   Currently pinned to 1 (`4101ac9`) because that provider's account rate
   limit is tight (429s even at `max_workers=2`). Confirmed empirically this
