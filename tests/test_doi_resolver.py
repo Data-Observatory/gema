@@ -101,11 +101,20 @@ class TestBackfillCreators:
         doc = _doc_with_fields({"resource": {"identifier": "10.1/x", "identifier_type": "DOI"}})
         enricher.enrich(doc)
         creators = doc.get_field("creators")
+        # "Apellido, Nombre" -- matches creators_publishers' own convention
+        # (config/agents.yaml), not Crossref's raw given/family order, and
+        # the full normalizer key set (email/genre/type/contributor_type),
+        # not a bespoke subset -- so DOI-backfilled and LLM-produced
+        # creators are structurally identical.
         assert creators[0] == {
-            "creator_name": "Jane Doe",
+            "creator_name": "Doe, Jane",
             "creator_name_type": "Personal",
             "given_name": "Jane",
             "family_name": "Doe",
+            "email": "",
+            "genre": "",
+            "type": "Person",
+            "contributor_type": "",
             "name_identifiers": [],
             "affiliations": [
                 {
@@ -119,6 +128,36 @@ class TestBackfillCreators:
         assert creators[1]["creator_name"] == "Smith"
         assert creators[1]["affiliations"] == []
 
+    def test_organizational_author_becomes_organizational_creator(self) -> None:
+        """Crossref emits institutional authors as a bare {"name": ...},
+        no family/given -- these must not be silently dropped, since
+        institutional DOI authorship is common for the government/agency
+        resources this project targets."""
+        client = _mock_client(
+            work={
+                **MOCK_WORK,
+                "author": [{"name": "Deutsches GeoForschungsZentrum GFZ", "affiliation": []}],
+            }
+        )
+        enricher = DOIResolverEnricher(client)
+        doc = _doc_with_fields({"resource": {"identifier": "10.1/x", "identifier_type": "DOI"}})
+        enricher.enrich(doc)
+        creators = doc.get_field("creators")
+        assert creators == [
+            {
+                "creator_name": "Deutsches GeoForschungsZentrum GFZ",
+                "creator_name_type": "Organizational",
+                "given_name": "",
+                "family_name": "",
+                "email": "",
+                "genre": "",
+                "type": "Organization",
+                "contributor_type": "",
+                "name_identifiers": [],
+                "affiliations": [],
+            }
+        ]
+
     def test_preserves_existing_creators(self) -> None:
         enricher = DOIResolverEnricher(_mock_client())
         doc = _doc_with_fields(
@@ -130,7 +169,7 @@ class TestBackfillCreators:
         enricher.enrich(doc)
         assert doc.get_field("creators") == [{"creator_name": "LLM Author"}]
 
-    def test_author_without_family_name_is_skipped(self) -> None:
+    def test_author_without_family_or_org_name_is_skipped(self) -> None:
         client = _mock_client(work={**MOCK_WORK, "author": [{"given": "Jane", "family": ""}]})
         enricher = DOIResolverEnricher(client)
         doc = _doc_with_fields({"resource": {"identifier": "10.1/x", "identifier_type": "DOI"}})
@@ -149,6 +188,7 @@ class TestBackfillPublisher:
                 "publisher_identifier": "",
                 "publisher_identifier_scheme": "",
                 "publisher_scheme_uri": "",
+                "lang": "",
             }
         ]
 
@@ -188,17 +228,34 @@ class TestBackfillIssuedDate:
         enricher.enrich(doc)
         assert doc.get_field("dates")[0]["date"] == "2021-03"
 
-    def test_preserves_existing_dates(self) -> None:
+    def test_appends_issued_alongside_other_dated_type(self) -> None:
+        """A non-Issued date (e.g. agent-produced Collected) must not block
+        adding the authoritative Crossref Issued date alongside it -- only
+        an existing Issued-typed entry should."""
         enricher = DOIResolverEnricher(_mock_client())
         doc = _doc_with_fields(
             {
                 "resource": {"identifier": "10.1/x", "identifier_type": "DOI"},
-                "dates": [{"date": "2020", "date_type": "Created", "date_information": ""}],
+                "dates": [{"date": "2020", "date_type": "Collected", "date_information": ""}],
+            }
+        )
+        enricher.enrich(doc)
+        dates = doc.get_field("dates")
+        assert {"date": "2020", "date_type": "Collected", "date_information": ""} in dates
+        issued = [d for d in dates if d["date_type"] == "Issued"]
+        assert issued and issued[0]["date"] == "2021-03-15"
+
+    def test_preserves_existing_issued_date(self) -> None:
+        enricher = DOIResolverEnricher(_mock_client())
+        doc = _doc_with_fields(
+            {
+                "resource": {"identifier": "10.1/x", "identifier_type": "DOI"},
+                "dates": [{"date": "2020", "date_type": "Issued", "date_information": ""}],
             }
         )
         enricher.enrich(doc)
         assert doc.get_field("dates") == [
-            {"date": "2020", "date_type": "Created", "date_information": ""}
+            {"date": "2020", "date_type": "Issued", "date_information": ""}
         ]
 
     def test_missing_issued_leaves_dates_empty(self) -> None:
@@ -207,3 +264,27 @@ class TestBackfillIssuedDate:
         doc = _doc_with_fields({"resource": {"identifier": "10.1/x", "identifier_type": "DOI"}})
         enricher.enrich(doc)
         assert doc.get_field("dates") is None
+
+
+class TestBackfillPublicationYear:
+    def test_fills_empty_publication_year(self) -> None:
+        enricher = DOIResolverEnricher(_mock_client())
+        doc = _doc_with_fields(
+            {"resource": {"identifier": "10.1/x", "identifier_type": "DOI", "publication_year": ""}}
+        )
+        enricher.enrich(doc)
+        assert doc.get_field("resource")["publication_year"] == "2021"
+
+    def test_preserves_existing_publication_year(self) -> None:
+        enricher = DOIResolverEnricher(_mock_client())
+        doc = _doc_with_fields(
+            {
+                "resource": {
+                    "identifier": "10.1/x",
+                    "identifier_type": "DOI",
+                    "publication_year": "1999",
+                }
+            }
+        )
+        enricher.enrich(doc)
+        assert doc.get_field("resource")["publication_year"] == "1999"

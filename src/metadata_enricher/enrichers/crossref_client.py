@@ -7,6 +7,7 @@ Base URL: https://api.crossref.org/works
 from __future__ import annotations
 
 from typing import Any, cast
+from urllib.parse import quote
 
 import httpx
 
@@ -49,7 +50,11 @@ class CrossrefClient:
         Raises:
             httpx.HTTPStatusError: On any non-404 4xx/5xx response.
         """
-        doi = doi.removeprefix("https://doi.org/").removeprefix("http://doi.org/")
+        doi = (
+            doi.removeprefix("https://doi.org/")
+            .removeprefix("http://doi.org/")
+            .removeprefix("doi:")
+        )
         headers = {
             "User-Agent": (
                 f"metagen/0.1 (doi-resolver; mailto:{self._mailto})"
@@ -57,7 +62,12 @@ class CrossrefClient:
                 else "metagen/0.1 (doi-resolver)"
             )
         }
-        response = self._client.get(f"{self.BASE_URL}/{doi}", headers=headers)
+        # quote(safe="/") -- a DOI's own '/' is a real structural part of the
+        # identifier (not a path separator to strip), but an unescaped '?' or
+        # '#' would be misread as a query string / fragment by URL parsing,
+        # silently truncating the path before the request ever reaches
+        # Crossref.
+        response = self._client.get(f"{self.BASE_URL}/{quote(doi, safe='/')}", headers=headers)
         if response.status_code == 404:
             return None
         response.raise_for_status()

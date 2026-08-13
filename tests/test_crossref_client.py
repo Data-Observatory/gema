@@ -54,6 +54,28 @@ class TestGetWork:
         called_url = mock_http.get.call_args[0][0]
         assert called_url == f"{CrossrefClient.BASE_URL}/10.5880/gfz.2.4.2021.001"
 
+    def test_strips_doi_colon_prefix(self) -> None:
+        response = _make_mock_response({"status": "ok", "message": MOCK_WORK})
+        mock_http = MagicMock(spec=httpx.Client)
+        mock_http.get = MagicMock(return_value=response)
+        client = CrossrefClient(http_client=mock_http)
+        client.get_work("doi:10.5880/gfz.2.4.2021.001")
+        called_url = mock_http.get.call_args[0][0]
+        assert called_url == f"{CrossrefClient.BASE_URL}/10.5880/gfz.2.4.2021.001"
+
+    def test_escapes_query_and_fragment_chars_but_not_slash(self) -> None:
+        """An unescaped '?' or '#' in a DOI would be misread as a query
+        string / fragment, silently truncating the path before the request
+        reaches Crossref -- '/' must stay literal, it's a real structural
+        part of the DOI, not a path separator to strip."""
+        response = _make_mock_response({"status": "ok", "message": MOCK_WORK})
+        mock_http = MagicMock(spec=httpx.Client)
+        mock_http.get = MagicMock(return_value=response)
+        client = CrossrefClient(http_client=mock_http)
+        client.get_work("10.1234/weird?suffix#part")
+        called_url = mock_http.get.call_args[0][0]
+        assert called_url == f"{CrossrefClient.BASE_URL}/10.1234/weird%3Fsuffix%23part"
+
     def test_raises_on_non_404_error(self) -> None:
         mock_response = MagicMock(spec=httpx.Response)
         mock_response.status_code = 500
