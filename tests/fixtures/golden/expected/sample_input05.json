@@ -35,7 +35,7 @@
     },
     {
       "audience": "Administradores",
-      "mediator": "Gerente",
+      "mediator": "Supervisor",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
     }
@@ -43,11 +43,11 @@
   "categories": [
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Agricultura, silvicultura y pesca"
+      "sub_category": "Ciencia animal y lechería"
     },
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Ciencia animal y lechería"
+      "sub_category": "Agricultura, silvicultura y pesca"
     }
   ],
   "citations": [],
@@ -82,12 +82,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del que provienen los datos de ganado bovino"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario cuyos datos componen este recurso"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizaron los trazados de límites de la capa vectorial"
+      "date_information": "Año en que se actualizaron las modificaciones del trazado de límites de la capa vectorial"
     }
   ],
   "descriptions": [
@@ -104,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Capa vectorial con datos de ganado bovino del Censo Agropecuario 2007 correspondiente a Isla de Pascua",
+      "geo_description": "Cobertura geográfica correspondiente a Isla de Pascua, con capa vectorial de división administrativa y distritos censales INE",
       "coverage": "local"
     }
   ],
@@ -126,10 +126,20 @@
     }
   ],
   "related_identifiers": [],
-  "rights": [],
+  "rights": [
+    {
+      "rights": "",
+      "rights_uri": "",
+      "rights_identifier": "",
+      "rights_identifier_scheme": "",
+      "scheme_uri": "",
+      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol).",
+      "rights_holder": "Oficina de Estudios y Políticas Agrarias"
+    }
+  ],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo agropecuario -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

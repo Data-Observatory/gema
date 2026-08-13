@@ -2,7 +2,7 @@
   "resource": {
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
-    "editor": "Ministerio de Hacienda - Gobierno de Chile",
+    "editor": "Ministerio de Hacienda",
     "maintainer": "",
     "contact": "",
     "producer": "",
@@ -19,7 +19,7 @@
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Consultoría"
     },
     {
       "audience": "Investigadores",
@@ -28,10 +28,16 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Periodistas",
+      "audience": "Ciudadanos",
       "mediator": "Autodirigido",
-      "education_level": "Profesional",
+      "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
+    },
+    {
+      "audience": "Periodistas",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -72,7 +78,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales, registrada en el portal datos.gob.cl"
+      "date_information": "Última actualización del dataset de gastos municipales registrada en el portal"
     }
   ],
   "descriptions": [
@@ -89,7 +95,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: egresos ejecutados por los municipios en el territorio nacional de Chile continental",
+      "geo_description": "Cobertura nacional, egresos ejecutados por los municipios en el territorio nacional",
       "coverage": "nacional"
     }
   ],
@@ -134,6 +140,12 @@
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
+    },
+    {
+      "subject_name": "Presupuesto abierto -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
     }
   ],
   "temporal_events": [
@@ -141,7 +153,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso declara frecuencia de actualización mensual (campo frequency: Mensual)"
+      "description": "El recurso se actualiza mensualmente según la frecuencia declarada"
     }
   ],
   "titles": [

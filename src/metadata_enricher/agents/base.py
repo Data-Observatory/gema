@@ -90,7 +90,10 @@ class BaseAgent:
                 if key not in ("url", "title", "description", "doi", "fetched_content") and val:
                     formatted += f"- {key}: {val}\n"
 
-            output_model = self._schema.output_model
+            # build_output_model (not the bare output_model property) so
+            # this agent's own field order controls structured-output
+            # decode order -- see Schema.build_output_model's docstring.
+            output_model = self._schema.build_output_model(self._fields)
             # complete_with_usage is an optional, duck-typed extension of the
             # real production client chain (Instructor/Retryable/Cached) —
             # not part of the formal LLMClient Protocol, so mocks/fakes that

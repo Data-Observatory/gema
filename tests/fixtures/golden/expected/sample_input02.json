@@ -7,8 +7,8 @@
     "contact": "",
     "producer": "",
     "publication_year": "",
-    "resource_type": "Interactive Resource",
-    "resource_type_general": "Interactive Resource",
+    "resource_type": "Dataset",
+    "resource_type_general": "Dataset",
     "version": "",
     "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
@@ -31,7 +31,7 @@
       "audience": "Profesionales",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -61,7 +61,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile a escala regional y nacional",
+      "geo_description": "Cobertura nacional: rasgos funcionales de la biodiversidad de plantas en Chile a escala regional y nacional",
       "coverage": "nacional"
     }
   ],
@@ -86,19 +86,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Rasgos funcionales -- Plantas -- Chile",
+      "subject_name": "Rasgos funcionales -- Biodiversidad -- Plantas -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Biodiversidad -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Papel ecológico -- Especies -- Chile",
+      "subject_name": "Papel ecológico de las especies",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -107,9 +101,9 @@
   "temporal_events": [
     {
       "start_date": "",
-      "frequency_number": "",
+      "frequency_number": "1",
       "frequency_type": "yearly",
-      "description": "La frecuencia de actualización del recurso es anual, según los metadatos del recurso"
+      "description": "La frecuencia de actualización del recurso es anual, según los metadatos proporcionados"
     }
   ],
   "titles": [
