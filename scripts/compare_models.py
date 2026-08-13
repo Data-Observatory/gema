@@ -45,7 +45,7 @@ def load_manifest_titles(ground_truth_dir: Path) -> dict[str, str]:
 
 def run_comparison(
     models: list[str], ground_truth_dir: Path, inputs_dir: Path, output_root: Path,
-    *, enrich: bool = False, limit: int | None = None,
+    *, enrich: bool = False, limit: int | None = None, rescore_only: bool = False,
 ) -> dict[str, Any]:
     input_files = sorted(inputs_dir.glob("*.json"))
     if limit is not None:
@@ -74,33 +74,39 @@ def run_comparison(
             truth_raw = json.loads(gt_path.read_text(encoding="utf-8"))
             truth = do_catalog_common.adapt_ground_truth(truth_raw)
 
-            print(f"  [{ii + 1}/{len(input_files)}] {input_path.stem[:50]}...", end=" ", flush=True)
+            prefix = f"  [{ii + 1}/{len(input_files)}] {input_path.stem[:50]}..."
             t0 = time.time()
 
-            try:
-                actual = eval_common.run_pipeline_for_model(
-                    input_path, provider, model, output_root,
-                    enrich=enrich, max_attempts=3, cache_label=label,
-                )
-            except Exception as e:
-                print(f"ERROR ({e})")
-                return {"input": input_path.name, "error": str(e), "scores": {}}
+            saved_path = output_root / "outputs" / label / input_path.name
+            if rescore_only and saved_path.exists():
+                actual = json.loads(saved_path.read_text(encoding="utf-8"))
+            else:
+                if rescore_only:
+                    print(f"{prefix} no saved output, running pipeline instead", flush=True)
+                try:
+                    actual = eval_common.run_pipeline_for_model(
+                        input_path, provider, model, output_root,
+                        enrich=enrich, max_attempts=3, cache_label=label,
+                    )
+                except Exception as e:
+                    print(f"{prefix} ERROR ({e})")
+                    return {"input": input_path.name, "error": str(e), "scores": {}}
 
-            if actual is None:
-                print("FAIL (empty)")
-                return {"input": input_path.name, "error": "empty output", "scores": {}}
+                if actual is None:
+                    print(f"{prefix} FAIL (empty)")
+                    return {"input": input_path.name, "error": "empty output", "scores": {}}
+
+                out_dir = output_root / "outputs" / label
+                out_dir.mkdir(parents=True, exist_ok=True)
+                (out_dir / input_path.name).write_text(
+                    json.dumps(actual, indent=2, ensure_ascii=False), encoding="utf-8"
+                )
 
             scores = do_catalog_common.compare_outputs(truth, actual)
             elapsed = time.time() - t0
             n_fields = len(eval_common.extract_populated_fields(actual))
-            print(f"overall={scores['overall']:.3f} orcid={scores['orcid_match']:.3f} "
+            print(f"{prefix} overall={scores['overall']:.3f} orcid={scores['orcid_match']:.3f} "
                   f"fields={n_fields}/18 ({elapsed:.0f}s)")
-
-            out_dir = output_root / "outputs" / label
-            out_dir.mkdir(parents=True, exist_ok=True)
-            (out_dir / input_path.name).write_text(
-                json.dumps(actual, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
 
             return {"input": input_path.name, "scores": scores, "elapsed_s": round(elapsed, 1)}
 
@@ -202,6 +208,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--limit", type=int, default=None, help="Cap number of inputs (e.g. for a smoke test)")
     parser.add_argument("--enrich", action="store_true", default=False,
                          help="Force identifier enrichment on (it's already on by default via config)")
+    parser.add_argument(
+        "--rescore-only", action="store_true", default=False,
+        help=(
+            "Re-score already-saved outputs (output-root/outputs/<label>/*.json) "
+            "instead of re-running the pipeline -- zero live-API cost. Falls back "
+            "to a normal pipeline run for any input with no saved output."
+        ),
+    )
     args = parser.parse_args(argv)
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -214,7 +228,7 @@ def main(argv: list[str] | None = None) -> None:
 
     results = run_comparison(
         models, args.ground_truth_dir, args.inputs_dir, args.output_root,
-        enrich=args.enrich, limit=args.limit,
+        enrich=args.enrich, limit=args.limit, rescore_only=args.rescore_only,
     )
     report = generate_report(results, args.ground_truth_dir)
     report_path = args.output_root / "structural_comparison.md"

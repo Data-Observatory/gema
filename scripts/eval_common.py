@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import unicodedata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -193,7 +194,13 @@ def run_pipeline_for_model(
 # ---------------------------------------------------------------------------
 
 def _norm(s: str) -> str:
-    return s.strip().lower()
+    """Case-fold and strip diacritics (NFKD, drop combining marks) so
+    "Educación" and "Educacion" compare equal. Verified (2026-08-13) to move
+    nothing on the current do_catalog corpus -- no ground-truth/output name
+    pair there differs only by accent -- kept as correctness hardening for
+    corpora where that isn't true."""
+    folded = unicodedata.normalize("NFKD", s.strip().lower())
+    return "".join(c for c in folded if not unicodedata.combining(c))
 
 
 def extract_creator_names(attrs: dict[str, Any]) -> set[str]:
@@ -322,10 +329,14 @@ def compare_outputs(truth: dict[str, Any], actual: dict[str, Any]) -> dict[str, 
         extract_categories(truth), extract_categories(actual)
     )
 
-    scores["rights"] = (
-        1.0 if extract_rights_id(truth) and extract_rights_id(truth) == extract_rights_id(actual)
-        else 0.0
-    )
+    # Empty-vs-empty must score 1.0 like every other metric's jaccard() --
+    # the old `and extract_rights_id(truth)` guard forced 0.0 whenever truth
+    # had no rights_identifier, even if actual matched it exactly (i.e. both
+    # empty). Verified (2026-08-13): only 1/100 do_catalog ground-truth items
+    # actually hit this case -- the remaining ~0.099 gap in this metric is a
+    # real model/prompt recall gap (99/100 truth items carry a real SPDX id,
+    # models almost never emit one), not a scoring bug -- see BACKLOG.md.
+    scores["rights"] = 1.0 if extract_rights_id(truth) == extract_rights_id(actual) else 0.0
 
     scores["languages"] = jaccard(
         extract_languages(truth), extract_languages(actual)
