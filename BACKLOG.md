@@ -149,7 +149,19 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Eval harness
 
-- **Full-100 do_catalog scale-up — delayed** (2026-08-11). Pilot (18 main +
-  20 ORCID) x2 (v1/v2) complete and reported; full 100 pre-approved in scope
-  but explicitly put on hold, not scheduled. Re-estimate cost/time before
-  resuming, now that `--fetch` is in the mix (real per-item network latency).
+- **Full-100 do_catalog scale-up — done** (2026-08-13). All 3 production
+  models (`glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
+  LLM-judge (`opencode:qwen3.7-plus`), 100/100 succeeded each, 0 GEval
+  failures. Results:
+  | model | structural | GEval | field-judge |
+  |---|---|---|---|
+  | glm-5.2 | 0.524 | 0.334 | 0.708 |
+  | glm-5-turbo | 0.513 | 0.337 | 0.713 |
+  | deepseek-v4-flash | 0.505 | 0.324 | 0.730 |
+
+  All 3 land within a noise-level band on every metric — no clear quality
+  winner. **deepseek-v4-flash recommended as default**: not worse on
+  quality, real cost/speed win (opencode allows real concurrency,
+  `max_workers:5`, vs. zai-coding-plan's rate-limit-forced
+  `max_workers:1`). Reports at `reports/do_catalog/full100/` (gitignored,
+  local only — not committed).
