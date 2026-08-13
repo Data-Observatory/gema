@@ -420,7 +420,6 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  use_chain_of_thought: false
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0
@@ -448,7 +447,7 @@ agents:
     PASO 2 — CLASIFICA CADA ACTOR
       Para cada actor identificado:
       a) ¿Es persona o institución?
-         - Persona → name_type = "Personal", type = "Person", extraer given_name y family_name por separado. Formato de nombre completo en creator_name: "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido).
+         - Persona → name_type = "Personal", type = "Person", extraer given_name y family_name por separado. Formato de nombre completo en creator_name: "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido). Escribe el nombre de pila EXACTAMENTE como aparece en el texto — si el texto da el nombre completo, no lo trunques a una inicial por tu cuenta; pero si el texto SOLO da una inicial (ej. una cita bibliográfica "Apellido, A."), usa esa inicial tal cual: NUNCA inventes ni completes un nombre a partir de conocimiento externo sobre la persona, aunque la reconozcas. ❌ el texto dice "Sarricolea, Pablo" y escribes "Sarricolea, P." (truncaste sin motivo) ❌ el texto dice "Sarricolea, P." y escribes "Sarricolea, Pablo" (inventaste un nombre que el texto no da) ✅ en ambos casos, transcribe el nombre tal como el texto lo presenta.
          - Institución → name_type = "Organizational", type = "Organization", creator_name = nombre completo oficial (con acentuación correcta).
       b) ¿Es creador (produjo el contenido) o publicador (lo distribuye)?
          - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, agrega la MISMA institución también en publishers (publisher_name = creator_name). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre en publishers en vez de duplicar.
@@ -650,7 +649,6 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  use_chain_of_thought: false
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0
@@ -695,7 +693,7 @@ agents:
       - NUNCA generar keywords no mencionados en la fuente
 
     PASO 4 — DETERMINA AUDIENCIAS (2 a 4, solo cuando hay contexto suficiente — ver PASO 1)
-      Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados. Varía la combinación según el recurso — no repitas siempre el mismo par en todos los recursos.
+      Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados.
 
       TABLA DE REFERENCIA (categoría → audiencias típicas, no exhaustiva ni obligatoria):
       - Ciencias Sociales → Investigadores, Tomadores de decisiones, Ciudadanos, Periodistas
@@ -835,7 +833,6 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  use_chain_of_thought: false
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0
@@ -1051,7 +1048,6 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  use_chain_of_thought: false
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0
@@ -1271,7 +1267,6 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  use_chain_of_thought: false
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0

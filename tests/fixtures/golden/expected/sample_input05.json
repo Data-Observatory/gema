@@ -5,7 +5,7 @@
     "editor": "Oficina de Estudios y Políticas Agrarias",
     "maintainer": "",
     "contact": "",
-    "producer": "Oficina de Estudios y Políticas Agrarias",
+    "producer": "",
     "publication_year": "2007",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -15,7 +15,7 @@
   },
   "alternate_identifiers": [
     {
-      "alternate_name": "Geoportal Catálogo 35497",
+      "alternate_name": "",
       "alternate_identifier": "35497",
       "alternate_identifier_type": "Local"
     }
@@ -28,26 +28,26 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Administradores",
+      "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Supervisor",
+      "audience": "Administradores",
+      "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Ciencia animal y lechería"
+      "sub_category": "Agricultura, silvicultura y pesca"
     },
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Agricultura, silvicultura y pesca"
+      "sub_category": "Ciencia animal y lechería"
     }
   ],
   "citations": [],
@@ -82,12 +82,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el levantamiento de datos del VII Censo Nacional Agropecuario"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del que provienen los datos de ganado bovino"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizaron los trazados de límites según modificaciones efectuadas"
+      "date_information": "Año en que se actualizaron los trazados de límites de la capa vectorial"
     }
   ],
   "descriptions": [
@@ -100,11 +100,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Isla de Pascua",
+      "geo_location_place": "Isla de Pascua, Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura geográfica correspondiente a Isla de Pascua, asociada a cifras estadísticas del Censo Agropecuario 2007 para unidades administrativas y distritos censales INE",
+      "geo_description": "Capa vectorial con datos de ganado bovino del Censo Agropecuario 2007 correspondiente a Isla de Pascua",
       "coverage": "local"
     }
   ],
@@ -129,13 +129,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Censo agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
+      "subject_name": "División administrativa -- Distritos censales -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

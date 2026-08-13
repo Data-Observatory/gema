@@ -89,6 +89,81 @@ enough context to pick up cold; prune entries once actually done.
   skipped) — runs before identifier enrichment so backfilled
   creators/publishers still get a shot at ROR/ISNI resolution.
 
+  **Bugs found in this enricher and fixed** (2026-08-13), via an Opus code
+  review of the not-yet-merged PR carrying it:
+  - Was silently dropping Crossref institutional authors (`{"name": ...}`,
+    no `family`/`given`) entirely — exactly the government/agency DOI-authorship
+    case this project targets. Now becomes an `Organizational` creator.
+  - Name format was Crossref's raw `"Given Family"`; now
+    `"Family, Given"`, matching `creators_publishers`' own
+    `"Apellido, Nombre"` convention so DOI-backfilled and LLM-produced
+    `creator_name` values are directly comparable (`creators_name` is 20%
+    of eval weight, scored by exact string match).
+  - Backfilled creators/publishers were missing keys
+    (`email`/`genre`/`type`/`contributor_type` on creators, `lang` on
+    publishers) that every LLM-produced record always carries, since this
+    enricher runs post-merge and bypasses
+    `_normalize_creators`/`_normalize_publishers`. Now emits the full key set.
+  - `_backfill_issued_date` was all-or-nothing: skipped adding the
+    authoritative Crossref `Issued` date if *any* date already existed
+    (e.g. an agent-produced `Collected` date). Now only skips if an
+    `Issued`-typed entry already exists. Also now backfills
+    `resource.publication_year` from the same Crossref data (previously
+    never touched despite the year being available right there).
+  - `CrossrefClient.get_work`: the DOI was interpolated into the URL path
+    unquoted — a DOI containing `?`/`#` would silently truncate the path
+    before the request reached Crossref. Now URL-encoded
+    (`quote(doi, safe="/")`, preserving the DOI's own literal `/`). Also now
+    strips a leading `doi:` prefix (only the `https://doi.org/` form was
+    stripped before).
+  - `scripts/curate_ror_isni.py` was skipping the affiliation-collection loop
+    for Personal-creator roles entirely, dropping exactly the
+    university/agency names most needing ROR curation (do_catalog's rare
+    Personal creators are the ones most likely to carry an affiliation at
+    all). Fixed to collect affiliations regardless of the role's own
+    name_type.
+  - `metagen list-known-providers`'s `providers.yaml` lookup was a bare
+    cwd-relative `Path("config/providers.yaml")`, unlike every other
+    config-reading command (which goes through `find_config()`'s
+    multi-location search cascade). Now resolved as a sibling of wherever
+    `agents.yaml` itself was found (same `--config`/`-c` override as
+    `list-providers`), so it works from any cwd.
+
+- **Golden-fixture regression found and fixed before merge** (2026-08-13,
+  on `chore/backlog-batch-2-8`, before PR #16 reached `dev`): a prior golden
+  re-record (`b1ed4d4`) had baked in `creators_publishers` truncating full
+  given names to initials (`"Sarricolea, Pablo"` → `"Sarricolea, P."`) —
+  flagged by an Opus review as contradicting that agent's own worked example.
+  **Correction made carefully, not blindly**: checked the actual source text
+  for that fixture (`tests/fixtures/golden/inputs/sample_input03.json`) before
+  writing a fix, and found the source itself only ever writes the author as
+  `"Sarricolea P."` (a bibliographic citation, initial-only) — it never states
+  the full name "Pablo" anywhere. The *first* prompt fix attempted here
+  ("always use the full given name, never an initial") was itself wrong: it
+  would have pushed the model to invent a full name from parametric memory
+  whenever the source only gives an initial, which directly contradicts this
+  project's own repeated "never invent beyond the given text" principle
+  (the same rule already applied to `rights`/`subjects`/`temporal_events`
+  elsewhere in this file). Corrected to a format-*preserving* rule instead —
+  transcribe the given name exactly as the source presents it, whether that's
+  a full name or an initial, never truncate a full name given in the source
+  and never expand an initial the source gives — then re-recorded goldens and
+  reviewed the full diff again before committing (the step that was skipped
+  the first time). No other regressions found in that second review; the
+  remaining diffs across all 6 golden fixtures are ordinary live-LLM
+  paraphrase/reordering variance in fields untouched by this fix.
+
+  Also folded into this same re-record (all touch `config/agents.yaml`):
+  - `classification`'s PASO 4 dropped "Varía la combinación... no repitas
+    siempre el mismo par" — an anti-determinism instruction at
+    `temperature: 0.0` that could only hurt a set-match metric, visible as
+    unexplained `audiences` churn in golden diffs.
+  - Removed `use_chain_of_thought: false` from all 5 agents — confirmed dead
+    (stored on `AgentConfig` but read by no pipeline/agent/orchestrator code;
+    only referenced in `config/migrate.py`'s legacy-JSON direct-copy field
+    list, which is unaffected since it reads the *source* JSON, not this
+    YAML).
+
 ## Identifier enrichment
 
 - **Curated, human-reviewed ROR/ISNI ground truth** to replace the messy
