@@ -16,6 +16,7 @@ from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescr
 from metadata_enricher.validation import PreFlightValidator
 
 if TYPE_CHECKING:
+    from metadata_enricher.enrichers.doi_resolver import DOIResolverEnricher
     from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
 
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ class Pipeline:
         max_workers: int = 4,
         allow_partial: bool = False,
         identifier_enricher: IdentifierEnricher | None = None,
+        doi_resolver: DOIResolverEnricher | None = None,
     ) -> None:
         self._config = config
         self._registry = schema_registry or get_registry()
@@ -106,6 +108,15 @@ class Pipeline:
             from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 
             self._enricher = IdentifierEnricher(IdentifierResolver())
+
+        # Same explicit-injection-wins, opt-in-only-if-configured pattern as
+        # the identifier enricher above.
+        self._doi_resolver = doi_resolver
+        if self._doi_resolver is None and config.enable_doi_resolution:
+            from metadata_enricher.enrichers.crossref_client import CrossrefClient
+            from metadata_enricher.enrichers.doi_resolver import DOIResolverEnricher
+
+            self._doi_resolver = DOIResolverEnricher(CrossrefClient())
 
     def run(self, input_source: InputSource, pattern: str = "*.json") -> list[PipelineResult]:
         """Run the full pipeline on all resources matching *pattern*.
@@ -266,14 +277,23 @@ class Pipeline:
             warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
             logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
 
-        # 5. Post-merge identifier enrichment
+        # 5. Post-merge DOI resolution (Crossref) -- runs before identifier
+        # enrichment so backfilled creators/publishers still get a chance at
+        # ROR/ISNI resolution below.
+        if self._doi_resolver is not None:
+            try:
+                document = self._doi_resolver.enrich(document)
+            except Exception as exc:
+                logger.warning("DOI resolution failed: %s", exc)
+
+        # 6. Post-merge identifier enrichment
         if self._enricher is not None:
             try:
                 document = self._enricher.enrich(document)
             except Exception as exc:
                 logger.warning("Identifier enrichment failed: %s", exc)
 
-        # 6. PID validation — every run, not just when explicitly requested.
+        # 7. PID validation — every run, not just when explicitly requested.
         # Never blocks success: a bad/unresolvable PID becomes a warning, same
         # as an incomplete field. A registry being briefly unreachable must
         # not fail an otherwise-good resource.

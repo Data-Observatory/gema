@@ -17,6 +17,8 @@ enrichers/
 ├── fuzzy_matcher.py             # rapidfuzz WRatio org name matching + normalization
 ├── identifier_resolver.py       # resolve() merges ROR+ISNI; resolve_person() for ORCID
 ├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding)
+├── crossref_client.py            # Crossref public Works API client (GET /works/{doi})
+├── doi_resolver.py               # Post-merge DOI backfill (titles, creators, publisher, Issued date)
 └── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI (shared by Pipeline + scripts/validate_real_output.py)
 ```
 
@@ -26,6 +28,8 @@ enrichers/
 |------|----------|
 | Enable auto content-fetch (populate `fetched_content` from `resource.url`) | `PipelineConfig.enable_content_fetch = True` (config/models.py); wired in `pipeline.py:Pipeline._maybe_fetch_content` |
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
+| Enable DOI resolution (Crossref backfill) | `PipelineConfig.enable_doi_resolution = True` (config/models.py) |
+| Change what DOI resolution backfills | `DOIResolverEnricher._backfill_*()` (doi_resolver.py) — currently titles, creators, publishers, Issued date |
 | Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
 | Change org resolution order/merge | `IdentifierResolver._try_resolve()` / `_merge_org_matches()` (identifier_resolver.py) |
 | Change ORCID ambiguity policy | `IdentifierResolver._try_orcid()` — currently: >1 hit → `status="review"`, not auto-attached |
@@ -72,6 +76,7 @@ Person (given_name, family_name[, affiliation]) → IdentifierResolver.resolve_p
 - **Graceful degradation**: All API failures are caught — resolvers never raise, return `None`/empty on failure. Missing ORCID credentials → `ORCIDClient.enabled == False` → silent no-op, not an error.
 - **Preserve LLM values**: Enricher only fills EMPTY identifier fields. If the LLM already populated a field, it's preserved.
 - **httpx not requests**: Entire codebase uses httpx.
+- **DOI resolution scope is deliberately narrow**: `DOIResolverEnricher` only backfills titles, creators (authors), publisher, and an Issued date — the fields Crossref's public Works API reliably returns. Abstracts are skipped (rare, often JATS-XML-tagged when present). Same "preserve LLM values" policy — only ever fills a field that's completely empty.
 
 ### Pipeline Integration
 
@@ -85,9 +90,14 @@ Pipeline._process_resource():
   2. Build agent registry
   3. Orchestrator.run() → agent_results
   4. MetadataMerger.merge() → MetadataDocument
-  5. IdentifierEnricher.enrich(document) → enriched document   ← only if enable_identifier_enrichment
-  6. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
+  5. DOIResolverEnricher.enrich(document) → backfilled document ← only if enable_doi_resolution
+                                                                     AND resource.identifier_type == "DOI"
+  6. IdentifierEnricher.enrich(document) → enriched document   ← only if enable_identifier_enrichment
+  7. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
 ```
+
+Step 5 runs BEFORE step 6 deliberately — creators/publishers it backfills from Crossref
+still get a chance at ROR/ISNI resolution in the identifier-enrichment step right after.
 
 Step 0 runs in `Pipeline._maybe_fetch_content` (pipeline.py), before validation and
 before any agent sees the resource — agents read `fetched_content` synchronously while
@@ -97,15 +107,16 @@ caller-supplied `fetched_content` (this stays a passthrough field by default), a
 failed fetch (`fetch_page_content` returns `None` on any error, by contract) is
 silently tolerated — same as not having the feature at all.
 
-Step 6 runs on **every** `process` call, regardless of step 5 — it checks whatever
+Step 7 runs on **every** `process` call, regardless of steps 5/6 — it checks whatever
 PIDs are already in the document (LLM-provided or enrichment-added). It never fails
 the resource; problems become `PipelineResult.warnings`, same as an incomplete field.
 
-Enable auto content-fetch and/or identifier enrichment via config:
+Enable auto content-fetch, DOI resolution, and/or identifier enrichment via config:
 ```yaml
 # config/agents.yaml
 enable_content_fetch: true          # default false — off by default: no cost/behavior
                                      # change for existing users unless opted in
+enable_doi_resolution: true          # default false — same reasoning
 enable_identifier_enrichment: true
 validate_pids: true       # default — set false to disable entirely
 validate_pids_live: true  # default — set false to keep format checks but skip network

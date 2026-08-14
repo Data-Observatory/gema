@@ -8,10 +8,12 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+import yaml
 from dotenv import find_dotenv, load_dotenv
 
 from metadata_enricher import __version__
 from metadata_enricher.config.loader import load_config, find_config
+from metadata_enricher.config.models import ProviderConfig
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.output import OutputWriter
 from metadata_enricher.pipeline import Pipeline
@@ -111,6 +113,44 @@ def list_providers(
     for p in pipeline_config.providers:
         default = " (default)" if p.name == pipeline_config.default_provider else ""
         typer.echo(f"  - {p.name}: {p.base_url}{default}")
+
+
+@app.command(name="list-known-providers")
+def list_known_providers(
+    ctx: typer.Context,
+    config: Optional[Path] = typer.Option(
+        None, "--config", "-c", help="Path to agents.yaml (providers.yaml is looked up as its sibling)"
+    ),
+) -> None:
+    """List known provider presets from providers.yaml.
+
+    This is the same autofill pool visor's "Add a provider" picker offers —
+    presets only, not runtime config. To actually configure a provider for
+    processing, add it to config/agents.yaml (see `list-providers`).
+    """
+    # Resolved as a sibling of wherever agents.yaml itself was found (same
+    # --config/-c override and find_config() search cascade as every other
+    # config-reading command here) -- not a bare cwd-relative path, which
+    # only worked when invoked from the repo root.
+    ctx_config = ctx.obj.get("config_path") if ctx.obj else None
+    config_path = _resolve_config_path(config, ctx_config)
+    pool_path = config_path.parent / "providers.yaml"
+
+    if not pool_path.is_file():
+        typer.echo(f"Error: {pool_path} not found.", err=True)
+        raise typer.Exit(1)
+    try:
+        data = yaml.safe_load(pool_path.read_text(encoding="utf-8"))
+        providers = [ProviderConfig.model_validate(p) for p in data["providers"]]
+    except Exception as e:
+        typer.echo(f"Error loading {pool_path}: {e}", err=True)
+        raise typer.Exit(1)
+    if not providers:
+        typer.echo("No known providers in the pool.")
+        return
+    typer.echo(f"Known providers ({pool_path}, autofill presets — not runtime config):")
+    for p in providers:
+        typer.echo(f"  - {p.name}: {p.base_url} (api_key_env={p.api_key_env})")
 
 
 @app.command()

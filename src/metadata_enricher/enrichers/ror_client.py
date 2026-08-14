@@ -89,16 +89,20 @@ class RORClient:
 
         Args:
             name: Organization name to search for.
-            limit: Maximum results to return (default 5).
+            limit: Maximum results to return (default 5). Sliced
+                client-side — ROR v2's ``?query=`` endpoint rejects a
+                ``limit`` request parameter outright
+                (``"query parameter 'limit' is illegal"``), confirmed
+                against the live API.
 
         Returns:
             List of ROR organization record dicts.
         """
         escaped = escape_query(name)
-        params = {"query": escaped, "limit": str(limit)}
+        params = {"query": escaped}
         data = self._request(params)
         items = data.get("items", [])
-        return list(items)
+        return list(items[:limit])
 
     def close(self) -> None:
         """Close the HTTP client if we own it."""

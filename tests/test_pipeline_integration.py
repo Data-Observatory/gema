@@ -573,6 +573,91 @@ class TestPipelineIdentifierEnrichmentWiring:
         assert result.document.get_field("titles") is not None
 
 
+class FakeDOIResolver:
+    """Stand-in for DOIResolverEnricher — marks the document, no network."""
+
+    def __init__(self, raise_error: bool = False) -> None:
+        self.raise_error = raise_error
+        self.called_with = None
+
+    def enrich(self, document):
+        self.called_with = document
+        if self.raise_error:
+            raise RuntimeError("doi resolution blew up")
+        document.set_field("publishers", [{"publisher_name": "backfilled-by-fake"}])
+        return document
+
+
+class TestPipelineDOIResolutionWiring:
+    """Pipeline: DOI resolution step actually runs, and failures don't crash the resource."""
+
+    def test_injected_resolver_runs_and_mutates_document(self, tmp_path, llm_factory):
+        """Explicit injection must run regardless of enable_doi_resolution,
+        matching the identifier_enricher injection pattern — and its effect
+        must land in the final document."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        fake = FakeDOIResolver()
+        config = make_test_config()
+        assert config.enable_doi_resolution is False
+        pipeline = Pipeline(config=config, llm_factory=llm_factory, doi_resolver=fake)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert fake.called_with is not None
+        assert result.document.get_field("publishers") == [{"publisher_name": "backfilled-by-fake"}]
+
+    def test_resolution_exception_is_caught_not_propagated(self, tmp_path, llm_factory):
+        """A Crossref lookup failure must not fail the whole resource — the
+        pre-resolution document is still returned as a success."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        fake = FakeDOIResolver(raise_error=True)
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory, doi_resolver=fake)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.error is None
+        assert fake.called_with is not None
+        assert result.document.get_field("titles") is not None
+
+    def test_runs_before_identifier_enrichment(self, tmp_path, llm_factory):
+        """DOI resolution must run BEFORE identifier enrichment — a
+        publisher it backfills should still be visible to (and thus
+        resolvable by) the identifier enricher that runs right after."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        call_order: list[str] = []
+
+        class OrderTrackingDOIResolver:
+            def enrich(self, document):
+                call_order.append("doi_resolver")
+                return document
+
+        class OrderTrackingIdentifierEnricher:
+            def enrich(self, document):
+                call_order.append("identifier_enricher")
+                return document
+
+        pipeline = Pipeline(
+            config=make_test_config(),
+            llm_factory=llm_factory,
+            doi_resolver=OrderTrackingDOIResolver(),
+            identifier_enricher=OrderTrackingIdentifierEnricher(),
+        )
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert results[0].success is True
+        assert call_order == ["doi_resolver", "identifier_enricher"]
+
+
 class PromptCapturingLLMClient(FakeLLMClient):
     """FakeLLMClient that records every prompt it was called with, so tests
     can verify what the agent actually saw (e.g. whether fetched_content

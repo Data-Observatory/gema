@@ -173,7 +173,10 @@ class TestSearchQuery:
         params = call_kwargs.kwargs.get("params") or {}
         assert params.get("query") == "MIT \\(Massachusetts\\)"
 
-    def test_query_passes_limit_param(self) -> None:
+    def test_query_never_sends_limit_param(self) -> None:
+        """ROR v2's ?query= endpoint rejects a `limit` request param outright
+        (confirmed against the live API: "query parameter 'limit' is
+        illegal") -- limit must be applied client-side only."""
         mock_response = _make_mock_response({"items": []})
         client = _make_client_with_mock_get(mock_response)
 
@@ -181,7 +184,17 @@ class TestSearchQuery:
 
         call_kwargs = client._client.get.call_args  # type: ignore[attr-defined]
         params = call_kwargs.kwargs.get("params") or {}
-        assert params.get("limit") == "10"
+        assert "limit" not in params
+
+    def test_query_slices_results_client_side(self) -> None:
+        many_items = [{"id": f"https://ror.org/{i:07d}"} for i in range(10)]
+        mock_response = _make_mock_response({"items": many_items})
+        client = _make_client_with_mock_get(mock_response)
+
+        result = client.search_query("Harvard", limit=3)
+
+        assert len(result) == 3
+        assert result == many_items[:3]
 
 
 # ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import tempfile
+from pathlib import Path
 
 import yaml
 from typer.testing import CliRunner
@@ -130,6 +131,59 @@ class TestListProvidersCommand:
         assert "Traceback" not in result.stderr
         assert "no configuration file found" in result.stderr
         assert "--config" in result.stderr
+
+
+class TestListKnownProvidersCommand:
+    """list-known-providers subcommand -- reads config/providers.yaml (the
+    autofill preset pool visor's Settings picker uses), not runtime config."""
+
+    def test_list_known_providers_shows_pool_entries(self) -> None:
+        result = runner.invoke(app, ["list-known-providers"])
+        assert result.exit_code == 0
+        assert "autofill presets" in result.stdout
+
+    def test_list_known_providers_missing_pool_file(self) -> None:
+        """--config points at an agents.yaml with no sibling providers.yaml."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            agents_path = Path(tmpdir) / "agents.yaml"
+            agents_path.write_text("schema_name: x\nagents: []\nproviders: []\n", encoding="utf-8")
+            result = runner.invoke(app, ["list-known-providers", "--config", str(agents_path)])
+        assert result.exit_code == 1
+        assert "not found" in result.stderr
+
+    def test_list_known_providers_invalid_yaml_gives_friendly_message(self) -> None:
+        """--config's sibling providers.yaml exists but isn't a valid pool."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            agents_path = Path(tmpdir) / "agents.yaml"
+            agents_path.write_text("schema_name: x\nagents: []\nproviders: []\n", encoding="utf-8")
+            (Path(tmpdir) / "providers.yaml").write_text(
+                "not: a: valid: providers: pool", encoding="utf-8"
+            )
+            result = runner.invoke(app, ["list-known-providers", "--config", str(agents_path)])
+        assert result.exit_code == 1
+        assert "Traceback" not in result.stderr
+
+    def test_list_known_providers_respects_config_option(self) -> None:
+        """--config's sibling providers.yaml is used instead of the repo-root one."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            agents_path = Path(tmpdir) / "agents.yaml"
+            agents_path.write_text("schema_name: x\nagents: []\nproviders: []\n", encoding="utf-8")
+            (Path(tmpdir) / "providers.yaml").write_text(
+                "providers:\n"
+                "  - name: custom-provider\n"
+                "    base_url: https://example.test\n"
+                "    api_key_env: CUSTOM_KEY\n",
+                encoding="utf-8",
+            )
+            result = runner.invoke(app, ["list-known-providers", "--config", str(agents_path)])
+        assert result.exit_code == 0
+        assert "custom-provider" in result.stdout
 
 
 class TestProcessCommand:
