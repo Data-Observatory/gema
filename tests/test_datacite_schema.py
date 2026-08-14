@@ -33,6 +33,79 @@ class TestSchemaProperties:
         assert isinstance(field_order, list)
         assert "titles" in field_order
         assert "resource" in field_order
+
+
+class TestBuildOutputModel:
+    """build_output_model -- per-agent response model, decode-order control."""
+
+    def test_returns_a_base_model_subclass(self) -> None:
+        schema = DataCiteSchema46()
+        model = schema.build_output_model(["titles", "creators"])
+        assert issubclass(model, BaseModel)
+
+    def test_field_order_matches_input_order(self) -> None:
+        """reasoning always first, then *fields* in the exact order given --
+        this is what lets an agent's own prompt order actually control
+        structured-output decode order."""
+        schema = DataCiteSchema46()
+        model = schema.build_output_model(["geo_locations", "temporal_events", "titles"])
+        assert list(model.model_fields.keys()) == [
+            "reasoning", "geo_locations", "temporal_events", "titles",
+        ]
+
+    def test_different_order_is_a_different_type(self) -> None:
+        schema = DataCiteSchema46()
+        model_a = schema.build_output_model(["titles", "creators"])
+        model_b = schema.build_output_model(["creators", "titles"])
+        assert model_a is not model_b
+        assert model_a.__name__ != model_b.__name__
+
+    def test_same_fields_same_order_is_cached_identical_type(self) -> None:
+        """Repeated calls for the same agent shape must return the exact
+        same class -- cache.py keys the LLM response cache on
+        response_model.__name__, so a fresh class per call (even with an
+        identical name) would still be fine, but reusing one instance avoids
+        rebuilding it every agent call."""
+        schema = DataCiteSchema46()
+        model_a = schema.build_output_model(["titles", "creators"])
+        model_b = schema.build_output_model(["titles", "creators"])
+        assert model_a is model_b
+
+    def test_name_is_stable_across_schema_instances(self) -> None:
+        """The model's __name__ must not depend on process/instance state --
+        cache.py's cache key is only useful across runs if the same agent
+        shape always gets the same name, not a fresh one per process."""
+        model_a = DataCiteSchema46().build_output_model(["titles", "creators"])
+        model_b = DataCiteSchema46().build_output_model(["titles", "creators"])
+        assert model_a.__name__ == model_b.__name__
+
+    def test_unknown_field_name_is_silently_skipped(self) -> None:
+        """Mirrors normalize_field's tolerant dispatch -- an unrecognized
+        field name doesn't raise, it's just absent from the model."""
+        schema = DataCiteSchema46()
+        model = schema.build_output_model(["titles", "not_a_real_field"])
+        assert "not_a_real_field" not in model.model_fields
+        assert "titles" in model.model_fields
+
+    def test_model_still_usable_for_validation(self) -> None:
+        schema = DataCiteSchema46()
+        model = schema.build_output_model(["titles"])
+        instance = model(titles=[{"name": "Test"}])
+        assert instance.titles == [{"name": "Test"}]
+        assert instance.reasoning == ""  # default, not requested but always present
+
+    def test_name_differs_from_bare_output_model(self) -> None:
+        """A per-agent model must never collide with output_model's own
+        name in cache.py's name-keyed cache."""
+        schema = DataCiteSchema46()
+        model = schema.build_output_model(["titles"])
+        assert model.__name__ != schema.output_model.__name__
+
+
+class TestSchemaFieldOrderAndRequiredFields:
+    def test_get_field_order_full_contents(self) -> None:
+        schema = DataCiteSchema46()
+        field_order = schema.get_field_order()
         assert "creators" in field_order
         assert field_order[0] == "resource"
         assert field_order[-1] == "titles"

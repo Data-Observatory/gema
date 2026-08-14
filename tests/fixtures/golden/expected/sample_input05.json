@@ -13,13 +13,7 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [
-    {
-      "alternate_name": "",
-      "alternate_identifier": "35497",
-      "alternate_identifier_type": "Local"
-    }
-  ],
+  "alternate_identifiers": [],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -31,23 +25,23 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Estudio de caso"
     },
     {
-      "audience": "Administradores",
+      "audience": "Tomadores de decisiones",
       "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Estudio de caso"
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Agricultura, silvicultura y pesca"
+      "sub_category": "Ciencia animal y lechería"
     },
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Ciencia animal y lechería"
+      "sub_category": "Agricultura, silvicultura y pesca"
     }
   ],
   "citations": [],
@@ -82,12 +76,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del que provienen los antecedentes de ganado bovino de Isla de Pascua"
+      "date_information": "Año en que se recopilaron los antecedentes mediante el VII Censo Nacional Agropecuario, que dan origen a esta capa de ganado bovino"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizó el trazado de límites de la capa según modificaciones efectuadas"
+      "date_information": "Año en que se actualizó el trazado de límites de la capa según las modificaciones efectuadas en 2014"
     }
   ],
   "descriptions": [
@@ -104,8 +98,8 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de la capa correspondiente a la Isla de Pascua para asociar cifras del VII Censo Nacional Agropecuario 2007 sobre ganado bovino",
-      "coverage": "local"
+      "geo_description": "Cobertura de la capa del Censo Agropecuario 2007 de ganado bovino correspondiente a Isla de Pascua",
+      "coverage": "comunal"
     }
   ],
   "languages": [
@@ -128,30 +122,30 @@
   "related_identifiers": [],
   "rights": [
     {
-      "rights": "",
+      "rights": "Uso de límites internacionales autorizado por la Dirección de Fronteras y Límites (Difrol) mediante Resolución No. 255 del 2 de febrero de 2001",
       "rights_uri": "",
       "rights_identifier": "",
       "rights_identifier_scheme": "",
       "scheme_uri": "",
-      "rights_condition": "Los productos cartográficos elaborados con esta capa que involucren la representación de los límites internacionales del país deben obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol); el uso de los límites internacionales en elaboración de cartografía fue autorizado mediante Resolución No. 255 del 2 de febrero de 2001.",
+      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Difrol. El trazado de límites no es oficial de la República de Chile.",
       "rights_holder": "Oficina de Estudios y Políticas Agrarias"
     }
   ],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- 2007 -- Chile",
+      "subject_name": "Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo Agropecuario 2007 -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Distritos censales -- INE -- Chile",
+      "subject_name": "Distritos censales -- INE",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

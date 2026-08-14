@@ -6,9 +6,11 @@ implementation.  No dependency on the datacite PyPI library.
 
 from __future__ import annotations
 
+import hashlib
+from copy import deepcopy
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from metadata_enricher.enrichers.iana_normalizer import IANANormalizer
 from metadata_enricher.types import AgentResult, MetadataDocument
@@ -65,6 +67,10 @@ class DataCiteSchema46:
         # singleton (see schemas/__init__.py), so the 505KB JSON is parsed
         # exactly once per run, not per media_files normalization call.
         self._iana_normalizer = IANANormalizer()
+        # build_output_model() cache, keyed by the exact (ordered) fields
+        # tuple an agent requested -- same agent shape reuses the same
+        # dynamically-built model class instead of rebuilding it per call.
+        self._agent_model_cache: dict[tuple[str, ...], type[BaseModel]] = {}
 
     # ------------------------------------------------------------------
     # Language code mapping (migrated from Merger.LANG_CODE_MAP)
@@ -119,6 +125,45 @@ class DataCiteSchema46:
     @property
     def output_model(self) -> type[BaseModel]:
         return DataCiteOutputModel
+
+    def build_output_model(self, fields: list[str]) -> type[BaseModel]:
+        """Per-agent response model, ``reasoning`` first then *fields* in
+        that exact order -- so an agent's own prompt-declared reasoning
+        order actually controls structured-output decode order, instead of
+        every agent always decoding in ``DataCiteOutputModel``'s one fixed
+        declaration order regardless of which fields it requested.
+
+        Unknown field names are silently skipped (mirrors
+        ``normalize_field``'s tolerant dispatch, which returns unrecognized
+        values unchanged rather than raising). The returned type's
+        ``__name__`` is a stable hash of *fields* -- same fields in the same
+        order always produce the same name (so repeated calls for the same
+        agent shape hit ``cache.py``'s ``response_model.__name__``-keyed LLM
+        response cache across process restarts), while a different order or
+        subset always produces a different name (so differently-shaped
+        agents never collide on that same cache).
+        """
+        key = tuple(fields)
+        cached = self._agent_model_cache.get(key)
+        if cached is not None:
+            return cached
+
+        field_definitions: dict[str, Any] = {}
+        for name in ("reasoning", *fields):
+            info = DataCiteOutputModel.model_fields.get(name)
+            if info is None:
+                continue
+            field_definitions[name] = (info.annotation, deepcopy(info))
+
+        digest = hashlib.sha1("|".join(fields).encode("utf-8")).hexdigest()[:12]
+        model = create_model(
+            f"DataCiteOutputModel_{digest}",
+            __base__=BaseModel,
+            __config__=ConfigDict(extra="allow"),
+            **field_definitions,
+        )
+        self._agent_model_cache[key] = model
+        return model
 
     # ------------------------------------------------------------------
     # Field ordering (migrated from Merger.FIELD_ORDER)
