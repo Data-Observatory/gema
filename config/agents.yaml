@@ -422,10 +422,13 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: creators_publishers
   name: Creators and Publishers
   description: Extrae los creadores (con identificadores ISNI/ROR y afiliaciones)
@@ -651,10 +654,13 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: classification
   name: Classification Agent
   description: Clasifica el recurso en categorías temáticas, genera palabras clave
@@ -835,10 +841,13 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: rights_funding_citations
   name: Rights, Funding & Citations
   description: Analiza licencia, financiamiento e información para citar el recurso
@@ -1055,10 +1064,13 @@ agents:
   context_fields:
   - resource
   - publishers
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: media_files
   name: Media Files
   description: 'Describe los archivos multimedia del recurso: formato, tamaño, URI,
@@ -1274,20 +1286,23 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 providers:
 - name: zai-coding-plan
   api_key_env: ZAI_API_KEY
   base_url: https://api.z.ai/api/coding/paas/v4
   seed: 42
-  default: true
+  default: false
 - name: opencode
   api_key_env: OPENCODE_API_KEY
   base_url: https://opencode.ai/zen/go/v1
-  default: false
+  default: true
   # No tight account rate limit observed (confirmed empirically: 5
   # concurrent agent calls against opencode:deepseek-v4-flash produced
   # zero 429s). zai-coding-plan has no override -- it inherits the global
@@ -1297,12 +1312,16 @@ providers:
   api_key_env: OPENAI_API_KEY
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
-default_provider: zai-coding-plan
+default_provider: opencode
 # Max concurrent agent requests per resource (Orchestrator's ThreadPoolExecutor
-# size). zai-coding-plan's actual rate limit is tight enough that even 2
-# concurrent requests trigger 429 bursts (measured live) — serialize agent
-# calls to respect it reliably. Raise this if a less rate-limited provider
-# is configured. Override per-invocation with `metagen process --max-workers N`.
+# size) when no provider/model override applies. Kept conservative because
+# zai-coding-plan's actual rate limit is tight enough that even 2 concurrent
+# requests trigger 429 bursts (measured live) — this is the safe fallback for
+# it or any future provider without its own override. Production now runs on
+# opencode, which has its own `max_workers: 5` override above (confirmed safe
+# empirically, zero 429s) that takes precedence over this global default via
+# PipelineConfig.effective_max_workers's cascade. Override per-invocation with
+# `metagen process --max-workers N`.
 max_workers: 1
 # Post-merge resolution of ROR/ISNI identifiers for creators/publishers/
 # funders that the LLM left blank (prompts intentionally no longer supply a

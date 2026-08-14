@@ -338,16 +338,29 @@ enough context to pick up cold; prune entries once actually done.
   execution either. **Done** (2026-08-11): `metagen list-known-providers`
   CLI command reads the same pool, for discoverability parity of the
   autofill convenience.
-- **`max_workers` bump when production model moves off zai-coding-plan.**
-  Currently pinned to 1 (`4101ac9`) because that provider's account rate
-  limit is tight (429s even at `max_workers=2`). Confirmed empirically this
-  session: `opencode:deepseek-v4-flash` handles `max_workers=5` with zero
-  429s, ~3x wall-clock speedup per resource (18.7s vs ~57s summed). Safe to
-  raise only if/when the default provider actually changes — don't touch it
-  while still on glm-5.2. When it's time: use the existing 3-level cascade
-  (`PipelineConfig.effective_max_workers(provider, model)` — global default
-  with no concurrency assumed, provider-level override, provider-scoped
-  model-level override), don't invent a new mechanism.
+- **`max_workers` bump when production model moves off zai-coding-plan —
+  done** (2026-08-14): all 5 agents in `config/agents.yaml` switched from
+  `zai-coding-plan`/`glm-5.2` to `opencode`/`deepseek-v4-flash` (also
+  `default_provider`); `opencode`'s existing `max_workers: 5` override now
+  actually applies (previously configured but unused, since no agent ran
+  against `opencode`). No code change needed — the existing 3-level cascade
+  (`PipelineConfig.effective_max_workers(provider, model)`) already handled
+  it. **Found and fixed a real blocker during the switch**: Instructor's
+  forced `tool_choice` (used for every structured-output call) fails against
+  `opencode`'s `deepseek-v4-flash` with `400: Thinking mode does not support
+  this tool_choice` — the model defaults to "thinking mode," which is
+  incompatible with a forced tool call. Fixed via `extra_body: {thinking:
+  {type: disabled}}` on all 5 agents (the plumbing — `AgentConfig.extra_body`
+  → `create_llm_client` — already existed, unused, with a docstring already
+  anticipating exactly this fix; just needed setting in the YAML). Verified
+  live end-to-end (`metagen process`) before and after the fix. Also found
+  `tests/test_regression.py`'s `_make_factory` had drifted out of sync with
+  `scripts/record_golden.py`'s (the one it's commented as "mirroring") —
+  missing the `extra_body` passthrough param entirely, so regression tests
+  failed with `_factory() got an unexpected keyword argument 'extra_body'`
+  the moment any agent config actually set it. Fixed to match. Golden
+  fixtures re-recorded for the new provider/model; full suite green
+  (818 passed), lint/typecheck clean.
 - **`mimo-v2.5` dropped from the eval model set** (decision, 2026-08-11): a
   content-dense DOI resource (`136`, GFZ dataset, 6000-char fetched_content)
   caused a 3244s (54min) stall for mimo-v2.5 vs. 1201s for glm-5-turbo on the
