@@ -268,6 +268,16 @@ enough context to pick up cold; prune entries once actually done.
   `rights_holder` correctly matches the injected publisher name where the
   source text didn't distinguish one (`sample_input05`).
 
+  **Re-ran the do_catalog 18-pilot (deepseek-only) — flat, as expected, and
+  for a reason worth noting**: 0.535 vs. Phase 3a's 0.534 baseline
+  (noise-level). `scripts/eval_common.py`'s `rights` metric only scores
+  `rights_identifier` (the SPDX id) — it never reads `rights_holder` at
+  all, so this consistency fix is invisible to the current structural
+  score by construction, not because it didn't work (the golden-fixture
+  diff review above confirms it did). If `rights_holder` consistency
+  matters enough to measure, `eval_common.py` would need a metric for it —
+  not scoped here.
+
   **One plan-stage "prerequisite" turned out to be unnecessary, checked
   before implementing it**: both an initial and an adversarial code review
   claimed `Orchestrator.run()`'s single-agent wave branch had no
