@@ -111,10 +111,12 @@ class TestRun:
         resource = make_resource()
         results = orch.run(resource)
 
-        # Each agent was called
-        registry.get_agent("a").run.assert_called_once_with(resource)
-        registry.get_agent("b").run.assert_called_once_with(resource)
-        registry.get_agent("c").run.assert_called_once_with(resource)
+        # Each agent was called, with whatever upstream_fields had
+        # accumulated by the time its wave ran (empty dict for wave 1).
+        for aid in ("a", "b", "c"):
+            call = registry.get_agent(aid).run.call_args
+            assert call.args[0] is resource
+            assert isinstance(call.kwargs["upstream_fields"], dict)
 
         # 3 agents × 1 field each = 3 results
         assert len(results) == 3
@@ -145,8 +147,8 @@ class TestRun:
         results = orch.run(resource)
 
         # good1 and good2 still ran
-        registry.get_agent("good1").run.assert_called_once_with(resource)
-        registry.get_agent("good2").run.assert_called_once_with(resource)
+        assert registry.get_agent("good1").run.call_args.args[0] is resource
+        assert registry.get_agent("good2").run.call_args.args[0] is resource
 
         # 3 results from good agents + 1 error result for failing agent
         assert len(results) == 3
@@ -160,6 +162,85 @@ class TestRun:
         # Verify good results
         good_results = [r for r in results if r.error is None]
         assert len(good_results) == 2
+
+
+# ---------------------------------------------------------------------------
+# Cross-wave upstream_fields threading
+# ---------------------------------------------------------------------------
+
+
+def _capture_upstream_fields(mock_run: MagicMock, captured: list[dict]) -> None:
+    """Wrap *mock_run*'s side_effect to snapshot (deep-copy) upstream_fields
+    at call time. Orchestrator.run() passes the SAME mutable dict object to
+    every wave, mutating it in place after each wave completes -- inspecting
+    ``mock.call_args`` after run() returns would see the final, fully-
+    mutated dict for every past call, not what that call actually received."""
+    original_return = mock_run.return_value
+
+    def side_effect(*args: object, **kwargs: object) -> object:
+        captured.append(dict(kwargs.get("upstream_fields") or {}))
+        return original_return
+
+    mock_run.side_effect = side_effect
+
+
+class TestUpstreamFieldsThreading:
+    """Orchestrator.run() accumulates completed waves' fields and passes
+    them into every subsequent wave's agent.run() call — the plumbing
+    context_fields-declaring agents (e.g. rights_funding_citations) rely on."""
+
+    def test_first_wave_gets_empty_upstream_fields(self) -> None:
+        registry = make_registry_mock([("a", [])])
+        seen: list[dict] = []
+        _capture_upstream_fields(registry.get_agent("a").run, seen)
+        orch = Orchestrator(registry)
+        orch.run(make_resource())
+        assert seen == [{}]
+
+    def test_second_wave_sees_first_waves_successful_fields(self) -> None:
+        registry = make_registry_mock([("a", []), ("b", ["a"])])
+        registry.get_agent("a").run.return_value = [
+            AgentResult(field_name="resource", value={"identifier": "x"}, token_usage=TokenUsage())
+        ]
+        seen: list[dict] = []
+        _capture_upstream_fields(registry.get_agent("b").run, seen)
+        orch = Orchestrator(registry)
+        orch.run(make_resource())
+
+        assert seen == [{"resource": {"identifier": "x"}}]
+
+    def test_errored_upstream_field_is_omitted_not_none(self) -> None:
+        """An upstream agent's error must never surface as
+        upstream_fields[field] = None -- it must be entirely absent, so a
+        downstream agent can't confuse "upstream said empty" with "upstream
+        failed"."""
+        registry = make_registry_mock([("a", []), ("b", ["a"])])
+        registry.get_agent("a").run.return_value = [
+            AgentResult(field_name="titles", value=None, error="boom", token_usage=TokenUsage())
+        ]
+        seen: list[dict] = []
+        _capture_upstream_fields(registry.get_agent("b").run, seen)
+        orch = Orchestrator(registry)
+        orch.run(make_resource())
+
+        assert "titles" not in seen[0]
+
+    def test_upstream_fields_accumulate_across_more_than_one_prior_wave(self) -> None:
+        """c depends on both a (wave 1) and b (wave 2) -- c must see fields
+        from both, not just the immediately preceding wave."""
+        registry = make_registry_mock([("a", []), ("b", ["a"]), ("c", ["a", "b"])])
+        registry.get_agent("a").run.return_value = [
+            AgentResult(field_name="resource", value={"id": "a"}, token_usage=TokenUsage())
+        ]
+        registry.get_agent("b").run.return_value = [
+            AgentResult(field_name="publishers", value=[{"publisher_name": "X"}], token_usage=TokenUsage())
+        ]
+        seen: list[dict] = []
+        _capture_upstream_fields(registry.get_agent("c").run, seen)
+        orch = Orchestrator(registry)
+        orch.run(make_resource())
+
+        assert seen == [{"resource": {"id": "a"}, "publishers": [{"publisher_name": "X"}]}]
 
 
 # ---------------------------------------------------------------------------

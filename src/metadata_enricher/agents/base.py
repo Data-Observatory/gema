@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from typing import Any, cast
@@ -35,6 +36,7 @@ class BaseAgent:
         llm_client: LLMClient,
         schema: Schema,
         system_prompt: str | None = None,
+        context_fields: list[str] | None = None,
     ) -> None:
         self._name = name
         self._fields = fields
@@ -42,6 +44,10 @@ class BaseAgent:
         self._llm_client = llm_client
         self._schema = schema
         self._system_prompt = system_prompt
+        # Which upstream_fields (see run()) this agent wants surfaced in its
+        # prompt -- only meaningful for an agent with depends_on, since only
+        # prior-wave results are ever available at call time.
+        self._context_fields = context_fields or []
 
     @property
     def name(self) -> str:
@@ -71,8 +77,22 @@ class BaseAgent:
                 d[key] = val if val is not None else ""
         return d
 
-    def run(self, resource: ResourceDescription) -> list[AgentResult]:
-        """Format prompt, call LLM, extract+normalize fields per schema."""
+    def run(
+        self, resource: ResourceDescription, upstream_fields: dict[str, Any] | None = None
+    ) -> list[AgentResult]:
+        """Format prompt, call LLM, extract+normalize fields per schema.
+
+        *upstream_fields* is whatever the orchestrator has accumulated from
+        already-completed waves (field_name -> merged value) -- only the
+        names this agent declared via ``context_fields`` are ever surfaced
+        into its own prompt; everything else in the dict is silently
+        ignored. A field an upstream agent's call errored on is never
+        present in *upstream_fields* at all (the orchestrator only folds in
+        successful results) -- there is no way for this agent to tell
+        "upstream said empty" from "upstream failed" apart, by design: it
+        just won't see a field it never got to begin with, same as if
+        depends_on wasn't declared.
+        """
         started = time.monotonic()
         logger.info("Agent '%s' starting (fields: %s)", self._name, ", ".join(self._fields))
         try:
@@ -80,6 +100,21 @@ class BaseAgent:
             formatted = self._prompt
             for key, val in resource_dict.items():
                 formatted = formatted.replace("{" + key + "}", val)
+
+            if self._context_fields and upstream_fields:
+                relevant = {
+                    name: upstream_fields[name]
+                    for name in self._context_fields
+                    if name in upstream_fields
+                }
+                if relevant:
+                    formatted += (
+                        "\n\n=== DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR "
+                        "(usa para mantener consistencia, no los contradigas sin motivo) ===\n"
+                    )
+                    for key, val in relevant.items():
+                        rendered = val if isinstance(val, str) else json.dumps(val, ensure_ascii=False)
+                        formatted += f"- {key}: {rendered}\n"
 
             formatted += "\n\n=== RECURSO A PROCESAR ===\n"
             for key in ("url", "title", "description", "doi", "fetched_content"):
@@ -90,7 +125,10 @@ class BaseAgent:
                 if key not in ("url", "title", "description", "doi", "fetched_content") and val:
                     formatted += f"- {key}: {val}\n"
 
-            output_model = self._schema.output_model
+            # build_output_model (not the bare output_model property) so
+            # this agent's own field order controls structured-output
+            # decode order -- see Schema.build_output_model's docstring.
+            output_model = self._schema.build_output_model(self._fields)
             # complete_with_usage is an optional, duck-typed extension of the
             # real production client chain (Instructor/Retryable/Cached) —
             # not part of the formal LLMClient Protocol, so mocks/fakes that

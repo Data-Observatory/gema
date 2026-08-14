@@ -28,6 +28,9 @@ class FakeSchema:
     def output_model(self) -> type[BaseModel]:
         return _FakeOutput
 
+    def build_output_model(self, fields: list[str]) -> type[BaseModel]:
+        return _FakeOutput
+
     def validate_output(self, raw: dict) -> BaseModel:
         return _FakeOutput()
 
@@ -57,6 +60,9 @@ class AnotherFakeSchema:
 
     @property
     def output_model(self) -> type[BaseModel]:
+        return _FakeOutput
+
+    def build_output_model(self, fields: list[str]) -> type[BaseModel]:
         return _FakeOutput
 
     def validate_output(self, raw: dict) -> BaseModel:

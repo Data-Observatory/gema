@@ -22,6 +22,9 @@ class FakeSchema:
     def output_model(self) -> type[FakeOutput]:
         return FakeOutput
 
+    def build_output_model(self, fields: list[str]) -> type[FakeOutput]:
+        return FakeOutput
+
     def normalize_field(self, name: str, value: object) -> object:
         return value
 
@@ -219,6 +222,79 @@ class TestBaseAgent:
         assert "URL: []" in client.last_prompt
         assert "=== RECURSO A PROCESAR ===" in client.last_prompt
         assert "- title: No URL" in client.last_prompt
+
+    def test_upstream_fields_injected_when_context_fields_declared(self) -> None:
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["rights"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+            context_fields=["publishers"],
+        )
+        resource = ResourceDescription(url="https://example.com", title="Hello")
+        agent.run(
+            resource,
+            upstream_fields={"publishers": [{"publisher_name": "ACME"}], "unrelated": "ignored"},
+        )
+        assert client.last_prompt is not None
+        assert "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" in client.last_prompt
+        assert "publishers" in client.last_prompt
+        assert "ACME" in client.last_prompt
+        assert "unrelated" not in client.last_prompt
+
+    def test_no_context_fields_ignores_upstream_fields(self) -> None:
+        """An agent that never declared context_fields must not surface any
+        upstream_fields, even if the orchestrator passes some."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(url="https://example.com", title="Hello")
+        agent.run(resource, upstream_fields={"publishers": [{"publisher_name": "ACME"}]})
+        assert client.last_prompt is not None
+        assert "DATOS YA EXTRAÍDOS" not in client.last_prompt
+
+    def test_context_field_absent_from_upstream_fields_is_silently_skipped(self) -> None:
+        """context_fields names a field that hasn't arrived yet (e.g. its
+        upstream agent errored, or hasn't run) -- no note is added at all,
+        rather than one for an empty/missing value."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["rights"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+            context_fields=["publishers"],
+        )
+        resource = ResourceDescription(url="https://example.com", title="Hello")
+        agent.run(resource, upstream_fields={})
+        assert client.last_prompt is not None
+        assert "DATOS YA EXTRAÍDOS" not in client.last_prompt
+
+    def test_no_upstream_fields_arg_is_backward_compatible(self) -> None:
+        """Calling run() without upstream_fields at all (the pre-3c call
+        shape) still works -- default None, no crash, no injected note."""
+        client = MockLLMClient(result=FakeOutput())
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["rights"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+            context_fields=["publishers"],
+        )
+        resource = ResourceDescription(url="https://example.com", title="Hello")
+        results = agent.run(resource)
+        assert len(results) == 1
+        assert client.last_prompt is not None
+        assert "DATOS YA EXTRAÍDOS" not in client.last_prompt
 
     def test_detected_country_from_url_appears_in_prompt(self) -> None:
         """CountryExtractor derives a country hint from the resource URL and

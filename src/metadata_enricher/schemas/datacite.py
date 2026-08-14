@@ -6,9 +6,11 @@ implementation.  No dependency on the datacite PyPI library.
 
 from __future__ import annotations
 
+import hashlib
+from copy import deepcopy
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from metadata_enricher.enrichers.iana_normalizer import IANANormalizer
 from metadata_enricher.types import AgentResult, MetadataDocument
@@ -24,6 +26,14 @@ class DataCiteOutputModel(BaseModel):
 
     model_config = {"extra": "allow"}
 
+    # Declared first so structured-output generation (Instructor/OpenAI
+    # tool-calling) produces this field's tokens before the data fields --
+    # the model reasons in prose here before committing to values. No agent
+    # config lists "reasoning" in its `fields`, so BaseAgent.run() never
+    # reads it back out; it's dropped after generation, same as
+    # `use_chain_of_thought` (now unused) was meant to enable but couldn't,
+    # since it was never wired to anything before this field existed.
+    reasoning: str = Field(default="")
     resource: dict[str, Any] = Field(default_factory=dict)
     alternate_identifiers: list[dict[str, Any]] = Field(default_factory=list)
     audiences: list[dict[str, Any]] = Field(default_factory=list)
@@ -57,6 +67,10 @@ class DataCiteSchema46:
         # singleton (see schemas/__init__.py), so the 505KB JSON is parsed
         # exactly once per run, not per media_files normalization call.
         self._iana_normalizer = IANANormalizer()
+        # build_output_model() cache, keyed by the exact (ordered) fields
+        # tuple an agent requested -- same agent shape reuses the same
+        # dynamically-built model class instead of rebuilding it per call.
+        self._agent_model_cache: dict[tuple[str, ...], type[BaseModel]] = {}
 
     # ------------------------------------------------------------------
     # Language code mapping (migrated from Merger.LANG_CODE_MAP)
@@ -111,6 +125,50 @@ class DataCiteSchema46:
     @property
     def output_model(self) -> type[BaseModel]:
         return DataCiteOutputModel
+
+    def build_output_model(self, fields: list[str]) -> type[BaseModel]:
+        """Per-agent response model, ``reasoning`` first then *fields* in
+        that exact order -- so an agent's own prompt-declared reasoning
+        order actually controls structured-output decode order, instead of
+        every agent always decoding in ``DataCiteOutputModel``'s one fixed
+        declaration order regardless of which fields it requested.
+
+        Unknown field names are silently skipped (mirrors
+        ``normalize_field``'s tolerant dispatch, which returns unrecognized
+        values unchanged rather than raising). The returned type's
+        ``__name__`` is a stable hash of *fields* and each field's current
+        type annotation -- same fields, same order, same types always
+        produce the same name (so repeated calls for the same agent shape
+        hit ``cache.py``'s ``response_model.__name__``-keyed LLM response
+        cache across process restarts), while a different order, subset, or
+        a field whose type later changes in ``DataCiteOutputModel`` always
+        produces a different name (so neither differently-shaped agents nor
+        a stale pre-type-change cache entry can collide on that cache).
+        """
+        key = tuple(fields)
+        cached = self._agent_model_cache.get(key)
+        if cached is not None:
+            return cached
+
+        field_definitions: dict[str, Any] = {}
+        for name in ("reasoning", *fields):
+            info = DataCiteOutputModel.model_fields.get(name)
+            if info is None:
+                continue
+            field_definitions[name] = (info.annotation, deepcopy(info))
+
+        digest_source = "|".join(
+            f"{name}:{annotation!r}" for name, (annotation, _) in field_definitions.items()
+        )
+        digest = hashlib.sha1(digest_source.encode("utf-8")).hexdigest()[:12]
+        model = create_model(
+            f"DataCiteOutputModel_{digest}",
+            __base__=BaseModel,
+            __config__=ConfigDict(extra="allow"),
+            **field_definitions,
+        )
+        self._agent_model_cache[key] = model
+        return model
 
     # ------------------------------------------------------------------
     # Field ordering (migrated from Merger.FIELD_ORDER)
@@ -646,7 +704,11 @@ class DataCiteSchema46:
                 files.append(
                     {
                         "sizes": item.get("sizes", []),
-                        "physical_carrier": item.get("physical_carrier", ""),
+                        # Every media_file this pipeline produces is a digital
+                        # download -- not a judgment call the model needs to
+                        # make, so it's enforced here instead of spending
+                        # prompt tokens on an invariant.
+                        "physical_carrier": "digital",
                         "format": (
                             self._iana_normalizer.normalize(raw_format)
                             if isinstance(raw_format, str)
