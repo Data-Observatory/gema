@@ -448,6 +448,13 @@ agents:
       - ¿Es una persona o una institución?
       - ¿Hay más de un creador o publicador?
       Lista mentalmente todos los actores antes de estructurarlos.
+      Si el bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" está presente e incluye
+      un campo "resource" con editor/maintainer/producer/contact no vacíos, usa esos
+      nombres tal cual para los actores correspondientes en vez de re-derivarlos del
+      texto por tu cuenta — es la misma información ya extraída por otro paso del
+      pipeline; mantener consistencia evita que ambos pasos nombren a la misma
+      entidad de forma distinta. Si ese bloque no está presente o esos campos están
+      vacíos, deriva los actores normalmente del texto como en los pasos siguientes.
 
     PASO 2 — CLASIFICA CADA ACTOR
       Para cada actor identificado:
@@ -653,7 +660,10 @@ agents:
     {"reasoning": "No hay ninguna mención de autor, creador ni publicador en el texto.", "creators": [], "publishers": []}
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
-  depends_on: []
+  depends_on:
+  - core_metadata
+  context_fields:
+  - resource
   model: deepseek-v4-flash
   provider: opencode
   temperature: 0.0

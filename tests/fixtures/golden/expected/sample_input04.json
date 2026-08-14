@@ -5,7 +5,7 @@
     "editor": "Instituto Nacional de Estadísticas (Chile)",
     "maintainer": "",
     "contact": "",
-    "producer": "",
+    "producer": "Instituto Nacional de Estadísticas (Chile)",
     "publication_year": "",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -74,7 +74,13 @@
       ]
     }
   ],
-  "dates": [],
+  "dates": [
+    {
+      "date": "2021/2022",
+      "date_type": "Collected",
+      "date_information": "Período de levantamiento de los datos de la encuesta, según los indicadores de gasto e ingreso de los hogares que muestran los años 2021-2022"
+    }
+  ],
   "descriptions": [
     {
       "description": "Conjunto de datos del Instituto Nacional de Estadísticas (INE) de Chile que reúne las bases de datos de la Encuesta de Presupuestos Familiares (EPF), proporcionando información sobre los ingresos y gastos de los hogares chilenos. El recurso incluye datos sobre estructura de gastos, patrones de consumo, ingresos familiares y otros aspectos relevantes del presupuesto familiar, permitiendo analizar el comportamiento económico de los hogares chilenos.",
@@ -89,7 +95,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional, hogares de todas las capitales regionales de Chile continental",
+      "geo_description": "Cobertura nacional, total de capitales regionales de Chile",
       "coverage": "nacional"
     }
   ],
@@ -114,13 +120,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Ingresos y gastos de los hogares -- Chile",
+      "subject_name": "Presupuestos familiares -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
+      "subject_name": "Ingresos y gastos de los hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

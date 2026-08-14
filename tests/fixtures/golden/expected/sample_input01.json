@@ -22,22 +22,16 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Investigadores",
-      "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Análisis"
-    },
-    {
       "audience": "Administradores",
       "mediator": "Gerente",
       "education_level": "Profesional",
       "instructional_method": "Autoaprendizaje"
     },
     {
-      "audience": "Ciudadanos",
+      "audience": "Investigadores",
       "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -137,12 +131,6 @@
     },
     {
       "subject_name": "Corporaciones municipales -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Egresos ejecutados -- Municipios -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

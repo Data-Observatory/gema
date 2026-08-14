@@ -197,11 +197,15 @@ enough context to pick up cold; prune entries once actually done.
   enough to measure, `eval_common.py` would need a metric for it — not
   scoped here.
 
-  **Not yet wired**: `creators_publishers` itself (the other consumer that
-  independently extracts overlapping stakeholder entities from
-  `core_metadata`'s `resource.editor/maintainer/producer/contact`) —
-  deferred pending review of whether this pilot's consistency win is worth
-  the same treatment there, per the original scoping. **Follow-up gap
+  **`creators_publishers` wiring — done** (2026-08-14): now declares
+  `depends_on: [core_metadata]` + `context_fields: [resource]`; its PASO 1
+  instructs the model to reuse the injected `resource.editor/maintainer/
+  producer/contact` names as-is for the matching actors instead of
+  re-deriving them independently, same consistency rationale as
+  `rights_funding_citations`'s `rights_holder` rule above. Golden fixtures
+  re-recorded, full suite green. Moves `creators_publishers` to its own
+  wave (after `core_metadata`, before `rights_funding_citations`, which
+  already depended on both). **Follow-up gap
   fixed** (2026-08-14): `context_fields` entries weren't cross-validated
   against anything, so a typo'd field name would have silently injected
   nothing at runtime rather than erroring — `PipelineConfig._validate_references`

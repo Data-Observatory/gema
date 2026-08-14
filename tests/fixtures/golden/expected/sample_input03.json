@@ -5,7 +5,7 @@
     "editor": "Departamento de Geografia Universidad de Chile",
     "maintainer": "",
     "contact": "psarricolea@uchilefau.cl; 56 229783126",
-    "producer": "Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz",
+    "producer": "Departamento de Geografia Universidad de Chile",
     "publication_year": "2017",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -29,12 +29,6 @@
     },
     {
       "audience": "Profesionales",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
@@ -64,6 +58,29 @@
   ],
   "creators": [
     {
+      "creator_name": "Departamento de Geografia Universidad de Chile",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/047gc3g35",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        },
+        {
+          "name_identifier": "0000000403854466",
+          "name_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org"
+        }
+      ],
+      "affiliations": []
+    },
+    {
       "creator_name": "Sarricolea, P.",
       "creator_name_type": "Personal",
       "given_name": "P.",
@@ -75,7 +92,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "Departamento de Geografía, Universidad de Chile",
+          "affiliation": "Departamento de Geografia Universidad de Chile",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -94,7 +111,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "Departamento de Geografía, Universidad de Chile",
+          "affiliation": "Departamento de Geografia Universidad de Chile",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -113,7 +130,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "Departamento de Geografía, Universidad de Chile",
+          "affiliation": "Departamento de Geografia Universidad de Chile",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -140,9 +157,9 @@
     {
       "geo_location_place": "Chile continental",
       "geo_location_point": "",
-      "geo_location_box": "-76.5337,-56.7392,-69.0261,-16.9754",
+      "geo_location_box": "-77.1975,-57.1275,-63.547,-16.7587",
       "geo_location_polygon": "",
-      "geo_description": "Zona geográfica: Chile continental. Coordenadas del ámbito espacial: Oeste -76.5337, Este -69.0261, Sur -56.7392, Norte -16.9754",
+      "geo_description": "Zona geográfica: Chile continental. Coordenadas declaradas en el recurso: Oeste -77.1975, Este -63.547, Norte -16.7587, Sur -57.1275",
       "coverage": "nacional"
     }
   ],
@@ -174,7 +191,7 @@
       "variable_measured": "Tipo de clima según clasificación Köppen-Geiger",
       "checksum": "",
       "data_quality": "",
-      "measurement_technique": "Clasificación climática de Köppen-Geiger sobre cubiertas de temperatura y precipitación mensual de 1 km² de resolución",
+      "measurement_technique": "",
       "provenance": "Departamento de Geografía Universidad de Chile",
       "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
       "temporal_resolution": "",
@@ -183,7 +200,7 @@
   ],
   "publishers": [
     {
-      "publisher_name": "Departamento de Geografía Universidad de Chile",
+      "publisher_name": "Departamento de Geografia Universidad de Chile",
       "publisher_identifier": "https://ror.org/047gc3g35",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
