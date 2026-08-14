@@ -250,8 +250,12 @@ def extract_categories(attrs: dict[str, Any]) -> set[str]:
 
 def extract_rights_id(attrs: dict[str, Any]) -> str:
     rights = attrs.get("rights", [])
-    if rights and isinstance(rights, list):
-        return _norm(rights[0].get("rights_identifier", ""))
+    if not isinstance(rights, list):
+        return ""
+    for entry in rights:
+        rights_id = _norm(entry.get("rights_identifier", ""))
+        if rights_id:
+            return rights_id
     return ""
 
 

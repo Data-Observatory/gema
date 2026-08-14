@@ -78,7 +78,7 @@ class TestLLMConfig:
         assert config.base_url is None
         assert config.temperature == 0.0
         assert config.max_tokens is None
-        assert config.timeout == 60.0
+        assert config.timeout == 240.0
 
     def test_all_fields(self) -> None:
         """Create with all fields explicitly set."""
@@ -107,9 +107,9 @@ class TestLLMConfig:
         assert config.temperature == 0.0
 
     def test_timeout_default(self) -> None:
-        """timeout defaults to 60.0."""
+        """timeout defaults to 240.0."""
         config = LLMConfig(model="gpt-4", api_key="sk-test")
-        assert config.timeout == 60.0
+        assert config.timeout == 240.0
 
     def test_api_key_stored_as_secret(self) -> None:
         """api_key accepted as plain string, stored as SecretStr internally."""

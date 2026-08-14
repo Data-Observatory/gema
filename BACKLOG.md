@@ -339,19 +339,6 @@ enough context to pick up cold; prune entries once actually done.
   `enable_content_fetch` on for every caller of the default config without a
   scale eval to justify it isn't worth the risk. Stays an explicit opt-in.
   `max_len` tuning still open if/when someone actually opts in and hits it.
-- **`LLMConfig.timeout` (60s default, `llm/base.py:73`) is too tight for the
-  biggest agent + large payload combo, not fixed.** `core_metadata` (9
-  output fields, the largest prompt) against `sample_input03.json` (~28KB
-  `fetched_content`, next-largest input is ~7KB) reproducibly timed out at
-  60s on `zai-coding-plan`/glm-5.2, retried for ~22min (tenacity backoff),
-  then hard-failed — identically, 3 out of 3 separate `record_golden.py`
-  runs on 2026-08-14 (plus once earlier during a different branch's
-  recording). Confirmed not random flakiness: raising the timeout to 240s
-  (temporarily, reverted before commit) let it succeed first try. No
-  per-provider override exists today (`ProviderConfig` has no `timeout`
-  field). Fix candidates: bump the global default past 60s, or add a
-  per-provider/per-agent `timeout` override in `config/providers.yaml` /
-  `config/agents.yaml` for large-payload agents specifically.
 
 ## Eval harness
 
@@ -485,15 +472,17 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Code review findings, not yet fixed
 
-Three low-severity items from the final Opus review of the Phase
-3a/3b/3c stack (2026-08-14), judged non-blocking for merge at the time —
-recorded here since they weren't written down anywhere else and got lost
-once that session ended.
+Low-severity items from the final Opus review of the Phase 3a/3b/3c stack
+(2026-08-14), judged non-blocking for merge at the time — recorded here
+since they weren't written down anywhere else and got lost once that
+session ended. Two others from the same review (`LLMConfig.timeout` too
+tight, `extract_rights_id` reading only `rights[0]`) are already fixed —
+see git history, entries removed.
 
-- **`extract_rights_id` (`scripts/eval_common.py:251-255`) only reads
-  `rights[0]`**, ignoring the rest of the array. A record with a second,
-  correct `rights_identifier` entry after a non-matching first one would
-  score as a miss. Still present as of 2026-08-14.
+**Still open — code doesn't exist on this branch** (`build_output_model` /
+`context_fields` only exist on `origin/feat/cross-agent-context-passing`,
+not merged into this branch or `dev`; fix there, not here):
+
 - **`Schema.build_output_model`'s cache-name hash (`schemas/datacite.py`)
   covers field names/order only, not each field's type definition.** If a
   field's type in `DataCiteOutputModel` changes later without renaming it,
