@@ -5,7 +5,7 @@
     "editor": "GFZ Data Services",
     "maintainer": "",
     "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
-    "producer": "GFZ German Research Centre for Geosciences",
+    "producer": "",
     "publication_year": "2020",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -18,7 +18,7 @@
     {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
-      "education_level": "Doctorado",
+      "education_level": "Postgrado",
       "instructional_method": "Análisis"
     },
     {
@@ -26,12 +26,6 @@
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -85,12 +79,12 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación del dataset en GFZ Data Services, según la cita recomendada (Mittelstädt & Victor, 2020) y el campo publicationYear de la metadata DataCite"
+      "date_information": "Año en que el dataset fue publicado oficialmente por GFZ Data Services (publicationYear: 2020 en los metadatos DataCite)"
     }
   ],
   "descriptions": [
     {
-      "description": "The Atacama Fault System (AFS) in N-Chile is a complex fault system with a variety of fault segments showing different degrees of activity. Initiated as a trench-linked fault system during the Jurassic it is now exposed in the Coastal Cordillera in the forearc of the Nazca-South America convergent plate margin. Fault scarps and surface ruptures indicate varying degrees of reactivation of this fault system that most likely roots into the subduction zone interface at the downdip end of coupling. Therefore, the interaction of these two systems is evident though not well understood. The active fault database for the northernmost segment of the Atacama Fault System (AFS) is the result of creating a comprehensive catalogue of active faults in the forearc to investigate activity patterns of the forearc in relation with megathrust segmentation and upper plate seismicity in the Coastal Cordillera of N-Chile (19°12’S - 25°12’S). The dataset has been compiled in Arc-GIS and is available as .mpk as well as .kmz formats to be visualised in Google Earth. The activity patterns are mapped according to a well-defined set of criteria (see below). The database for activity starts out from a thorough literature review and is supplemented by new evidences combining interpretation of remote sensing data, field work and upper plate seismicity from the Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) and a local seismic catalogues covering the area of the Salar Grande segment (Bloch et al., 2014). It also includes the available age data of offset geological units as references to bracket the chronology of fault activity. Fault activity for this study has been defined according to the Quaternary fault and fold database of the United States (https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con), but is subject to significant error due to slow slip rates (&lt; 0.2mm/yr), few chronologically constrained fault offsets and lack of historically or instrumentally observed earthquakes along the fault segments. Therefore, this database does not have the aim to serve as active fault database for seismic hazard assessment. It has been created with the clear aim to serve as database for general aspects of upper plate fault reactivation in relation with the megathrust seismic cycle and megathrust segmentation. This publication is part of an ongoing study investigating the interaction of megathrust segmentation with activity patterns in the overriding forearc.",
+      "description": "The Atacama Fault System (AFS) in N-Chile is a complex fault system with a variety of fault segments showing different degrees of activity. Initiated as a trench-linked fault system during the Jurassic it is now exposed in the Coastal Cordillera in the forearc of the Nazca-South America convergent plate margin. Fault scarps and surface ruptures indicate varying degrees of reactivation of this fault system that most likely roots into the subduction zone interface at the downdip end of coupling. Therefore, the interaction of these two systems is evident though not well understood. The active fault database for the northernmost segment of the Atacama Fault System (AFS) is the result of creating a comprehensive catalogue of active faults in the forearc to investigate activity patterns of the forearc in relation with megathrust segmentation and upper plate seismicity in the Coastal Cordillera of N-Chile (19°12’S - 25°12’S). The dataset has been compiled in Arc-GIS and is available as .mpk as well as .kmz formats to be visualised in Google Earth. The activity patterns are mapped according to a well-defined set of criteria (see below). The database for activity starts out from a thorough literature review and is supplemented by new evidences combining interpretation of remote sensing data, field work and upper plate seismicity from the Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) and a local seismic catalogues covering the area of the Salar Grande segment (Bloch et al., 2014). It also includes the available age data of offset geological units as references to bracket the chronology of fault activity. Fault activity for this study has been defined according to the Quaternary fault and fold database of the United States (https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con), but is subject to significant error due to slow slip rates (< 0.2mm/yr), few chronologically constrained fault offsets and lack of historically or instrumentally observed earthquakes along the fault segments. Therefore, this database does not have the aim to serve as active fault database for seismic hazard assessment. It has been created with the clear aim to serve as database for general aspects of upper plate fault reactivation in relation with the megathrust seismic cycle and megathrust segmentation. This publication is part of an ongoing study investigating the interaction of megathrust segmentation with activity patterns in the overriding forearc.",
       "description_type": "Abstract",
       "language": "en"
     }
@@ -98,11 +92,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Coastal Cordillera, N-Chile",
+      "geo_location_place": "Cordillera de la Costa, norte de Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Northernmost segment of the Atacama Fault System in the Coastal Cordillera of N-Chile, forearc of the Nazca-South America convergent plate margin, between latitudes 19°12'S and 25°12'S",
+      "geo_description": "Segmento más septentrional del Atacama Fault System en la Cordillera de la Costa del norte de Chile, entre las latitudes 19°12’S y 25°12’S",
       "coverage": "regional"
     }
   ],
@@ -157,13 +151,13 @@
     },
     {
       "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "value_uri": ""
     },
     {
       "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "value_uri": ""
     }

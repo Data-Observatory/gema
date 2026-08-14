@@ -19,19 +19,19 @@
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Administradores",
-      "mediator": "Gerente",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Ciudadanos",
+      "mediator": "Autodirigido",
+      "education_level": "Aprendizaje permanente",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -72,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales declarada en el portal datos.gob.cl"
+      "date_information": "Última actualización de la base de datos de gastos del sector público local, declarada en el portal"
     }
   ],
   "descriptions": [
@@ -89,7 +89,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de los egresos ejecutados por los municipios en el territorio nacional de Chile",
+      "geo_description": "Cobertura nacional: egresos ejecutados por los municipios en el territorio nacional de Chile",
       "coverage": "nacional"
     }
   ],
@@ -130,13 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales",
+      "subject_name": "Presupuesto abierto -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuesto abierto",
+      "subject_name": "Corporaciones municipales",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
