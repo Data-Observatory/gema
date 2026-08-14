@@ -31,7 +31,7 @@
       "audience": "Periodistas",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -72,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales, registrada en el portal datos.gob.cl"
+      "date_information": "Última actualización del dataset de gastos municipales publicada en el portal datos.gob.cl"
     }
   ],
   "descriptions": [
@@ -130,7 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Egresos ejecutados -- Chile",
+      "subject_name": "Corporaciones municipales -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Egresos municipales -- Sector público local -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -141,7 +147,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso declara frecuencia de actualización mensual (campo frequency: Mensual)"
+      "description": "Frecuencia de actualización mensual declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [

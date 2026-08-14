@@ -5,7 +5,7 @@
     "editor": "Oficina de Estudios y Políticas Agrarias",
     "maintainer": "",
     "contact": "",
-    "producer": "",
+    "producer": "Oficina de Estudios y Políticas Agrarias",
     "publication_year": "2007",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -13,13 +13,7 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [
-    {
-      "alternate_name": "",
-      "alternate_identifier": "35497",
-      "alternate_identifier_type": "Local"
-    }
-  ],
+  "alternate_identifiers": [],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -31,7 +25,7 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Autoaprendizaje"
     },
     {
       "audience": "Administradores",
@@ -82,12 +76,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del que provienen los datos de ganado bovino"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario cuyos antecedentes componen esta capa de información"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizaron los trazados de límites de la capa vectorial"
+      "date_information": "Año en que se actualizó el trazado de límites según modificaciones administrativas vigentes"
     }
   ],
   "descriptions": [
@@ -104,7 +98,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Capa vectorial con datos de ganado bovino del Censo Agropecuario 2007 correspondiente a Isla de Pascua",
+      "geo_description": "Cobertura geográfica correspondiente a la Isla de Pascua, con cifras estadísticas referidas a unidades administrativas del país y distritos censales INE",
       "coverage": "local"
     }
   ],
@@ -129,13 +123,19 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo Agropecuario 2007 -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales -- Chile",
+      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Cartografía -- Capa vectorial -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

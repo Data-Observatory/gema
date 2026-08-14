@@ -5,7 +5,7 @@
     "editor": "Departamento de Geografía Universidad de Chile",
     "maintainer": "",
     "contact": "psarricolea@uchilefau.cl; 56 229783126",
-    "producer": "Departamento de Geografía Universidad de Chile",
+    "producer": "",
     "publication_year": "2017",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -15,7 +15,7 @@
   },
   "alternate_identifiers": [
     {
-      "alternate_name": "ID catálogo Geoportal",
+      "alternate_name": "",
       "alternate_identifier": "35414",
       "alternate_identifier_type": "Local"
     }
@@ -28,16 +28,16 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Científicos de datos",
+      "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Basado en proyectos"
     },
     {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
+      "audience": "Científicos de datos",
+      "mediator": "Supervisor",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -52,7 +52,7 @@
   ],
   "citations": [
     {
-      "title": "Journal of Maps",
+      "title": "Climatic regionalization of continental Chile",
       "volume": "13",
       "issue": "2",
       "start_page": "66",
@@ -83,9 +83,9 @@
       ]
     },
     {
-      "creator_name": "Herrera, MJ.",
+      "creator_name": "Herrera, M. J.",
       "creator_name_type": "Personal",
-      "given_name": "MJ.",
+      "given_name": "M. J.",
       "family_name": "Herrera",
       "email": "",
       "genre": "",
@@ -125,12 +125,12 @@
     {
       "date": "2017-01-12",
       "date_type": "Issued",
-      "date_information": "Fecha de publicación del mapa de zonas climáticas en el Geoportal de Chile"
+      "date_information": "Fecha de publicación del recurso en el Geoportal de Chile, declarada como 'Fecha de Publicación' en la ficha de metadato"
     }
   ],
   "descriptions": [
     {
-      "description": "Mapa que representa los 25 tipos de clima que posee Chile según Sarricolea et al (2017) usando la clasificación climática de Köppen-Geiger, en formato shapefile, y realizado sobre cubiertas de temperatura y precipitación mensual de 1 km2 de resolución. Posee la abreviatura y el tipo de clima en español. La precipitación (pp) representa el promedio de precipitación por el tipo en toda su distribución espacial, al igual que la temperatura. La altitud (min y max) son los extremos altitudinales en que se sitúa el tipo climático. Zona geográfica: Chile continental Oeste: -77.1975 Este: -63.547 Norte: -16.7587 Sur: -57.1275 Sistema de referencia: WGS84 - Coordenadas Geográficas Formato: Shapefile. El mapa se debe citar como: Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73.",
+      "description": "Mapa que representa los 25 tipos de clima que posee Chile según Sarricolea et al (2017) usando la clasificación climática de Köppen-Geiger, en formato shapefile, y realizado sobre cubiertas de temperatura y precipitación mensual de 1 km2 de resolución. Posee la abreviatura y el tipo de clima en español. La precipitación (pp) representa el promedio de precipitación por el tipo en toda su distribución espacial, al igual que la temperatura. La altitud (min y max) son los extremos altitudinales en que se sitúa el tipo climático. Zona geográfica: Chile continental. Sistema de referencia: WGS84 - Coordenadas Geográficas. Formato: Shapefile. Fuentes de los datos (las coberturas climáticas de resolución 1km2) de: Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014). Effects of alternative sets of climatic predictors on species distribution models and associated estimates of extinction risk: A test with plants in an arid environment. Ecological Modelling, 288, 166-177. El mapa se debe citar como: Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73.",
       "description_type": "Abstract",
       "language": "es"
     }
@@ -142,7 +142,7 @@
       "geo_location_point": "",
       "geo_location_box": "-76.5337,-56.7392,-69.0261,-16.9754",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: Chile continental, 25 tipos de clima según clasificación Köppen-Geiger",
+      "geo_description": "Cobertura nacional sobre Chile continental, incluyendo los 25 tipos de clima clasificados según Köppen-Geiger. Coordenadas declaradas en el panel 'Ámbito espacial' del metadato.",
       "coverage": "nacional"
     }
   ],
@@ -171,10 +171,10 @@
       "sizes": [],
       "physical_carrier": "digital",
       "format": "application/zip",
-      "variable_measured": "Tipos de clima (clasificación Köppen-Geiger), precipitación, temperatura, altitud",
+      "variable_measured": "Precipitación, temperatura, altitud (min y max), tipo de clima según clasificación Köppen-Geiger",
       "checksum": "",
       "data_quality": "",
-      "measurement_technique": "",
+      "measurement_technique": "Clasificación climática de Köppen-Geiger sobre cubiertas de temperatura y precipitación mensual de 1 km2 de resolución",
       "provenance": "Departamento de Geografía Universidad de Chile",
       "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
       "temporal_resolution": "",
@@ -215,13 +215,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Zonas climáticas -- Köppen-Geiger -- Chile",
+      "subject_name": "Zonas climáticas -- Clasificación Köppen-Geiger -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Clima -- Clasificación climática -- Chile",
+      "subject_name": "Clima y atmósfera -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
