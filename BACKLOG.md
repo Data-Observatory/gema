@@ -469,31 +469,3 @@ enough context to pick up cold; prune entries once actually done.
     re-running the pipeline, falling back to a normal run when no saved
     output exists. Used to get every number above at zero live-API cost —
     worth reusing for any future scoring-function change.
-
-## Code review findings, not yet fixed
-
-Low-severity items from the final Opus review of the Phase 3a/3b/3c stack
-(2026-08-14), judged non-blocking for merge at the time — recorded here
-since they weren't written down anywhere else and got lost once that
-session ended. Two others from the same review (`LLMConfig.timeout` too
-tight, `extract_rights_id` reading only `rights[0]`) are already fixed —
-see git history, entries removed.
-
-**Still open — code doesn't exist on this branch** (`build_output_model` /
-`context_fields` only exist on `origin/feat/cross-agent-context-passing`,
-not merged into this branch or `dev`; fix there, not here):
-
-- **`Schema.build_output_model`'s cache-name hash (`schemas/datacite.py`)
-  covers field names/order only, not each field's type definition.** If a
-  field's type in `DataCiteOutputModel` changes later without renaming it,
-  a stale cached response for the old type could theoretically slip
-  through `cache.py`'s `response_model.__name__`-keyed lookup. Theoretical,
-  not hit in practice — the dynamic model's name is a hash of
-  `tuple(fields)` (`schemas/datacite.py:build_output_model`), confirmed
-  unchanged as of 2026-08-14.
-- **`AgentConfig.context_fields` isn't cross-validated against the
-  referenced upstream agent's actual output fields**
-  (`config/models.py:PipelineConfig._validate_references` only checks
-  `depends_on` IDs, not `context_fields` names). A typo'd field name
-  silently injects nothing at runtime rather than raising at config-load
-  time. Still present as of 2026-08-14.
