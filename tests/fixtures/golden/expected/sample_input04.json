@@ -34,16 +34,10 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Científicos de datos",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    },
-    {
       "audience": "Periodistas",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Estudio de caso"
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -93,7 +87,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de referencia 2021-2022 de los indicadores de la EPF (gasto per cápita e ingreso disponible per cápita de los hogares, total de capitales regionales)"
+      "date_information": "Período al que corresponden los indicadores de la Encuesta de Presupuestos Familiares mostrados en la página del recurso (gasto e ingreso disponible per cápita, años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -110,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional sobre ingresos y gastos de los hogares chilenos; indicadores publicados para el total de capitales regionales",
+      "geo_description": "La encuesta recoge información sobre ingresos y gastos de los hogares chilenos, con alcance a nivel nacional",
       "coverage": "nacional"
     }
   ],
@@ -125,17 +119,17 @@
   "publishers": [
     {
       "lang": "es",
-      "publisher_identifier": "0000000122317381",
-      "publisher_identifier_scheme": "ISNI",
-      "publisher_name": "Instituto Nacional de Estadísticas (Chile)",
-      "publisher_scheme_uri": "https://isni.org"
+      "publisher_identifier": "https://ror.org/03ftrk873",
+      "publisher_identifier_scheme": "ROR",
+      "publisher_name": "Instituto Nacional de Estadísticas",
+      "publisher_scheme_uri": "https://ror.org"
     }
   ],
   "related_identifiers": [],
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
+      "subject_name": "Presupuestos familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -147,13 +141,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Patrones de consumo -- Chile",
+      "subject_name": "Patrones de consumo -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuestos familiares -- Chile",
+      "subject_name": "Ingreso disponible per cápita -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
