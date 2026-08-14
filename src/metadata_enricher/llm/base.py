@@ -70,5 +70,5 @@ class LLMConfig(BaseModel):
     temperature: float = 0.0
     seed: int | None = None
     max_tokens: int | None = None
-    timeout: float = 60.0
+    timeout: float = 240.0
     extra_body: dict[str, Any] | None = None

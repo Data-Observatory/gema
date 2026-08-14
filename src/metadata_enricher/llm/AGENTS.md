@@ -33,7 +33,7 @@ class LLMClient(Protocol):
     def complete_raw(prompt, system_prompt=None, **kwargs) -> str
 ```
 
-`LLMConfig` — `model`, `api_key: SecretStr`, `base_url`, `temperature=0.0`, `max_tokens=None`, `timeout=60.0`. `to_dict()` unwraps SecretStr.
+`LLMConfig` — `model`, `api_key: SecretStr`, `base_url`, `temperature=0.0`, `max_tokens=None`, `timeout=240.0`. `to_dict()` unwraps SecretStr.
 
 ## Middleware stack (`factory.py`)
 

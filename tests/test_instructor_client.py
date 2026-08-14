@@ -30,7 +30,7 @@ class TestInstructorLLMClient:
 
         mock_openai.assert_called_once_with(
             api_key="sk-test",
-            timeout=60.0,
+            timeout=240.0,
         )
         mock_instructor.from_openai.assert_called_once_with(mock_openai.return_value)
         assert client._config is config
@@ -51,7 +51,7 @@ class TestInstructorLLMClient:
 
         mock_openai.assert_called_once_with(
             api_key="sk-test",
-            timeout=60.0,
+            timeout=240.0,
             base_url="https://custom.api.com",
         )
         mock_instructor.from_openai.assert_called_once_with(mock_openai.return_value)
