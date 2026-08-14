@@ -581,6 +581,38 @@ class TestPipelineConfig:
                 providers=[ProviderConfig(name="p1", api_key_env="K")],
             )
 
+    # -- tools cross-validation -----------------------------------
+
+    def test_tools_known_name_valid(self):
+        """tools naming a real TOOL_REGISTRY entry — valid."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(
+                    id="a1", name="A1", fields=["f1"], prompt="p", provider="p1",
+                    tools=["lookup_organization"],
+                ),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+        )
+        assert p.agents[0].tools == ["lookup_organization"]
+
+    def test_tools_unknown_name_raises(self):
+        """tools naming something not in TOOL_REGISTRY -- raises ValueError
+        instead of silently doing nothing at runtime (BaseAgent only checks
+        `if self._tools`, it never validates names against the registry)."""
+        with pytest.raises(ValueError, match="tools.*not found in TOOL_REGISTRY"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1", name="A1", fields=["f1"], prompt="p", provider="p1",
+                        tools=["not_a_real_tool"],
+                    ),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+
     # -- duplicate agent IDs ------------------------------------
 
     def test_duplicate_agent_id_raises(self):

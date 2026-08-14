@@ -78,7 +78,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de los datos de la encuesta, según los indicadores de gasto e ingreso de los hogares que muestran los años 2021-2022"
+      "date_information": "Período de levantamiento de los datos de la Encuesta de Presupuestos Familiares, correspondiente a los años 2021-2022 indicados en los indicadores del recurso"
     }
   ],
   "descriptions": [
@@ -120,13 +120,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Presupuestos familiares -- Hogares -- Chile",
+      "subject_name": "Ingresos y gastos de los hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Ingresos y gastos de los hogares -- Chile",
+      "subject_name": "Presupuestos familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

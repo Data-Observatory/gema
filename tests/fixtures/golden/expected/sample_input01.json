@@ -32,6 +32,12 @@
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Ciudadanos",
+      "mediator": "Autodirigido",
+      "education_level": "Aprendizaje permanente",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -43,7 +49,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Ministerio de Hacienda",
+      "creator_name": "Ministerio de Hacienda - Gobierno de Chile",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -53,7 +59,12 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "0000000530144563",
+          "name_identifier": "https://ror.org/02sevrz47",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        },
+        {
+          "name_identifier": "000000011234970X",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org"
         }
@@ -72,7 +83,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del recurso, indicada en el contenido del portal"
+      "date_information": "Última actualización del recurso según el contenido del portal"
     }
   ],
   "descriptions": [
@@ -103,10 +114,10 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Ministerio de Hacienda",
-      "publisher_identifier": "0000000530144563",
-      "publisher_identifier_scheme": "ISNI",
-      "publisher_scheme_uri": "https://isni.org",
+      "publisher_name": "Ministerio de Hacienda - Gobierno de Chile",
+      "publisher_identifier": "https://ror.org/02sevrz47",
+      "publisher_identifier_scheme": "ROR",
+      "publisher_scheme_uri": "https://ror.org",
       "lang": "es"
     }
   ],
@@ -131,6 +142,12 @@
     },
     {
       "subject_name": "Corporaciones municipales -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Egresos ejecutados -- Municipios -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

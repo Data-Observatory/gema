@@ -216,6 +216,174 @@ class TestInstructorLLMClient:
         assert result == ""
 
 
+class TestCompleteWithTools:
+    """Tests for InstructorLLMClient.complete_with_tools's tool-call loop."""
+
+    @staticmethod
+    def _raw_response(tool_calls: list[MagicMock] | None, usage: MagicMock | None = None) -> MagicMock:
+        message = MagicMock()
+        message.tool_calls = tool_calls
+        message.content = "thinking..." if tool_calls else "final answer"
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+        response.usage = usage
+        return response
+
+    @staticmethod
+    def _tool_call(call_id: str, name: str, arguments: str) -> MagicMock:
+        tc = MagicMock()
+        tc.id = call_id
+        tc.function.name = name
+        tc.function.arguments = arguments
+        return tc
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_no_tool_calls_goes_straight_to_final_call(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        client._raw_client.chat.completions.create.return_value = self._raw_response(None)
+
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        result, usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"]
+        )
+
+        assert result is fake_result
+        assert usage.total_tokens == 0
+        mock_execute_tool.assert_not_called()
+        client._raw_client.chat.completions.create.assert_called_once()
+        raw_call_kwargs = client._raw_client.chat.completions.create.call_args.kwargs
+        assert raw_call_kwargs["tool_choice"] == "auto"
+        final_call_kwargs = (
+            client._instructor_client.chat.completions.create_with_completion.call_args.kwargs
+        )
+        assert final_call_kwargs["messages"] == [{"role": "user", "content": "hello"}]
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_tool_call_executed_and_result_fed_back(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        mock_execute_tool.return_value = '{"found": true, "canonical_name": "Universidad de Chile"}'
+
+        tool_call = self._tool_call("call_1", "lookup_organization", '{"name": "U de Chile"}')
+        client._raw_client.chat.completions.create.side_effect = [
+            self._raw_response([tool_call]),
+            self._raw_response(None),
+        ]
+
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        result, _usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"]
+        )
+
+        assert result is fake_result
+        mock_execute_tool.assert_called_once_with(
+            "lookup_organization", {"name": "U de Chile"}
+        )
+        assert client._raw_client.chat.completions.create.call_count == 2
+        final_messages = (
+            client._instructor_client.chat.completions.create_with_completion.call_args.kwargs[
+                "messages"
+            ]
+        )
+        assert final_messages[0] == {"role": "user", "content": "hello"}
+        assert final_messages[1]["role"] == "assistant"
+        assert final_messages[1]["tool_calls"][0]["id"] == "call_1"
+        assert final_messages[2] == {
+            "role": "tool",
+            "tool_call_id": "call_1",
+            "content": '{"found": true, "canonical_name": "Universidad de Chile"}',
+        }
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_hits_max_tool_rounds_and_still_returns_final_result(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """A model that never stops calling tools must not loop forever —
+        the round cap always proceeds to the final structured-output call."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        mock_execute_tool.return_value = '{"found": false}'
+
+        tool_call = self._tool_call("call_1", "lookup_organization", '{"name": "X"}')
+        client._raw_client.chat.completions.create.return_value = self._raw_response([tool_call])
+
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        result, _usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"], max_tool_rounds=2
+        )
+
+        assert result is fake_result
+        assert client._raw_client.chat.completions.create.call_count == 2
+        client._instructor_client.chat.completions.create_with_completion.assert_called_once()
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_token_usage_summed_across_rounds_and_final_call(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        mock_execute_tool.return_value = '{"found": false}'
+
+        round_usage = MagicMock(prompt_tokens=10, completion_tokens=5, total_tokens=15)
+        tool_call = self._tool_call("call_1", "lookup_organization", '{"name": "X"}')
+        client._raw_client.chat.completions.create.side_effect = [
+            self._raw_response([tool_call], usage=round_usage),
+            self._raw_response(None, usage=round_usage),
+        ]
+
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = MagicMock(prompt_tokens=20, completion_tokens=8, total_tokens=28)
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        _result, usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"]
+        )
+
+        assert usage.prompt_tokens == 10 + 10 + 20
+        assert usage.completion_tokens == 5 + 5 + 8
+        assert usage.total_tokens == 15 + 15 + 28
+
+
 class TestReaskToolsNoneCrashPatch:
     """Regression coverage for the instructor upstream bug worked around in
     instructor_client._patch_instructor_reask_tools_none_crash().

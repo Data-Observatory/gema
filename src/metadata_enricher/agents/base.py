@@ -37,6 +37,7 @@ class BaseAgent:
         schema: Schema,
         system_prompt: str | None = None,
         context_fields: list[str] | None = None,
+        tools: list[str] | None = None,
     ) -> None:
         self._name = name
         self._fields = fields
@@ -48,6 +49,10 @@ class BaseAgent:
         # prompt -- only meaningful for an agent with depends_on, since only
         # prior-wave results are ever available at call time.
         self._context_fields = context_fields or []
+        # Names of tools (llm/tools.py's TOOL_REGISTRY) this agent may call
+        # mid-reasoning via the LLM client's tool-call loop, before its final
+        # forced structured-output call. Empty for almost every agent.
+        self._tools = tools or []
 
     @property
     def name(self) -> str:
@@ -135,8 +140,16 @@ class BaseAgent:
             # only implement complete() keep working unchanged, just without
             # real token counts (see llm/retry.py's complete_with_usage
             # docstring for the full rationale).
+            complete_with_tools = getattr(self._llm_client, "complete_with_tools", None)
             complete_with_usage = getattr(self._llm_client, "complete_with_usage", None)
-            if complete_with_usage is not None:
+            if self._tools and complete_with_tools is not None:
+                result, token_usage = complete_with_tools(
+                    prompt=formatted,
+                    response_model=output_model,
+                    tools=self._tools,
+                    system_prompt=self._system_prompt,
+                )
+            elif complete_with_usage is not None:
                 result, token_usage = complete_with_usage(
                     prompt=formatted,
                     response_model=output_model,

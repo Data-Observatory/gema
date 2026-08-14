@@ -41,6 +41,51 @@ enough context to pick up cold; prune entries once actually done.
     used tonight, on `creators_publishers` alone, before deciding whether
     it's worth the added latency/cost — and before considering it for any
     other agent.
+
+  **Built (2026-08-14) — piloted, regressed quality, disabled in production
+  config; mechanism kept, not deleted.** Implemented as scoped: `llm/tools.py`
+  (registry + `lookup_organization`, backed by `RORClient`),
+  `InstructorLLMClient.complete_with_tools` (unforced `tool_choice="auto"`
+  loop capped at 2 rounds, then a final forced structured-output call),
+  passthrough through `RetryableLLMClient`/`CachedLLMClient` (cache key now
+  folds in `tools`), `AgentConfig.tools` (validated against the registry at
+  config-load time), `BaseAgent`/`AgentRegistry` wiring. 27 new tests, all
+  green; lint/typecheck clean.
+
+  **18-item do_catalog pilot (deepseek-only), tools on vs. off, same config
+  otherwise**: avg structural score **0.539 → 0.483** — a real regression,
+  not noise. **Root cause found**: on 2/18 items (`360`, `366`), the model
+  called the tool across both rounds without stopping, hit
+  `max_tool_rounds=2`, and the final structured-output call — fed the full
+  accumulated tool-exchange conversation — came back with `creators: []`
+  and `publishers: []` entirely, discarding organization names the
+  tools-off run extracted correctly from the same input (e.g. "Servicio
+  Hidrográfico y Oceanográfico de la Armada de Chile", present verbatim in
+  `resource.editor`/`producer`). Every item was also slower (~17-25s vs.
+  ~12-16s), including ones where no lookup was plausibly needed — `auto`
+  tool_choice lets the model reach for it liberally, not just when
+  genuinely unsure.
+
+  Leading hypothesis, **not confirmed, next step if revisited**: the
+  accumulated conversation's earlier assistant turns reference tool calls
+  against a `lookup_organization` schema that the *final* Instructor call
+  doesn't re-declare in its own `tools=` (Instructor sets its own synthetic
+  tool for the response model) — some providers may handle dangling
+  tool-call references to an undeclared tool by degrading the response
+  rather than erroring outright. Would need a raw request/response capture
+  of an actual round-cap case to confirm before attempting a fix (e.g.
+  re-declaring the original tool schema alongside Instructor's on the final
+  call, or having the loop synthesize a plain user-turn summary of tool
+  results instead of leaving raw tool-call messages in history).
+
+  **Disabled for now**: reverted `creators_publishers`'s `tools:` config and
+  the prompt sentence referencing it; golden fixtures re-recorded back to
+  the no-tools baseline. The infrastructure (`llm/tools.py`,
+  `complete_with_tools`, config validation, tests) stays in the codebase —
+  generic, reusable, and already proven to work correctly on the 16/18
+  items that *didn't* hit the round cap — just not wired to any agent in
+  production until the round-cap failure mode above is understood and
+  fixed.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
   prompt review). It's twice the size of any other agent (9 reasoning
   steps, 9 output fields) and its weakest-quality fields (`geo_locations`,

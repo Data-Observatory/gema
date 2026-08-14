@@ -32,6 +32,12 @@
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -188,7 +194,7 @@
       "sizes": [],
       "physical_carrier": "digital",
       "format": "application/zip",
-      "variable_measured": "Tipo de clima según clasificación Köppen-Geiger",
+      "variable_measured": "",
       "checksum": "",
       "data_quality": "",
       "measurement_technique": "",
@@ -232,13 +238,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Zonas climáticas -- Köppen-Geiger -- Chile",
+      "subject_name": "Clasificación climática Köppen-Geiger -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Clasificación climática -- Chile",
+      "subject_name": "Zonas climáticas -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
