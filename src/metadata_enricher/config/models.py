@@ -124,6 +124,7 @@ class PipelineConfig(BaseModel):
     def _validate_references(self) -> Self:
         provider_names = {p.name for p in self.providers}
         agent_ids = {a.id for a in self.agents}
+        agents_by_id = {a.id: a for a in self.agents}
 
         if self.default_provider is not None and self.default_provider not in provider_names:
             msg = (
@@ -145,6 +146,38 @@ class PipelineConfig(BaseModel):
                     msg = (
                         f"agent '{agent.id}' depends_on '{dep}' "
                         f"which is not a known agent ID. Available: {sorted(agent_ids)}"
+                    )
+                    raise ValueError(msg)
+
+            if agent.context_fields:
+                # Only fields produced by a (transitive) depends_on ancestor are
+                # ever guaranteed to land in Orchestrator.run()'s accumulated
+                # upstream_fields dict before this agent's own wave runs -- a
+                # typo'd or unrelated field name here would silently inject
+                # nothing at runtime (BaseAgent.run() drops anything not found
+                # in upstream_fields) instead of failing loudly here.
+                reachable_fields: set[str] = set()
+                seen_ancestors: set[str] = set()
+                stack = list(agent.depends_on)
+                while stack:
+                    dep_id = stack.pop()
+                    if dep_id in seen_ancestors:
+                        continue
+                    seen_ancestors.add(dep_id)
+                    dep_agent = agents_by_id.get(dep_id)
+                    if dep_agent is None:
+                        # Unknown ID -- reported by the depends_on check above,
+                        # either for this agent or for whichever agent lists it.
+                        continue
+                    reachable_fields.update(dep_agent.fields)
+                    stack.extend(dep_agent.depends_on)
+
+                unknown_fields = [f for f in agent.context_fields if f not in reachable_fields]
+                if unknown_fields:
+                    msg = (
+                        f"agent '{agent.id}' context_fields {unknown_fields} not produced by "
+                        f"any depends_on ancestor ({sorted(agent.depends_on)}). "
+                        f"Available: {sorted(reachable_fields)}"
                     )
                     raise ValueError(msg)
 

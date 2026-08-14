@@ -136,12 +136,14 @@ class DataCiteSchema46:
         Unknown field names are silently skipped (mirrors
         ``normalize_field``'s tolerant dispatch, which returns unrecognized
         values unchanged rather than raising). The returned type's
-        ``__name__`` is a stable hash of *fields* -- same fields in the same
-        order always produce the same name (so repeated calls for the same
-        agent shape hit ``cache.py``'s ``response_model.__name__``-keyed LLM
-        response cache across process restarts), while a different order or
-        subset always produces a different name (so differently-shaped
-        agents never collide on that same cache).
+        ``__name__`` is a stable hash of *fields* and each field's current
+        type annotation -- same fields, same order, same types always
+        produce the same name (so repeated calls for the same agent shape
+        hit ``cache.py``'s ``response_model.__name__``-keyed LLM response
+        cache across process restarts), while a different order, subset, or
+        a field whose type later changes in ``DataCiteOutputModel`` always
+        produces a different name (so neither differently-shaped agents nor
+        a stale pre-type-change cache entry can collide on that cache).
         """
         key = tuple(fields)
         cached = self._agent_model_cache.get(key)
@@ -155,7 +157,10 @@ class DataCiteSchema46:
                 continue
             field_definitions[name] = (info.annotation, deepcopy(info))
 
-        digest = hashlib.sha1("|".join(fields).encode("utf-8")).hexdigest()[:12]
+        digest_source = "|".join(
+            f"{name}:{annotation!r}" for name, (annotation, _) in field_definitions.items()
+        )
+        digest = hashlib.sha1(digest_source.encode("utf-8")).hexdigest()[:12]
         model = create_model(
             f"DataCiteOutputModel_{digest}",
             __base__=BaseModel,
