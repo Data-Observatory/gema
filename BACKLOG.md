@@ -51,6 +51,39 @@ enough context to pick up cold; prune entries once actually done.
   identification, instead of PASO 6-8 at the end — no new agent, no
   wall-clock cost, golden fixtures re-recorded.
 
+  **Decode-order fix landed (2026-08-13) and re-measured — does NOT explain
+  the earlier flat result.** Root-cause finding: all 5 agents shared one
+  `DataCiteOutputModel` (`schemas/datacite.py`), so Instructor's structured-
+  output decode order was that model's one fixed field-declaration order for
+  every agent, regardless of the prompt's own PASO order — meaning the
+  2026-08-11 reorder above changed the *prompt text* but never actually
+  changed *generation order*. Fixed via `Schema.build_output_model(fields)`
+  (per-agent dynamic model, `reasoning` first then the agent's own fields in
+  its declared order; see the "Pipeline / infra" entry below for the cache-
+  key implications). Re-ran the do_catalog 18-pilot (deepseek-only) with
+  decode order now genuinely following the prompt:
+
+  | | before (prompt reorder only) | after (decode order also fixed) |
+  |---|---|---|
+  | avg overall | 0.516 | 0.534 |
+  | `geo_locations` | 16/18 | 18/18 (truth 18/18) |
+  | `related_identifiers` | 7/18 (truth 10/18) | 7/18 (truth 10/18) — unchanged |
+  | `alternate_identifiers` | model 1/18, truth 0/18 | model 1/18, truth 0/18 — unchanged |
+  | `temporal_events` | model 0/18, truth 6/18 | model 0/18, truth 6/18 — unchanged |
+
+  The aggregate +0.018 is real but modest, and `geo_locations` (already
+  "fine" before, not one of the flagged weak fields) accounts for most of
+  the field-level movement. **The two fields actually flagged as weak
+  (`temporal_events`, `related_identifiers`) show zero change despite decode
+  order now genuinely matching prompt order** — this is a real result, not
+  a null one: it strengthens the earlier hypothesis that `temporal_events`'
+  0/18 is the model correctly refusing to fabricate frequency data (per its
+  own explicit rule), not a position/order artifact, since fixing position
+  didn't move it at all. **Full agent split still NOT recommended** — the
+  remaining evidence points at "genuinely hard field" or "ground truth
+  noise" (see the `temporal_events` spot-check below, still open), not at
+  architecture.
+
   **Re-measured against the do_catalog 18-pilot (deepseek-only, 2026-08-11)
   — full split NOT recommended on current evidence.** Aggregate structural
   score was flat (0.530 → 0.516/0.521, noise-level either way) but that
@@ -184,6 +217,28 @@ enough context to pick up cold; prune entries once actually done.
   see `fix(enrichers): stop sending an illegal limit param...`.
 
 ## Pipeline / infra
+
+- **Per-agent structured-output model — done** (2026-08-13):
+  `Schema.build_output_model(fields)` (new `Schema` Protocol method,
+  implemented in `DataCiteSchema46`) builds a dynamic Pydantic model per
+  agent via `pydantic.create_model` — `reasoning` first, then the agent's
+  own `fields:` in their declared order — so an agent's prompt-level
+  reasoning order actually controls Instructor/OpenAI structured-output
+  decode order, instead of every agent decoding in the shared
+  `DataCiteOutputModel`'s one fixed order (see the `core_metadata`-split
+  entry above for why this mattered and what re-measuring it showed).
+  `BaseAgent.run()` calls this instead of the bare `output_model` property;
+  `output_model` itself is unchanged (still the schema-standard default
+  order, used by `validate_output` and anything outside the per-agent
+  path). **Cache-key detail, load-bearing**: `cache.py` keys the LLM
+  response cache on `response_model.__name__` — the dynamic model's name is
+  a stable hash of the field sequence, not a random/identity-based name, so
+  the same agent shape reuses the same cache entries across process
+  restarts, while a different field order or subset always gets a
+  different name (so differently-shaped agents never collide on that
+  cache). Shipping this invalidates the entire golden-fixture LLM-response
+  cache — `make record-golden` (real API cost) was required, not a
+  `make test-regression` replay.
 
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
   an earlier "dead/orphaned, delete-or-wire-in" note). It's read by

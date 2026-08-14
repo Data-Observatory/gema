@@ -22,6 +22,9 @@ class FakeSchema:
     def output_model(self) -> type[FakeOutput]:
         return FakeOutput
 
+    def build_output_model(self, fields: list[str]) -> type[FakeOutput]:
+        return FakeOutput
+
     def normalize_field(self, name: str, value: object) -> object:
         return value
 
