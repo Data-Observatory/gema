@@ -58,16 +58,21 @@ def collect_org_entries(ground_truth_dir: Path) -> dict[str, dict[str, Any]]:
         stem = path.name
 
         for role in data.get("roles", []):
-            if role.get("role_name_type") != "Organizational":
-                continue
-            name = role.get("role_name", "")
-            if not name:
-                continue
-            entry = _add_identifier(entries, name, stem)
-            for ni in role.get("name_identifiers", []):
-                _record_identifier(
-                    entry, ni.get("name_identifier_scheme", ""), ni.get("name_identifier", "")
-                )
+            # A Personal creator's own name isn't an org name to curate --
+            # but their affiliations ARE organizations, and skipping them
+            # here (as this used to) dropped exactly the university/agency
+            # names most needing ROR curation, since do_catalog's Personal
+            # creators (rare, but real -- see BACKLOG.md) are the ones most
+            # likely to carry an affiliation at all.
+            if role.get("role_name_type") == "Organizational":
+                name = role.get("role_name", "")
+                if name:
+                    entry = _add_identifier(entries, name, stem)
+                    for ni in role.get("name_identifiers", []):
+                        _record_identifier(
+                            entry, ni.get("name_identifier_scheme", ""), ni.get("name_identifier", "")
+                        )
+
             for affil in role.get("affiliations", []):
                 affil_name = affil.get("affiliation_name", "")
                 if not affil_name:

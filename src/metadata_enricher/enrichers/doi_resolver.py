@@ -37,14 +37,19 @@ def _date_parts_to_str(date_parts: object) -> str:
 class DOIResolverEnricher:
     """Backfills EMPTY fields on DOI-identified resources from Crossref.
 
-    Only acts when ``resource.identifier_type == "DOI"``. Only ever fills a
-    field that is completely empty — a field the LLM agents already
-    populated (even partially) is left untouched, same "preserve LLM
-    values" policy as ``IdentifierEnricher``. Scope is deliberately narrow:
-    titles, creators (authors), publishers, and an Issued date — the fields
-    Crossref's public Works API reliably returns. Abstracts are skipped
-    (rare, and often JATS-XML-tagged when present — not worth the parsing
-    complexity for a field most DOI records don't carry anyway).
+    Only acts when ``resource.identifier_type == "DOI"``. Titles/creators/
+    publishers/resource.publication_year are only ever filled when
+    completely empty — a field the LLM agents already populated (even
+    partially) is left untouched, same "preserve LLM values" policy as
+    ``IdentifierEnricher``. ``dates`` is the one exception: an agent-produced
+    date of a different type (e.g. ``Collected``) does not block adding the
+    authoritative Crossref ``Issued`` date alongside it -- only an existing
+    ``Issued``-typed entry blocks it. Scope is deliberately narrow: titles,
+    creators (authors, personal or organizational), publishers, an Issued
+    date, and publication_year — the fields Crossref's public Works API
+    reliably returns. Abstracts are skipped (rare, and often JATS-XML-tagged
+    when present — not worth the parsing complexity for a field most DOI
+    records don't carry anyway).
     """
 
     def __init__(self, client: CrossrefClient) -> None:
@@ -83,6 +88,11 @@ class DOIResolverEnricher:
         )
 
     def _backfill_creators(self, document: MetadataDocument, work: dict[str, Any]) -> None:
+        """Personal authors (family+given) and organizational authors
+        (Crossref emits these as a bare {"name": ...}, no family/given) both
+        become creators -- institutional DOI authorship is common for the
+        government/agency resources this project targets, and was previously
+        dropped entirely by skipping any author without a `family`."""
         if document.get_field("creators"):
             return
         authors = work.get("author")
@@ -92,11 +102,6 @@ class DOIResolverEnricher:
         for author in authors:
             if not isinstance(author, dict):
                 continue
-            family = author.get("family", "")
-            if not family:
-                continue
-            given = author.get("given", "")
-            name = f"{given} {family}".strip() if given else family
             affiliations = [
                 {
                     "affiliation": affil["name"],
@@ -106,16 +111,46 @@ class DOIResolverEnricher:
                 for affil in author.get("affiliation") or []
                 if isinstance(affil, dict) and affil.get("name")
             ]
-            creators.append(
-                {
-                    "creator_name": name,
-                    "creator_name_type": "Personal",
-                    "given_name": given,
-                    "family_name": family,
-                    "name_identifiers": [],
-                    "affiliations": affiliations,
-                }
-            )
+            family = author.get("family", "")
+            if family:
+                # "Apellido, Nombre" -- matches creators_publishers' own
+                # convention (config/agents.yaml), not Crossref's raw
+                # given/family order, so DOI-backfilled and LLM-produced
+                # creator_name values are directly comparable.
+                given = author.get("given", "")
+                name = f"{family}, {given}" if given else family
+                creators.append(
+                    {
+                        "creator_name": name,
+                        "creator_name_type": "Personal",
+                        "given_name": given,
+                        "family_name": family,
+                        "email": "",
+                        "genre": "",
+                        "type": "Person",
+                        "contributor_type": "",
+                        "name_identifiers": [],
+                        "affiliations": affiliations,
+                    }
+                )
+            else:
+                org_name = author.get("name", "")
+                if not org_name:
+                    continue
+                creators.append(
+                    {
+                        "creator_name": org_name,
+                        "creator_name_type": "Organizational",
+                        "given_name": "",
+                        "family_name": "",
+                        "email": "",
+                        "genre": "",
+                        "type": "Organization",
+                        "contributor_type": "",
+                        "name_identifiers": [],
+                        "affiliations": affiliations,
+                    }
+                )
         if creators:
             document.set_field("creators", creators)
 
@@ -133,28 +168,44 @@ class DOIResolverEnricher:
                     "publisher_identifier": "",
                     "publisher_identifier_scheme": "",
                     "publisher_scheme_uri": "",
+                    "lang": "",
                 }
             ],
         )
 
     def _backfill_issued_date(self, document: MetadataDocument, work: dict[str, Any]) -> None:
-        if document.get_field("dates"):
-            return
+        """Only skips if an Issued-typed date already exists -- an agent-
+        produced date of a different type (e.g. Collected) must not block
+        backfilling the authoritative Crossref Issued date alongside it.
+        Also backfills resource.publication_year, previously never touched
+        by this enricher despite the year being available right here."""
         issued = work.get("issued")
         if not isinstance(issued, dict):
             return
         date_str = _date_parts_to_str(issued.get("date-parts"))
         if not date_str:
             return
-        document.set_field(
-            "dates",
-            [
-                {
-                    "date": date_str,
-                    "date_type": "Issued",
-                    "date_information": (
-                        "Fecha de publicación obtenida del registro Crossref para este DOI"
-                    ),
-                }
-            ],
+
+        dates = document.get_field("dates")
+        existing_dates = dates if isinstance(dates, list) else []
+        has_issued = any(
+            isinstance(d, dict) and d.get("date_type") == "Issued" for d in existing_dates
         )
+        if not has_issued:
+            document.set_field(
+                "dates",
+                [
+                    *existing_dates,
+                    {
+                        "date": date_str,
+                        "date_type": "Issued",
+                        "date_information": (
+                            "Fecha de publicación obtenida del registro Crossref para este DOI"
+                        ),
+                    },
+                ],
+            )
+
+        resource = document.get_field("resource")
+        if isinstance(resource, dict) and not resource.get("publication_year"):
+            document.set_field("resource", {**resource, "publication_year": date_str[:4]})

@@ -7,18 +7,24 @@
     "contact": "",
     "producer": "",
     "publication_year": "",
-    "resource_type": "Dataset",
-    "resource_type_general": "Dataset",
+    "resource_type": "Interactive Resource",
+    "resource_type_general": "Interactive Resource",
     "version": "",
     "thumbnail": "https://rasgos.cl/images/og-home.webp",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "Rasgos-CL",
+      "alternate_identifier": "Rasgos-CL",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
-      "education_level": "Postgrado",
+      "education_level": "Doctorado",
       "instructional_method": "Análisis"
     },
     {
@@ -29,9 +35,9 @@
     },
     {
       "audience": "Profesionales",
-      "mediator": "Supervisor",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "mediator": "Autodirigido",
+      "education_level": "Educación continua",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -52,11 +58,6 @@
       "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
       "description_type": "Abstract",
       "language": "es"
-    },
-    {
-      "description": "Es una plataforma que sintetiza información sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Su objetivo es proporcionar una visión detallada del papel ecológico de cada especie a una escala regional y nacional.",
-      "description_type": "Abstract",
-      "language": "es"
     }
   ],
   "funding_references": [],
@@ -66,7 +67,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Plataforma con cobertura de rasgos funcionales de plantas a escala regional y nacional en Chile",
+      "geo_description": "Plataforma que sintetiza información sobre rasgos funcionales de la biodiversidad de plantas en Chile a escala regional y nacional",
       "coverage": "nacional"
     }
   ],
@@ -80,48 +81,48 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Data Observatory",
+      "lang": "es",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
-      "lang": "es"
+      "publisher_name": "Data Observatory",
+      "publisher_scheme_uri": "https://ror.org"
     }
   ],
   "related_identifiers": [],
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Rasgos funcionales -- Plantas -- Chile",
-      "subject_scheme": "",
       "scheme_uri": "",
+      "subject_name": "Rasgos funcionales (Biología) -- Plantas -- Chile",
+      "subject_scheme": "",
       "value_uri": ""
     },
     {
+      "scheme_uri": "",
       "subject_name": "Biodiversidad -- Chile",
       "subject_scheme": "",
-      "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Papel ecológico -- Especies -- Chile",
-      "subject_scheme": "",
       "scheme_uri": "",
+      "subject_name": "Papel ecológico de las especies",
+      "subject_scheme": "",
       "value_uri": ""
     }
   ],
   "temporal_events": [
     {
       "start_date": "",
-      "frequency_number": "1",
+      "frequency_number": "",
       "frequency_type": "yearly",
-      "description": "El recurso se actualiza con frecuencia anual"
+      "description": "Frecuencia de actualización anual declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [
     {
+      "language": "es",
       "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }
