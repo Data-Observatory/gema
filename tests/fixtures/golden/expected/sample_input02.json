@@ -31,7 +31,7 @@
       "audience": "Profesionales",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -61,7 +61,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: rasgos funcionales de la biodiversidad de plantas en Chile a escala regional y nacional",
+      "geo_description": "Cobertura nacional de la biodiversidad de plantas en Chile, a escala regional y nacional",
       "coverage": "nacional"
     }
   ],
@@ -86,13 +86,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Rasgos funcionales -- Biodiversidad -- Plantas -- Chile",
+      "subject_name": "Rasgos funcionales -- Plantas -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Papel ecológico de las especies",
+      "subject_name": "Biodiversidad -- Papel ecológico -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -101,9 +101,9 @@
   "temporal_events": [
     {
       "start_date": "",
-      "frequency_number": "1",
+      "frequency_number": "",
       "frequency_type": "yearly",
-      "description": "La frecuencia de actualización del recurso es anual, según los metadatos proporcionados"
+      "description": "El recurso se actualiza con frecuencia anual"
     }
   ],
   "titles": [

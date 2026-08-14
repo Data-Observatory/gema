@@ -57,6 +57,12 @@ class AgentConfig(BaseModel):
     temperature: float = 0.0
     max_tokens: int | None = None
     depends_on: list[str] = []
+    # Top-level field names this agent wants surfaced from its dependencies'
+    # already-merged output (e.g. ["resource", "publishers"]) -- only
+    # meaningful alongside depends_on, since only prior-wave results are
+    # ever available. See BaseAgent.run()'s upstream_fields param and
+    # orchestrator.py's wave-result threading.
+    context_fields: list[str] = []
     use_chain_of_thought: bool = False
     # Passed straight through to the OpenAI-compatible request body. Needed for
     # provider/model-specific knobs standard fields don't cover — e.g. disabling

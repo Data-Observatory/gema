@@ -2,7 +2,7 @@
   "resource": {
     "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
     "identifier_type": "URL",
-    "editor": "Ministerio de Hacienda",
+    "editor": "Ministerio de Hacienda - Gobierno de Chile",
     "maintainer": "",
     "contact": "",
     "producer": "",
@@ -16,28 +16,22 @@
   "alternate_identifiers": [],
   "audiences": [
     {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
-    },
-    {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Ciudadanos",
-      "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Periodistas",
+      "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -78,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales registrada en el portal"
+      "date_information": "Última actualización del dataset de gastos municipales, registrada en el portal datos.gob.cl"
     }
   ],
   "descriptions": [
@@ -95,7 +89,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional, egresos ejecutados por los municipios en el territorio nacional",
+      "geo_description": "Cobertura nacional: egresos ejecutados por los municipios en el territorio nacional de Chile continental",
       "coverage": "nacional"
     }
   ],
@@ -136,13 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Egresos ejecutados -- Chile",
+      "subject_name": "Corporaciones municipales -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuesto abierto -- Chile",
+      "subject_name": "Egresos municipales -- Sector público local -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -153,7 +147,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso se actualiza mensualmente según la frecuencia declarada"
+      "description": "El recurso declara explícitamente una frecuencia de actualización mensual"
     }
   ],
   "titles": [

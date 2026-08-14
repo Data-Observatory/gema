@@ -35,7 +35,7 @@
     },
     {
       "audience": "Administradores",
-      "mediator": "Supervisor",
+      "mediator": "Gerente",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
     }
@@ -43,11 +43,11 @@
   "categories": [
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Ciencia animal y lechería"
+      "sub_category": "Agricultura, silvicultura y pesca"
     },
     {
       "name": "Ciencias Agrícolas",
-      "sub_category": "Agricultura, silvicultura y pesca"
+      "sub_category": "Ciencia animal y lechería"
     }
   ],
   "citations": [],
@@ -82,12 +82,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario cuyos datos componen este recurso"
+      "date_information": "Año en que se realizó el levantamiento de datos del VII Censo Nacional Agropecuario"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizaron las modificaciones del trazado de límites de la capa vectorial"
+      "date_information": "Año en que se actualizó el trazado de límites según modificaciones efectuadas en la capa vectorial"
     }
   ],
   "descriptions": [
@@ -104,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura geográfica correspondiente a Isla de Pascua, con capa vectorial de división administrativa y distritos censales INE",
+      "geo_description": "Cobertura geográfica específica de la Isla de Pascua correspondiente al Censo Agropecuario 2007 sobre ganado bovino",
       "coverage": "local"
     }
   ],
@@ -133,19 +133,19 @@
       "rights_identifier": "",
       "rights_identifier_scheme": "",
       "scheme_uri": "",
-      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol).",
+      "rights_condition": "Cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol (Resolución No. 255 del 2 de febrero de 2001). El trazado de límites no es oficial de la República de Chile.",
       "rights_holder": "Oficina de Estudios y Políticas Agrarias"
     }
   ],
   "subjects": [
     {
-      "subject_name": "Censo agropecuario -- Ganado bovino -- Isla de Pascua",
+      "subject_name": "Censo agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales -- Chile",
+      "subject_name": "Distritos censales -- INE -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

@@ -92,6 +92,7 @@ class AgentRegistry:
                 llm_client=llm_client,
                 schema=self._schema,
                 system_prompt=agent_config.system_prompt,
+                context_fields=agent_config.context_fields,
             )
             self._agents[agent_config.id] = agent
             logger.debug(

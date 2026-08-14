@@ -85,7 +85,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación del dataset en GFZ Data Services, según la cita y el campo publicationYear del registro DataCite"
+      "date_information": "Año de publicación del dataset de fallas activas del Sistema de Fallas de Atacama en GFZ Data Services"
     }
   ],
   "descriptions": [
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Coastal Cordillera, Northern Chile (19°12'S - 25°12'S)",
+      "geo_location_place": "Atacama Fault System, Coastal Cordillera, Northern Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Zona del antearco (forearc) del norte de Chile, abarcando el segmento más septentrional del Sistema de Fallas de Atacama entre los 19°12'S y 25°12'S",
+      "geo_description": "Cobertura regional del segmento más septentrional del Sistema de Fallas de Atacama en la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S",
       "coverage": "regional"
     }
   ],
@@ -138,13 +138,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Active faults",
+      "subject_name": "Active faults -- Atacama Fault System -- N-Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Atacama Fault System",
+      "subject_name": "Megathrust segmentation -- Forearc -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -152,24 +152,6 @@
     {
       "subject_name": "GIS",
       "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC PROCESSES",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "scheme_uri": "",
       "value_uri": ""
     }

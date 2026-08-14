@@ -16,7 +16,7 @@
   "alternate_identifiers": [
     {
       "alternate_name": "EPF",
-      "alternate_identifier": "",
+      "alternate_identifier": "EPF",
       "alternate_identifier_type": "Local"
     }
   ],
@@ -34,10 +34,10 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Consultores",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "audience": "Ciudadanos",
+      "mediator": "Autodirigido",
+      "education_level": "Aprendizaje permanente",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -87,7 +87,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de datos de la Encuesta de Presupuestos Familiares, según los indicadores publicados (Años 2021-2022)"
+      "date_information": "Período en que se realizó el levantamiento de datos de la Encuesta de Presupuestos Familiares, según los indicadores mostrados en el portal del INE (Años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -104,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de Chile, abarcando total de capitales regionales",
+      "geo_description": "Encuesta de cobertura nacional que recoge información sobre ingresos y gastos de los hogares chilenos",
       "coverage": "nacional"
     }
   ],
@@ -142,12 +142,6 @@
     },
     {
       "subject_name": "Patrones de consumo -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Comportamiento económico de los hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

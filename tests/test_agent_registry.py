@@ -102,6 +102,26 @@ def test_registry_uses_llm_factory(schema):
     assert call_count == 3
 
 
+def test_context_fields_reach_built_agent(schema):
+    """AgentConfig.context_fields must actually be wired into the BaseAgent
+    instance the registry builds, not just validated and discarded."""
+    agents = [
+        AgentConfig(
+            id="a0", name="Agent 0", fields=["resource"], prompt="p", provider="p1",
+            model="test-model",
+        ),
+        AgentConfig(
+            id="a1", name="Agent 1", fields=["rights"], prompt="p", provider="p1",
+            model="test-model", depends_on=["a0"], context_fields=["resource"],
+        ),
+    ]
+    providers = [ProviderConfig(name="p1", base_url="http://localhost", api_key_env="TEST_KEY")]
+    config = PipelineConfig(schema_name="fake", agents=agents, providers=providers, default_provider="p1")
+    registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)
+    agent = registry.get_agent("a1")
+    assert agent._context_fields == ["resource"]  # noqa: SLF001
+
+
 def test_dependency_graph(schema):
     config = make_config(num_agents=3)
     registry = AgentRegistry(config=config, schema=schema, llm_factory=mock_factory)

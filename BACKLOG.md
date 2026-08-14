@@ -240,6 +240,52 @@ enough context to pick up cold; prune entries once actually done.
   cache — `make record-golden` (real API cost) was required, not a
   `make test-regression` replay.
 
+- **Cross-agent context passing — done, piloted on
+  `rights_funding_citations` only** (2026-08-13). Verified gap:
+  `Orchestrator.run()` used to call `agent.run(resource)` with only the
+  original input — `depends_on` controlled execution order only, no
+  upstream agent's output ever reached a downstream agent's prompt. Concretely:
+  `rights_funding_citations`'s `rights_holder` fallback rule ("if the text
+  doesn't distinguish one, use the publisher") had no real publisher to use —
+  only whatever it could independently re-derive from the same text
+  `creators_publishers` already parsed separately in the same wave, no
+  reconciliation between the two.
+
+  Added: `AgentConfig.context_fields: list[str]` (which upstream field names
+  an agent wants surfaced); `Orchestrator.run()` now accumulates every
+  completed wave's *successful* fields into a running `dict[str, Any]` and
+  passes it to every subsequent wave's `agent.run(resource, upstream_fields=...)`
+  — accumulated across all prior waves, not just the immediately preceding
+  one, since a dependency can sit more than one wave back. An errored
+  upstream field is omitted entirely (never `None`) so a downstream agent
+  can't confuse "upstream said empty" with "upstream failed."
+  `rights_funding_citations` now declares
+  `depends_on: [core_metadata, creators_publishers]` +
+  `context_fields: [resource, publishers]`, and its `rights_holder` rule
+  now explicitly points at the injected `publishers` block instead of
+  re-deriving it from scratch. Golden fixtures re-recorded (only this
+  agent's cache entries missed) and reviewed — no regressions,
+  `rights_holder` correctly matches the injected publisher name where the
+  source text didn't distinguish one (`sample_input05`).
+
+  **One plan-stage "prerequisite" turned out to be unnecessary, checked
+  before implementing it**: both an initial and an adversarial code review
+  claimed `Orchestrator.run()`'s single-agent wave branch had no
+  try/except and would abort the whole pipeline run if an upstream agent
+  failed, needing a fix before adding any `depends_on` edges. Reading
+  `agents/base.py:BaseAgent.run()` directly first: its entire body is
+  already wrapped in one `try/except Exception`, always returning
+  per-field error `AgentResult`s rather than raising — so `agent.run()`
+  cannot propagate an exception to the orchestrator regardless of wave
+  size, and the described risk doesn't exist in the current code. Not
+  adding the redundant try/except.
+
+  **Not yet wired**: `creators_publishers` itself (the other consumer that
+  independently extracts overlapping stakeholder entities from `core_metadata`'s
+  `resource.editor/maintainer/producer/contact`) — deferred pending review
+  of whether this pilot's consistency win is worth the same treatment there,
+  per the original scoping.
+
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
   an earlier "dead/orphaned, delete-or-wire-in" note). It's read by
   `visor/bootstrap.py:load_providers_pool_safe()`, which only feeds Settings'

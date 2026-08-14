@@ -170,6 +170,18 @@ class TestAgentConfig:
         a = AgentConfig(id="x", name="x", fields=["f"], prompt="p", provider="p")
         assert a.depends_on == []
 
+    def test_context_fields_defaults_empty(self):
+        """context_fields defaults to [] when not provided."""
+        a = AgentConfig(id="x", name="x", fields=["f"], prompt="p", provider="p")
+        assert a.context_fields == []
+
+    def test_context_fields_explicit(self):
+        a = AgentConfig(
+            id="x", name="x", fields=["f"], prompt="p", provider="p",
+            depends_on=["core_metadata"], context_fields=["resource", "publishers"],
+        )
+        assert a.context_fields == ["resource", "publishers"]
+
     def test_use_chain_of_thought_defaults_false(self):
         """use_chain_of_thought defaults to False."""
         a = AgentConfig(id="x", name="x", fields=["f"], prompt="p", provider="p")
