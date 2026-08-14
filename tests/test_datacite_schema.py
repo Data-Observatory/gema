@@ -101,6 +101,30 @@ class TestBuildOutputModel:
         model = schema.build_output_model(["titles"])
         assert model.__name__ != schema.output_model.__name__
 
+    def test_name_changes_when_a_field_type_changes(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The digest must cover each field's type annotation, not just
+        field names/order -- otherwise a field's type changing later
+        without renaming it could let a stale cached LLM response for the
+        old type slip through cache.py's response_model.__name__-keyed
+        lookup undetected."""
+        from metadata_enricher.schemas import datacite as datacite_module
+
+        model_before = DataCiteSchema46().build_output_model(["titles"])
+
+        original_info = datacite_module.DataCiteOutputModel.model_fields["titles"]
+        patched_info = original_info.__class__(annotation=str, default="")
+        monkeypatch.setitem(
+            datacite_module.DataCiteOutputModel.model_fields, "titles", patched_info
+        )
+
+        # Fresh schema instance -- build_output_model's own _agent_model_cache
+        # is per-instance, keyed only on the fields tuple, so reusing the
+        # first schema would short-circuit on the cached (pre-patch) model
+        # without ever re-reading model_fields.
+        model_after = DataCiteSchema46().build_output_model(["titles"])
+
+        assert model_after.__name__ != model_before.__name__
+
 
 class TestSchemaFieldOrderAndRequiredFields:
     def test_get_field_order_full_contents(self) -> None:
