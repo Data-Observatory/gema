@@ -33,6 +33,8 @@ uv run metagen process examples/sample_input01.json --config config/agents.yaml 
 
 No Docker, no pre-commit hooks. GitHub Actions CI exists (`.github/workflows/ci.yml` + `visor-build.yml`), gating the branch flow: any branch → PR into `dev` (`ci.yml`: ruff on `src/ tests/ scripts/ visor/`, mypy on `src/` and `visor --exclude visor/tests`, `pytest -m "not live" --cov=metadata_enricher`, `make test-visor`) → PR into `main` (same checks again, plus `visor-build.yml`'s full multi-OS build matrix). CI never runs anything marked `live` (real LLM calls/cost) — that stays manual-only. Note the ruff/mypy scope in CI includes `visor/` (a separate subpackage, undocumented here — this file covers `metadata_enricher` only); local `make lint`/`make typecheck` do not cover `visor/`, so a clean local run does not guarantee a clean CI run if `visor/` was touched.
 
+**Branch discipline**: one branch per batch of related fixes/features, PR'd straight into `dev` — not off another feature branch. Only branch off an existing feature branch when there's a real code dependency (can't build/test without it), never just because it's the branch already checked out. A 2026-08-14 incident stacked 4 PRs on top of each other this way; every one showed "MERGED" on GitHub but none had actually reached `dev`, and recovering took a full session (see git history around PRs #17-#25 and `BACKLOG.md`'s own note on it if still present). Land and delete branches promptly instead of letting them accumulate.
+
 ## Architecture
 
 ```
