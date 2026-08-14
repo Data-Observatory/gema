@@ -227,12 +227,17 @@ enough context to pick up cold; prune entries once actually done.
 - **Full-100 do_catalog scale-up — done** (2026-08-13). All 3 production
   models (`glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
   LLM-judge (`opencode:qwen3.7-plus`), 100/100 succeeded each, 0 GEval
-  failures. Results:
-  | model | structural | GEval | field-judge |
+  failures. Structural numbers below are **corrected** (2026-08-13) for the
+  `rights`-scorer empty-vs-empty bug fixed in `scripts/eval_common.py` (see
+  the eval-scoring-bugs entry below) — rescored the same saved outputs at
+  zero live-API cost via the new `--rescore-only` flag, delta is small
+  (+0.001 to +0.003 per model, not the ~0.10 originally estimated before the
+  fix was actually measured):
+  | model | structural (corrected) | GEval | field-judge |
   |---|---|---|---|
-  | glm-5.2 | 0.524 | 0.334 | 0.708 |
-  | glm-5-turbo | 0.513 | 0.337 | 0.713 |
-  | deepseek-v4-flash | 0.505 | 0.324 | 0.730 |
+  | glm-5.2 | 0.527 | 0.334 | 0.708 |
+  | glm-5-turbo | 0.514 | 0.337 | 0.713 |
+  | deepseek-v4-flash | 0.506 | 0.324 | 0.730 |
 
   All 3 land within a noise-level band on every metric — no clear quality
   winner. **deepseek-v4-flash recommended as default**: not worse on
@@ -240,3 +245,67 @@ enough context to pick up cold; prune entries once actually done.
   `max_workers:5`, vs. zai-coding-plan's rate-limit-forced
   `max_workers:1`). Reports at `reports/do_catalog/full100/` (gitignored,
   local only — not committed).
+
+- **Eval-scoring bugs found and fixed in `scripts/eval_common.py`**
+  (2026-08-13), following an Opus code review, a second adversarial Opus pass
+  that recomputed several of the first review's claims against real data (and
+  reversed two of them), and a third Opus pass that independently adjudicated
+  those two disagreements by re-deriving the numbers itself rather than
+  refereeing prose. Exact figures below are from that adjudication, verified
+  again directly against the real 100 ground-truth files and all 300 saved
+  full-100 outputs:
+
+  - **`rights` scorer's empty-vs-empty case — fixed.** Was `0.0` when truth
+    had no `rights_identifier`, unlike every other metric's `jaccard()`
+    (`1.0` on empty-vs-empty). Only 1/100 ground-truth files are actually
+    empty, so this was a small, mechanical fix (`overall` +0.001, see above),
+    not the ~10%-of-weight bug an initial (wrong) reading suggested.
+  - **`rights` — real, separate recall gap, NOT fixed here, needs a
+    spot-check first.** Ground truth has `rights_identifier` populated on
+    **99/100** files, almost all genuine SPDX ids (`CC-BY-4.0` ×66,
+    `CC-BY-SA-4.0` ×18, `cc-by-4.0` ×4, `ODbL-1.0` ×3, plus singletons).
+    Models emit *any* `rights` entry on only 8-13/100 items and **0/100**
+    emit a non-empty `rights_identifier` — always the generic "Datos
+    Abiertos del Estado de Chile" free-text fallback
+    (`rights_funding_citations`'s PRIORIDAD 3 branch,
+    `config/agents.yaml` ~880-884), never the specific SPDX id truth has.
+    **Before touching the prompt**: spot-check 2-3 of the 66 `CC-BY-4.0`
+    ground-truth files' real source pages to confirm the license was stated
+    in text the do_catalog reverse-input extractor actually exposes (not
+    sourced from an external catalog license field outside the given input)
+    — same discipline as the `temporal_events` spot-check above. If
+    confirmed extractable, this is a real `rights_funding_citations`
+    prompt-priority bug (PRIORIDAD 3 firing ahead of an available, specific
+    license mention); if not, it's the same "ground truth exposes more than
+    the input" class as `subjects` below.
+  - **`subjects` — ground truth is formal English LCSH subject headings**
+    (`"Judicial statistics -- Chile"`, `"Household surveys - Chile"`), not
+    phrases lifted from the Spanish source description; the prompt correctly
+    forbids inventing terms not in the source text. Likely the same
+    ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
+    — logged, not fixed; same spot-check treatment recommended before any
+    prompt change.
+  - **`media_formats` — the real, large gap, not `rights`.** Ground truth has
+    a usable `format` on 94/100 items; pipeline output has a non-empty
+    `media_files` on only **1-2 of 100** across every model
+    (metric scores 0.055-0.065). The `media_files` agent is producing
+    essentially nothing at scale. Its prompt is a deterministic rule table
+    (extension→MIME, ArcGIS REST/WMS/WFS URL patterns) — the same kind of
+    logic `enrichers/iana_normalizer.py` already implements. **Candidate
+    fix**: convert `media_files` from an LLM agent to a post-merge
+    deterministic enricher (fold URL discovery into `core_metadata`, which
+    already harvests URLs for `related_identifiers`; move format/MIME
+    inference to a new enricher reusing `iana_normalizer.py`). Not yet
+    implemented — removes one of 5 agents (20% of per-resource LLM calls) if
+    done.
+  - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
+    correctness hardening — confirmed to move **nothing** on this corpus
+    (`creators_name`/`ror_match`-equivalent scores byte-identical before and
+    after; zero ground-truth/output name pairs in this corpus differ only by
+    accent). Kept for future corpora where that isn't true, not because it
+    fixed anything here.
+  - **`scripts/compare_models.py` gained `--rescore-only`**: re-scores
+    already-saved outputs (`output_root/outputs/<label>/*.json`) instead of
+    re-running the pipeline, falling back to a normal run when no saved
+    output exists. Used to get every number above at zero live-API cost —
+    worth reusing for any future scoring-function change.
