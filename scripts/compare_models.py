@@ -75,14 +75,19 @@ def run_comparison(
             truth = do_catalog_common.adapt_ground_truth(truth_raw)
 
             prefix = f"  [{ii + 1}/{len(input_files)}] {input_path.stem[:50]}..."
-            t0 = time.time()
 
             saved_path = output_root / "outputs" / label / input_path.name
-            if rescore_only and saved_path.exists():
+            rescored = rescore_only and saved_path.exists()
+            note = ""
+            if rescored:
+                # Rescoring an already-saved output -- no pipeline call, so
+                # "elapsed" would just measure a file read, not real latency.
+                # Reported as "(rescored)" instead of a misleading "(0s)".
                 actual = json.loads(saved_path.read_text(encoding="utf-8"))
             else:
                 if rescore_only:
-                    print(f"{prefix} no saved output, running pipeline instead", flush=True)
+                    note = " [no saved output, ran pipeline]"
+                t0 = time.time()
                 try:
                     actual = eval_common.run_pipeline_for_model(
                         input_path, provider, model, output_root,
@@ -101,14 +106,18 @@ def run_comparison(
                 (out_dir / input_path.name).write_text(
                     json.dumps(actual, indent=2, ensure_ascii=False), encoding="utf-8"
                 )
+                elapsed = time.time() - t0
 
             scores = do_catalog_common.compare_outputs(truth, actual)
-            elapsed = time.time() - t0
             n_fields = len(eval_common.extract_populated_fields(actual))
-            print(f"{prefix} overall={scores['overall']:.3f} orcid={scores['orcid_match']:.3f} "
-                  f"fields={n_fields}/18 ({elapsed:.0f}s)")
+            timing = "(rescored)" if rescored else f"({elapsed:.0f}s)"
+            print(f"{prefix}{note} overall={scores['overall']:.3f} orcid={scores['orcid_match']:.3f} "
+                  f"fields={n_fields}/18 {timing}")
 
-            return {"input": input_path.name, "scores": scores, "elapsed_s": round(elapsed, 1)}
+            result: dict[str, Any] = {"input": input_path.name, "scores": scores}
+            if not rescored:
+                result["elapsed_s"] = round(elapsed, 1)
+            return result
 
         # Cross-item concurrency here tracks the same config-driven
         # global/provider/model cascade used for per-resource agent
