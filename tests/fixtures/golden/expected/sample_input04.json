@@ -16,7 +16,7 @@
   "alternate_identifiers": [
     {
       "alternate_name": "EPF",
-      "alternate_identifier": "",
+      "alternate_identifier": "EPF",
       "alternate_identifier_type": "Local"
     }
   ],
@@ -34,10 +34,16 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Consultores",
+      "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Periodistas",
+      "mediator": "Autodirigido",
+      "education_level": "Profesional",
+      "instructional_method": "Estudio de caso"
     }
   ],
   "categories": [
@@ -87,7 +93,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de datos de la Encuesta de Presupuestos Familiares, según los indicadores publicados (Años 2021-2022)"
+      "date_information": "Período de referencia 2021-2022 de los indicadores de la EPF (gasto per cápita e ingreso disponible per cápita de los hogares, total de capitales regionales)"
     }
   ],
   "descriptions": [
@@ -104,7 +110,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de Chile, abarcando total de capitales regionales",
+      "geo_description": "Cobertura nacional sobre ingresos y gastos de los hogares chilenos; indicadores publicados para el total de capitales regionales",
       "coverage": "nacional"
     }
   ],
@@ -118,11 +124,11 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Instituto Nacional de Estadísticas",
-      "publisher_identifier": "https://ror.org/03ftrk873",
-      "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
-      "lang": "es"
+      "lang": "es",
+      "publisher_identifier": "0000000122317381",
+      "publisher_identifier_scheme": "ISNI",
+      "publisher_name": "Instituto Nacional de Estadísticas (Chile)",
+      "publisher_scheme_uri": "https://isni.org"
     }
   ],
   "related_identifiers": [],
@@ -147,7 +153,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Comportamiento económico de los hogares -- Chile",
+      "subject_name": "Presupuestos familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -156,9 +162,9 @@
   "temporal_events": [],
   "titles": [
     {
+      "language": "es",
       "name": "Encuesta de Presupuestos Familiares",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }
