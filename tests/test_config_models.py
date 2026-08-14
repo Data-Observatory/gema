@@ -481,6 +481,106 @@ class TestPipelineConfig:
                 providers=[ProviderConfig(name="p1", api_key_env="K")],
             )
 
+    # -- context_fields cross-validation --------------------------
+
+    def test_context_fields_from_direct_dependency_valid(self):
+        """context_fields naming a field the direct depends_on agent
+        actually produces — valid."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(
+                    id="a1", name="A1", fields=["resource", "publishers"],
+                    prompt="p", provider="p1",
+                ),
+                AgentConfig(
+                    id="a2", name="A2", fields=["f2"], prompt="p", provider="p1",
+                    depends_on=["a1"], context_fields=["resource", "publishers"],
+                ),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+        )
+        assert p.agents[1].context_fields == ["resource", "publishers"]
+
+    def test_context_fields_from_transitive_dependency_valid(self):
+        """context_fields naming a field produced by a depends_on ancestor
+        more than one wave back — still valid, since Orchestrator.run()
+        accumulates fields across every completed wave, not just the
+        immediately preceding one."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["resource"], prompt="p", provider="p1"),
+                AgentConfig(
+                    id="a2", name="A2", fields=["f2"], prompt="p", provider="p1",
+                    depends_on=["a1"],
+                ),
+                AgentConfig(
+                    id="a3", name="A3", fields=["f3"], prompt="p", provider="p1",
+                    depends_on=["a2"], context_fields=["resource"],
+                ),
+            ],
+            providers=[ProviderConfig(name="p1", api_key_env="K")],
+        )
+        assert p.agents[2].context_fields == ["resource"]
+
+    def test_context_fields_unknown_field_raises(self):
+        """context_fields names a field no depends_on ancestor produces --
+        raises ValueError instead of silently injecting nothing at runtime."""
+        with pytest.raises(ValueError, match="context_fields.*not produced by"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1", name="A1", fields=["resource"], prompt="p", provider="p1",
+                    ),
+                    AgentConfig(
+                        id="a2", name="A2", fields=["f2"], prompt="p", provider="p1",
+                        depends_on=["a1"], context_fields=["publishers"],
+                    ),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+
+    def test_context_fields_from_non_dependency_raises(self):
+        """context_fields names a field produced by a real agent that is
+        NOT a depends_on ancestor -- rejected, since Orchestrator.run()
+        only guarantees fields from actual (transitive) dependencies are
+        available before this agent's own wave."""
+        with pytest.raises(ValueError, match="context_fields.*not produced by"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1", name="A1", fields=["resource"], prompt="p", provider="p1",
+                    ),
+                    AgentConfig(
+                        id="unrelated", name="U", fields=["publishers"],
+                        prompt="p", provider="p1",
+                    ),
+                    AgentConfig(
+                        id="a2", name="A2", fields=["f2"], prompt="p", provider="p1",
+                        depends_on=["a1"], context_fields=["publishers"],
+                    ),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+
+    def test_context_fields_without_depends_on_raises(self):
+        """context_fields with no depends_on at all has no possible
+        ancestor to produce anything -- raises."""
+        with pytest.raises(ValueError, match="context_fields.*not produced by"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1", name="A1", fields=["f1"], prompt="p", provider="p1",
+                        context_fields=["resource"],
+                    ),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+
     # -- duplicate agent IDs ------------------------------------
 
     def test_duplicate_agent_id_raises(self):
