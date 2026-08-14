@@ -285,19 +285,34 @@ enough context to pick up cold; prune entries once actually done.
     ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
     — logged, not fixed; same spot-check treatment recommended before any
     prompt change.
-  - **`media_formats` — the real, large gap, not `rights`.** Ground truth has
-    a usable `format` on 94/100 items; pipeline output has a non-empty
-    `media_files` on only **1-2 of 100** across every model
-    (metric scores 0.055-0.065). The `media_files` agent is producing
-    essentially nothing at scale. Its prompt is a deterministic rule table
-    (extension→MIME, ArcGIS REST/WMS/WFS URL patterns) — the same kind of
-    logic `enrichers/iana_normalizer.py` already implements. **Candidate
-    fix**: convert `media_files` from an LLM agent to a post-merge
-    deterministic enricher (fold URL discovery into `core_metadata`, which
-    already harvests URLs for `related_identifiers`; move format/MIME
-    inference to a new enricher reusing `iana_normalizer.py`). Not yet
-    implemented — removes one of 5 agents (20% of per-resource LLM calls) if
-    done.
+  - **`media_formats` — large gap, but NOT an agent/prompt bug — verified
+    root cause (2026-08-13): input starvation specific to the do_catalog
+    eval, same class as the `rights`/`subjects` findings above.** Ground
+    truth has a usable `format` on 94/100 items; pipeline output has a
+    non-empty `media_files` on only **1-2 of 100** across every model
+    (metric scores 0.055-0.065) — initially read as "the `media_files`
+    agent is producing essentially nothing at scale" and its prompt "just a
+    deterministic rule table", with a candidate fix to convert it to a
+    post-merge deterministic enricher. **Checked before implementing that
+    fix, and it doesn't hold up**: `scripts/reverse_input.py`'s
+    `ALLOWED_KEYS` (`url/title/description/publisher`) never includes
+    `fetched_content` — confirmed 0/18 do_catalog pilot inputs contain a
+    literal file-download URL anywhere in their given text (regex-checked
+    for common extensions). Cross-checked against the golden fixtures
+    (which *do* carry real `fetched_content`, 3.5-28KB of actual page HTML):
+    `sample_input03` (28KB fetched HTML) correctly produces 2 real
+    `media_files` entries with real `file_uri` values; the other 5 samples
+    (little/no fetched content) correctly produce 0. **The agent works fine
+    given real page content — the do_catalog eval simply never gives it
+    any (by design, to test pure text extraction), so there is no `file_uri`
+    for any approach, deterministic or LLM, to find.** A deterministic
+    enricher scanning the same impoverished input would find exactly as
+    little. **Not implementing the deterministic-enricher rewrite — the
+    premise was wrong.** If `media_formats` quality on do_catalog-shaped
+    inputs specifically matters, the actual lever is enabling
+    `enable_content_fetch` for that corpus (already logged above as
+    off-by-default pending a scale eval, for unrelated latency-stall
+    reasons) — not an agent architecture change.
   - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
     correctness hardening — confirmed to move **nothing** on this corpus
     (`creators_name`/`ror_match`-equivalent scores byte-identical before and
