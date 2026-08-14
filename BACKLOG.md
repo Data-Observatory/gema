@@ -532,13 +532,22 @@ enough context to pick up cold; prune entries once actually done.
       little on that same batch's inputs.
 
     **Not implementing the deterministic-enricher rewrite — the premise
-    doesn't hold, still open.** Concrete, cheap next step if `media_formats`
-    quality on the full-100 corpus matters: regenerate it with
-    `generate_inputs.py --fetch` (already exists, opt-in) and re-run the
-    structural comparison — given the 5/5 pilot result, this is a
-    reasonable bet, not just a hopeful guess. Separately, whether to default
-    `enable_content_fetch` on for production traffic generally is still the
-    open, unrelated latency-stall question already logged above.
+    doesn't hold.** **Confirmed (2026-08-14)**: regenerated the full-100
+    corpus with `generate_inputs.py --fetch` (backup of the pre-fetch
+    version kept at `data/do_catalog/inputs.bak-no-fetch/`, gitignored like
+    the rest of `data/do_catalog/`) — 83/100 URLs fetched successfully (17
+    dead links, mostly stale `geoportal.cl` catalog entries returning 404).
+    Re-ran the structural comparison (`opencode:deepseek-v4-flash`,
+    `reports/do_catalog/full100_fetch/`): `media_formats` average **0.055 →
+    0.402**, non-zero on **48/100** items (was 1-2/100). Confirms the
+    hypothesis directly on the exact corpus the original 94-vs-1 statistic
+    came from — the agent was never the problem, the batch's missing
+    `fetched_content` was. Remaining gap (48/100, not 83/100) is now mostly
+    about whether a fetched page's cleaned text actually surfaces a
+    download link/format in prose, not about the input pipeline. Separately,
+    whether to default `enable_content_fetch` on for production traffic
+    generally is still the open, unrelated latency-stall question already
+    logged above.
   - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
     correctness hardening — confirmed to move **nothing** on this corpus
     (`creators_name`/`ror_match`-equivalent scores byte-identical before and
