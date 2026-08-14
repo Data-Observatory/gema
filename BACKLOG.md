@@ -296,6 +296,17 @@ enough context to pick up cold; prune entries once actually done.
   of whether this pilot's consistency win is worth the same treatment there,
   per the original scoping.
 
+  **Known golden-fixture drift, flagged by an independent review, not
+  fixed**: `sample_input06`'s `resource.contact` dropped to `""` across the
+  two re-records this work required (3a's and this one), even though the
+  source `fetched_content` explicitly labels it ("Contact Victor, Pia ;
+  GFZ German Research Centre for Geosciences...") — verified by reading the
+  actual input text. `core_metadata`'s prompt was not touched by either
+  re-record; this is ordinary live-LLM run-to-run nondeterminism on a
+  field neither phase targeted, the same class of noise the 0.85
+  semantic-diff regression threshold exists to tolerate — not re-recording
+  again just to chase one field on a non-production demo fixture.
+
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
   an earlier "dead/orphaned, delete-or-wire-in" note). It's read by
   `visor/bootstrap.py:load_providers_pool_safe()`, which only feeds Settings'
