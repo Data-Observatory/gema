@@ -5,7 +5,7 @@
     "editor": "Instituto Nacional de Estadísticas (Chile)",
     "maintainer": "",
     "contact": "",
-    "producer": "Instituto Nacional de Estadísticas (INE)",
+    "producer": "Instituto Nacional de Estadísticas (INE) de Chile",
     "publication_year": "2021",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -34,16 +34,10 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Científicos de datos",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Periodistas",
+      "audience": "Ciudadanos",
       "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Estudio de caso"
+      "education_level": "Aprendizaje permanente",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -59,7 +53,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Instituto Nacional de Estadísticas",
+      "creator_name": "Instituto Nacional de Estadísticas (Chile)",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -69,12 +63,7 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "https://ror.org/03ftrk873",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org"
-        },
-        {
-          "name_identifier": "0000000122544402",
+          "name_identifier": "0000000122317381",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org"
         }
@@ -93,7 +82,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de referencia 2021-2022 de los indicadores de la EPF (gasto per cápita e ingreso disponible per cápita de los hogares, total de capitales regionales)"
+      "date_information": "Período de referencia de los datos de la EPF, según los indicadores presentados en la página (gasto per cápita e ingreso disponible de los hogares, años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -110,7 +99,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional sobre ingresos y gastos de los hogares chilenos; indicadores publicados para el total de capitales regionales",
+      "geo_description": "Cobertura nacional: la encuesta releva los ingresos y gastos de los hogares chilenos, con indicadores para el total de capitales regionales del país",
       "coverage": "nacional"
     }
   ],
@@ -135,27 +124,21 @@
   "rights": [],
   "subjects": [
     {
+      "scheme_uri": "",
       "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
       "subject_scheme": "",
-      "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Ingresos y gastos -- Hogares -- Chile",
-      "subject_scheme": "",
       "scheme_uri": "",
+      "subject_name": "Ingresos y gastos de los hogares -- Chile",
+      "subject_scheme": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Patrones de consumo -- Chile",
-      "subject_scheme": "",
       "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Presupuestos familiares -- Chile",
+      "subject_name": "Patrones de consumo -- Hogares -- Chile",
       "subject_scheme": "",
-      "scheme_uri": "",
       "value_uri": ""
     }
   ],

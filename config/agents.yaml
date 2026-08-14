@@ -885,7 +885,7 @@ agents:
     REGLA DE ORO: sin evidencia explícita de una licencia o términos de uso en el texto → "rights": []. NUNCA asumir una licencia por el tipo de institución (científica, universitaria, ministerial), aunque sea el caso más común en el corpus.
 
     Paso 2b: rights_holder y rights_condition
-    - rights_holder = la entidad que el texto identifica como titular de los derechos/copyright. Si el texto no lo distingue, usa el publicador. Si tampoco hay publicador identificado, déjalo vacío. NUNCA lo llenes con "todas las instituciones contribuyentes" — contribuir a un dataset no es lo mismo que ser su titular de derechos.
+    - rights_holder = la entidad que el texto identifica como titular de los derechos/copyright. Si el texto no lo distingue, usa el publisher_name del bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" (publishers), si está presente — es el mismo publicador que ya extrajo otro paso del pipeline, úsalo tal cual en vez de re-derivarlo del texto para mantener consistencia. Si ese bloque no está presente o publishers está vacío, y el texto tampoco distingue un publicador, déjalo vacío. NUNCA lo llenes con "todas las instituciones contribuyentes" — contribuir a un dataset no es lo mismo que ser su titular de derechos.
     - rights_condition: restricciones de uso NO relacionadas con una licencia formal, si el texto las menciona (ej. "requiere registro previo", "uso no comercial", "solo con atribución de la fuente" sin mención de Creative Commons).
     - start_date: fecha en que la licencia/término entró en vigencia, SOLO si el texto la menciona explícitamente.
 
@@ -1049,7 +1049,12 @@ agents:
     }
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
-  depends_on: []
+  depends_on:
+  - core_metadata
+  - creators_publishers
+  context_fields:
+  - resource
+  - publishers
   model: glm-5.2
   provider: zai-coding-plan
   temperature: 0.0

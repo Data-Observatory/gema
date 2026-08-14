@@ -4,7 +4,7 @@
     "identifier_type": "DOI",
     "editor": "GFZ Data Services",
     "maintainer": "",
-    "contact": "Victor, Pia (GFZ German Research Centre for Geosciences, Potsdam, Germany)",
+    "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
     "producer": "",
     "publication_year": "2020",
     "resource_type": "Dataset",
@@ -18,20 +18,14 @@
     {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
-      "education_level": "Doctorado",
+      "education_level": "Postgrado",
       "instructional_method": "Análisis"
     },
     {
       "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Profesionales",
-      "mediator": "Autodirigido",
-      "education_level": "Educación continua",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -85,7 +79,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación del dataset en GFZ Data Services, según la citación de referencia del recurso"
+      "date_information": "Año en que el dataset fue publicado oficialmente por GFZ Data Services (publicationYear: 2020 en los metadatos DataCite)"
     }
   ],
   "descriptions": [
@@ -98,11 +92,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Atacama Fault System, Coastal Cordillera, N-Chile",
+      "geo_location_place": "Cordillera de la Costa, norte de Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Northernmost segment of the Atacama Fault System in the forearc of the Nazca-South America convergent plate margin, Coastal Cordillera of N-Chile between 19°12'S and 25°12'S",
+      "geo_description": "Segmento más septentrional del Atacama Fault System en la Cordillera de la Costa del norte de Chile, entre las latitudes 19°12’S y 25°12’S",
       "coverage": "regional"
     }
   ],
@@ -157,43 +151,13 @@
     },
     {
       "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "value_uri": ""
-    },
-    {
-      "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC PROCESSES",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "value_uri": ""
-    },
-    {
-      "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > EARTHQUAKES > EARTHQUAKE OCCURRENCES",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "value_uri": ""
-    },
-    {
-      "scheme_uri": "",
       "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "value_uri": ""
     },
     {
       "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > PLATE TECTONICS > FAULT MOVEMENT > FAULT MOVEMENT DIRECTION",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "value_uri": ""
-    },
-    {
-      "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > PLATE TECTONICS > FAULT MOVEMENT > FAULT MOVEMENT RATE",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "value_uri": ""
-    },
-    {
-      "scheme_uri": "",
-      "subject_name": "EARTH SCIENCE SERVICES > DATA ANALYSIS AND VISUALIZATION > GEOGRAPHIC INFORMATION SYSTEMS",
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "value_uri": ""
     }

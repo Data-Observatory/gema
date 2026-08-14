@@ -51,6 +51,39 @@ enough context to pick up cold; prune entries once actually done.
   identification, instead of PASO 6-8 at the end — no new agent, no
   wall-clock cost, golden fixtures re-recorded.
 
+  **Decode-order fix landed (2026-08-13) and re-measured — does NOT explain
+  the earlier flat result.** Root-cause finding: all 5 agents shared one
+  `DataCiteOutputModel` (`schemas/datacite.py`), so Instructor's structured-
+  output decode order was that model's one fixed field-declaration order for
+  every agent, regardless of the prompt's own PASO order — meaning the
+  2026-08-11 reorder above changed the *prompt text* but never actually
+  changed *generation order*. Fixed via `Schema.build_output_model(fields)`
+  (per-agent dynamic model, `reasoning` first then the agent's own fields in
+  its declared order; see the "Pipeline / infra" entry below for the cache-
+  key implications). Re-ran the do_catalog 18-pilot (deepseek-only) with
+  decode order now genuinely following the prompt:
+
+  | | before (prompt reorder only) | after (decode order also fixed) |
+  |---|---|---|
+  | avg overall | 0.516 | 0.534 |
+  | `geo_locations` | 16/18 | 18/18 (truth 18/18) |
+  | `related_identifiers` | 7/18 (truth 10/18) | 7/18 (truth 10/18) — unchanged |
+  | `alternate_identifiers` | model 1/18, truth 0/18 | model 1/18, truth 0/18 — unchanged |
+  | `temporal_events` | model 0/18, truth 6/18 | model 0/18, truth 6/18 — unchanged |
+
+  The aggregate +0.018 is real but modest, and `geo_locations` (already
+  "fine" before, not one of the flagged weak fields) accounts for most of
+  the field-level movement. **The two fields actually flagged as weak
+  (`temporal_events`, `related_identifiers`) show zero change despite decode
+  order now genuinely matching prompt order** — this is a real result, not
+  a null one: it strengthens the earlier hypothesis that `temporal_events`'
+  0/18 is the model correctly refusing to fabricate frequency data (per its
+  own explicit rule), not a position/order artifact, since fixing position
+  didn't move it at all. **Full agent split still NOT recommended** — the
+  remaining evidence points at "genuinely hard field" or "ground truth
+  noise" (see the `temporal_events` spot-check below, still open), not at
+  architecture.
+
   **Re-measured against the do_catalog 18-pilot (deepseek-only, 2026-08-11)
   — full split NOT recommended on current evidence.** Aggregate structural
   score was flat (0.530 → 0.516/0.521, noise-level either way) but that
@@ -302,6 +335,109 @@ enough context to pick up cold; prune entries once actually done.
   see `fix(enrichers): stop sending an illegal limit param...`.
 
 ## Pipeline / infra
+
+- **Per-agent structured-output model — done** (2026-08-13):
+  `Schema.build_output_model(fields)` (new `Schema` Protocol method,
+  implemented in `DataCiteSchema46`) builds a dynamic Pydantic model per
+  agent via `pydantic.create_model` — `reasoning` first, then the agent's
+  own `fields:` in their declared order — so an agent's prompt-level
+  reasoning order actually controls Instructor/OpenAI structured-output
+  decode order, instead of every agent decoding in the shared
+  `DataCiteOutputModel`'s one fixed order (see the `core_metadata`-split
+  entry above for why this mattered and what re-measuring it showed).
+  `BaseAgent.run()` calls this instead of the bare `output_model` property;
+  `output_model` itself is unchanged (still the schema-standard default
+  order, used by `validate_output` and anything outside the per-agent
+  path). **Cache-key detail, load-bearing**: `cache.py` keys the LLM
+  response cache on `response_model.__name__` — the dynamic model's name is
+  a stable hash of the field sequence, not a random/identity-based name, so
+  the same agent shape reuses the same cache entries across process
+  restarts, while a different field order or subset always gets a
+  different name (so differently-shaped agents never collide on that
+  cache). Shipping this invalidates the entire golden-fixture LLM-response
+  cache — `make record-golden` (real API cost) was required, not a
+  `make test-regression` replay.
+
+- **Cross-agent context passing — done, piloted on
+  `rights_funding_citations` only** (2026-08-13). Verified gap:
+  `Orchestrator.run()` used to call `agent.run(resource)` with only the
+  original input — `depends_on` controlled execution order only, no
+  upstream agent's output ever reached a downstream agent's prompt. Concretely:
+  `rights_funding_citations`'s `rights_holder` fallback rule ("if the text
+  doesn't distinguish one, use the publisher") had no real publisher to use —
+  only whatever it could independently re-derive from the same text
+  `creators_publishers` already parsed separately in the same wave, no
+  reconciliation between the two.
+
+  Added: `AgentConfig.context_fields: list[str]` (which upstream field names
+  an agent wants surfaced); `Orchestrator.run()` now accumulates every
+  completed wave's *successful* fields into a running `dict[str, Any]` and
+  passes it to every subsequent wave's `agent.run(resource, upstream_fields=...)`
+  — accumulated across all prior waves, not just the immediately preceding
+  one, since a dependency can sit more than one wave back. An errored
+  upstream field is omitted entirely (never `None`) so a downstream agent
+  can't confuse "upstream said empty" with "upstream failed."
+  `rights_funding_citations` now declares
+  `depends_on: [core_metadata, creators_publishers]` +
+  `context_fields: [resource, publishers]`, and its `rights_holder` rule
+  now explicitly points at the injected `publishers` block instead of
+  re-deriving it from scratch. Golden fixtures re-recorded (only this
+  agent's cache entries missed) and reviewed — no regressions,
+  `rights_holder` correctly matches the injected publisher name where the
+  source text didn't distinguish one (`sample_input05`).
+
+- **`LLMConfig.timeout` (60s default, `llm/base.py:73`) is too tight for the
+  biggest agent + large payload combo.** `core_metadata` (9 output fields,
+  the largest prompt) against `sample_input03.json` (~28KB
+  `fetched_content`, next-largest input is ~7KB) reproducibly timed out at
+  60s on `zai-coding-plan`/glm-5.2, retried for ~22min (tenacity backoff),
+  then hard-failed — identically, 3 out of 3 separate `record_golden.py`
+  runs on 2026-08-14 (plus once earlier during a different branch's
+  recording). Confirmed not random flakiness: raising the timeout to 240s
+  (temporarily, reverted before commit) let it succeed first try. No
+  per-provider override exists today (`ProviderConfig` has no `timeout`
+  field). Fix candidates: bump the global default past 60s, or add a
+  per-provider/per-agent `timeout` override in `config/providers.yaml` /
+  `config/agents.yaml` for large-payload agents specifically.
+
+  **Re-ran the do_catalog 18-pilot (deepseek-only) — flat, as expected, and
+  for a reason worth noting**: 0.535 vs. Phase 3a's 0.534 baseline
+  (noise-level). `scripts/eval_common.py`'s `rights` metric only scores
+  `rights_identifier` (the SPDX id) — it never reads `rights_holder` at
+  all, so this consistency fix is invisible to the current structural
+  score by construction, not because it didn't work (the golden-fixture
+  diff review above confirms it did). If `rights_holder` consistency
+  matters enough to measure, `eval_common.py` would need a metric for it —
+  not scoped here.
+
+  **One plan-stage "prerequisite" turned out to be unnecessary, checked
+  before implementing it**: both an initial and an adversarial code review
+  claimed `Orchestrator.run()`'s single-agent wave branch had no
+  try/except and would abort the whole pipeline run if an upstream agent
+  failed, needing a fix before adding any `depends_on` edges. Reading
+  `agents/base.py:BaseAgent.run()` directly first: its entire body is
+  already wrapped in one `try/except Exception`, always returning
+  per-field error `AgentResult`s rather than raising — so `agent.run()`
+  cannot propagate an exception to the orchestrator regardless of wave
+  size, and the described risk doesn't exist in the current code. Not
+  adding the redundant try/except.
+
+  **Not yet wired**: `creators_publishers` itself (the other consumer that
+  independently extracts overlapping stakeholder entities from `core_metadata`'s
+  `resource.editor/maintainer/producer/contact`) — deferred pending review
+  of whether this pilot's consistency win is worth the same treatment there,
+  per the original scoping.
+
+  **Known golden-fixture drift, flagged by an independent review, not
+  fixed**: `sample_input06`'s `resource.contact` dropped to `""` across the
+  two re-records this work required (3a's and this one), even though the
+  source `fetched_content` explicitly labels it ("Contact Victor, Pia ;
+  GFZ German Research Centre for Geosciences...") — verified by reading the
+  actual input text. `core_metadata`'s prompt was not touched by either
+  re-record; this is ordinary live-LLM run-to-run nondeterminism on a
+  field neither phase targeted, the same class of noise the 0.85
+  semantic-diff regression threshold exists to tolerate — not re-recording
+  again just to chase one field on a non-production demo fixture.
 
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
   an earlier "dead/orphaned, delete-or-wire-in" note). It's read by

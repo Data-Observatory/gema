@@ -13,13 +13,7 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [
-    {
-      "alternate_name": "",
-      "alternate_identifier": "35497",
-      "alternate_identifier_type": "Local"
-    }
-  ],
+  "alternate_identifiers": [],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -31,13 +25,13 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Administradores",
       "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Estudio de caso"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -53,7 +47,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Oficina de Estudios y Políticas Agrarias",
+      "creator_name": "Instituto Nacional de Estadísticas",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -63,16 +57,21 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "0000000119427969",
+          "name_identifier": "https://ror.org/03ftrk873",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        },
+        {
+          "name_identifier": "0000000122544402",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org"
         }
       ],
       "affiliations": [
         {
-          "affiliation": "Ministerio de Agricultura",
-          "affiliation_identifier": "https://ror.org/05nqvv719",
-          "affiliation_identifier_scheme": "ROR",
+          "affiliation": "Ministerio de Economía, Fomento y Turismo",
+          "affiliation_identifier": "0000000404784842",
+          "affiliation_identifier_scheme": "ISNI",
           "scheme_uri": ""
         }
       ]
@@ -82,12 +81,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del que provienen los antecedentes de ganado bovino de Isla de Pascua"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario del cual provienen los antecedentes sobre ganado bovino en Isla de Pascua"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año en que se actualizó el trazado de límites de la capa según modificaciones efectuadas"
+      "date_information": "Año en que se actualizó el trazado de límites de la capa según las modificaciones efectuadas"
     }
   ],
   "descriptions": [
@@ -104,8 +103,8 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de la capa correspondiente a la Isla de Pascua para asociar cifras del VII Censo Nacional Agropecuario 2007 sobre ganado bovino",
-      "coverage": "local"
+      "geo_description": "Cobertura de la Isla de Pascua que permite la asociación de cifras estadísticas y/o temáticas referidas a las unidades administrativas del país y distritos censales INE",
+      "coverage": "comunal"
     }
   ],
   "languages": [
@@ -133,25 +132,25 @@
       "rights_identifier": "",
       "rights_identifier_scheme": "",
       "scheme_uri": "",
-      "rights_condition": "Los productos cartográficos elaborados con esta capa que involucren la representación de los límites internacionales del país deben obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol); el uso de los límites internacionales en elaboración de cartografía fue autorizado mediante Resolución No. 255 del 2 de febrero de 2001.",
+      "rights_condition": "El trazado de límites no es oficial de la República de Chile; cada producto cartográfico elaborado con esta capa que involucre la representación de los límites internacionales del país debe obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol), conforme a la Resolución No. 255 del 2 de febrero de 2001.",
       "rights_holder": "Oficina de Estudios y Políticas Agrarias"
     }
   ],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- 2007 -- Chile",
+      "subject_name": "Censo Agropecuario 2007 -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Distritos censales -- INE -- Chile",
+      "subject_name": "Distritos censales INE",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

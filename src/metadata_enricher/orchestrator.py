@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
 from metadata_enricher.agents.registry import AgentRegistry
 from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
@@ -67,33 +68,42 @@ class Orchestrator:
         """
         waves = self._compute_waves()
         all_results: list[AgentResult] = []
+        # Accumulated across every completed wave (not just the immediately
+        # prior one) -- an agent can depend on agents spread across more
+        # than one earlier wave. Only successful (non-error) fields ever
+        # land here; see BaseAgent.run()'s upstream_fields docstring for why
+        # an errored upstream field is omitted rather than passed as None.
+        upstream_fields: dict[str, Any] = {}
 
         for wave_idx, wave in enumerate(waves):
             logger.info("Executing wave %d/%d: %s", wave_idx + 1, len(waves), wave)
+            wave_results: list[AgentResult] = []
 
             if len(wave) == 1:
                 # Single agent — no need for thread pool
                 agent = self._registry.get_agent(wave[0])
-                results = agent.run(resource)
-                all_results.extend(results)
+                wave_results.extend(agent.run(resource, upstream_fields=upstream_fields))
             else:
                 # Multiple agents — run in parallel
                 with ThreadPoolExecutor(max_workers=min(self._max_workers, len(wave))) as executor:
                     future_to_agent = {
-                        executor.submit(self._registry.get_agent(aid).run, resource): aid
+                        executor.submit(
+                            self._registry.get_agent(aid).run,
+                            resource,
+                            upstream_fields=upstream_fields,
+                        ): aid
                         for aid in wave
                     }
                     for future in as_completed(future_to_agent):
                         aid = future_to_agent[future]
                         try:
-                            results = future.result()
-                            all_results.extend(results)
+                            wave_results.extend(future.result())
                         except Exception as e:
                             logger.error("Agent '%s' failed: %s", aid, e)
                             # Record error as AgentResult per field of the failed agent
                             agent = self._registry.get_agent(aid)
                             for field in agent.fields:
-                                all_results.append(
+                                wave_results.append(
                                     AgentResult(
                                         field_name=field,
                                         value=None,
@@ -101,6 +111,11 @@ class Orchestrator:
                                         token_usage=TokenUsage(),
                                     )
                                 )
+
+            all_results.extend(wave_results)
+            for result in wave_results:
+                if result.error is None:
+                    upstream_fields[result.field_name] = result.value
 
         return all_results
 
