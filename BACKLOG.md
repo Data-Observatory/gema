@@ -81,6 +81,124 @@ enough context to pick up cold; prune entries once actually done.
   eval input) states it explicitly anywhere. If ground truth turns out to
   be noise (inferred from resource type, not a real declared frequency),
   this whole "weak field" framing may not need a code fix at all.
+
+  **Decode-order fix landed (2026-08-13) and re-measured — does NOT explain
+  the earlier flat result.** Root-cause finding: all 5 agents shared one
+  `DataCiteOutputModel` (`schemas/datacite.py`), so Instructor's structured-
+  output decode order was that model's one fixed field-declaration order for
+  every agent, regardless of the prompt's own PASO order — meaning the
+  2026-08-11 reorder above changed the *prompt text* but never actually
+  changed *generation order*. Fixed via `Schema.build_output_model(fields)`
+  (per-agent dynamic model, `reasoning` first then the agent's own fields in
+  its declared order; see the per-agent structured-output model entry
+  below for the cache-key implications). Re-ran the do_catalog 18-pilot
+  (deepseek-only) with decode order now genuinely following the prompt:
+
+  | | before (prompt reorder only) | after (decode order also fixed) |
+  |---|---|---|
+  | avg overall | 0.516 | 0.534 |
+  | `geo_locations` | 16/18 | 18/18 (truth 18/18) |
+  | `related_identifiers` | 7/18 (truth 10/18) | 7/18 (truth 10/18) — unchanged |
+  | `alternate_identifiers` | model 1/18, truth 0/18 | model 1/18, truth 0/18 — unchanged |
+  | `temporal_events` | model 0/18, truth 6/18 | model 0/18, truth 6/18 — unchanged |
+
+  The aggregate +0.018 is real but modest, and `geo_locations` (already
+  "fine" before, not one of the flagged weak fields) accounts for most of
+  the field-level movement. **The two fields actually flagged as weak
+  (`temporal_events`, `related_identifiers`) show zero change despite decode
+  order now genuinely matching prompt order** — this is a real result, not
+  a null one: it strengthens the earlier hypothesis that `temporal_events`'
+  0/18 is the model correctly refusing to fabricate frequency data (per its
+  own explicit rule), not a position/order artifact, since fixing position
+  didn't move it at all. **Full agent split still NOT recommended** — the
+  remaining evidence points at "genuinely hard field" or "ground truth
+  noise" (see the `temporal_events` spot-check above, still open), not at
+  architecture.
+
+- **Per-agent structured-output model — done** (2026-08-13):
+  `Schema.build_output_model(fields)` (new `Schema` Protocol method,
+  implemented in `DataCiteSchema46`) builds a dynamic Pydantic model per
+  agent via `pydantic.create_model` — `reasoning` first, then the agent's
+  own `fields:` in their declared order — so an agent's prompt-level
+  reasoning order actually controls Instructor/OpenAI structured-output
+  decode order, instead of every agent decoding in the shared
+  `DataCiteOutputModel`'s one fixed order (see the `core_metadata`-split
+  entry above for why this mattered and what re-measuring it showed).
+  `BaseAgent.run()` calls this instead of the bare `output_model` property;
+  `output_model` itself is unchanged (still the schema-standard default
+  order, used by `validate_output` and anything outside the per-agent
+  path). **Cache-key detail, load-bearing**: `cache.py` keys the LLM
+  response cache on `response_model.__name__` — the dynamic model's name is
+  a stable hash of the field sequence, not a random/identity-based name, so
+  the same agent shape reuses the same cache entries across process
+  restarts, while a different field order or subset always gets a
+  different name (so differently-shaped agents never collide on that
+  cache). Shipping this invalidates the entire golden-fixture LLM-response
+  cache — `make record-golden` (real API cost) was required, not a
+  `make test-regression` replay. **Known gap, not fixed** (see "Code
+  review findings, not yet fixed" below): the hash covers field
+  names/order only, not each field's type definition.
+
+- **Cross-agent context passing — done, piloted on
+  `rights_funding_citations` only** (2026-08-13). Verified gap:
+  `Orchestrator.run()` used to call `agent.run(resource)` with only the
+  original input — `depends_on` controlled execution order only, no
+  upstream agent's output ever reached a downstream agent's prompt.
+  Concretely: `rights_funding_citations`'s `rights_holder` fallback rule
+  ("if the text doesn't distinguish one, use the publisher") had no real
+  publisher to use — only whatever it could independently re-derive from
+  the same text `creators_publishers` already parsed separately in the
+  same wave, no reconciliation between the two.
+
+  Added: `AgentConfig.context_fields: list[str]` (which upstream field
+  names an agent wants surfaced); `Orchestrator.run()` now accumulates
+  every completed wave's *successful* fields into a running
+  `dict[str, Any]` and passes it to every subsequent wave's
+  `agent.run(resource, upstream_fields=...)` — accumulated across all
+  prior waves, not just the immediately preceding one, since a dependency
+  can sit more than one wave back. An errored upstream field is omitted
+  entirely (never `None`) so a downstream agent can't confuse "upstream
+  said empty" with "upstream failed." `rights_funding_citations` now
+  declares `depends_on: [core_metadata, creators_publishers]` +
+  `context_fields: [resource, publishers]`, and its `rights_holder` rule
+  now explicitly points at the injected `publishers` block instead of
+  re-deriving it from scratch. Golden fixtures re-recorded (only this
+  agent's cache entries missed) and reviewed — no regressions,
+  `rights_holder` correctly matches the injected publisher name where the
+  source text didn't distinguish one (`sample_input05`).
+
+  Re-ran the do_catalog 18-pilot (deepseek-only) — flat, as expected, and
+  for a reason worth noting: 0.535 vs. Phase 3a's 0.534 baseline
+  (noise-level). `scripts/eval_common.py`'s `rights` metric only scores
+  `rights_identifier` (the SPDX id) — it never reads `rights_holder` at
+  all, so this consistency fix is invisible to the current structural
+  score by construction, not because it didn't work (the golden-fixture
+  diff review confirms it did). If `rights_holder` consistency matters
+  enough to measure, `eval_common.py` would need a metric for it — not
+  scoped here.
+
+  **Not yet wired**: `creators_publishers` itself (the other consumer that
+  independently extracts overlapping stakeholder entities from
+  `core_metadata`'s `resource.editor/maintainer/producer/contact`) —
+  deferred pending review of whether this pilot's consistency win is worth
+  the same treatment there, per the original scoping. **Also not
+  cross-validated** (see "Code review findings, not yet fixed" below):
+  `context_fields` entries aren't checked against the upstream agent's
+  actual field names, so a typo silently injects nothing rather than
+  erroring.
+
+  **Known golden-fixture drift, flagged by an independent review, not
+  fixed**: `sample_input06`'s `resource.contact` dropped to `""` across
+  the two re-records this work required (Phase 3a's and this one), even
+  though the source `fetched_content` explicitly labels it ("Contact
+  Victor, Pia ; GFZ German Research Centre for Geosciences..."). Verified
+  by reading the actual input text; `core_metadata`'s prompt was not
+  touched by either re-record — this is ordinary live-LLM run-to-run
+  nondeterminism on a field neither phase targeted, the same class of
+  noise the 0.85 semantic-diff regression threshold exists to tolerate —
+  not re-recording again just to chase one field on a non-production demo
+  fixture.
+
 - **DOI-resolver enricher — done** (2026-08-11): `DOIResolverEnricher`
   (`enrichers/doi_resolver.py`) backfills titles/creators/publisher/an
   Issued date from Crossref's public Works API for DOI-identified
@@ -221,6 +339,19 @@ enough context to pick up cold; prune entries once actually done.
   `enable_content_fetch` on for every caller of the default config without a
   scale eval to justify it isn't worth the risk. Stays an explicit opt-in.
   `max_len` tuning still open if/when someone actually opts in and hits it.
+- **`LLMConfig.timeout` (60s default, `llm/base.py:73`) is too tight for the
+  biggest agent + large payload combo, not fixed.** `core_metadata` (9
+  output fields, the largest prompt) against `sample_input03.json` (~28KB
+  `fetched_content`, next-largest input is ~7KB) reproducibly timed out at
+  60s on `zai-coding-plan`/glm-5.2, retried for ~22min (tenacity backoff),
+  then hard-failed — identically, 3 out of 3 separate `record_golden.py`
+  runs on 2026-08-14 (plus once earlier during a different branch's
+  recording). Confirmed not random flakiness: raising the timeout to 240s
+  (temporarily, reverted before commit) let it succeed first try. No
+  per-provider override exists today (`ProviderConfig` has no `timeout`
+  field). Fix candidates: bump the global default past 60s, or add a
+  per-provider/per-agent `timeout` override in `config/providers.yaml` /
+  `config/agents.yaml` for large-payload agents specifically.
 
 ## Eval harness
 
@@ -285,19 +416,61 @@ enough context to pick up cold; prune entries once actually done.
     ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
     — logged, not fixed; same spot-check treatment recommended before any
     prompt change.
-  - **`media_formats` — the real, large gap, not `rights`.** Ground truth has
-    a usable `format` on 94/100 items; pipeline output has a non-empty
-    `media_files` on only **1-2 of 100** across every model
-    (metric scores 0.055-0.065). The `media_files` agent is producing
-    essentially nothing at scale. Its prompt is a deterministic rule table
-    (extension→MIME, ArcGIS REST/WMS/WFS URL patterns) — the same kind of
-    logic `enrichers/iana_normalizer.py` already implements. **Candidate
-    fix**: convert `media_files` from an LLM agent to a post-merge
-    deterministic enricher (fold URL discovery into `core_metadata`, which
-    already harvests URLs for `related_identifiers`; move format/MIME
-    inference to a new enricher reusing `iana_normalizer.py`). Not yet
-    implemented — removes one of 5 agents (20% of per-resource LLM calls) if
-    done.
+  - **`media_formats` — large gap on the full-100 corpus specifically, NOT
+    an agent/prompt bug — verified root cause (2026-08-13, corrected
+    2026-08-14 after an independent review caught two wrong facts in the
+    first version of this entry).** Ground truth has a usable `format` on
+    94/100 items; the full-100 pipeline run (`data/do_catalog/inputs/*.json`,
+    the actual corpus this statistic comes from) has a non-empty
+    `media_files` on only **1-2 of 100** across every model (metric scores
+    0.055-0.065) — initially read as "the `media_files` agent is producing
+    essentially nothing at scale" and its prompt "just a deterministic rule
+    table", with a candidate fix to convert it to a post-merge deterministic
+    enricher.
+
+    **Checked before implementing that fix, and the fix's premise doesn't
+    hold up — though two of the original supporting claims here were
+    themselves wrong and are corrected below:**
+    - **Corrected claim**: `scripts/reverse_input.py`'s `ALLOWED_KEYS` is
+      `{url, title, description, publisher, fetched_content}` —
+      `fetched_content` **is** allowed, has been since this toolchain's own
+      introduction; the original entry wrongly said it was excluded by
+      design. `scripts/generate_inputs.py --fetch` is what actually
+      populates it, and it's opt-in (default off) for cost/reliability
+      reasons, not a "test pure extraction" design choice.
+    - **Corrected claim**: the 18-item pilot corpus
+      (`tests/fixtures/do_catalog/inputs/`) is **not** input-starved —
+      14/18 of its files carry real `fetched_content` (1.7-28KB), and 5/18
+      (`205`, `360`, `366`, `376`, `377`) contain literal downloadable file
+      URLs (`.zip`/`.kmz`). The original entry's "confirmed 0/18" claim was
+      wrong — it came from a regex check that only searched `description`
+      and `url`, not `fetched_content`, and so missed the very field where
+      a download link would actually appear.
+    - **What actually holds, re-verified directly against the right
+      data**: the **full-100 corpus specifically** (`data/do_catalog/inputs/`,
+      the one that produced the 94-vs-1 statistic) has **0/100** files with
+      `fetched_content` and **0/100** with a discoverable file URL — that
+      batch was generated without `--fetch`. And on the 18-pilot's 5 items
+      that *do* carry a real file URL in `fetched_content`, the agent
+      produces a **perfect match**: 5/5 correct `media_files` counts, with
+      the exact real `file_uri` values, cross-checked against ground truth
+      (`reports/do_catalog/pilot_phase3c/outputs/opencode__deepseek-v4-flash/{205,360,366,376,377}.json`).
+      This is stronger, more directly relevant evidence than the original
+      entry's golden-fixture cross-check (which used an unrelated 6-item
+      fixture set, not do_catalog data at all) for the same conclusion:
+      **the agent works correctly when given real content; the full-100
+      gap is that specific batch missing `fetched_content` entirely, not
+      an agent defect.** A deterministic enricher would find exactly as
+      little on that same batch's inputs.
+
+    **Not implementing the deterministic-enricher rewrite — the premise
+    doesn't hold, still open.** Concrete, cheap next step if `media_formats`
+    quality on the full-100 corpus matters: regenerate it with
+    `generate_inputs.py --fetch` (already exists, opt-in) and re-run the
+    structural comparison — given the 5/5 pilot result, this is a
+    reasonable bet, not just a hopeful guess. Separately, whether to default
+    `enable_content_fetch` on for production traffic generally is still the
+    open, unrelated latency-stall question already logged above.
   - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
     correctness hardening — confirmed to move **nothing** on this corpus
     (`creators_name`/`ror_match`-equivalent scores byte-identical before and
@@ -309,3 +482,29 @@ enough context to pick up cold; prune entries once actually done.
     re-running the pipeline, falling back to a normal run when no saved
     output exists. Used to get every number above at zero live-API cost —
     worth reusing for any future scoring-function change.
+
+## Code review findings, not yet fixed
+
+Three low-severity items from the final Opus review of the Phase
+3a/3b/3c stack (2026-08-14), judged non-blocking for merge at the time —
+recorded here since they weren't written down anywhere else and got lost
+once that session ended.
+
+- **`extract_rights_id` (`scripts/eval_common.py:251-255`) only reads
+  `rights[0]`**, ignoring the rest of the array. A record with a second,
+  correct `rights_identifier` entry after a non-matching first one would
+  score as a miss. Still present as of 2026-08-14.
+- **`Schema.build_output_model`'s cache-name hash (`schemas/datacite.py`)
+  covers field names/order only, not each field's type definition.** If a
+  field's type in `DataCiteOutputModel` changes later without renaming it,
+  a stale cached response for the old type could theoretically slip
+  through `cache.py`'s `response_model.__name__`-keyed lookup. Theoretical,
+  not hit in practice — the dynamic model's name is a hash of
+  `tuple(fields)` (`schemas/datacite.py:build_output_model`), confirmed
+  unchanged as of 2026-08-14.
+- **`AgentConfig.context_fields` isn't cross-validated against the
+  referenced upstream agent's actual output fields**
+  (`config/models.py:PipelineConfig._validate_references` only checks
+  `depends_on` IDs, not `context_fields` names). A typo'd field name
+  silently injects nothing at runtime rather than raising at config-load
+  time. Still present as of 2026-08-14.
