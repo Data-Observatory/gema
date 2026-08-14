@@ -16,12 +16,6 @@
   "alternate_identifiers": [],
   "audiences": [
     {
-      "audience": "Investigadores",
-      "mediator": "Autodirigido",
-      "education_level": "Postgrado",
-      "instructional_method": "Análisis"
-    },
-    {
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
@@ -32,6 +26,12 @@
       "mediator": "Gerente",
       "education_level": "Profesional",
       "instructional_method": "Autoaprendizaje"
+    },
+    {
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -72,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del dataset de gastos municipales, registrada en el portal datos.gob.cl"
+      "date_information": "Última actualización del dataset de gastos municipales declarada en el portal datos.gob.cl"
     }
   ],
   "descriptions": [
@@ -89,7 +89,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: egresos ejecutados por los municipios en el territorio nacional de Chile continental",
+      "geo_description": "Cobertura de los egresos ejecutados por los municipios en el territorio nacional de Chile",
       "coverage": "nacional"
     }
   ],
@@ -103,11 +103,11 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Ministerio de Hacienda",
+      "lang": "es",
       "publisher_identifier": "0000000530144563",
       "publisher_identifier_scheme": "ISNI",
-      "publisher_scheme_uri": "https://isni.org",
-      "lang": "es"
+      "publisher_name": "Ministerio de Hacienda",
+      "publisher_scheme_uri": "https://isni.org"
     }
   ],
   "related_identifiers": [],
@@ -130,13 +130,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Chile",
+      "subject_name": "Corporaciones municipales",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Egresos municipales -- Sector público local -- Chile",
+      "subject_name": "Presupuesto abierto",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -147,14 +147,14 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "El recurso declara explícitamente una frecuencia de actualización mensual"
+      "description": "Frecuencia de actualización mensual declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [
     {
+      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }

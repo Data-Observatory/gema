@@ -34,10 +34,10 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Ciudadanos",
+      "audience": "Periodistas",
       "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -87,7 +87,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período en que se realizó el levantamiento de datos de la Encuesta de Presupuestos Familiares, según los indicadores mostrados en el portal del INE (Años 2021-2022)"
+      "date_information": "Período al que corresponden los indicadores de la Encuesta de Presupuestos Familiares mostrados en la página del recurso (gasto e ingreso disponible per cápita, años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -104,7 +104,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Encuesta de cobertura nacional que recoge información sobre ingresos y gastos de los hogares chilenos",
+      "geo_description": "La encuesta recoge información sobre ingresos y gastos de los hogares chilenos, con alcance a nivel nacional",
       "coverage": "nacional"
     }
   ],
@@ -118,18 +118,18 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Instituto Nacional de Estadísticas",
+      "lang": "es",
       "publisher_identifier": "https://ror.org/03ftrk873",
       "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
-      "lang": "es"
+      "publisher_name": "Instituto Nacional de Estadísticas",
+      "publisher_scheme_uri": "https://ror.org"
     }
   ],
   "related_identifiers": [],
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
+      "subject_name": "Presupuestos familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -141,7 +141,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Patrones de consumo -- Chile",
+      "subject_name": "Patrones de consumo -- Hogares -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Ingreso disponible per cápita -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -150,9 +156,9 @@
   "temporal_events": [],
   "titles": [
     {
+      "language": "es",
       "name": "Encuesta de Presupuestos Familiares",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }

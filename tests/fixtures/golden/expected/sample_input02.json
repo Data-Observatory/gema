@@ -30,7 +30,7 @@
     {
       "audience": "Profesionales",
       "mediator": "Autodirigido",
-      "education_level": "Profesional",
+      "education_level": "Educación continua",
       "instructional_method": "Autoaprendizaje"
     }
   ],
@@ -61,7 +61,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de la biodiversidad de plantas en Chile, a escala regional y nacional",
+      "geo_description": "Plataforma con información sobre rasgos funcionales de la biodiversidad de plantas en Chile, con cobertura a escala regional y nacional",
       "coverage": "nacional"
     }
   ],
@@ -75,11 +75,11 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Data Observatory",
+      "lang": "es",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
-      "lang": "es"
+      "publisher_name": "Data Observatory",
+      "publisher_scheme_uri": "https://ror.org"
     }
   ],
   "related_identifiers": [],
@@ -92,7 +92,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Biodiversidad -- Papel ecológico -- Chile",
+      "subject_name": "Biodiversidad de plantas -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -103,14 +103,14 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "yearly",
-      "description": "El recurso se actualiza con frecuencia anual"
+      "description": "Frecuencia de actualización anual (Anual), declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [
     {
+      "language": "es",
       "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
-      "title_type": "MainTitle",
-      "language": "es"
+      "title_type": "MainTitle"
     }
   ]
 }
