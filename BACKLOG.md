@@ -268,6 +268,20 @@ enough context to pick up cold; prune entries once actually done.
   `rights_holder` correctly matches the injected publisher name where the
   source text didn't distinguish one (`sample_input05`).
 
+- **`LLMConfig.timeout` (60s default, `llm/base.py:73`) is too tight for the
+  biggest agent + large payload combo.** `core_metadata` (9 output fields,
+  the largest prompt) against `sample_input03.json` (~28KB
+  `fetched_content`, next-largest input is ~7KB) reproducibly timed out at
+  60s on `zai-coding-plan`/glm-5.2, retried for ~22min (tenacity backoff),
+  then hard-failed — identically, 3 out of 3 separate `record_golden.py`
+  runs on 2026-08-14 (plus once earlier during a different branch's
+  recording). Confirmed not random flakiness: raising the timeout to 240s
+  (temporarily, reverted before commit) let it succeed first try. No
+  per-provider override exists today (`ProviderConfig` has no `timeout`
+  field). Fix candidates: bump the global default past 60s, or add a
+  per-provider/per-agent `timeout` override in `config/providers.yaml` /
+  `config/agents.yaml` for large-payload agents specifically.
+
   **Re-ran the do_catalog 18-pilot (deepseek-only) — flat, as expected, and
   for a reason worth noting**: 0.535 vs. Phase 3a's 0.534 baseline
   (noise-level). `scripts/eval_common.py`'s `rights` metric only scores
