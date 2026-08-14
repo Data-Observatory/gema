@@ -285,34 +285,61 @@ enough context to pick up cold; prune entries once actually done.
     ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
     — logged, not fixed; same spot-check treatment recommended before any
     prompt change.
-  - **`media_formats` — large gap, but NOT an agent/prompt bug — verified
-    root cause (2026-08-13): input starvation specific to the do_catalog
-    eval, same class as the `rights`/`subjects` findings above.** Ground
-    truth has a usable `format` on 94/100 items; pipeline output has a
-    non-empty `media_files` on only **1-2 of 100** across every model
-    (metric scores 0.055-0.065) — initially read as "the `media_files`
-    agent is producing essentially nothing at scale" and its prompt "just a
-    deterministic rule table", with a candidate fix to convert it to a
-    post-merge deterministic enricher. **Checked before implementing that
-    fix, and it doesn't hold up**: `scripts/reverse_input.py`'s
-    `ALLOWED_KEYS` (`url/title/description/publisher`) never includes
-    `fetched_content` — confirmed 0/18 do_catalog pilot inputs contain a
-    literal file-download URL anywhere in their given text (regex-checked
-    for common extensions). Cross-checked against the golden fixtures
-    (which *do* carry real `fetched_content`, 3.5-28KB of actual page HTML):
-    `sample_input03` (28KB fetched HTML) correctly produces 2 real
-    `media_files` entries with real `file_uri` values; the other 5 samples
-    (little/no fetched content) correctly produce 0. **The agent works fine
-    given real page content — the do_catalog eval simply never gives it
-    any (by design, to test pure text extraction), so there is no `file_uri`
-    for any approach, deterministic or LLM, to find.** A deterministic
-    enricher scanning the same impoverished input would find exactly as
-    little. **Not implementing the deterministic-enricher rewrite — the
-    premise was wrong.** If `media_formats` quality on do_catalog-shaped
-    inputs specifically matters, the actual lever is enabling
-    `enable_content_fetch` for that corpus (already logged above as
-    off-by-default pending a scale eval, for unrelated latency-stall
-    reasons) — not an agent architecture change.
+  - **`media_formats` — large gap on the full-100 corpus specifically, NOT
+    an agent/prompt bug — verified root cause (2026-08-13, corrected
+    2026-08-14 after an independent review caught two wrong facts in the
+    first version of this entry).** Ground truth has a usable `format` on
+    94/100 items; the full-100 pipeline run
+    (`data/do_catalog/inputs/*.json`, the actual corpus this statistic comes
+    from) has a non-empty `media_files` on only **1-2 of 100** across every
+    model (metric scores 0.055-0.065) — initially read as "the
+    `media_files` agent is producing essentially nothing at scale" and its
+    prompt "just a deterministic rule table", with a candidate fix to
+    convert it to a post-merge deterministic enricher.
+
+    **Checked before implementing that fix, and the fix's premise doesn't
+    hold up — though two of the original supporting claims here were
+    themselves wrong and are corrected below:**
+    - **Corrected claim**: `scripts/reverse_input.py`'s `ALLOWED_KEYS` is
+      `{url, title, description, publisher, fetched_content}` —
+      `fetched_content` **is** allowed, has been since this toolchain's own
+      introduction; the original entry wrongly said it was excluded by
+      design. `scripts/generate_inputs.py --fetch` is what actually
+      populates it, and it's opt-in (default off) for cost/reliability
+      reasons, not a "test pure extraction" design choice.
+    - **Corrected claim**: the 18-item pilot corpus
+      (`tests/fixtures/do_catalog/inputs/`) is **not** input-starved —
+      14/18 of its files carry real `fetched_content` (1.7-28KB), and 5/18
+      (`205`, `360`, `366`, `376`, `377`) contain literal downloadable file
+      URLs (`.zip`/`.kmz`). The original entry's "confirmed 0/18" claim was
+      wrong — it came from a regex check that only searched `description`
+      and `url`, not `fetched_content`, and so missed the very field where
+      a download link would actually appear.
+    - **What actually holds, re-verified directly against the right
+      data**: the **full-100 corpus specifically** (`data/do_catalog/inputs/`,
+      the one that produced the 94-vs-1 statistic) has **0/100** files with
+      `fetched_content` and **0/100** with a discoverable file URL — that
+      batch was generated without `--fetch`. And on the 18-pilot's 5 items
+      that *do* carry a real file URL in `fetched_content`, the agent
+      produces a **perfect match**: 5/5 correct `media_files` counts, with
+      the exact real `file_uri` values, cross-checked against ground truth
+      (`reports/do_catalog/pilot_phase3c/outputs/opencode__deepseek-v4-flash/{205,360,366,376,377}.json`).
+      This is stronger, more directly relevant evidence than the original
+      entry's golden-fixture cross-check (which used an unrelated 6-item
+      fixture set, not do_catalog data at all) for the same conclusion:
+      **the agent works correctly when given real content; the full-100
+      gap is that specific batch missing `fetched_content` entirely, not
+      an agent defect.** A deterministic enricher would find exactly as
+      little on that same batch's inputs.
+
+    **Not implementing the deterministic-enricher rewrite — the premise
+    doesn't hold.** Concrete, cheap next step if `media_formats` quality on
+    the full-100 corpus matters: regenerate it with
+    `generate_inputs.py --fetch` (already exists, opt-in) and re-run the
+    structural comparison — given the 5/5 pilot result, this is a
+    reasonable bet, not just a hopeful guess. Separately, whether to default
+    `enable_content_fetch` on for production traffic generally is still the
+    open, unrelated latency-stall question already logged above.
   - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
     correctness hardening — confirmed to move **nothing** on this corpus
     (`creators_name`/`ror_match`-equivalent scores byte-identical before and
