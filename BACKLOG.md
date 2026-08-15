@@ -175,8 +175,8 @@ enough context to pick up cold; prune entries once actually done.
   own explicit rule), not a position/order artifact, since fixing position
   didn't move it at all. **Full agent split still NOT recommended** — the
   remaining evidence points at "genuinely hard field" or "ground truth
-  noise" (see the `temporal_events` spot-check above, still open), not at
-  architecture.
+  noise" (see the `temporal_events` spot-check above, confirmed and closed),
+  not at architecture.
 
 - **Per-agent structured-output model — done** (2026-08-13):
   `Schema.build_output_model(fields)` (new `Schema` Protocol method,
