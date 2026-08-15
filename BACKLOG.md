@@ -82,6 +82,24 @@ enough context to pick up cold; prune entries once actually done.
   be noise (inferred from resource type, not a real declared frequency),
   this whole "weak field" framing may not need a code fix at all.
 
+  **Spot-check done (2026-08-14) — confirmed noise, closed, no code fix.**
+  Checked all 4 one-off-resource cases directly (`230`, `232`, `246`: "VII
+  Censo Nacional Agropecuario año 2007", a single census; `418`: 2017
+  forest-fire perimeters, a single year). None of their `description` or
+  `fetched_content` (all empty — ungenerated without `--fetch`) states any
+  recurrence/frequency anywhere; ground truth's `frequency_type: "yearly"`
+  isn't derivable from the given input by any model, honest or not. Same
+  check on `rights`'s `CC-BY-4.0` ground truth (`119`, `130`, `134`): no
+  license/CC mention in input text either. Both confirm the same
+  ground-truth-exposes-more-than-input class; `subjects`'s ground truth
+  (formal LCSH English headings with `id.loc.gov` `value_uri`s, e.g.
+  `"Government purchasing -- Chile"`) is structurally the same — a Spanish
+  natural-language description was never going to produce a Library of
+  Congress heading regardless of prompt quality. **All three "weak field"
+  findings (`temporal_events`, `rights_identifier`, `subjects`) are eval
+  corpus artifacts, not agent/prompt defects — no further prompt work
+  warranted on any of them.**
+
   **Decode-order fix landed (2026-08-13) and re-measured — does NOT explain
   the earlier flat result.** Root-cause finding: all 5 agents shared one
   `DataCiteOutputModel` (`schemas/datacite.py`), so Instructor's structured-
@@ -381,8 +399,8 @@ enough context to pick up cold; prune entries once actually done.
     (`1.0` on empty-vs-empty). Only 1/100 ground-truth files are actually
     empty, so this was a small, mechanical fix (`overall` +0.001, see above),
     not the ~10%-of-weight bug an initial (wrong) reading suggested.
-  - **`rights` — real, separate recall gap, NOT fixed here, needs a
-    spot-check first.** Ground truth has `rights_identifier` populated on
+  - **`rights` — real recall gap, spot-checked (2026-08-14), closed — not a
+    prompt bug.** Ground truth has `rights_identifier` populated on
     **99/100** files, almost all genuine SPDX ids (`CC-BY-4.0` ×66,
     `CC-BY-SA-4.0` ×18, `cc-by-4.0` ×4, `ODbL-1.0` ×3, plus singletons).
     Models emit *any* `rights` entry on only 8-13/100 items and **0/100**
@@ -390,22 +408,20 @@ enough context to pick up cold; prune entries once actually done.
     Abiertos del Estado de Chile" free-text fallback
     (`rights_funding_citations`'s PRIORIDAD 3 branch,
     `config/agents.yaml` ~880-884), never the specific SPDX id truth has.
-    **Before touching the prompt**: spot-check 2-3 of the 66 `CC-BY-4.0`
-    ground-truth files' real source pages to confirm the license was stated
-    in text the do_catalog reverse-input extractor actually exposes (not
-    sourced from an external catalog license field outside the given input)
-    — same discipline as the `temporal_events` spot-check above. If
-    confirmed extractable, this is a real `rights_funding_citations`
-    prompt-priority bug (PRIORIDAD 3 firing ahead of an available, specific
-    license mention); if not, it's the same "ground truth exposes more than
-    the input" class as `subjects` below.
+    Checked 3 of the 66 `CC-BY-4.0` files (`119`, `130`, `134`) directly
+    against their full-100 pipeline input: no license/CC mention anywhere
+    in `description`, and `fetched_content` is empty on all 100 (that batch
+    was generated without `--fetch`) — the SPDX id genuinely isn't in what
+    the model was given, so PRIORIDAD 3 firing is correct behavior, not a
+    priority-ordering bug. Ground truth's license comes from an external
+    catalog field outside the do_catalog reverse-input extraction, same
+    class as `subjects` below.
   - **`subjects` — ground truth is formal English LCSH subject headings**
     (`"Judicial statistics -- Chile"`, `"Household surveys - Chile"`), not
     phrases lifted from the Spanish source description; the prompt correctly
-    forbids inventing terms not in the source text. Likely the same
+    forbids inventing terms not in the source text. Confirmed same
     ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
-    — logged, not fixed; same spot-check treatment recommended before any
-    prompt change.
+    — closed, no prompt change warranted.
   - **`media_formats` — large gap on the full-100 corpus specifically, NOT
     an agent/prompt bug — verified root cause (2026-08-13, corrected
     2026-08-14 after an independent review caught two wrong facts in the
