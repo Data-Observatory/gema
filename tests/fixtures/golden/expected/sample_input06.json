@@ -5,7 +5,7 @@
     "editor": "GFZ Data Services",
     "maintainer": "",
     "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
-    "producer": "Mittelstädt, Jana; Victor, Pia",
+    "producer": "Mittelstädt, Jana; Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
     "publication_year": "2020",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -85,7 +85,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año en que el dataset fue publicado oficialmente por GFZ Data Services"
+      "date_information": "Año de publicación oficial del dataset según los metadatos de GFZ Data Services"
     }
   ],
   "descriptions": [
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Coastal Cordillera of N-Chile (19°12’S - 25°12’S)",
+      "geo_location_place": "Coastal Cordillera, N-Chile (19°12'S - 25°12'S)",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura del sistema de fallas de Atacama en la Cordillera de la Costa del norte de Chile, entre 19°12’S y 25°12’S",
+      "geo_description": "Cobertura del sistema de fallas de Atacama en la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S",
       "coverage": "regional"
     }
   ],
@@ -139,7 +139,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Neotectonics -- Forearc -- Chile",
+      "subject_name": "Tectonics -- Forearc -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

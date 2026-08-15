@@ -6,7 +6,7 @@
     "maintainer": "",
     "contact": "",
     "producer": "Instituto Nacional de Estadísticas (Chile)",
-    "publication_year": "",
+    "publication_year": "2021",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
     "version": "",
@@ -78,7 +78,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de los datos de la Encuesta de Presupuestos Familiares, según los indicadores mostrados en la página (años 2021-2022)"
+      "date_information": "Período de levantamiento de la Encuesta de Presupuestos Familiares según los indicadores mostrados en el portal (años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -126,7 +126,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuestos familiares -- Chile",
+      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

@@ -6,24 +6,21 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Agents / prompts
 
-- **`core_metadata`'s `publication_year` fallback rule not followed when the
-  only extracted date is typed `Updated`/`Collected` (not `Issued`/
-  `Created`) — confirmed reproducible (2026-08-15), not noise.** The prompt
-  rule (`config/agents.yaml` ~112) is explicit: `Issued` year, else
-  `Created` year, else *"el año más antiguo entre las fechas que
-  extrajiste"* (the oldest year among extracted dates), else the year from
-  URL/title if any — *"NUNCA lo dejes vacío si hay algún año identificable
-  en tu propia salida"*. Observed on two separate live golden-fixture
-  re-records, same pattern both times: `sample_input01` extracts
-  `{"date": "2026-03-15", "date_type": "Updated"}` and leaves
-  `publication_year: ""`; `sample_input04` extracts
-  `{"date": "2021/2022", "date_type": "Collected"}`, same empty result.
-  Both cases fall squarely into the rule's third branch (no Issued/Created,
-  but a date to fall back on) — the model isn't applying it. Not yet
-  root-caused at the prompt level (e.g. whether the fallback clause is too
-  buried after the `Issued`/`Created` cases, or needs its own explicit
-  worked example) — flagging as confirmed, not attempting a prompt fix
-  here.
+- **FIXED (2026-08-15) — `core_metadata`'s `publication_year` fallback rule
+  not followed when the only extracted date is typed `Updated`/`Collected`
+  (not `Issued`/`Created`).** Root cause: EJEMPLO 5 already covered the
+  general fallback branch but only demonstrated a single plain year with
+  `date_type: Collected` — neither failing real case matched that shape
+  (`sample_input01`: `date_type: Updated`; `sample_input04`: a date *range*
+  `"2021/2022"` typed `Collected`). Fix: added two new worked examples to
+  `config/agents.yaml`'s `core_metadata` prompt — EJEMPLO 6 (`Updated`-only
+  date → `publication_year` derived from it) and EJEMPLO 7 (date range,
+  `Collected` → oldest/start year, not the range end) — plus a reinforcing
+  ❌/✅ pair in `ERRORES COMUNES A EVITAR`. Verified 3/3 live runs on both
+  previously-failing inputs before re-recording (`sample_input01` →
+  `"2026"`, `sample_input04` → `"2021"`), then confirmed again in the
+  actual re-recorded golden fixtures. Full golden set re-recorded and
+  `pytest -m "not live"` (845 passed), `ruff`, `mypy` all green.
 - **Grounded lookup tool for agents (web search or a static gazetteer
   function-call), instead of relying on the model's parametric knowledge.**
   `creators_publishers`'s hardcoded Chile-ministry→affiliation lookup table

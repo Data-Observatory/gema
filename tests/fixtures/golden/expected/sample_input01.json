@@ -6,7 +6,7 @@
     "maintainer": "",
     "contact": "",
     "producer": "",
-    "publication_year": "",
+    "publication_year": "2026",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
     "version": "",
@@ -22,16 +22,16 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Administradores",
-      "mediator": "Gerente",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "categories": [
@@ -43,7 +43,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Ministerio de Hacienda - Gobierno de Chile",
+      "creator_name": "Ministerio de Hacienda",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -53,12 +53,7 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "https://ror.org/02sevrz47",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org"
-        },
-        {
-          "name_identifier": "000000011234970X",
+          "name_identifier": "0000000530144563",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org"
         }
@@ -77,7 +72,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización del recurso según el contenido del portal"
+      "date_information": "Fecha de la última actualización del recurso según el portal"
     }
   ],
   "descriptions": [
@@ -108,10 +103,10 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Ministerio de Hacienda - Gobierno de Chile",
-      "publisher_identifier": "https://ror.org/02sevrz47",
-      "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
+      "publisher_name": "Ministerio de Hacienda",
+      "publisher_identifier": "0000000530144563",
+      "publisher_identifier_scheme": "ISNI",
+      "publisher_scheme_uri": "https://isni.org",
       "lang": "es"
     }
   ],

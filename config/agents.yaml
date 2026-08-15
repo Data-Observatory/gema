@@ -413,12 +413,105 @@ agents:
       "temporal_events": []
     }
 
+    --- EJEMPLO 6: Recurso con fecha "Updated" únicamente (sin Issued, Created ni Collected) ---
+    RECURSO A PROCESAR:
+    - url: https://datos.gob.cl/dataset/reportes-transporte
+    - title: Reportes de transporte público
+    - description: Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.
+
+    Salida:
+    {
+      "reasoning": "La única fecha explícita en el texto es la de última actualización → date_type Updated, con día exacto (2023-07-15). No hay Issued, Created ni Collected. Aun así, publication_year NUNCA queda vacío si hay algún año identificable en mi propia salida: uso el año de esta fecha, 2023.",
+      "resource": {
+        "identifier": "https://datos.gob.cl/dataset/reportes-transporte",
+        "identifier_type": "URL",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "titles": [
+        {"name": "Reportes de transporte público", "title_type": "MainTitle", "language": "es"}
+      ],
+      "descriptions": [
+        {"description": "Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.", "description_type": "Abstract", "language": "es"}
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": "El recurso está disponible únicamente en español"
+        }
+      ],
+      "dates": [
+        {"date": "2023-07-15", "date_type": "Updated", "date_information": "Fecha de la última actualización del recurso según el portal"}
+      ],
+      "alternate_identifiers": [],
+      "related_identifiers": [],
+      "geo_locations": [],
+      "temporal_events": []
+    }
+
+    --- EJEMPLO 7: Recurso con rango de años y sin fecha Issued/Created (contraste con el EJEMPLO 5, que usa un año único) ---
+    RECURSO A PROCESAR:
+    - url: https://datos.gob.cl/dataset/encuesta-hogares
+    - title: Encuesta de Hogares 2019-2021
+    - description: Encuesta de hogares correspondiente al período de levantamiento 2019-2021.
+
+    Salida:
+    {
+      "reasoning": "El único dato temporal es el período de levantamiento (2019-2021) → date_type Collected, con el rango completo en date ('2019/2021', ISO 8601). No hay Issued ni Created, así que publication_year usa el año MÁS ANTIGUO del rango extraído (2019) — nunca el año final, y nunca vacío.",
+      "resource": {
+        "identifier": "https://datos.gob.cl/dataset/encuesta-hogares",
+        "identifier_type": "URL",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "publication_year": "2019",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "titles": [
+        {"name": "Encuesta de Hogares 2019-2021", "title_type": "MainTitle", "language": "es"}
+      ],
+      "descriptions": [
+        {"description": "Encuesta de hogares correspondiente al período de levantamiento 2019-2021.", "description_type": "Abstract", "language": "es"}
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": "El recurso está disponible únicamente en español"
+        }
+      ],
+      "dates": [
+        {"date": "2019/2021", "date_type": "Collected", "date_information": "Período de levantamiento de la Encuesta de Hogares según el título"}
+      ],
+      "alternate_identifiers": [],
+      "related_identifiers": [],
+      "geo_locations": [],
+      "temporal_events": []
+    }
+
     === ERRORES COMUNES A EVITAR ===
     ❌ MAL: asignar "geo_location_box": "-75.956,-57.987,-65.084,-16.309" a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena o porque "hay que llenar los 4 campos".
     ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, dejar geo_location_box vacío.
 
     ❌ MAL: {"date": "2021-01-01", "date_type": "Collected", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
     ✅ BIEN: {"date": "2021", "date_type": "Collected", ...} — usa la precisión real disponible.
+
+    ❌ MAL: publication_year: "" cuando la única fecha extraída es Updated o Collected (no Issued ni Created) — dejarlo vacío "porque no hay Issued" ignora el resto de la regla.
+    ✅ BIEN: publication_year siempre toma el año de ALGUNA fecha ya extraída (la más antigua si hay varias) cuando no hay Issued ni Created — ver EJEMPLO 6 y EJEMPLO 7.
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
