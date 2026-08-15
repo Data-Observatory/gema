@@ -421,7 +421,37 @@ enough context to pick up cold; prune entries once actually done.
   of model (see the dropped mimo-v2.5 finding above) — flipping
   `enable_content_fetch` on for every caller of the default config without a
   scale eval to justify it isn't worth the risk. Stays an explicit opt-in.
-  `max_len` tuning still open if/when someone actually opts in and hits it.
+
+  **Scale eval run (2026-08-15) — stall risk resolved under current config,
+  modest quality gain, one real caveat found.** Ran a 20-item do_catalog
+  sample (deliberately size-stratified: 6 items at the 8000-char `max_len`
+  truncation cap down to 3 with empty `fetched_content`, as a stall-risk
+  stress test) through the real `Pipeline` twice — `enable_content_fetch`
+  off (today's default) vs. on — on current production
+  (`opencode:deepseek-v4-flash`, `max_workers: 5`), each run capped at a
+  180s per-item safety timeout (well beyond any legitimate call).
+
+  - **Stability: 40/40 succeeded, zero timeouts, no stalls at all** —
+    every item finished in 15-20s, including all 6 pages truncated at the
+    8000-char cap. This directly answers the `mimo-v2.5`-era stall concern:
+    that risk was specific to `mimo-v2.5`; it doesn't reproduce on the
+    current model/provider/concurrency.
+  - **Quality: average structural score 0.479 → 0.501 (+0.022)**, net
+    positive, with real per-item variance (up to +0.16 gains on several
+    items; ~7/20 flat — dead links or non-additive content, expected).
+    Two modest regressions (-0.11, -0.03): traced item `92`'s regression to
+    its fetched page being mostly site-navigation chrome ("Quiénes
+    Somos... Buscador...") rather than the actual dataset description,
+    diluting rather than helping `subjects`' exact-match scoring.
+  - **Follow-up if this gets enabled, not a blocker**: `content_fetcher.py`'s
+    `fetch_page_content` extracts page text without isolating main content
+    from navigation/boilerplate — the one concrete quality gap this eval
+    surfaced. `max_len` (currently 8000, truncation-only) tuning is
+    separately still open if/when someone hits it in practice.
+  - **Recommendation**: safe to enable by default given current findings —
+    no stall risk, modest net-positive quality — but flipping the default
+    is a production behavior change, left as an explicit decision for
+    whoever owns that call, not made here.
 
 ## Eval harness
 
