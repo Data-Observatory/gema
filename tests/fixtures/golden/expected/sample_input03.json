@@ -32,22 +32,12 @@
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
     {
       "name": "Ciencias Naturales y Exactas",
       "sub_category": "Ciencias de la Tierra"
-    },
-    {
-      "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias medioambientales"
     }
   ],
   "citations": [
@@ -148,7 +138,7 @@
     {
       "date": "2017-01-12",
       "date_type": "Issued",
-      "date_information": "Fecha de publicación del recurso según la ficha de metadatos del Geoportal"
+      "date_information": "Fecha de publicación del mapa de zonas climáticas en el Geoportal de Chile"
     }
   ],
   "descriptions": [
@@ -194,7 +184,7 @@
       "sizes": [],
       "physical_carrier": "digital",
       "format": "application/zip",
-      "variable_measured": "",
+      "variable_measured": "Tipo de clima (clasificación Köppen-Geiger), precipitación promedio, temperatura promedio, altitud mínima y máxima",
       "checksum": "",
       "data_quality": "",
       "measurement_technique": "",
@@ -238,13 +228,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Clasificación climática Köppen-Geiger -- Chile",
+      "subject_name": "Zonas climáticas -- Köppen-Geiger -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Zonas climáticas -- Chile",
+      "subject_name": "Clasificación climática -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

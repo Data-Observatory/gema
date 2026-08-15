@@ -6,6 +6,24 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Agents / prompts
 
+- **`core_metadata`'s `publication_year` fallback rule not followed when the
+  only extracted date is typed `Updated`/`Collected` (not `Issued`/
+  `Created`) — confirmed reproducible (2026-08-15), not noise.** The prompt
+  rule (`config/agents.yaml` ~112) is explicit: `Issued` year, else
+  `Created` year, else *"el año más antiguo entre las fechas que
+  extrajiste"* (the oldest year among extracted dates), else the year from
+  URL/title if any — *"NUNCA lo dejes vacío si hay algún año identificable
+  en tu propia salida"*. Observed on two separate live golden-fixture
+  re-records, same pattern both times: `sample_input01` extracts
+  `{"date": "2026-03-15", "date_type": "Updated"}` and leaves
+  `publication_year: ""`; `sample_input04` extracts
+  `{"date": "2021/2022", "date_type": "Collected"}`, same empty result.
+  Both cases fall squarely into the rule's third branch (no Issued/Created,
+  but a date to fall back on) — the model isn't applying it. Not yet
+  root-caused at the prompt level (e.g. whether the fallback clause is too
+  buried after the `Issued`/`Created` cases, or needs its own explicit
+  worked example) — flagging as confirmed, not attempting a prompt fix
+  here.
 - **Grounded lookup tool for agents (web search or a static gazetteer
   function-call), instead of relying on the model's parametric knowledge.**
   `creators_publishers`'s hardcoded Chile-ministry→affiliation lookup table
@@ -389,7 +407,7 @@ enough context to pick up cold; prune entries once actually done.
   autofill convenience.
 - **`max_workers` bump when production model moves off zai-coding-plan —
   done** (2026-08-14): all 5 agents in `config/agents.yaml` switched from
-  `zai-coding-plan`/`glm-5.2` to `opencode`/`deepseek-v4-flash` (also
+  `zai-coding-plan`/`glm-5.3` to `opencode`/`deepseek-v4-flash` (also
   `default_provider`); `opencode`'s existing `max_workers: 5` override now
   actually applies (previously configured but unused, since no agent ran
   against `opencode`). No code change needed — the existing 3-level cascade
@@ -414,7 +432,7 @@ enough context to pick up cold; prune entries once actually done.
   content-dense DOI resource (`136`, GFZ dataset, 6000-char fetched_content)
   caused a 3244s (54min) stall for mimo-v2.5 vs. 1201s for glm-5-turbo on the
   same eval run — too unreliable to keep as a production candidate. Eval/prod
-  model set going forward: `glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`.
+  model set going forward: `glm-5.3`, `glm-5-turbo`, `deepseek-v4-flash`.
 - **Real production content-fetch merged** (`feature/auto-content-fetch`,
   PR #9, into `dev`), **left off by default** (decision, 2026-08-11):
   content-dense inputs correlate with the worst per-item stalls regardless
@@ -456,7 +474,7 @@ enough context to pick up cold; prune entries once actually done.
 ## Eval harness
 
 - **Full-100 do_catalog scale-up — done** (2026-08-13). All 3 production
-  models (`glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
+  models (`glm-5.3`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
   LLM-judge (`opencode:qwen3.7-plus`), 100/100 succeeded each, 0 GEval
   failures. Structural numbers below are **corrected** (2026-08-13) for the
   `rights`-scorer empty-vs-empty bug fixed in `scripts/eval_common.py` (see
@@ -466,7 +484,7 @@ enough context to pick up cold; prune entries once actually done.
   fix was actually measured):
   | model | structural (corrected) | GEval | field-judge |
   |---|---|---|---|
-  | glm-5.2 | 0.527 | 0.334 | 0.708 |
+  | glm-5.3 | 0.527 | 0.334 | 0.708 |
   | glm-5-turbo | 0.514 | 0.337 | 0.713 |
   | deepseek-v4-flash | 0.506 | 0.324 | 0.730 |
 
