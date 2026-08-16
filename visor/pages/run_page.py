@@ -103,12 +103,19 @@ def _render_form_phase(
 
     form_box = ui.column().classes("w-full")
     with form_box:
-        inputs = {
-            name: ui.input(name.replace("_", " ").title())
-            .classes("w-full")
-            .mark(f"run-input-{name}")
-            for name in FORM_FIELDS
-        }
+        inputs: dict[str, ui.input] = {}
+        for name in FORM_FIELDS:
+            inputs[name] = (
+                ui.input(name.replace("_", " ").title())
+                .classes("w-full")
+                .mark(f"run-input-{name}")
+            )
+            if name == "fetched_content":
+                ui.label(
+                    "Optional — leave blank to let the pipeline fetch this "
+                    "automatically from the URL (see Pipeline behavior in "
+                    "the Agents tab)."
+                ).classes("text-caption q-mb-sm")
     form_box.bind_visibility_from(mode, "value", value="Fill a form")
 
     paste_box = ui.column().classes("w-full")

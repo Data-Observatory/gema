@@ -162,8 +162,82 @@ async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     assert rebuilt_model.value == "test-fast-model"
 
 
+async def test_agents_tab_advanced_shows_tools_and_extra_body(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """creators_publishers is the one agent configured with
+    tools: [lookup_organization] in the real config/agents.yaml; every
+    agent sets extra_body (disabling deepseek's default thinking mode,
+    required alongside Instructor's forced tool_choice). Both must be
+    visible in the read-only Advanced section for transparency -- same
+    treatment already given to depends_on/fields."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    await user.should_see("Tools: lookup_organization")
+    await user.should_see("Extra request options:")
+    await user.should_see("thinking")
+
+
+async def test_agents_tab_pipeline_behavior_toggles_persist(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Pipeline-wide toggles (enable_content_fetch, enable_doi_resolution,
+    ...) used to be reachable only by hand-editing the downloaded JSON and
+    re-uploading it -- and re-uploading didn't even round-trip 2 of them
+    (see test_agents_page.py). Flip two here directly and confirm Save +
+    Download reflects both."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="pipeline-enable-content-fetch")
+
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    assert content_fetch_checkbox.value is True  # config/agents.yaml ships enable_content_fetch: true
+    content_fetch_checkbox.value = False
+
+    doi_checkbox = list(user.find(marker="pipeline-enable-doi-resolution").elements)[0]
+    assert doi_checkbox.value is False  # config/agents.yaml never sets this -- model default
+    doi_checkbox.value = True
+
+    user.find(marker="agents-save").click()
+    user.find(marker="agents-download").click()
+
+    response = await user.download.next(timeout=5)
+    assert response.status_code == 200
+    payload = json.loads(response.content)
+    assert payload["enable_content_fetch"] is False
+    assert payload["enable_doi_resolution"] is True
+
+
+async def test_run_form_shows_fetched_content_auto_fetch_hint(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The manual "Fetched content" field predates enable_content_fetch
+    (now on by default in config/agents.yaml) -- without this hint a user
+    could think they must paste HTML by hand, when the pipeline already
+    fetches the page itself whenever the flag is on and this is left
+    blank."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-opencode").click()  # reveal its key input
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+    user.find(marker="settings-input-OPENCODE_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-fetched_content")
+    await user.should_see("leave blank to let the pipeline fetch")
+
+
 async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -> None:
-    """The real default config already declares all 4 pool providers
+    """The real default config already declares all 5 pool providers
     (config/agents.yaml), so "Other (custom)" is the only reachable
     choice out of the box — exactly the path a user adding a provider
     the pool doesn't have would take."""
@@ -240,7 +314,7 @@ async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path
     user.find(marker="tab-settings").click()
     # openai is genuinely unused: the 5 main agents run on opencode and
     # dataverse export's Subject Classifier (config/dataverse_export.yaml)
-    # runs on zai-coding-plan.
+    # runs on openrouter.
     await user.should_see(marker="settings-provider-remove-openai")
 
     user.find(marker="settings-provider-remove-openai").click()

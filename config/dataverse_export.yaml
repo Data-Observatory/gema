@@ -27,13 +27,29 @@ agent:
     DataCite equivalent to map deterministically.
   fields:
     - subject
-  provider: zai-coding-plan
-  # A fast/cheap tier is enough for a 14-way classification call — this
-  # exact model string is not verified against zai-coding-plan's live
-  # catalog (unlike the Subject vocabulary itself, which was). Confirm it
-  # resolves before relying on this in a live demo; swap to whatever your
-  # provider actually serves at that tier.
-  model: glm-4.7-flash
+  provider: openrouter
+  # ~deepseek/deepseek-v4-flash-latest is OpenRouter's own auto-updating
+  # alias for the DeepSeek V4 Flash family (confirmed via OpenRouter's
+  # public /models endpoint 2026-08-16, id includes the leading "~" —
+  # that's part of the slug, not a typo) — always resolves to whatever
+  # DeepSeek ships as the newest V4 Flash checkpoint, so this never needs
+  # bumping by hand the way the eval scripts' pinned "glm-5.x" references
+  # do. A fast/cheap tier is enough for a 14-way classification call.
+  # Not verified live this session (no OPENROUTER_API_KEY available) —
+  # confirm it resolves before relying on this in a live demo.
+  model: ~deepseek/deepseek-v4-flash-latest
+  # DeepSeek V4 models default to "thinking" (reasoning) mode on, which
+  # collided with Instructor's forced tool_choice for every structured-
+  # output call and broke the exact same way on opencode's deepseek-v4-
+  # flash (see config/agents.yaml's provider comment + BACKLOG.md,
+  # 2026-08-15) -- pre-emptively disabling it here too, via OpenRouter's
+  # own normalized reasoning param (different shape than DeepSeek's native
+  # `thinking: {type: disabled}`, which is what opencode's raw passthrough
+  # uses instead). Not live-verified this session for the same reason as
+  # the model pin above.
+  extra_body:
+    reasoning:
+      enabled: false
   temperature: 0.0
   prompt: |
     Elige la categoría de Dataverse que mejor describe este recurso, a partir

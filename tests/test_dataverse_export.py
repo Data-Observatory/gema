@@ -277,6 +277,44 @@ class TestSubjectClassification:
         assert subject in SUBJECT_CATEGORIES
         assert usage.prompt_tokens == 12
 
+    def test_extra_body_reaches_create_llm_client_when_no_client_injected(self, monkeypatch):
+        """Regression: classify_subject built its own client via
+        create_llm_client(provider, model=..., temperature=...) without
+        ever forwarding agent.extra_body -- a provider/model needing a
+        request-body override (e.g. disabling DeepSeek's default thinking
+        mode, required alongside Instructor's forced tool_choice -- see
+        config/dataverse_export.yaml's provider comment) would silently
+        not get it, the same failure mode already fixed for the main
+        pipeline's agents.yaml. Only exercised on the no-injected-client
+        path -- llm_client= bypasses create_llm_client entirely."""
+        captured: dict[str, object] = {}
+
+        def _fake_create_llm_client(provider, **kwargs):  # noqa: ANN001, ANN201
+            captured.update(kwargs)
+            return FakeLLMClient()
+
+        monkeypatch.setattr(
+            "metadata_enricher.exporters.dataverse.create_llm_client", _fake_create_llm_client
+        )
+
+        config = DataverseExportConfig(
+            enabled=True,
+            agent=AgentConfig(
+                id="dataverse_subject_classifier",
+                name="Dataverse Subject Classifier",
+                fields=["subject"],
+                prompt="Title: {dataverse_title}",
+                provider="mock",
+                model="fast-model",
+                extra_body={"reasoning": {"enabled": False}},
+            ),
+        )
+        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+
+        classify_subject(doc, config, make_provider())
+
+        assert captured.get("extra_body") == {"reasoning": {"enabled": False}}
+
     def test_token_usage_flows_through_to_result(self):
         fake = FakeLLMClient(usage=TokenUsage(prompt_tokens=50, completion_tokens=10))
         doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
@@ -293,7 +331,7 @@ class TestLoadDataverseExportConfig:
         config = load_dataverse_export_config(path)
         assert config.enabled is True
         assert config.agent.id == "dataverse_subject_classifier"
-        assert config.agent.provider == "zai-coding-plan"
+        assert config.agent.provider == "openrouter"
 
     def test_validate_provider_exists_raises_on_unknown_provider(self):
         config = make_export_config()

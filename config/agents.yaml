@@ -1418,6 +1418,10 @@ providers:
   api_key_env: OPENAI_API_KEY
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
+- name: openrouter
+  api_key_env: OPENROUTER_API_KEY
+  base_url: https://openrouter.ai/api/v1
+  default: false
 default_provider: opencode
 # Max concurrent agent requests per resource (Orchestrator's ThreadPoolExecutor
 # size) when no provider/model override applies. Kept conservative because
