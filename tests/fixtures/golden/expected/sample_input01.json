@@ -19,7 +19,7 @@
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Consultoría"
     },
     {
       "audience": "Investigadores",
@@ -32,6 +32,12 @@
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
+    },
+    {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -43,7 +49,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Ministerio de Hacienda",
+      "creator_name": "Ministerio de Hacienda - Gobierno de Chile",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -53,7 +59,12 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "0000000530144563",
+          "name_identifier": "https://ror.org/02sevrz47",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        },
+        {
+          "name_identifier": "000000011234970X",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org"
         }
@@ -72,7 +83,7 @@
     {
       "date": "2026-03-15",
       "date_type": "Updated",
-      "date_information": "Última actualización de la base de datos de gastos del sector público local, declarada en el portal"
+      "date_information": "Fecha de la última actualización del recurso según el portal"
     }
   ],
   "descriptions": [
@@ -89,7 +100,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional: egresos ejecutados por los municipios en el territorio nacional de Chile",
+      "geo_description": "Cobertura nacional, egresos ejecutados por los municipios en el territorio nacional",
       "coverage": "nacional"
     }
   ],
@@ -103,11 +114,11 @@
   "media_files": [],
   "publishers": [
     {
-      "lang": "es",
-      "publisher_identifier": "0000000530144563",
-      "publisher_identifier_scheme": "ISNI",
-      "publisher_name": "Ministerio de Hacienda",
-      "publisher_scheme_uri": "https://isni.org"
+      "publisher_name": "Ministerio de Hacienda - Gobierno de Chile",
+      "publisher_identifier": "https://ror.org/02sevrz47",
+      "publisher_identifier_scheme": "ROR",
+      "publisher_scheme_uri": "https://ror.org",
+      "lang": "es"
     }
   ],
   "related_identifiers": [],
@@ -130,13 +141,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuesto abierto -- Chile",
+      "subject_name": "Corporaciones municipales -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales",
+      "subject_name": "Sector público local -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -147,14 +158,14 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "Frecuencia de actualización mensual declarada directamente en los metadatos del recurso"
+      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso (Mensual)"
     }
   ],
   "titles": [
     {
-      "language": "es",
       "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle"
+      "title_type": "MainTitle",
+      "language": "es"
     }
   ]
 }

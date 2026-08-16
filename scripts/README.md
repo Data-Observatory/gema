@@ -92,7 +92,7 @@ above), and writes a Markdown report.
 uv run python scripts/run_live_eval.py
 
 # Custom threshold + judge model
-uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.2
+uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.3
 
 # Verbose mode
 uv run python scripts/run_live_eval.py -v
@@ -104,7 +104,7 @@ uv run python scripts/run_live_eval.py \
     --expected tests/fixtures/golden/expected \
     --reports-dir reports \
     --schema datacite-4.6 \
-    --model glm-5.2 \
+    --model glm-5.3 \
     --threshold 0.75 \
     --verbose
 ```

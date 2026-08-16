@@ -75,6 +75,48 @@ class TestCleanHtmlToText:
         assert "&nbsp;" not in result
         assert "Fish & Chips" in result
 
+    def test_prefers_main_tag_over_surrounding_chrome(self) -> None:
+        html = (
+            "<header>Quienes Somos Buscador Contacto</header>"
+            "<main>" + ("Real dataset description. " * 20) + "</main>"
+            "<footer>Copyright 2024</footer>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real dataset description" in result
+        assert "Quienes Somos" not in result
+        assert "Copyright" not in result
+
+    def test_prefers_article_tag_over_surrounding_chrome(self) -> None:
+        html = (
+            "<div class='navbar'>Menu Home Search Login</div>"
+            "<article>" + ("Substantial article body text. " * 20) + "</article>"
+            "<div class='sidebar'>Related links widget</div>"
+        )
+        result = clean_html_to_text(html)
+        assert "Substantial article body" in result
+        # Once <article> is substantial enough, it's used exclusively --
+        # surrounding div chrome (not itself a skip tag) is excluded too.
+        assert "Menu Home Search" not in result
+        assert "Related links widget" not in result
+
+    def test_falls_back_to_whole_page_when_no_main_tag_present(self) -> None:
+        html = "<div><p>Some content</p><p>More content</p></div>"
+        result = clean_html_to_text(html)
+        assert "Some content" in result
+        assert "More content" in result
+
+    def test_falls_back_to_whole_page_when_main_tag_too_thin(self) -> None:
+        html = "<main>Hi</main><div>" + ("Real body content here. " * 20) + "</div>"
+        result = clean_html_to_text(html)
+        # <main> content (2 chars) is below the substantiality threshold, so
+        # the whole (chrome-stripped) page is used instead, including the div.
+        assert "Real body content" in result
+
+    def test_malformed_html_falls_back_without_raising(self) -> None:
+        html = "<main><p>Unclosed paragraph<div>Nested badly</main>"
+        result = clean_html_to_text(html)
+        assert isinstance(result, str)
+
 
 class TestResolveUrl:
     """Bare-DOI detection and doi.org resolution."""

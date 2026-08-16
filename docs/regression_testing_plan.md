@@ -2,7 +2,7 @@
 
 **Created:** 2026-06-23
 **Status:** Approved by user; executing autonomously
-**Pinned model:** `glm-5.2` from `zai-coding-plan` provider (GLM 5.5 does not exist yet)
+**Pinned model:** `glm-5.3` from `zai-coding-plan` provider (GLM 5.5 does not exist yet)
 **API key constraint:** ZAI key is LOCAL ONLY — never uploaded to CI/cloud
 
 ## Goal
@@ -45,7 +45,7 @@ The `process` command at `cli.py:139-202` is fully wired. It loads config, calls
 | `tests/fixtures/golden/inputs/` | Sample input JSON files (start with `examples/*.json`, add 15+ real Chilean gov resources later) |
 | `tests/fixtures/golden/expected/` | Pinned outputs `<input_stem>.json` (one per input) |
 | `tests/fixtures/golden/cache/` | diskcache snapshot (committed, ~200KB for 20×5 calls) |
-| `scripts/record_golden.py` | CLI tool — runs `Pipeline` with `model=glm-5.2`, `seed=<cfg>`, `temperature=0`, writes `expected/` + snapshots cache |
+| `scripts/record_golden.py` | CLI tool — runs `Pipeline` with `model=glm-5.3`, `seed=<cfg>`, `temperature=0`, writes `expected/` + snapshots cache |
 
 **Recording procedure (user runs locally):**
 
@@ -95,7 +95,7 @@ field-level granularity that GEval alone cannot produce.
 | `--config/-c` | `config/agents.yaml` | Pipeline config (providers + agents) |
 | `--inputs/-i` | `tests/fixtures/golden/inputs` | Input JSON files to evaluate |
 | `--expected/-e` | `tests/fixtures/golden/expected` | Golden expected outputs |
-| `--model` | `glm-5.2` | Judge LLM model (may differ from production model) |
+| `--model` | `glm-5.3` | Judge LLM model (may differ from production model) |
 | `--threshold` | `0.75` | PASS/FAIL threshold for mean score |
 | `--schema/-s` | `datacite-4.6` | Schema name |
 | `--verbose/-v` | off | DEBUG logging |
@@ -116,7 +116,7 @@ make record-golden          # populate expected/ first (prerequisite)
 
 # Run live eval
 uv run python scripts/run_live_eval.py -v
-uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.2
+uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.3
 ```
 
 **Cadence:**
@@ -134,7 +134,7 @@ uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.2
 |------|--------|
 | `Makefile` | Add `test-regression`, `record-golden`, `live-eval` targets |
 | `config/providers.yaml` | Set `zai-coding-plan` to `default: true`, others `false` |
-| `config/agents.yaml` | Pin every agent's `model:` to `glm-5.2`; add `seed: 42` to `zai-coding-plan` provider |
+| `config/agents.yaml` | Pin every agent's `model:` to `glm-5.3`; add `seed: 42` to `zai-coding-plan` provider |
 
 ### Phase 6 — Diff Visualization (SKIPPED, bonus)
 

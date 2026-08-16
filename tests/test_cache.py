@@ -90,6 +90,21 @@ class TestCacheManager:
         k4 = cm._make_key("hello", "gpt-4", "OtherModel", 0.0, None)
         assert len({k1, k2, k3, k4}) == 4
 
+    def test_make_key_differs_with_tools_vs_without(self, tmp_path: Path) -> None:
+        """A tooled and non-tooled call sharing the same prompt/model/etc.
+        must never collide — the tool loop can change what the final
+        structured output actually contains."""
+        cm = CacheManager(cache_dir=tmp_path)
+        k_no_tools = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None)
+        k_with_tools = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None, tools=["lookup_organization"])
+        assert k_no_tools != k_with_tools
+
+    def test_make_key_tools_order_independent(self, tmp_path: Path) -> None:
+        cm = CacheManager(cache_dir=tmp_path)
+        k1 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None, tools=["a", "b"])
+        k2 = cm._make_key("hello", "gpt-4", "MyModel", 0.0, None, tools=["b", "a"])
+        assert k1 == k2
+
     def test_custom_ttl(self, tmp_path: Path) -> None:
         cm = CacheManager(cache_dir=tmp_path, default_ttl=timedelta(seconds=1))
         cm.set("k", {"v": 1})
@@ -283,6 +298,84 @@ class TestCachedLLMClient:
 
         assert result.name == "prompt-x"
         assert inner.call_count == 1  # second call was a cache hit
+
+    def test_complete_with_tools_calls_inner_and_caches(self, tmp_path: Path) -> None:
+        class MockLLMClientWithTools(MockLLMClient):
+            def complete_with_tools(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                tools: list[str],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[BaseModel, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=10, completion_tokens=5
+                )
+
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClientWithTools()
+        cached = CachedLLMClient(inner, cm)
+
+        result, usage = cached.complete_with_tools("prompt-x", SimpleOutput, tools=["lookup_organization"])
+
+        assert result.name == "prompt-x"
+        assert usage.prompt_tokens == 10
+        assert inner.call_count == 1
+
+    def test_complete_with_tools_reports_zero_on_cache_hit(self, tmp_path: Path) -> None:
+        class MockLLMClientWithTools(MockLLMClient):
+            def complete_with_tools(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                tools: list[str],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[BaseModel, TokenUsage]:
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=10, completion_tokens=5
+                )
+
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClientWithTools()
+        cached = CachedLLMClient(inner, cm)
+
+        _, first_usage = cached.complete_with_tools("prompt-x", SimpleOutput, tools=["lookup_organization"])
+        _, second_usage = cached.complete_with_tools("prompt-x", SimpleOutput, tools=["lookup_organization"])
+
+        assert first_usage.prompt_tokens == 10
+        assert second_usage == TokenUsage()
+        assert inner.call_count == 1
+
+    def test_complete_with_tools_falls_back_to_zero_when_inner_lacks_it(
+        self, tmp_path: Path
+    ) -> None:
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClient()  # no complete_with_tools on this class at all
+        cached = CachedLLMClient(inner, cm)
+
+        result, usage = cached.complete_with_tools("prompt-x", SimpleOutput, tools=["lookup_organization"])
+
+        assert result.name == "prompt-x"
+        assert usage == TokenUsage()
+        assert inner.call_count == 1
+
+    def test_complete_with_tools_does_not_collide_with_plain_complete_cache_entry(
+        self, tmp_path: Path
+    ) -> None:
+        """Same prompt/model/etc., but one call declares tools and the other
+        doesn't — must be two distinct cache entries, not a shared hit."""
+        cm = CacheManager(cache_dir=tmp_path)
+        inner = MockLLMClient()
+        cached = CachedLLMClient(inner, cm)
+
+        cached.complete("prompt-x", SimpleOutput)
+        result, usage = cached.complete_with_tools("prompt-x", SimpleOutput, tools=["lookup_organization"])
+
+        assert result.name == "prompt-x"
+        assert usage == TokenUsage()
+        assert inner.call_count == 2  # both were real calls, no false cache hit
 
     def test_close_underlying_cache(self, tmp_path: Path) -> None:
         """close() must actually close the underlying diskcache.Cache — not a

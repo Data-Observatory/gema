@@ -172,6 +172,67 @@ class TestBaseAgent:
         # pipeline.py's aggregation relies on this to avoid double-counting.
         assert results[0].token_usage is results[1].token_usage
 
+    def test_run_uses_complete_with_tools_when_agent_declares_tools(self) -> None:
+        class MockLLMClientWithTools(MockLLMClient):
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+                self.received_tools: list[str] | None = None
+
+            def complete_with_tools(
+                self,
+                prompt: str,
+                response_model: type[BaseModel],
+                tools: list[str],
+                system_prompt: str | None = None,
+                **kwargs: object,
+            ) -> tuple[object, TokenUsage]:
+                self.received_tools = tools
+                return self.complete(prompt, response_model, system_prompt, **kwargs), TokenUsage(
+                    prompt_tokens=7
+                )
+
+        client = MockLLMClientWithTools(
+            result=FakeOutput(titles=[{"title": "T1"}], descriptions=[{"desc": "D1"}])
+        )
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles", "descriptions"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+            tools=["lookup_organization"],
+        )
+        resource = ResourceDescription(url="https://example.com", title="Test")
+        results = agent.run(resource)
+
+        assert client.received_tools == ["lookup_organization"]
+        assert all(r.token_usage.prompt_tokens == 7 for r in results)
+
+    def test_run_ignores_tools_branch_when_agent_declares_no_tools(self) -> None:
+        """An agent with no tools= must never call complete_with_tools, even
+        if the client happens to implement it — that path is opt-in per
+        agent, not automatic just because the client is capable."""
+
+        class MockLLMClientWithTools(MockLLMClient):
+            def complete_with_tools(
+                self, *args: object, **kwargs: object
+            ) -> tuple[object, TokenUsage]:
+                raise AssertionError("complete_with_tools must not be called")
+
+        client = MockLLMClientWithTools(
+            result=FakeOutput(titles=[{"title": "T1"}], descriptions=[{"desc": "D1"}])
+        )
+        agent = BaseAgent(
+            name="test-agent",
+            fields=["titles", "descriptions"],
+            prompt="Extract {title}",
+            llm_client=client,
+            schema=FakeSchema(),  # type: ignore[arg-type]
+        )
+        resource = ResourceDescription(url="https://example.com", title="Test")
+        results = agent.run(resource)
+        assert len(results) == 2
+
     def test_run_logs_start_and_finish(self, caplog: pytest.LogCaptureFixture) -> None:
         """visor's live log console (visor/log_stream.py) surfaces exactly
         these records — without them the console looks stuck for the

@@ -413,6 +413,96 @@ agents:
       "temporal_events": []
     }
 
+    --- EJEMPLO 6: Recurso con fecha "Updated" únicamente (sin Issued, Created ni Collected) ---
+    RECURSO A PROCESAR:
+    - url: https://datos.gob.cl/dataset/reportes-transporte
+    - title: Reportes de transporte público
+    - description: Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.
+
+    Salida:
+    {
+      "reasoning": "La única fecha explícita en el texto es la de última actualización → date_type Updated, con día exacto (2023-07-15). No hay Issued, Created ni Collected. Aun así, publication_year NUNCA queda vacío si hay algún año identificable en mi propia salida: uso el año de esta fecha, 2023.",
+      "resource": {
+        "identifier": "https://datos.gob.cl/dataset/reportes-transporte",
+        "identifier_type": "URL",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "publication_year": "2023",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "titles": [
+        {"name": "Reportes de transporte público", "title_type": "MainTitle", "language": "es"}
+      ],
+      "descriptions": [
+        {"description": "Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.", "description_type": "Abstract", "language": "es"}
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": "El recurso está disponible únicamente en español"
+        }
+      ],
+      "dates": [
+        {"date": "2023-07-15", "date_type": "Updated", "date_information": "Fecha de la última actualización del recurso según el portal"}
+      ],
+      "alternate_identifiers": [],
+      "related_identifiers": [],
+      "geo_locations": [],
+      "temporal_events": []
+    }
+
+    --- EJEMPLO 7: Recurso con rango de años y sin fecha Issued/Created (contraste con el EJEMPLO 5, que usa un año único) ---
+    RECURSO A PROCESAR:
+    - url: https://datos.gob.cl/dataset/encuesta-hogares
+    - title: Encuesta de Hogares 2019-2021
+    - description: Encuesta de hogares correspondiente al período de levantamiento 2019-2021.
+
+    Salida:
+    {
+      "reasoning": "El único dato temporal es el período de levantamiento (2019-2021) → date_type Collected, con el rango completo en date ('2019/2021', ISO 8601). No hay Issued ni Created, así que publication_year usa el año MÁS ANTIGUO del rango extraído (2019) — nunca el año final, y nunca vacío.",
+      "resource": {
+        "identifier": "https://datos.gob.cl/dataset/encuesta-hogares",
+        "identifier_type": "URL",
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "publication_year": "2019",
+        "resource_type": "Dataset",
+        "resource_type_general": "Dataset",
+        "version": "",
+        "thumbnail": "",
+        "language": "es"
+      },
+      "titles": [
+        {"name": "Encuesta de Hogares 2019-2021", "title_type": "MainTitle", "language": "es"}
+      ],
+      "descriptions": [
+        {"description": "Encuesta de hogares correspondiente al período de levantamiento 2019-2021.", "description_type": "Abstract", "language": "es"}
+      ],
+      "languages": [
+        {
+          "lang_code": "es",
+          "language": "Spanish",
+          "description": "El recurso está disponible únicamente en español"
+        }
+      ],
+      "dates": [
+        {"date": "2019/2021", "date_type": "Collected", "date_information": "Período de levantamiento de la Encuesta de Hogares según el título"}
+      ],
+      "alternate_identifiers": [],
+      "related_identifiers": [],
+      "geo_locations": [],
+      "temporal_events": []
+    }
+
     === ERRORES COMUNES A EVITAR ===
     ❌ MAL: asignar "geo_location_box": "-75.956,-57.987,-65.084,-16.309" a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena o porque "hay que llenar los 4 campos".
     ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, dejar geo_location_box vacío.
@@ -420,12 +510,18 @@ agents:
     ❌ MAL: {"date": "2021-01-01", "date_type": "Collected", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
     ✅ BIEN: {"date": "2021", "date_type": "Collected", ...} — usa la precisión real disponible.
 
+    ❌ MAL: publication_year: "" cuando la única fecha extraída es Updated o Collected (no Issued ni Created) — dejarlo vacío "porque no hay Issued" ignora el resto de la regla.
+    ✅ BIEN: publication_year siempre toma el año de ALGUNA fecha ya extraída (la más antigua si hay varias) cuando no hay Issued ni Created — ver EJEMPLO 6 y EJEMPLO 7.
+
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: creators_publishers
   name: Creators and Publishers
   description: Extrae los creadores (con identificadores ISNI/ROR y afiliaciones)
@@ -445,6 +541,13 @@ agents:
       - ¿Es una persona o una institución?
       - ¿Hay más de un creador o publicador?
       Lista mentalmente todos los actores antes de estructurarlos.
+      Si el bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" está presente e incluye
+      un campo "resource" con editor/maintainer/producer/contact no vacíos, usa esos
+      nombres tal cual para los actores correspondientes en vez de re-derivarlos del
+      texto por tu cuenta — es la misma información ya extraída por otro paso del
+      pipeline; mantener consistencia evita que ambos pasos nombren a la misma
+      entidad de forma distinta. Si ese bloque no está presente o esos campos están
+      vacíos, deriva los actores normalmente del texto como en los pasos siguientes.
 
     PASO 2 — CLASIFICA CADA ACTOR
       Para cada actor identificado:
@@ -461,6 +564,7 @@ agents:
       - Deja publisher_identifier, publisher_identifier_scheme y publisher_scheme_uri como string vacío ("").
       - Los identificadores se resolverán automáticamente después del procesamiento mediante APIs oficiales (ROR, ISNI). Un campo con un esquema declarado pero sin valor real (ej. name_identifier_scheme: "ROR" con name_identifier: "") es peor que dejarlo vacío — invita a que se rellene con un ID inventado.
       - ENFÓCATE en extraer los NOMBRES correctos de instituciones y su estructura jerárquica de afiliaciones.
+      - Si tienes dudas sobre el nombre oficial completo de una institución (ej. una sigla poco común, o un nombre que podría estar abreviado u obsoleto), puedes usar la herramienta lookup_organization con el nombre tal como aparece en el texto para confirmar su forma canónica antes de responder. Úsala solo cuando genuinamente lo necesites, no para instituciones ya conocidas o evidentes en el texto.
 
     PASO 4 — DETERMINA AFILIACIONES RESPETANDO LA JERARQUÍA
       REGLA FUNDAMENTAL: la afiliación debe ser el organismo INMEDIATAMENTE superior en la jerarquía, nunca saltar niveles.
@@ -650,11 +754,19 @@ agents:
     {"reasoning": "No hay ninguna mención de autor, creador ni publicador en el texto.", "creators": [], "publishers": []}
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
-  depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  depends_on:
+  - core_metadata
+  context_fields:
+  - resource
+  tools:
+  - lookup_organization
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: classification
   name: Classification Agent
   description: Clasifica el recurso en categorías temáticas, genera palabras clave
@@ -835,10 +947,13 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: rights_funding_citations
   name: Rights, Funding & Citations
   description: Analiza licencia, financiamiento e información para citar el recurso
@@ -1055,10 +1170,13 @@ agents:
   context_fields:
   - resource
   - publishers
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 - id: media_files
   name: Media Files
   description: 'Describe los archivos multimedia del recurso: formato, tamaño, URI,
@@ -1274,20 +1392,23 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: glm-5.2
-  provider: zai-coding-plan
+  model: deepseek-v4-flash
+  provider: opencode
   temperature: 0.0
   max_tokens: null
+  extra_body:
+    thinking:
+      type: disabled
 providers:
 - name: zai-coding-plan
   api_key_env: ZAI_API_KEY
   base_url: https://api.z.ai/api/coding/paas/v4
   seed: 42
-  default: true
+  default: false
 - name: opencode
   api_key_env: OPENCODE_API_KEY
   base_url: https://opencode.ai/zen/go/v1
-  default: false
+  default: true
   # No tight account rate limit observed (confirmed empirically: 5
   # concurrent agent calls against opencode:deepseek-v4-flash produced
   # zero 429s). zai-coding-plan has no override -- it inherits the global
@@ -1297,14 +1418,26 @@ providers:
   api_key_env: OPENAI_API_KEY
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
-default_provider: zai-coding-plan
+default_provider: opencode
 # Max concurrent agent requests per resource (Orchestrator's ThreadPoolExecutor
-# size). zai-coding-plan's actual rate limit is tight enough that even 2
-# concurrent requests trigger 429 bursts (measured live) — serialize agent
-# calls to respect it reliably. Raise this if a less rate-limited provider
-# is configured. Override per-invocation with `metagen process --max-workers N`.
+# size) when no provider/model override applies. Kept conservative because
+# zai-coding-plan's actual rate limit is tight enough that even 2 concurrent
+# requests trigger 429 bursts (measured live) — this is the safe fallback for
+# it or any future provider without its own override. Production now runs on
+# opencode, which has its own `max_workers: 5` override above (confirmed safe
+# empirically, zero 429s) that takes precedence over this global default via
+# PipelineConfig.effective_max_workers's cascade. Override per-invocation with
+# `metagen process --max-workers N`.
 max_workers: 1
 # Post-merge resolution of ROR/ISNI identifiers for creators/publishers/
 # funders that the LLM left blank (prompts intentionally no longer supply a
 # hardcoded lookup table — see PASO 3 in the creators_publishers prompt).
 enable_identifier_enrichment: true
+# Fetches each resource's URL and feeds page text to agents as extra context.
+# Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
+# deepseek-v4-flash, max_workers 5) showed 40/40 succeeded with zero stalls/
+# timeouts and a net +0.022 structural quality gain (see BACKLOG.md). Known
+# gap: fetch_page_content doesn't isolate main content from nav/boilerplate,
+# so a rare page can dilute rather than help (BACKLOG.md's media_formats
+# entry).
+enable_content_fetch: true

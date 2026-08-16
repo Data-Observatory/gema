@@ -54,13 +54,16 @@ class CacheManager:
         temperature: float,
         seed: int | None,
         extra_body: dict[str, Any] | None = None,
+        tools: list[str] | None = None,
     ) -> str:
         raw = f"{prompt}:{model}:{response_model_name}:{temperature}:{seed}"
         # Appended only when set, so keys for the (overwhelmingly common) no-override
-        # case stay identical to before extra_body existed — preserves committed
-        # golden-fixture cache entries (tests/fixtures/golden/cache/cache.db).
+        # case stay identical to before extra_body/tools existed — preserves
+        # committed golden-fixture cache entries (tests/fixtures/golden/cache/cache.db).
         if extra_body:
             raw += f":{json.dumps(extra_body, sort_keys=True)}"
+        if tools:
+            raw += f":tools={','.join(sorted(tools))}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def get(self, key: str) -> dict[str, Any] | None:
@@ -157,6 +160,37 @@ class CachedLLMClient:
         inner_with_usage = getattr(self._inner, "complete_with_usage", None)
         if inner_with_usage is not None:
             result, usage = inner_with_usage(prompt, response_model, system_prompt, **kwargs)
+        else:
+            result = self._inner.complete(prompt, response_model, system_prompt, **kwargs)
+            usage = TokenUsage()
+        self._cache.set(key, {"data": result.model_dump(), "usage": usage.model_dump()})
+        return result, usage
+
+    def complete_with_tools(
+        self,
+        prompt: str,
+        response_model: type[BaseModel],
+        tools: list[str],
+        system_prompt: str | None = None,
+        **kwargs: object,
+    ) -> tuple[BaseModel, TokenUsage]:
+        """Same caching contract as complete_with_usage(), plus *tools* folded
+        into the cache key -- a tooled and non-tooled call sharing the same
+        prompt/model/etc. must never collide, since the tool loop can change
+        what the final structured output actually contains."""
+        key = self._cache._make_key(
+            prompt, self.model, response_model.__name__, self._temperature, self._seed,
+            self._extra_body, tools=tools,
+        )
+        cached = self._cache.get(key)
+        if cached is not None:
+            logger.debug("Cache HIT for key=%s", key[:12])
+            return response_model.model_validate(_cached_data(cached)), TokenUsage()
+
+        logger.debug("Cache MISS for key=%s", key[:12])
+        inner_with_tools = getattr(self._inner, "complete_with_tools", None)
+        if inner_with_tools is not None:
+            result, usage = inner_with_tools(prompt, response_model, tools, system_prompt, **kwargs)
         else:
             result = self._inner.complete(prompt, response_model, system_prompt, **kwargs)
             usage = TokenUsage()

@@ -68,12 +68,14 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
         model: str,
         temperature: float,
         max_tokens: int | None,
+        extra_body: dict[str, object] | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
             model=model,
             temperature=temperature,
             max_tokens=max_tokens,
+            extra_body=extra_body,
             cache_dir=cache_dir,
         )
 
@@ -160,20 +162,32 @@ class TestRegressionSemantics:
     @pytest.mark.parametrize("input_stem", _PARAM_STEMS)
     def test_output_matches_golden_semantically(self, input_stem: str) -> None:
         """Cache-replay the pipeline and assert similarity >= SIMILARITY_THRESHOLD."""
-        # 1. Override API key with dummy to enforce cache-only mode.
-        #    `uv run` auto-loads .env, so real keys leak into test env.
-        #    Using [] assignment (not setdefault) ensures real keys are overridden.
-        #    Cache HITs intercept before any real API call, so the key is never used.
-        os.environ["ZAI_API_KEY"] = "dummy-regression-cache-only-key"
-
-        # 2. Load expected output from committed golden.
+        # 1. Load expected output from committed golden.
         expected_path = EXPECTED_DIR / f"{input_stem}.json"
         with expected_path.open("r", encoding="utf-8") as f:
             expected: dict[str, Any] = json.load(f)
 
-        # 3. Build Pipeline with cache_dir pointed at the committed snapshot.
+        # 2. Build Pipeline with cache_dir pointed at the committed snapshot.
         reset_client_cache()
         config: PipelineConfig = load_config(CONFIG_PATH)
+
+        # Override every configured provider's API key with a dummy value to
+        # enforce cache-only mode. `uv run` auto-loads .env, so real keys
+        # would otherwise leak into test env; CI has no .env and no key at
+        # all, so this must not depend on any real key being present either.
+        # Using [] assignment (not setdefault) ensures real keys are
+        # overridden. Cache HITs intercept before any real API call, so the
+        # dummy key is never actually used.
+        for provider in config.providers:
+            os.environ[provider.api_key_env] = "dummy-regression-cache-only-key"
+        # Force off regardless of the real config: this test validates LLM
+        # output against a fixed input snapshot via cache replay, not the
+        # live content-fetch mechanism (covered separately in
+        # test_pipeline_integration.py). Without this, sample_input05 (a
+        # real but dead URL with no fetched_content) would trigger a live
+        # HTTP request on every regression run, breaking the "no API key/
+        # network needed" cache-replay contract.
+        config = config.model_copy(update={"enable_content_fetch": False})
         llm_factory = _make_factory(CACHE_DIR)
         pipeline = Pipeline(config=config, llm_factory=llm_factory)
 

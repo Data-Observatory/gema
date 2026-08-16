@@ -319,6 +319,51 @@ class TestCompleteWithUsage:
         assert inner.complete_with_usage.call_count == 2
 
 
+class TestCompleteWithTools:
+    """complete_with_tools is an optional, duck-typed extension — not part
+    of the formal LLMClient Protocol (see retry.py's docstring)."""
+
+    def test_delegates_to_inner_when_available(self) -> None:
+        inner = MagicMock()
+        expected_usage = TokenUsage(prompt_tokens=10, completion_tokens=5)
+        inner.complete_with_tools.return_value = (SimpleModel(), expected_usage)
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_tools("test", SimpleModel, tools=["lookup_organization"])
+
+        assert isinstance(result, SimpleModel)
+        assert usage is expected_usage
+        assert inner.complete_with_tools.call_count == 1
+        assert inner.complete_with_tools.call_args.kwargs["tools"] == ["lookup_organization"]
+
+    def test_falls_back_to_plain_complete_with_zero_usage_when_inner_lacks_it(self) -> None:
+        inner = MagicMock()
+        del inner.complete_with_tools  # simulate a client without the method
+        inner.complete.return_value = SimpleModel()
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_tools("test", SimpleModel, tools=["lookup_organization"])
+
+        assert result is inner.complete.return_value
+        assert usage == TokenUsage()
+        assert inner.complete.call_count == 1
+
+    def test_retries_on_transport_error_then_succeeds(self) -> None:
+        inner = MagicMock()
+        expected_usage = TokenUsage(prompt_tokens=1)
+        inner.complete_with_tools.side_effect = [
+            openai.RateLimitError("429", response=_resp(429), body=None),
+            (SimpleModel(), expected_usage),
+        ]
+
+        client = RetryableLLMClient(inner, _fast_config())
+        result, usage = client.complete_with_tools("test", SimpleModel, tools=["lookup_organization"])
+
+        assert isinstance(result, SimpleModel)
+        assert usage is expected_usage
+        assert inner.complete_with_tools.call_count == 2
+
+
 class TestCustomConfig:
     def test_custom_max_retries_respected(self) -> None:
         inner = MagicMock()

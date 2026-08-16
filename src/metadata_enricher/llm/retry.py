@@ -210,6 +210,45 @@ class RetryableLLMClient:
                 return result, TokenUsage()
         raise RuntimeError("unreachable")
 
+    def complete_with_tools(
+        self,
+        prompt: str,
+        response_model: type[BaseModel],
+        tools: list[str],
+        system_prompt: str | None = None,
+        **kwargs: object,
+    ) -> tuple[BaseModel, TokenUsage]:
+        """Tool-call-loop completion + token usage, with transport-level retry.
+
+        Not part of the formal LLMClient Protocol — see complete_with_usage's
+        docstring above; same duck-typed-extension rationale applies here.
+        A retry re-runs the *entire* tool loop from scratch (simpler than
+        resuming mid-loop, and consistent with how complete_with_usage
+        already treats its whole call as one retry unit).
+        """
+        inner_with_tools = getattr(self._inner, "complete_with_tools", None)
+        for attempt in self._retrying:
+            with attempt:
+                if inner_with_tools is not None:
+                    return cast(
+                        "tuple[BaseModel, TokenUsage]",
+                        inner_with_tools(
+                            prompt=prompt,
+                            response_model=response_model,
+                            tools=tools,
+                            system_prompt=system_prompt,
+                            **kwargs,
+                        ),
+                    )
+                result = self._inner.complete(
+                    prompt=prompt,
+                    response_model=response_model,
+                    system_prompt=system_prompt,
+                    **kwargs,
+                )
+                return result, TokenUsage()
+        raise RuntimeError("unreachable")
+
     @staticmethod
     def _build_retrying(config: RetryConfig) -> Retrying:
         """Build a ``tenacity`` retry controller from a ``RetryConfig``."""
