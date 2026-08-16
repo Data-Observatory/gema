@@ -212,20 +212,36 @@ class InstructorLLMClient:
         structured-output call below that some providers reject alongside
         their default "thinking mode", see _build_extra_body's docstring; an
         unforced auto tool_choice has no such issue). If the model calls any
-        tool, executes it via llm.tools.execute_tool and appends the result
-        as a tool message, repeating up to *max_tool_rounds* times. The final
-        turn (no more tool calls requested, or the round cap reached) is a
-        normal Instructor forced-structured-output call fed the accumulated
-        conversation, exactly like complete()'s single-turn path but with
-        the tool exchange already in *messages*.
+        tool, executes it via llm.tools.execute_tool and records the result,
+        repeating up to *max_tool_rounds* times.
+
+        The final structured-output call does NOT reuse the raw tool-call
+        loop's message history verbatim -- it gets a fresh [system?, user]
+        pair plus one plain-text user note summarizing any tool calls/results
+        (only appended if at least one tool was actually called). This was a
+        deliberate fix (2026-08-15) for a real regression found piloting this
+        loop on creators_publishers/deepseek-v4-flash: when a round-capped
+        conversation's raw tool_calls/tool-role messages were fed straight
+        into the final call, the model would sometimes return empty
+        creators/publishers instead of its actual extraction -- likely
+        confused by a forced tool_choice (Instructor's synthetic
+        response-model tool) following assistant turns that reference a
+        different, now-undeclared tool. Collapsing the tool exchange into
+        plain text before the final call sidesteps that entirely and is
+        portable across providers, at the cost of the model re-reading a
+        summary instead of the raw exchange (no evidence this loses
+        information in practice -- the summary includes every call/result).
 
         Token usage is summed across every round (including the final call)
         -- a tool loop's real cost is every round combined, not just the last.
         """
-        messages: list[dict[str, Any]] = []
+        base_messages: list[dict[str, Any]] = []
         if system_prompt is not None:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
+            base_messages.append({"role": "system", "content": system_prompt})
+        base_messages.append({"role": "user", "content": prompt})
+
+        loop_messages: list[dict[str, Any]] = list(base_messages)
+        tool_exchange_log: list[tuple[str, str, str]] = []
 
         extra_body = _build_extra_body(self._config)
         schemas = tool_schemas(tools)
@@ -234,7 +250,7 @@ class InstructorLLMClient:
         for round_num in range(max_tool_rounds):
             raw_kwargs: dict[str, Any] = {
                 "model": self._config.model,
-                "messages": messages,
+                "messages": loop_messages,
                 "temperature": self._config.temperature,
                 "tools": schemas,
                 "tool_choice": "auto",
@@ -260,7 +276,7 @@ class InstructorLLMClient:
                 )
                 break
 
-            messages.append(
+            loop_messages.append(
                 {
                     "role": "assistant",
                     "content": message.content,
@@ -278,11 +294,12 @@ class InstructorLLMClient:
                 }
             )
             for tool_call in message.tool_calls:
-                arguments = json.loads(tool_call.function.arguments or "{}")
-                result = execute_tool(tool_call.function.name, arguments)
-                messages.append(
+                arguments_raw = tool_call.function.arguments or "{}"
+                result = execute_tool(tool_call.function.name, json.loads(arguments_raw))
+                loop_messages.append(
                     {"role": "tool", "tool_call_id": tool_call.id, "content": result}
                 )
+                tool_exchange_log.append((tool_call.function.name, arguments_raw, result))
         else:
             logger.warning(
                 "Tool loop hit max_tool_rounds=%d without the model stopping tool "
@@ -290,10 +307,27 @@ class InstructorLLMClient:
                 max_tool_rounds,
             )
 
+        final_messages = list(base_messages)
+        if tool_exchange_log:
+            summary_lines = [
+                f"- {name}({args}) -> {result}"
+                for name, args, result in tool_exchange_log
+            ]
+            final_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "During your reasoning you looked up the following via tool "
+                        "calls -- use these results if relevant to your final answer:\n"
+                        + "\n".join(summary_lines)
+                    ),
+                }
+            )
+
         create_kwargs: dict[str, Any] = {
             "model": self._config.model,
             "response_model": response_model,
-            "messages": messages,
+            "messages": final_messages,
             "max_retries": self._max_retries,
             "temperature": self._config.temperature,
         }

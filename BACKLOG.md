@@ -101,6 +101,38 @@ enough context to pick up cold; prune entries once actually done.
   items that *didn't* hit the round cap — just not wired to any agent in
   production until the round-cap failure mode above is understood and
   fixed.
+
+  **FIXED (2026-08-15) — hypothesis confirmed structurally, root-caused
+  without needing a raw-capture session.** Re-read `complete_with_tools`
+  itself rather than instrumenting a live call: the final structured-output
+  call was built by mutating and reusing the exact same `messages` list the
+  tool-round loop sent to the raw client — so on a round-cap hit, the final
+  Instructor call inherited a conversation ending in earlier assistant turns
+  with real `tool_calls` entries (referencing `lookup_organization`) plus
+  `role: "tool"` result messages, none of which Instructor's own forced
+  `tool_choice` (its synthetic response-model tool) ever re-declares. Fix:
+  `complete_with_tools` no longer reuses the loop's raw message history for
+  the final call. It now tracks each round's `(tool_name, arguments, result)`
+  separately and builds the final call from a *fresh* `[system?, user]` pair
+  plus one plain-text user-role summary of whatever was looked up (only
+  appended if a tool was actually called) — no `tool_calls`/`role:"tool"`
+  structure ever reaches the final call, sidestepping the mixed-tool_choice
+  conversation entirely. `tests/test_instructor_client.py`'s
+  `test_tool_call_executed_and_result_fed_back` updated to assert the new
+  final-message shape.
+
+  **Re-verified on the same 18-item do_catalog pilot, tools back on**: avg
+  structural score **0.543** (vs. 0.539 tools-off baseline, 0.483 regressed-
+  before-fix) — regression gone, noise-level improvement over baseline.
+  `360`/`366` (the two items that previously came back with empty
+  `creators`/`publishers`) now score `creators_name: 1.000` each and their
+  saved outputs show real extracted data (e.g. "Servicio Hidrográfico y
+  Oceanográfico de la Armada de Chile" with a resolved
+  `https://ror.org/04rfh4r06`), confirmed by reading the actual output JSON,
+  not just the aggregate metric. `creators_publishers` re-enabled with
+  `tools: [lookup_organization]` in `config/agents.yaml` (a new PASO 3
+  sentence tells the model when to use it); golden fixtures re-recorded;
+  full suite green.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
   prompt review). It's twice the size of any other agent (9 reasoning
   steps, 9 output fields) and its weakest-quality fields (`geo_locations`,
@@ -458,11 +490,30 @@ enough context to pick up cold; prune entries once actually done.
     its fetched page being mostly site-navigation chrome ("Quiénes
     Somos... Buscador...") rather than the actual dataset description,
     diluting rather than helping `subjects`' exact-match scoring.
-  - **Follow-up if this gets enabled, not a blocker**: `content_fetcher.py`'s
-    `fetch_page_content` extracts page text without isolating main content
-    from navigation/boilerplate — the one concrete quality gap this eval
-    surfaced. `max_len` (currently 8000, truncation-only) tuning is
-    separately still open if/when someone hits it in practice.
+  - **Partially addressed (2026-08-15)**: `content_fetcher.py`'s
+    `_extract_relevant_text` now uses stdlib `html.parser` (nesting-aware,
+    no new dependency) to prefer `<main>`/`<article>` text over the whole
+    page when substantial (>= 200 chars), and skips real `nav`/`header`/
+    `footer`/`aside`/`form` tags wherever they sit in the tree (the old
+    regex could only strip them at the top level). Falls back to the old
+    whole-page behavior when no semantic container is found or it's too
+    thin — never worse than before. 6 new unit tests
+    (`test_content_fetcher.py`), all passing; the existing 21 pass
+    unchanged (confirms no behavior change for already-passing cases).
+    **Honest limitation, checked against the actual item-`92` page
+    (`spensiones.cl`)**: this fix only helps sites using real semantic
+    HTML5 containers. That page's chrome (menu items, breadcrumb) isn't
+    wrapped in any semantic tag or skip-tag at all — it sits inside a
+    generic `<div id="main">` used as a whole-page layout wrapper (a common
+    Chilean gov-portal CMS template), so `_extract_relevant_text` still
+    falls back to whole-page text there, unchanged. A real fix for that
+    class of page needs a content-density heuristic (readability-style
+    text-to-tag-density scoring per DOM subtree), a materially bigger task
+    — not attempted here. Re-verified via the 18-item do_catalog pilot
+    (which now exercises `enable_content_fetch: true` for real, alongside
+    the tool-loop fix above): avg **0.543**, no regression.
+  - `max_len` (currently 8000, truncation-only) tuning is separately still
+    open if/when someone hits it in practice.
   - **Enabled by default (2026-08-15)**: `enable_content_fetch: true` set in
     `config/agents.yaml`, on the recommendation above.
   - **Real bug found while flipping it, fixed**: `tests/test_regression.py`

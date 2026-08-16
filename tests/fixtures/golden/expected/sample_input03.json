@@ -5,7 +5,7 @@
     "editor": "Departamento de Geografia Universidad de Chile",
     "maintainer": "",
     "contact": "psarricolea@uchilefau.cl; 56 229783126",
-    "producer": "Departamento de Geografia Universidad de Chile",
+    "producer": "Departamento de Geografía Universidad de Chile",
     "publication_year": "2017",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -29,6 +29,12 @@
     },
     {
       "audience": "Profesionales",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
@@ -58,7 +64,7 @@
   ],
   "creators": [
     {
-      "creator_name": "Departamento de Geografia Universidad de Chile",
+      "creator_name": "Departamento de Geografía, Universidad de Chile",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -78,21 +84,14 @@
           "scheme_uri": "https://isni.org"
         }
       ],
-      "affiliations": [
-        {
-          "affiliation": "Universidad de Chile",
-          "affiliation_identifier": "https://ror.org/047gc3g35",
-          "affiliation_identifier_scheme": "ROR",
-          "scheme_uri": ""
-        }
-      ]
+      "affiliations": []
     }
   ],
   "dates": [
     {
       "date": "2017-01-12",
       "date_type": "Issued",
-      "date_information": "Fecha de publicación del recurso según la ficha de metadatos del Geoportal de Chile"
+      "date_information": "Fecha de publicación del recurso según el metadato del Geoportal de Chile"
     }
   ],
   "descriptions": [
@@ -138,10 +137,10 @@
       "sizes": [],
       "physical_carrier": "digital",
       "format": "application/zip",
-      "variable_measured": "Tipo de clima según clasificación Köppen-Geiger",
+      "variable_measured": "Tipo de clima según clasificación Köppen-Geiger, precipitación promedio, temperatura promedio, altitud mínima y máxima",
       "checksum": "",
       "data_quality": "",
-      "measurement_technique": "",
+      "measurement_technique": "Clasificación climática de Köppen-Geiger sobre cubiertas de temperatura y precipitación mensual de 1 km² de resolución",
       "provenance": "Departamento de Geografía Universidad de Chile",
       "file_uri": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
       "temporal_resolution": "",
@@ -150,7 +149,7 @@
   ],
   "publishers": [
     {
-      "publisher_name": "Departamento de Geografia Universidad de Chile",
+      "publisher_name": "Departamento de Geografía, Universidad de Chile",
       "publisher_identifier": "https://ror.org/047gc3g35",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
@@ -182,13 +181,19 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Zonas climáticas -- Köppen-Geiger -- Chile",
+      "subject_name": "Clasificación climática Köppen-Geiger -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Clasificación climática -- Temperatura -- Precipitación -- Chile",
+      "subject_name": "Zonas climáticas -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Temperatura y precipitación -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

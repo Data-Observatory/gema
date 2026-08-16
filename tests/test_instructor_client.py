@@ -310,14 +310,21 @@ class TestCompleteWithTools:
                 "messages"
             ]
         )
-        assert final_messages[0] == {"role": "user", "content": "hello"}
-        assert final_messages[1]["role"] == "assistant"
-        assert final_messages[1]["tool_calls"][0]["id"] == "call_1"
-        assert final_messages[2] == {
-            "role": "tool",
-            "tool_call_id": "call_1",
-            "content": '{"found": true, "canonical_name": "Universidad de Chile"}',
-        }
+        # The final call gets a fresh [user] pair plus a plain-text summary of
+        # the tool exchange -- NOT the raw assistant/tool_calls + tool-role
+        # messages from the loop (see complete_with_tools's docstring for why).
+        assert final_messages == [
+            {"role": "user", "content": "hello"},
+            {
+                "role": "user",
+                "content": (
+                    "During your reasoning you looked up the following via tool "
+                    "calls -- use these results if relevant to your final answer:\n"
+                    '- lookup_organization({"name": "U de Chile"}) -> '
+                    '{"found": true, "canonical_name": "Universidad de Chile"}'
+                ),
+            },
+        ]
 
     @patch("metadata_enricher.llm.instructor_client.execute_tool")
     @patch("metadata_enricher.llm.instructor_client.OpenAI")

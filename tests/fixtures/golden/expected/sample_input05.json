@@ -76,7 +76,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, del cual provienen los antecedentes de esta capa vectorial"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes recopilados en la capa"
+    },
+    {
+      "date": "2014",
+      "date_type": "Updated",
+      "date_information": "Año de las modificaciones según las cuales se actualizó el trazado de límites de la capa"
     }
   ],
   "descriptions": [
@@ -93,8 +98,8 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura local correspondiente a la Isla de Pascua, con datos de ganado bovino del Censo Agropecuario 2007",
-      "coverage": "local"
+      "geo_description": "Capa vectorial con polígonos de división administrativa vigente y distritos censales INE para la Isla de Pascua",
+      "coverage": "comunal"
     }
   ],
   "languages": [
@@ -115,7 +120,17 @@
     }
   ],
   "related_identifiers": [],
-  "rights": [],
+  "rights": [
+    {
+      "rights": "",
+      "rights_uri": "",
+      "rights_identifier": "",
+      "rights_identifier_scheme": "",
+      "scheme_uri": "",
+      "rights_condition": "Los productos cartográficos elaborados con esta capa de información que involucren la representación de los límites internacionales del país deben obtener una autorización de circulación, mediante resolución de la Difrol.",
+      "rights_holder": "Oficina de Estudios y Políticas Agrarias"
+    }
+  ],
   "subjects": [
     {
       "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
@@ -124,7 +139,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
+      "subject_name": "Distritos censales -- INE -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

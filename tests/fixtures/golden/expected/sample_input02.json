@@ -38,10 +38,33 @@
     {
       "name": "Ciencias Naturales y Exactas",
       "sub_category": "Ciencias biológicas"
+    },
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias medioambientales"
     }
   ],
   "citations": [],
-  "creators": [],
+  "creators": [
+    {
+      "creator_name": "Data Observatory Foundation",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/027nn6b17",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org"
+        }
+      ],
+      "affiliations": []
+    }
+  ],
   "dates": [],
   "descriptions": [
     {
@@ -57,7 +80,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de la biodiversidad de plantas en Chile, a escala regional y nacional",
+      "geo_description": "Cobertura nacional de Chile, a escala regional y nacional según la descripción del recurso",
       "coverage": "nacional"
     }
   ],
@@ -71,7 +94,7 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Data Observatory",
+      "publisher_name": "Data Observatory Foundation",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
@@ -88,7 +111,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Biodiversidad -- Plantas -- Chile",
+      "subject_name": "Biodiversidad -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

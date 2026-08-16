@@ -564,6 +564,7 @@ agents:
       - Deja publisher_identifier, publisher_identifier_scheme y publisher_scheme_uri como string vacío ("").
       - Los identificadores se resolverán automáticamente después del procesamiento mediante APIs oficiales (ROR, ISNI). Un campo con un esquema declarado pero sin valor real (ej. name_identifier_scheme: "ROR" con name_identifier: "") es peor que dejarlo vacío — invita a que se rellene con un ID inventado.
       - ENFÓCATE en extraer los NOMBRES correctos de instituciones y su estructura jerárquica de afiliaciones.
+      - Si tienes dudas sobre el nombre oficial completo de una institución (ej. una sigla poco común, o un nombre que podría estar abreviado u obsoleto), puedes usar la herramienta lookup_organization con el nombre tal como aparece en el texto para confirmar su forma canónica antes de responder. Úsala solo cuando genuinamente lo necesites, no para instituciones ya conocidas o evidentes en el texto.
 
     PASO 4 — DETERMINA AFILIACIONES RESPETANDO LA JERARQUÍA
       REGLA FUNDAMENTAL: la afiliación debe ser el organismo INMEDIATAMENTE superior en la jerarquía, nunca saltar niveles.
@@ -757,6 +758,8 @@ agents:
   - core_metadata
   context_fields:
   - resource
+  tools:
+  - lookup_organization
   model: deepseek-v4-flash
   provider: opencode
   temperature: 0.0
