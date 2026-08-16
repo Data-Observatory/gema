@@ -87,58 +87,11 @@ class TestResolveConfigPath:
         with pytest.raises(FileNotFoundError):
             bootstrap.resolve_config_path()
 
-    def test_seeding_applies_external_user_provider_overrides(self, monkeypatch, tmp_path):
-        """A dev running visor from an editable repo checkout hits
-        find_config() and gets config/agents.yaml's real opencode config
-        directly -- same as CI/the CLI. Only a frozen build's first-run
-        seed (no repo, no user config yet -- a normal external user) goes
-        through this override."""
-
-        def _raise():
-            raise FileNotFoundError("no config found")
-
-        bundled = tmp_path / "bundled_agents.yaml"
-        bundled.write_text(
-            yaml.safe_dump(
-                {
-                    "providers": [
-                        {"name": "opencode", "api_key_env": "OPENCODE_API_KEY", "default": True},
-                        {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY", "default": False},
-                    ],
-                    "default_provider": "opencode",
-                    "agents": [
-                        {
-                            "id": "a0",
-                            "provider": "opencode",
-                            "model": "deepseek-v4-flash",
-                            "extra_body": {"thinking": {"type": "disabled"}},
-                        }
-                    ],
-                }
-            ),
-            encoding="utf-8",
-        )
-        target = tmp_path / "user_config" / "agents.yaml"
-
-        monkeypatch.setattr(bootstrap, "find_config", _raise)
-        monkeypatch.setattr(bootstrap, "bundled_config_path", lambda: bundled)
-
-        bootstrap.resolve_config_path(user_config_path=target)
-
-        seeded = yaml.safe_load(target.read_text(encoding="utf-8"))
-        assert seeded["default_provider"] == "openrouter"
-        assert seeded["agents"][0]["provider"] == "openrouter"
-        assert seeded["agents"][0]["model"] == "~deepseek/deepseek-v4-flash-latest"
-        assert seeded["agents"][0]["extra_body"] == {"reasoning": {"enabled": False}}
-        providers_by_name = {p["name"]: p for p in seeded["providers"]}
-        assert providers_by_name["opencode"]["default"] is False
-        assert providers_by_name["openrouter"]["default"] is True
-
 
 class TestApplyExternalUserProviderOverrides:
-    """The transform config/agents.yaml -> visor's shipped external-user
-    default gets applied through, on first-run seeding for a frozen build
-    only (see TestResolveConfigPath.test_seeding_applies_external_user_provider_overrides)."""
+    """The pure transform itself -- see TestLoadPipelineConfig for proof
+    that load_pipeline_config() actually applies it to whatever config it
+    resolves, regardless of source (found directly vs. seeded)."""
 
     def _sample_yaml(self) -> str:
         return yaml.safe_dump(
@@ -245,6 +198,55 @@ default_provider: p
         assert config is not None
         assert schema is not None
         assert schema.name == "datacite-4.6"
+
+    def test_applies_external_user_provider_overrides_even_when_found_directly(
+        self, monkeypatch, tmp_path
+    ):
+        """The override must apply regardless of how config_path was
+        resolved -- a dev running visor from an editable repo checkout
+        hits find_config() and gets config/agents.yaml directly (not the
+        frozen-seed path), and still gets openrouter as visor's default;
+        only the file on disk stays opencode."""
+        config_path = tmp_path / "agents.yaml"
+        config_path.write_text(
+            yaml.safe_dump(
+                {
+                    "schema_name": "datacite-4.6",
+                    "providers": [
+                        {"name": "opencode", "api_key_env": "OPENCODE_API_KEY", "default": True},
+                        {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY", "default": False},
+                    ],
+                    "default_provider": "opencode",
+                    "agents": [
+                        {
+                            "id": "a0",
+                            "name": "A",
+                            "fields": ["titles"],
+                            "prompt": "x",
+                            "provider": "opencode",
+                            "model": "deepseek-v4-flash",
+                            "extra_body": {"thinking": {"type": "disabled"}},
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(bootstrap, "find_config", lambda: config_path)
+
+        config, schema, error = bootstrap.load_pipeline_config()
+
+        assert error is None
+        assert config is not None
+        assert config.default_provider == "openrouter"
+        assert config.agents[0].provider == "openrouter"
+        assert config.agents[0].model == "~deepseek/deepseek-v4-flash-latest"
+        assert config.agents[0].extra_body == {"reasoning": {"enabled": False}}
+        # The file on disk is untouched -- only load_pipeline_config()'s
+        # in-memory result differs.
+        on_disk = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        assert on_disk["default_provider"] == "opencode"
+        assert on_disk["agents"][0]["provider"] == "opencode"
 
     def test_returns_error_message_on_any_failure_not_a_crash(self, monkeypatch):
         def _raise():

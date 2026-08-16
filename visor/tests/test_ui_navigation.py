@@ -167,10 +167,16 @@ async def test_agents_tab_advanced_shows_tools_and_extra_body(
 ) -> None:
     """creators_publishers is the one agent configured with
     tools: [lookup_organization] in the real config/agents.yaml; every
-    agent sets extra_body (disabling deepseek's default thinking mode,
+    agent sets extra_body (disabling deepseek's default reasoning mode,
     required alongside Instructor's forced tool_choice). Both must be
     visible in the read-only Advanced section for transparency -- same
-    treatment already given to depends_on/fields."""
+    treatment already given to depends_on/fields.
+
+    load_pipeline_config() rewrites config/agents.yaml's opencode/
+    thinking-shaped extra_body to visor's openrouter/reasoning-shaped
+    default before the app ever sees it (see bootstrap.py's
+    apply_external_user_provider_overrides) -- assert on that shape, not
+    the on-disk file's."""
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 
     await user.open("/")
@@ -179,7 +185,7 @@ async def test_agents_tab_advanced_shows_tools_and_extra_body(
 
     await user.should_see("Tools: lookup_organization")
     await user.should_see("Extra request options:")
-    await user.should_see("thinking")
+    await user.should_see("reasoning")
 
 
 async def test_agents_tab_pipeline_behavior_toggles_persist(
@@ -227,9 +233,13 @@ async def test_run_form_shows_fetched_content_auto_fetch_hint(
     await user.open("/")
     user.find(marker="tab-settings").click()
     await user.should_see(marker="settings-save")
-    user.find(marker="settings-provider-edit-opencode").click()  # reveal its key input
-    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
-    user.find(marker="settings-input-OPENCODE_API_KEY").type("fake-key-for-render-test")
+    # visor's default is openrouter (see bootstrap.py's
+    # apply_external_user_provider_overrides), not config/agents.yaml's
+    # on-disk opencode -- that's the key the Run tab's gate actually asks
+    # for.
+    user.find(marker="settings-provider-edit-openrouter").click()  # reveal its key input
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
     user.find(marker="settings-save").click()
 
     await user.should_see(marker="run-input-fetched_content")
@@ -312,9 +322,10 @@ async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    # openai is genuinely unused: the 5 main agents run on opencode and
-    # dataverse export's Subject Classifier (config/dataverse_export.yaml)
-    # runs on openrouter.
+    # openai is genuinely unused: visor's live default (see bootstrap.py's
+    # apply_external_user_provider_overrides) runs every agent -- the 5
+    # main ones and dataverse export's Subject Classifier alike -- on
+    # openrouter, leaving opencode unused here too, not just openai.
     await user.should_see(marker="settings-provider-remove-openai")
 
     user.find(marker="settings-provider-remove-openai").click()
@@ -327,14 +338,16 @@ async def test_settings_remove_provider_in_use_is_blocked(user: User, monkeypatc
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    # opencode is config/agents.yaml's default provider — every agent uses
-    # it out of the box, so removing it must be refused.
-    await user.should_see(marker="settings-provider-remove-opencode")
+    # openrouter is visor's actual default (see bootstrap.py's
+    # apply_external_user_provider_overrides) -- every agent uses it here,
+    # even though config/agents.yaml's on-disk default_provider is
+    # opencode, so removing it must be refused.
+    await user.should_see(marker="settings-provider-remove-openrouter")
 
-    user.find(marker="settings-provider-remove-opencode").click()
+    user.find(marker="settings-provider-remove-openrouter").click()
 
-    await user.should_see("Can't remove 'opencode'")
-    await user.should_see(marker="settings-provider-remove-opencode")  # still there
+    await user.should_see("Can't remove 'openrouter'")
+    await user.should_see(marker="settings-provider-remove-openrouter")  # still there
 
 
 async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:

@@ -7,17 +7,21 @@ first run and never written back into the frozen bundle itself (a
 Program-Files-style install or notarized .app is exactly the kind of
 location that's unwritable or that Gatekeeper objects to post-install).
 
-That first-run copy also runs through apply_external_user_provider_overrides()
-(see below), swapping the testing/deployment provider (opencode) for the
-external-user default (openrouter's auto-updating "latest" alias) — a dev
-running visor from an editable repo checkout never hits this, since
-find_config() finds config/agents.yaml directly first.
+Separately, load_pipeline_config() always runs whatever config it resolved
+through apply_external_user_provider_overrides() (see below) before
+validating it — visor's own default provider is openrouter every time it
+boots, whether it found config/agents.yaml directly (running from an
+editable repo checkout) or a frozen build's seeded copy. Only the
+underlying files (config/agents.yaml, and any seeded user copy of it) stay
+pinned to opencode/deepseek-v4-flash on disk — that's what CI, the test
+suite, and `metagen process` from the CLI actually run against.
 """
 
 from __future__ import annotations
 
 import logging
 import sys
+import tempfile
 from pathlib import Path
 
 import yaml
@@ -33,16 +37,15 @@ logger = logging.getLogger(__name__)
 BUNDLED_CONFIG_SUBPATH = Path("visor_default_config") / "agents.yaml"
 DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "metagen" / "agents.yaml"
 
-# Provider/model swap applied only when seeding a frozen build's first-run
-# config for a normal external user (see resolve_config_path()'s seeding
-# branch below). config/agents.yaml itself -- what CI, tests, and any dev
-# running visor from an editable repo checkout all get via find_config() --
-# stays pinned to opencode/deepseek-v4-flash, the combination this project
-# actually tests and deploys against. The external-user default instead
-# points at OpenRouter's own auto-updating "latest" alias, so a fresh
-# install never ships an already-stale pinned checkpoint. One source of
-# truth for every agent's prompt/fields/tools/depends_on either way --
-# this only ever touches provider/model/extra_body.
+# Provider/model swap applied by load_pipeline_config() to every config
+# visor loads, regardless of where it came from. config/agents.yaml (and
+# any file seeded from it) stays pinned to opencode/deepseek-v4-flash on
+# disk -- the combination CI/tests/the CLI actually run against, i.e.
+# "working on this library". Visor is everywhere else: its own default
+# is always OpenRouter's auto-updating "latest" alias, so a fresh install
+# never ships an already-stale pinned checkpoint. One source of truth for
+# every agent's prompt/fields/tools/depends_on either way -- this only
+# ever touches provider/model/extra_body, and only in memory.
 _TESTING_PROVIDER = "opencode"
 _TESTING_MODEL = "deepseek-v4-flash"
 _EXTERNAL_USER_PROVIDER = "openrouter"
@@ -132,8 +135,7 @@ def resolve_config_path(user_config_path: Path | None = None) -> Path:
             raise
         target = user_config_path if user_config_path is not None else DEFAULT_USER_CONFIG_PATH
         target.parent.mkdir(parents=True, exist_ok=True)
-        seeded = apply_external_user_provider_overrides(bundled.read_text(encoding="utf-8"))
-        target.write_text(seeded, encoding="utf-8")
+        target.write_text(bundled.read_text(encoding="utf-8"), encoding="utf-8")
         logger.info("Seeded user config at %s from bundled default", target)
         return target
 
@@ -142,9 +144,31 @@ def load_pipeline_config(
     user_config_path: Path | None = None,
 ) -> tuple[PipelineConfig | None, Schema | None, str | None]:
     """Returns (config, schema, error_message) — exactly one of
-    (config and schema) or error_message is set, never a mix."""
+    (config and schema) or error_message is set, never a mix.
+
+    Whatever config_path resolves to (config/agents.yaml directly, or a
+    frozen build's seeded copy), the text is run through
+    apply_external_user_provider_overrides() before validation -- visor's
+    own default is always OpenRouter, regardless of how its config file
+    was found. The transformed text is written to a throwaway temp file
+    and handed to load_config() so ${VAR} expansion and validation stay
+    byte-for-byte the same codepath every other caller of load_config()
+    uses -- no parsing logic duplicated here.
+    """
     try:
-        config = load_config(resolve_config_path(user_config_path))
+        config_path = resolve_config_path(user_config_path)
+        transformed = apply_external_user_provider_overrides(
+            config_path.read_text(encoding="utf-8")
+        )
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        ) as tmp:
+            tmp.write(transformed)
+            tmp_path = Path(tmp.name)
+        try:
+            config = load_config(tmp_path)
+        finally:
+            tmp_path.unlink(missing_ok=True)
         schema = get_registry().get(config.schema_name)
     except Exception as exc:  # noqa: BLE001 - surfaced to every page load, not hidden
         logger.exception("Failed to load pipeline configuration")
