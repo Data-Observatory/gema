@@ -64,11 +64,9 @@ make test-visor        # Windows GitHub runners ship GNU Make; if your local
 
 ## Running from source (development)
 
-```bash
-uv sync --extra dev --extra visor --group visor-build
-uv run python -m visor.app            # opens a native pywebview window
-VISOR_NATIVE=0 uv run python -m visor.app   # serves plain HTTP on :8080 instead
-```
+See the root [README](../README.md#visor-desktop-app) for the basic
+`uv sync` / `uv run python -m visor.app` commands — this section only
+covers WSL-specific nuance not needed by an end user.
 
 **Under WSL specifically**: native mode fails —
 `webview.errors.WebViewException: You must have either QT or GTK with

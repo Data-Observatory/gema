@@ -4,11 +4,62 @@
 [![Visor Build](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![uv](https://img.shields.io/badge/managed%20by-uv-3d3d3d)](https://docs.astral.sh/uv/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
 
-Automatic metadata generation for scholarly resources using LLM agents.
+Automatic metadata generation for scholarly resources using LLM agents,
+producing DataCite 4.6 records from minimal resource descriptions (URL,
+title, description, DOI).
 
-## Quickstart
+Two ways to use it:
+
+- **Visor** — a point-and-click desktop app. No terminal, no Python
+  knowledge required.
+- **`metagen`** — a CLI/library for scripting, batch jobs, and CI.
+
+---
+
+# For Users
+
+## Visor (desktop app)
+
+Visor runs the same pipeline behind a simple three-tab UI: **Settings**
+(API keys) -> **Agents** (review/edit what each agent does) -> **Run**
+(paste or upload a resource, get metadata back). No file editing needed —
+Visor ships with a working default configuration.
+
+### Run it from source (works today, any OS)
+
+```bash
+git clone <repo-url>
+cd proj-metadata-agents
+uv sync --extra dev --extra visor --group visor-build
+uv run python -m visor.app            # opens a native desktop window
+```
+
+Under WSL, or any environment without a native window toolkit, serve it as
+a plain web page instead:
+
+```bash
+VISOR_NATIVE=0 uv run python -m visor.app
+# optional: pick the port
+VISOR_PORT=8001 VISOR_NATIVE=0 uv run python -m visor.app
+```
+
+It prints a URL (`http://127.0.0.1:<port>`) — open that in a browser. On
+first run it seeds a writable config at `~/.config/metagen/agents.yaml`
+and defaults every agent to OpenRouter (see
+[Provider defaults](#provider-defaults-opencode-vs-openrouter) below); add
+your `OPENROUTER_API_KEY` on the Settings tab and you're ready to run.
+
+### Building a standalone installer (no Python required by the end user)
+
+Prebuilt installers aren't published as a public release yet. Build one
+yourself, or grab the artifact from a `visor-build.yml` workflow run — see
+[`visor/BUILD.md`](visor/BUILD.md) for the full build/packaging/CI guide
+(Windows `.exe` installer, macOS `.dmg`, portable single-file builds, and
+the known platform caveats).
+
+## The `metagen` CLI
 
 ### Prerequisites
 
@@ -25,17 +76,17 @@ uv sync --extra dev
 
 ### Configuration
 
-1. Copy `.env.example` to `.env` and fill in your API keys:
+1. Copy `.env.example` to `.env` and fill in at least one provider's API key:
 
    ```bash
    cp .env.example .env
-   # Edit .env with your OPENAI_API_KEY, ZAI_API_KEY, or OPENCODE_API_KEY
+   # Edit .env with your OPENROUTER_API_KEY, OPENAI_API_KEY, OPENCODE_API_KEY, or ANTHROPIC_API_KEY
    ```
 
 2. The default config is at `config/agents.yaml` (5 agents for DataCite 4.6 metadata).
    Provider connection settings are defined in `config/providers.yaml`.
 
-## Processing your own dataset
+### Processing your own dataset
 
 This is the real workflow — not a test fixture, an actual new resource you want
 DataCite metadata for. Everything here is `uv run metagen ...`; no test suite
@@ -119,6 +170,10 @@ For flags on `record_golden.py`, `run_live_eval.py`, `sample_corpus.py`,
 `generate_inputs.py`, `compare_models.py`, `judge_models.py`, and
 `validate_real_output.py`: [`scripts/README.md`](scripts/README.md).
 
+---
+
+# For Developers
+
 ## Architecture
 
 ```
@@ -179,6 +234,19 @@ The main pipeline configuration file. Key fields:
 
 See `config/agents.yaml` and `config/providers.yaml` for full examples.
 
+### Provider defaults: opencode vs. OpenRouter
+
+`config/agents.yaml` on disk pins every agent to `opencode` /
+`deepseek-v4-flash` — that's what CI, the test suite, and `metagen process`
+from the CLI actually run against, so results stay reproducible and cheap
+for anyone working on this library. Visor is different: regardless of
+whether it finds `config/agents.yaml` directly or seeds a fresh copy for a
+frozen build, it rewrites that in-memory (never the file on disk) to
+default every agent to OpenRouter's auto-updating DeepSeek V4 Flash alias
+instead — a fresh Visor install should never ship an already-stale pinned
+checkpoint. See `visor/bootstrap.py::apply_external_user_provider_overrides`
+for the exact rule.
+
 ## Agents (DataCite 4.6)
 
 The default config defines 5 agents. None currently declares a `depends_on`, so
@@ -218,6 +286,12 @@ CI (`.github/workflows/ci.yml`) runs the same lint/typecheck/test-library jobs
 gate on `visor-build.yml`'s full multi-OS build matrix. CI never runs anything
 marked `@pytest.mark.live` (real LLM calls, real cost) -- that stays manual-only.
 
+## Working on Visor
+
+Visor is a separate NiceGUI-based subpackage (`visor/`) with its own test
+suite (`make test-visor`). For its architecture, UI structure, building a
+frozen installer, and CI details, see [`visor/BUILD.md`](visor/BUILD.md).
+
 ## Migration from JSON
 
 If you have existing JSON configurations, use the built-in migration tool:
@@ -232,9 +306,11 @@ migrate_json_to_yaml(Path('config/legacy/andrea_v3.json'))
 
 This generates a YAML file alongside the source JSON, preserving both.
 
+---
+
 ## License
 
-MIT -- see [LICENSE](LICENSE)
+AGPL-3.0 -- see [LICENSE](LICENSE)
 
 ## Status
 
