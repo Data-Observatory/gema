@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 import re
+from html.parser import HTMLParser
 
 import httpx
 
@@ -28,7 +29,75 @@ _TAG_RE = re.compile(r"(?s)<[^>]+>")
 _WHITESPACE_RE = re.compile(r"\s+")
 _BARE_DOI_RE = re.compile(r"^10\.\d{4,9}/\S+$")
 
+# Chrome tags whose text is never real content, wherever they appear in the
+# tree (unlike _STRIP_BLOCKS_RE above, this is nesting-aware via HTMLParser,
+# so it also catches e.g. a <nav> inside a <main>).
+_SKIP_TAGS = frozenset(
+    {"script", "style", "nav", "header", "footer", "noscript", "aside", "form", "svg", "button", "select"}
+)
+# Semantic containers real page content usually lives in on sites that use
+# them -- preferred over the whole page when present and substantial, since
+# whole-page text otherwise mixes in nav/breadcrumb/sidebar prose that isn't
+# wrapped in one of _SKIP_TAGS (e.g. a <div class="navbar">).
+_MAIN_TAGS = frozenset({"main", "article"})
+# Below this length a <main>/<article> extraction is treated as too thin to
+# trust (e.g. an empty shell with just a heading) -- falls back to whole-page.
+_MIN_MAIN_TEXT_LEN = 200
+
 USER_AGENT = "Mozilla/5.0 (compatible; metagen/1.0)"
+
+
+class _MainContentParser(HTMLParser):
+    """Nesting-aware HTML text extractor: skips real chrome tags anywhere in
+    the tree, and separately collects text inside <main>/<article> so callers
+    can prefer it over the whole page when it looks substantial."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._skip_depth = 0
+        self._main_depth = 0
+        self.all_chunks: list[str] = []
+        self.main_chunks: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in _SKIP_TAGS:
+            self._skip_depth += 1
+        elif tag in _MAIN_TAGS:
+            self._main_depth += 1
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        pass  # self-closing tags (e.g. <br/>) never carry text of their own.
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in _SKIP_TAGS and self._skip_depth > 0:
+            self._skip_depth -= 1
+        elif tag in _MAIN_TAGS and self._main_depth > 0:
+            self._main_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth > 0:
+            return
+        self.all_chunks.append(data)
+        if self._main_depth > 0:
+            self.main_chunks.append(data)
+
+
+def _extract_relevant_text(html: str) -> str:
+    """Parse *html*, preferring <main>/<article> text over the whole page
+    when present and substantial. Falls back to the whole (chrome-stripped)
+    page on any parse error or when no substantial main content is found --
+    same tolerance contract as the rest of this module (never raises)."""
+    parser = _MainContentParser()
+    try:
+        parser.feed(html)
+    except Exception as exc:  # malformed markup must never break extraction
+        logger.debug("HTML parse failed, falling back to regex strip: %s", exc)
+        return _STRIP_BLOCKS_RE.sub(" ", html)
+
+    main_text = "".join(parser.main_chunks)
+    if len(main_text.strip()) >= _MIN_MAIN_TEXT_LEN:
+        return main_text
+    return "".join(parser.all_chunks)
 
 
 def _resolve_url(url: str) -> str:
@@ -44,16 +113,18 @@ def _resolve_url(url: str) -> str:
 
 
 def clean_html_to_text(html: str, max_len: int = 8000) -> str:
-    """Strip script/style/nav/header/footer blocks and all remaining tags,
-    collapse whitespace, truncate to *max_len*.
+    """Extract page text (preferring <main>/<article> when substantial, see
+    _extract_relevant_text), strip any remaining tags, collapse whitespace,
+    truncate to *max_len*.
 
-    Not a full readability algorithm — real page nav/breadcrumb text often
-    survives alongside real content, but the agent prompts already instruct
-    hunting for specific facts (dates, file links) in whatever text they're
-    given, so noise is tolerable.
+    Not a full readability algorithm — a <main>/<article>-less page's real
+    content can still carry alongside nav/breadcrumb text not wrapped in any
+    of _SKIP_TAGS, but the agent prompts already instruct hunting for
+    specific facts (dates, file links) in whatever text they're given, so
+    residual noise is tolerable.
     """
-    html = _STRIP_BLOCKS_RE.sub(" ", html)
-    text = _TAG_RE.sub(" ", html)
+    text = _extract_relevant_text(html)
+    text = _TAG_RE.sub(" ", text)
     text = text.replace("&nbsp;", " ").replace("&amp;", "&")
     text = _WHITESPACE_RE.sub(" ", text).strip()
     return text[:max_len]

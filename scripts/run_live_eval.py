@@ -191,8 +191,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="glm-5.2",
-        help="Model for the judge LLM — may differ from production model (default: glm-5.2)",
+        default="glm-5.3",
+        help="Model for the judge LLM — may differ from production model (default: glm-5.3)",
     )
     parser.add_argument(
         "--threshold",

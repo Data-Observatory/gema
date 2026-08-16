@@ -238,11 +238,14 @@ async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    await user.should_see(marker="settings-provider-remove-opencode")  # not used by any agent
+    # openai is genuinely unused: the 5 main agents run on opencode and
+    # dataverse export's Subject Classifier (config/dataverse_export.yaml)
+    # runs on zai-coding-plan.
+    await user.should_see(marker="settings-provider-remove-openai")
 
-    user.find(marker="settings-provider-remove-opencode").click()
+    user.find(marker="settings-provider-remove-openai").click()
 
-    await user.should_see("Removed provider 'opencode'")
+    await user.should_see("Removed provider 'openai'")
 
 
 async def test_settings_remove_provider_in_use_is_blocked(user: User, monkeypatch, tmp_path) -> None:
@@ -250,14 +253,14 @@ async def test_settings_remove_provider_in_use_is_blocked(user: User, monkeypatc
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    # zai-coding-plan is config/agents.yaml's default provider — every
-    # agent uses it out of the box, so removing it must be refused.
-    await user.should_see(marker="settings-provider-remove-zai-coding-plan")
+    # opencode is config/agents.yaml's default provider — every agent uses
+    # it out of the box, so removing it must be refused.
+    await user.should_see(marker="settings-provider-remove-opencode")
 
-    user.find(marker="settings-provider-remove-zai-coding-plan").click()
+    user.find(marker="settings-provider-remove-opencode").click()
 
-    await user.should_see("Can't remove 'zai-coding-plan'")
-    await user.should_see(marker="settings-provider-remove-zai-coding-plan")  # still there
+    await user.should_see("Can't remove 'opencode'")
+    await user.should_see(marker="settings-provider-remove-opencode")  # still there
 
 
 async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:
@@ -278,10 +281,10 @@ async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypa
 async def test_settings_tab_lists_key_input_for_every_declared_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:
-    """Regression: opencode (declared in config/providers.yaml but not
-    used by any agent by default) must still get a key input in Settings
-    — otherwise there's no way to ever enter its key before switching an
-    agent to it in the Agents tab."""
+    """Regression: every provider declared in config/agents.yaml's
+    providers: list must get a key input in Settings, whether or not any
+    agent currently uses it — otherwise there's no way to ever enter its
+    key before switching an agent to it in the Agents tab."""
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 
     await user.open("/")

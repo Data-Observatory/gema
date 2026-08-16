@@ -6,6 +6,21 @@ enough context to pick up cold; prune entries once actually done.
 
 ## Agents / prompts
 
+- **FIXED (2026-08-15) — `core_metadata`'s `publication_year` fallback rule
+  not followed when the only extracted date is typed `Updated`/`Collected`
+  (not `Issued`/`Created`).** Root cause: EJEMPLO 5 already covered the
+  general fallback branch but only demonstrated a single plain year with
+  `date_type: Collected` — neither failing real case matched that shape
+  (`sample_input01`: `date_type: Updated`; `sample_input04`: a date *range*
+  `"2021/2022"` typed `Collected`). Fix: added two new worked examples to
+  `config/agents.yaml`'s `core_metadata` prompt — EJEMPLO 6 (`Updated`-only
+  date → `publication_year` derived from it) and EJEMPLO 7 (date range,
+  `Collected` → oldest/start year, not the range end) — plus a reinforcing
+  ❌/✅ pair in `ERRORES COMUNES A EVITAR`. Verified 3/3 live runs on both
+  previously-failing inputs before re-recording (`sample_input01` →
+  `"2026"`, `sample_input04` → `"2021"`), then confirmed again in the
+  actual re-recorded golden fixtures. Full golden set re-recorded and
+  `pytest -m "not live"` (845 passed), `ruff`, `mypy` all green.
 - **Grounded lookup tool for agents (web search or a static gazetteer
   function-call), instead of relying on the model's parametric knowledge.**
   `creators_publishers`'s hardcoded Chile-ministry→affiliation lookup table
@@ -41,6 +56,83 @@ enough context to pick up cold; prune entries once actually done.
     used tonight, on `creators_publishers` alone, before deciding whether
     it's worth the added latency/cost — and before considering it for any
     other agent.
+
+  **Built (2026-08-14) — piloted, regressed quality, disabled in production
+  config; mechanism kept, not deleted.** Implemented as scoped: `llm/tools.py`
+  (registry + `lookup_organization`, backed by `RORClient`),
+  `InstructorLLMClient.complete_with_tools` (unforced `tool_choice="auto"`
+  loop capped at 2 rounds, then a final forced structured-output call),
+  passthrough through `RetryableLLMClient`/`CachedLLMClient` (cache key now
+  folds in `tools`), `AgentConfig.tools` (validated against the registry at
+  config-load time), `BaseAgent`/`AgentRegistry` wiring. 27 new tests, all
+  green; lint/typecheck clean.
+
+  **18-item do_catalog pilot (deepseek-only), tools on vs. off, same config
+  otherwise**: avg structural score **0.539 → 0.483** — a real regression,
+  not noise. **Root cause found**: on 2/18 items (`360`, `366`), the model
+  called the tool across both rounds without stopping, hit
+  `max_tool_rounds=2`, and the final structured-output call — fed the full
+  accumulated tool-exchange conversation — came back with `creators: []`
+  and `publishers: []` entirely, discarding organization names the
+  tools-off run extracted correctly from the same input (e.g. "Servicio
+  Hidrográfico y Oceanográfico de la Armada de Chile", present verbatim in
+  `resource.editor`/`producer`). Every item was also slower (~17-25s vs.
+  ~12-16s), including ones where no lookup was plausibly needed — `auto`
+  tool_choice lets the model reach for it liberally, not just when
+  genuinely unsure.
+
+  Leading hypothesis, **not confirmed, next step if revisited**: the
+  accumulated conversation's earlier assistant turns reference tool calls
+  against a `lookup_organization` schema that the *final* Instructor call
+  doesn't re-declare in its own `tools=` (Instructor sets its own synthetic
+  tool for the response model) — some providers may handle dangling
+  tool-call references to an undeclared tool by degrading the response
+  rather than erroring outright. Would need a raw request/response capture
+  of an actual round-cap case to confirm before attempting a fix (e.g.
+  re-declaring the original tool schema alongside Instructor's on the final
+  call, or having the loop synthesize a plain user-turn summary of tool
+  results instead of leaving raw tool-call messages in history).
+
+  **Disabled for now**: reverted `creators_publishers`'s `tools:` config and
+  the prompt sentence referencing it; golden fixtures re-recorded back to
+  the no-tools baseline. The infrastructure (`llm/tools.py`,
+  `complete_with_tools`, config validation, tests) stays in the codebase —
+  generic, reusable, and already proven to work correctly on the 16/18
+  items that *didn't* hit the round cap — just not wired to any agent in
+  production until the round-cap failure mode above is understood and
+  fixed.
+
+  **FIXED (2026-08-15) — hypothesis confirmed structurally, root-caused
+  without needing a raw-capture session.** Re-read `complete_with_tools`
+  itself rather than instrumenting a live call: the final structured-output
+  call was built by mutating and reusing the exact same `messages` list the
+  tool-round loop sent to the raw client — so on a round-cap hit, the final
+  Instructor call inherited a conversation ending in earlier assistant turns
+  with real `tool_calls` entries (referencing `lookup_organization`) plus
+  `role: "tool"` result messages, none of which Instructor's own forced
+  `tool_choice` (its synthetic response-model tool) ever re-declares. Fix:
+  `complete_with_tools` no longer reuses the loop's raw message history for
+  the final call. It now tracks each round's `(tool_name, arguments, result)`
+  separately and builds the final call from a *fresh* `[system?, user]` pair
+  plus one plain-text user-role summary of whatever was looked up (only
+  appended if a tool was actually called) — no `tool_calls`/`role:"tool"`
+  structure ever reaches the final call, sidestepping the mixed-tool_choice
+  conversation entirely. `tests/test_instructor_client.py`'s
+  `test_tool_call_executed_and_result_fed_back` updated to assert the new
+  final-message shape.
+
+  **Re-verified on the same 18-item do_catalog pilot, tools back on**: avg
+  structural score **0.543** (vs. 0.539 tools-off baseline, 0.483 regressed-
+  before-fix) — regression gone, noise-level improvement over baseline.
+  `360`/`366` (the two items that previously came back with empty
+  `creators`/`publishers`) now score `creators_name: 1.000` each and their
+  saved outputs show real extracted data (e.g. "Servicio Hidrográfico y
+  Oceanográfico de la Armada de Chile" with a resolved
+  `https://ror.org/04rfh4r06`), confirmed by reading the actual output JSON,
+  not just the aggregate metric. `creators_publishers` re-enabled with
+  `tools: [lookup_organization]` in `config/agents.yaml` (a new PASO 3
+  sentence tells the model when to use it); golden fixtures re-recorded;
+  full suite green.
 - **Split `core_metadata` into two agents** (identified during the 2026-08-11
   prompt review). It's twice the size of any other agent (9 reasoning
   steps, 9 output fields) and its weakest-quality fields (`geo_locations`,
@@ -82,6 +174,24 @@ enough context to pick up cold; prune entries once actually done.
   be noise (inferred from resource type, not a real declared frequency),
   this whole "weak field" framing may not need a code fix at all.
 
+  **Spot-check done (2026-08-14) — confirmed noise, closed, no code fix.**
+  Checked all 4 one-off-resource cases directly (`230`, `232`, `246`: "VII
+  Censo Nacional Agropecuario año 2007", a single census; `418`: 2017
+  forest-fire perimeters, a single year). None of their `description` or
+  `fetched_content` (all empty — ungenerated without `--fetch`) states any
+  recurrence/frequency anywhere; ground truth's `frequency_type: "yearly"`
+  isn't derivable from the given input by any model, honest or not. Same
+  check on `rights`'s `CC-BY-4.0` ground truth (`119`, `130`, `134`): no
+  license/CC mention in input text either. Both confirm the same
+  ground-truth-exposes-more-than-input class; `subjects`'s ground truth
+  (formal LCSH English headings with `id.loc.gov` `value_uri`s, e.g.
+  `"Government purchasing -- Chile"`) is structurally the same — a Spanish
+  natural-language description was never going to produce a Library of
+  Congress heading regardless of prompt quality. **All three "weak field"
+  findings (`temporal_events`, `rights_identifier`, `subjects`) are eval
+  corpus artifacts, not agent/prompt defects — no further prompt work
+  warranted on any of them.**
+
   **Decode-order fix landed (2026-08-13) and re-measured — does NOT explain
   the earlier flat result.** Root-cause finding: all 5 agents shared one
   `DataCiteOutputModel` (`schemas/datacite.py`), so Instructor's structured-
@@ -112,8 +222,8 @@ enough context to pick up cold; prune entries once actually done.
   own explicit rule), not a position/order artifact, since fixing position
   didn't move it at all. **Full agent split still NOT recommended** — the
   remaining evidence points at "genuinely hard field" or "ground truth
-  noise" (see the `temporal_events` spot-check above, still open), not at
-  architecture.
+  noise" (see the `temporal_events` spot-check above, confirmed and closed),
+  not at architecture.
 
 - **Per-agent structured-output model — done** (2026-08-13):
   `Schema.build_output_model(fields)` (new `Schema` Protocol method,
@@ -179,11 +289,15 @@ enough context to pick up cold; prune entries once actually done.
   enough to measure, `eval_common.py` would need a metric for it — not
   scoped here.
 
-  **Not yet wired**: `creators_publishers` itself (the other consumer that
-  independently extracts overlapping stakeholder entities from
-  `core_metadata`'s `resource.editor/maintainer/producer/contact`) —
-  deferred pending review of whether this pilot's consistency win is worth
-  the same treatment there, per the original scoping. **Follow-up gap
+  **`creators_publishers` wiring — done** (2026-08-14): now declares
+  `depends_on: [core_metadata]` + `context_fields: [resource]`; its PASO 1
+  instructs the model to reuse the injected `resource.editor/maintainer/
+  producer/contact` names as-is for the matching actors instead of
+  re-deriving them independently, same consistency rationale as
+  `rights_funding_citations`'s `rights_holder` rule above. Golden fixtures
+  re-recorded, full suite green. Moves `creators_publishers` to its own
+  wave (after `core_metadata`, before `rights_funding_citations`, which
+  already depended on both). **Follow-up gap
   fixed** (2026-08-14): `context_fields` entries weren't cross-validated
   against anything, so a typo'd field name would have silently injected
   nothing at runtime rather than erroring — `PipelineConfig._validate_references`
@@ -320,33 +434,109 @@ enough context to pick up cold; prune entries once actually done.
   execution either. **Done** (2026-08-11): `metagen list-known-providers`
   CLI command reads the same pool, for discoverability parity of the
   autofill convenience.
-- **`max_workers` bump when production model moves off zai-coding-plan.**
-  Currently pinned to 1 (`4101ac9`) because that provider's account rate
-  limit is tight (429s even at `max_workers=2`). Confirmed empirically this
-  session: `opencode:deepseek-v4-flash` handles `max_workers=5` with zero
-  429s, ~3x wall-clock speedup per resource (18.7s vs ~57s summed). Safe to
-  raise only if/when the default provider actually changes — don't touch it
-  while still on glm-5.2. When it's time: use the existing 3-level cascade
-  (`PipelineConfig.effective_max_workers(provider, model)` — global default
-  with no concurrency assumed, provider-level override, provider-scoped
-  model-level override), don't invent a new mechanism.
+- **`max_workers` bump when production model moves off zai-coding-plan —
+  done** (2026-08-14): all 5 agents in `config/agents.yaml` switched from
+  `zai-coding-plan`/`glm-5.3` to `opencode`/`deepseek-v4-flash` (also
+  `default_provider`); `opencode`'s existing `max_workers: 5` override now
+  actually applies (previously configured but unused, since no agent ran
+  against `opencode`). No code change needed — the existing 3-level cascade
+  (`PipelineConfig.effective_max_workers(provider, model)`) already handled
+  it. **Found and fixed a real blocker during the switch**: Instructor's
+  forced `tool_choice` (used for every structured-output call) fails against
+  `opencode`'s `deepseek-v4-flash` with `400: Thinking mode does not support
+  this tool_choice` — the model defaults to "thinking mode," which is
+  incompatible with a forced tool call. Fixed via `extra_body: {thinking:
+  {type: disabled}}` on all 5 agents (the plumbing — `AgentConfig.extra_body`
+  → `create_llm_client` — already existed, unused, with a docstring already
+  anticipating exactly this fix; just needed setting in the YAML). Verified
+  live end-to-end (`metagen process`) before and after the fix. Also found
+  `tests/test_regression.py`'s `_make_factory` had drifted out of sync with
+  `scripts/record_golden.py`'s (the one it's commented as "mirroring") —
+  missing the `extra_body` passthrough param entirely, so regression tests
+  failed with `_factory() got an unexpected keyword argument 'extra_body'`
+  the moment any agent config actually set it. Fixed to match. Golden
+  fixtures re-recorded for the new provider/model; full suite green
+  (818 passed), lint/typecheck clean.
 - **`mimo-v2.5` dropped from the eval model set** (decision, 2026-08-11): a
   content-dense DOI resource (`136`, GFZ dataset, 6000-char fetched_content)
   caused a 3244s (54min) stall for mimo-v2.5 vs. 1201s for glm-5-turbo on the
   same eval run — too unreliable to keep as a production candidate. Eval/prod
-  model set going forward: `glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`.
+  model set going forward: `glm-5.3`, `glm-5-turbo`, `deepseek-v4-flash`.
 - **Real production content-fetch merged** (`feature/auto-content-fetch`,
   PR #9, into `dev`), **left off by default** (decision, 2026-08-11):
   content-dense inputs correlate with the worst per-item stalls regardless
   of model (see the dropped mimo-v2.5 finding above) — flipping
   `enable_content_fetch` on for every caller of the default config without a
   scale eval to justify it isn't worth the risk. Stays an explicit opt-in.
-  `max_len` tuning still open if/when someone actually opts in and hits it.
+
+  **Scale eval run (2026-08-15) — stall risk resolved under current config,
+  modest quality gain, one real caveat found.** Ran a 20-item do_catalog
+  sample (deliberately size-stratified: 6 items at the 8000-char `max_len`
+  truncation cap down to 3 with empty `fetched_content`, as a stall-risk
+  stress test) through the real `Pipeline` twice — `enable_content_fetch`
+  off (today's default) vs. on — on current production
+  (`opencode:deepseek-v4-flash`, `max_workers: 5`), each run capped at a
+  180s per-item safety timeout (well beyond any legitimate call).
+
+  - **Stability: 40/40 succeeded, zero timeouts, no stalls at all** —
+    every item finished in 15-20s, including all 6 pages truncated at the
+    8000-char cap. This directly answers the `mimo-v2.5`-era stall concern:
+    that risk was specific to `mimo-v2.5`; it doesn't reproduce on the
+    current model/provider/concurrency.
+  - **Quality: average structural score 0.479 → 0.501 (+0.022)**, net
+    positive, with real per-item variance (up to +0.16 gains on several
+    items; ~7/20 flat — dead links or non-additive content, expected).
+    Two modest regressions (-0.11, -0.03): traced item `92`'s regression to
+    its fetched page being mostly site-navigation chrome ("Quiénes
+    Somos... Buscador...") rather than the actual dataset description,
+    diluting rather than helping `subjects`' exact-match scoring.
+  - **Partially addressed (2026-08-15)**: `content_fetcher.py`'s
+    `_extract_relevant_text` now uses stdlib `html.parser` (nesting-aware,
+    no new dependency) to prefer `<main>`/`<article>` text over the whole
+    page when substantial (>= 200 chars), and skips real `nav`/`header`/
+    `footer`/`aside`/`form` tags wherever they sit in the tree (the old
+    regex could only strip them at the top level). Falls back to the old
+    whole-page behavior when no semantic container is found or it's too
+    thin — never worse than before. 6 new unit tests
+    (`test_content_fetcher.py`), all passing; the existing 21 pass
+    unchanged (confirms no behavior change for already-passing cases).
+    **Honest limitation, checked against the actual item-`92` page
+    (`spensiones.cl`)**: this fix only helps sites using real semantic
+    HTML5 containers. That page's chrome (menu items, breadcrumb) isn't
+    wrapped in any semantic tag or skip-tag at all — it sits inside a
+    generic `<div id="main">` used as a whole-page layout wrapper (a common
+    Chilean gov-portal CMS template), so `_extract_relevant_text` still
+    falls back to whole-page text there, unchanged. A real fix for that
+    class of page needs a content-density heuristic (readability-style
+    text-to-tag-density scoring per DOM subtree), a materially bigger task
+    — not attempted here. Re-verified via the 18-item do_catalog pilot
+    (which now exercises `enable_content_fetch: true` for real, alongside
+    the tool-loop fix above): avg **0.543**, no regression.
+  - `max_len` (currently 8000, truncation-only) tuning is separately still
+    open if/when someone hits it in practice.
+  - **Enabled by default (2026-08-15)**: `enable_content_fetch: true` set in
+    `config/agents.yaml`, on the recommendation above.
+  - **Real bug found while flipping it, fixed**: `tests/test_regression.py`
+    builds its `Pipeline` from the real `config/agents.yaml`, and
+    `sample_input05` (a real but dead `geoportal.cl` URL, 404) has empty
+    `fetched_content` — with the flag on, every `pytest -m "not live"` run
+    would've attempted a genuine live HTTP GET, breaking the "no API
+    key/network needed" cache-replay contract this test's own docstring
+    promises. Fixed by forcing `enable_content_fetch=False` on the config
+    copy this one test builds its `Pipeline` from (real prod config is
+    untouched) — regression tests validate LLM output against a fixed input
+    snapshot, not the live-fetch mechanism itself (covered by
+    `test_pipeline_integration.py`). No golden re-record needed: the fetch
+    was always a no-op for every fixture either way (5/6 already carry
+    caller-supplied `fetched_content`; `sample_input05`'s URL 404s, so
+    fetching live or not live produces the same empty result) — confirmed
+    via a full `pytest -m "not live"` run before and after (845 passed,
+    14s, no stall).
 
 ## Eval harness
 
 - **Full-100 do_catalog scale-up — done** (2026-08-13). All 3 production
-  models (`glm-5.2`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
+  models (`glm-5.3`, `glm-5-turbo`, `deepseek-v4-flash`), structural +
   LLM-judge (`opencode:qwen3.7-plus`), 100/100 succeeded each, 0 GEval
   failures. Structural numbers below are **corrected** (2026-08-13) for the
   `rights`-scorer empty-vs-empty bug fixed in `scripts/eval_common.py` (see
@@ -356,7 +546,7 @@ enough context to pick up cold; prune entries once actually done.
   fix was actually measured):
   | model | structural (corrected) | GEval | field-judge |
   |---|---|---|---|
-  | glm-5.2 | 0.527 | 0.334 | 0.708 |
+  | glm-5.3 | 0.527 | 0.334 | 0.708 |
   | glm-5-turbo | 0.514 | 0.337 | 0.713 |
   | deepseek-v4-flash | 0.506 | 0.324 | 0.730 |
 
@@ -381,8 +571,8 @@ enough context to pick up cold; prune entries once actually done.
     (`1.0` on empty-vs-empty). Only 1/100 ground-truth files are actually
     empty, so this was a small, mechanical fix (`overall` +0.001, see above),
     not the ~10%-of-weight bug an initial (wrong) reading suggested.
-  - **`rights` — real, separate recall gap, NOT fixed here, needs a
-    spot-check first.** Ground truth has `rights_identifier` populated on
+  - **`rights` — real recall gap, spot-checked (2026-08-14), closed — not a
+    prompt bug.** Ground truth has `rights_identifier` populated on
     **99/100** files, almost all genuine SPDX ids (`CC-BY-4.0` ×66,
     `CC-BY-SA-4.0` ×18, `cc-by-4.0` ×4, `ODbL-1.0` ×3, plus singletons).
     Models emit *any* `rights` entry on only 8-13/100 items and **0/100**
@@ -390,22 +580,20 @@ enough context to pick up cold; prune entries once actually done.
     Abiertos del Estado de Chile" free-text fallback
     (`rights_funding_citations`'s PRIORIDAD 3 branch,
     `config/agents.yaml` ~880-884), never the specific SPDX id truth has.
-    **Before touching the prompt**: spot-check 2-3 of the 66 `CC-BY-4.0`
-    ground-truth files' real source pages to confirm the license was stated
-    in text the do_catalog reverse-input extractor actually exposes (not
-    sourced from an external catalog license field outside the given input)
-    — same discipline as the `temporal_events` spot-check above. If
-    confirmed extractable, this is a real `rights_funding_citations`
-    prompt-priority bug (PRIORIDAD 3 firing ahead of an available, specific
-    license mention); if not, it's the same "ground truth exposes more than
-    the input" class as `subjects` below.
+    Checked 3 of the 66 `CC-BY-4.0` files (`119`, `130`, `134`) directly
+    against their full-100 pipeline input: no license/CC mention anywhere
+    in `description`, and `fetched_content` is empty on all 100 (that batch
+    was generated without `--fetch`) — the SPDX id genuinely isn't in what
+    the model was given, so PRIORIDAD 3 firing is correct behavior, not a
+    priority-ordering bug. Ground truth's license comes from an external
+    catalog field outside the do_catalog reverse-input extraction, same
+    class as `subjects` below.
   - **`subjects` — ground truth is formal English LCSH subject headings**
     (`"Judicial statistics -- Chile"`, `"Household surveys - Chile"`), not
     phrases lifted from the Spanish source description; the prompt correctly
-    forbids inventing terms not in the source text. Likely the same
+    forbids inventing terms not in the source text. Confirmed same
     ground-truth-exposes-more-than-input class as `rights`/`temporal_events`
-    — logged, not fixed; same spot-check treatment recommended before any
-    prompt change.
+    — closed, no prompt change warranted.
   - **`media_formats` — large gap on the full-100 corpus specifically, NOT
     an agent/prompt bug — verified root cause (2026-08-13, corrected
     2026-08-14 after an independent review caught two wrong facts in the
@@ -454,13 +642,22 @@ enough context to pick up cold; prune entries once actually done.
       little on that same batch's inputs.
 
     **Not implementing the deterministic-enricher rewrite — the premise
-    doesn't hold, still open.** Concrete, cheap next step if `media_formats`
-    quality on the full-100 corpus matters: regenerate it with
-    `generate_inputs.py --fetch` (already exists, opt-in) and re-run the
-    structural comparison — given the 5/5 pilot result, this is a
-    reasonable bet, not just a hopeful guess. Separately, whether to default
-    `enable_content_fetch` on for production traffic generally is still the
-    open, unrelated latency-stall question already logged above.
+    doesn't hold.** **Confirmed (2026-08-14)**: regenerated the full-100
+    corpus with `generate_inputs.py --fetch` (backup of the pre-fetch
+    version kept at `data/do_catalog/inputs.bak-no-fetch/`, gitignored like
+    the rest of `data/do_catalog/`) — 83/100 URLs fetched successfully (17
+    dead links, mostly stale `geoportal.cl` catalog entries returning 404).
+    Re-ran the structural comparison (`opencode:deepseek-v4-flash`,
+    `reports/do_catalog/full100_fetch/`): `media_formats` average **0.055 →
+    0.402**, non-zero on **48/100** items (was 1-2/100). Confirms the
+    hypothesis directly on the exact corpus the original 94-vs-1 statistic
+    came from — the agent was never the problem, the batch's missing
+    `fetched_content` was. Remaining gap (48/100, not 83/100) is now mostly
+    about whether a fetched page's cleaned text actually surfaces a
+    download link/format in prose, not about the input pipeline. Separately,
+    whether to default `enable_content_fetch` on for production traffic
+    generally is still the open, unrelated latency-stall question already
+    logged above.
   - **Accent folding added to `_norm()`** (NFKD, strip combining marks) as
     correctness hardening — confirmed to move **nothing** on this corpus
     (`creators_name`/`ror_match`-equivalent scores byte-identical before and

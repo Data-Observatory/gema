@@ -69,6 +69,12 @@ class AgentConfig(BaseModel):
     # DeepSeek V4's "thinking mode" (extra_body={"thinking": {"type": "disabled"}}),
     # required because Instructor's forced tool_choice isn't supported alongside it.
     extra_body: dict[str, Any] | None = None
+    # Names of tools (see llm/tools.py's TOOL_REGISTRY) this agent may call
+    # mid-reasoning via BaseAgent's tool-call loop, before its final forced
+    # structured-output call. Empty by default -- most agents never see a
+    # tools= request at all. Validated against TOOL_REGISTRY at pipeline
+    # construction (see PipelineConfig._validate_references).
+    tools: list[str] = []
 
 
 class PipelineConfig(BaseModel):
@@ -178,6 +184,20 @@ class PipelineConfig(BaseModel):
                         f"agent '{agent.id}' context_fields {unknown_fields} not produced by "
                         f"any depends_on ancestor ({sorted(agent.depends_on)}). "
                         f"Available: {sorted(reachable_fields)}"
+                    )
+                    raise ValueError(msg)
+
+            if agent.tools:
+                # Local import -- config/models.py must stay import-light (no
+                # network/heavy deps at module load), and llm/tools.py's
+                # TOOL_REGISTRY is only needed for this one validation check.
+                from metadata_enricher.llm.tools import TOOL_REGISTRY
+
+                unknown_tools = [t for t in agent.tools if t not in TOOL_REGISTRY]
+                if unknown_tools:
+                    msg = (
+                        f"agent '{agent.id}' tools {unknown_tools} not found in "
+                        f"TOOL_REGISTRY. Available: {sorted(TOOL_REGISTRY)}"
                     )
                     raise ValueError(msg)
 
