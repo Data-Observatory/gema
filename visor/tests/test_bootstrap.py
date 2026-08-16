@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 import visor.bootstrap as bootstrap
+from metadata_enricher.config.models import PipelineConfig
+
+_REAL_AGENTS_YAML = Path(__file__).resolve().parent.parent.parent / "config" / "agents.yaml"
 
 
 class TestBundledConfigPath:
@@ -80,6 +86,135 @@ class TestResolveConfigPath:
 
         with pytest.raises(FileNotFoundError):
             bootstrap.resolve_config_path()
+
+    def test_seeding_applies_external_user_provider_overrides(self, monkeypatch, tmp_path):
+        """A dev running visor from an editable repo checkout hits
+        find_config() and gets config/agents.yaml's real opencode config
+        directly -- same as CI/the CLI. Only a frozen build's first-run
+        seed (no repo, no user config yet -- a normal external user) goes
+        through this override."""
+
+        def _raise():
+            raise FileNotFoundError("no config found")
+
+        bundled = tmp_path / "bundled_agents.yaml"
+        bundled.write_text(
+            yaml.safe_dump(
+                {
+                    "providers": [
+                        {"name": "opencode", "api_key_env": "OPENCODE_API_KEY", "default": True},
+                        {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY", "default": False},
+                    ],
+                    "default_provider": "opencode",
+                    "agents": [
+                        {
+                            "id": "a0",
+                            "provider": "opencode",
+                            "model": "deepseek-v4-flash",
+                            "extra_body": {"thinking": {"type": "disabled"}},
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        target = tmp_path / "user_config" / "agents.yaml"
+
+        monkeypatch.setattr(bootstrap, "find_config", _raise)
+        monkeypatch.setattr(bootstrap, "bundled_config_path", lambda: bundled)
+
+        bootstrap.resolve_config_path(user_config_path=target)
+
+        seeded = yaml.safe_load(target.read_text(encoding="utf-8"))
+        assert seeded["default_provider"] == "openrouter"
+        assert seeded["agents"][0]["provider"] == "openrouter"
+        assert seeded["agents"][0]["model"] == "~deepseek/deepseek-v4-flash-latest"
+        assert seeded["agents"][0]["extra_body"] == {"reasoning": {"enabled": False}}
+        providers_by_name = {p["name"]: p for p in seeded["providers"]}
+        assert providers_by_name["opencode"]["default"] is False
+        assert providers_by_name["openrouter"]["default"] is True
+
+
+class TestApplyExternalUserProviderOverrides:
+    """The transform config/agents.yaml -> visor's shipped external-user
+    default gets applied through, on first-run seeding for a frozen build
+    only (see TestResolveConfigPath.test_seeding_applies_external_user_provider_overrides)."""
+
+    def _sample_yaml(self) -> str:
+        return yaml.safe_dump(
+            {
+                "providers": [
+                    {"name": "opencode", "api_key_env": "OPENCODE_API_KEY", "default": True},
+                    {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY", "default": False},
+                    {"name": "openai", "api_key_env": "OPENAI_API_KEY"},
+                ],
+                "default_provider": "opencode",
+                "agents": [
+                    {
+                        "id": "a0",
+                        "provider": "opencode",
+                        "model": "deepseek-v4-flash",
+                        "extra_body": {"thinking": {"type": "disabled"}},
+                    },
+                    {"id": "a1", "provider": "openai", "model": "gpt-x"},
+                ],
+            }
+        )
+
+    def test_swaps_opencode_agents_to_openrouter(self):
+        result = yaml.safe_load(
+            bootstrap.apply_external_user_provider_overrides(self._sample_yaml())
+        )
+        opencode_agent = next(a for a in result["agents"] if a["id"] == "a0")
+        assert opencode_agent["provider"] == "openrouter"
+        assert opencode_agent["model"] == "~deepseek/deepseek-v4-flash-latest"
+        assert opencode_agent["extra_body"] == {"reasoning": {"enabled": False}}
+
+    def test_leaves_agents_on_other_providers_untouched(self):
+        result = yaml.safe_load(
+            bootstrap.apply_external_user_provider_overrides(self._sample_yaml())
+        )
+        openai_agent = next(a for a in result["agents"] if a["id"] == "a1")
+        assert openai_agent["provider"] == "openai"
+        assert openai_agent["model"] == "gpt-x"
+        assert "extra_body" not in openai_agent
+
+    def test_flips_provider_default_flags_and_default_provider(self):
+        result = yaml.safe_load(
+            bootstrap.apply_external_user_provider_overrides(self._sample_yaml())
+        )
+        by_name = {p["name"]: p for p in result["providers"]}
+        assert by_name["opencode"]["default"] is False
+        assert by_name["openrouter"]["default"] is True
+        assert result["default_provider"] == "openrouter"
+
+    def test_returns_input_unchanged_when_openrouter_provider_absent(self):
+        raw = yaml.safe_dump(
+            {
+                "providers": [{"name": "opencode", "api_key_env": "OPENCODE_API_KEY"}],
+                "default_provider": "opencode",
+                "agents": [{"id": "a0", "provider": "opencode", "model": "deepseek-v4-flash"}],
+            }
+        )
+        assert bootstrap.apply_external_user_provider_overrides(raw) == raw
+
+    def test_non_mapping_yaml_returned_unchanged(self):
+        assert bootstrap.apply_external_user_provider_overrides("schema_name: seeded") == (
+            "schema_name: seeded"
+        )
+
+    def test_real_bundled_config_transforms_cleanly_and_still_validates(self):
+        """End-to-end confidence check against the actual committed
+        config/agents.yaml, not just a hand-built sample."""
+        raw = _REAL_AGENTS_YAML.read_text(encoding="utf-8")
+        transformed = bootstrap.apply_external_user_provider_overrides(raw)
+
+        config = PipelineConfig(**yaml.safe_load(transformed))
+        assert config.default_provider == "openrouter"
+        for agent in config.agents:
+            assert agent.provider == "openrouter"
+            assert agent.model == "~deepseek/deepseek-v4-flash-latest"
+            assert agent.extra_body == {"reasoning": {"enabled": False}}
 
 
 class TestLoadPipelineConfig:
