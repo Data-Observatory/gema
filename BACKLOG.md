@@ -463,10 +463,24 @@ enough context to pick up cold; prune entries once actually done.
     from navigation/boilerplate — the one concrete quality gap this eval
     surfaced. `max_len` (currently 8000, truncation-only) tuning is
     separately still open if/when someone hits it in practice.
-  - **Recommendation**: safe to enable by default given current findings —
-    no stall risk, modest net-positive quality — but flipping the default
-    is a production behavior change, left as an explicit decision for
-    whoever owns that call, not made here.
+  - **Enabled by default (2026-08-15)**: `enable_content_fetch: true` set in
+    `config/agents.yaml`, on the recommendation above.
+  - **Real bug found while flipping it, fixed**: `tests/test_regression.py`
+    builds its `Pipeline` from the real `config/agents.yaml`, and
+    `sample_input05` (a real but dead `geoportal.cl` URL, 404) has empty
+    `fetched_content` — with the flag on, every `pytest -m "not live"` run
+    would've attempted a genuine live HTTP GET, breaking the "no API
+    key/network needed" cache-replay contract this test's own docstring
+    promises. Fixed by forcing `enable_content_fetch=False` on the config
+    copy this one test builds its `Pipeline` from (real prod config is
+    untouched) — regression tests validate LLM output against a fixed input
+    snapshot, not the live-fetch mechanism itself (covered by
+    `test_pipeline_integration.py`). No golden re-record needed: the fetch
+    was always a no-op for every fixture either way (5/6 already carry
+    caller-supplied `fetched_content`; `sample_input05`'s URL 404s, so
+    fetching live or not live produces the same empty result) — confirmed
+    via a full `pytest -m "not live"` run before and after (845 passed,
+    14s, no stall).
 
 ## Eval harness
 

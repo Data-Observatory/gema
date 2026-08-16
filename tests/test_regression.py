@@ -176,6 +176,14 @@ class TestRegressionSemantics:
         # 3. Build Pipeline with cache_dir pointed at the committed snapshot.
         reset_client_cache()
         config: PipelineConfig = load_config(CONFIG_PATH)
+        # Force off regardless of the real config: this test validates LLM
+        # output against a fixed input snapshot via cache replay, not the
+        # live content-fetch mechanism (covered separately in
+        # test_pipeline_integration.py). Without this, sample_input05 (a
+        # real but dead URL with no fetched_content) would trigger a live
+        # HTTP request on every regression run, breaking the "no API key/
+        # network needed" cache-replay contract.
+        config = config.model_copy(update={"enable_content_fetch": False})
         llm_factory = _make_factory(CACHE_DIR)
         pipeline = Pipeline(config=config, llm_factory=llm_factory)
 

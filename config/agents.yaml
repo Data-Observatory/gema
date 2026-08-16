@@ -1430,3 +1430,11 @@ max_workers: 1
 # funders that the LLM left blank (prompts intentionally no longer supply a
 # hardcoded lookup table — see PASO 3 in the creators_publishers prompt).
 enable_identifier_enrichment: true
+# Fetches each resource's URL and feeds page text to agents as extra context.
+# Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
+# deepseek-v4-flash, max_workers 5) showed 40/40 succeeded with zero stalls/
+# timeouts and a net +0.022 structural quality gain (see BACKLOG.md). Known
+# gap: fetch_page_content doesn't isolate main content from nav/boilerplate,
+# so a rare page can dilute rather than help (BACKLOG.md's media_formats
+# entry).
+enable_content_fetch: true
