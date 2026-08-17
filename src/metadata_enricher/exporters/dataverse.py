@@ -286,7 +286,10 @@ def classify_subject(
         prompt = prompt.replace("{" + key + "}", val)
 
     client: LLMClient = llm_client if llm_client is not None else create_llm_client(
-        provider, model=agent.model or provider.name, temperature=agent.temperature
+        provider,
+        model=agent.model or provider.name,
+        temperature=agent.temperature,
+        extra_body=agent.extra_body,
     )
 
     complete_with_usage = getattr(client, "complete_with_usage", None)

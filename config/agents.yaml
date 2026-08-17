@@ -1400,11 +1400,12 @@ agents:
     thinking:
       type: disabled
 providers:
-- name: zai-coding-plan
-  api_key_env: ZAI_API_KEY
-  base_url: https://api.z.ai/api/coding/paas/v4
-  seed: 42
+- name: openrouter
+  api_key_env: OPENROUTER_API_KEY
+  base_url: https://openrouter.ai/api/v1
   default: false
+- name: openai
+  api_key_env: OPENAI_API_KEY
 - name: opencode
   api_key_env: OPENCODE_API_KEY
   base_url: https://opencode.ai/zen/go/v1
@@ -1414,10 +1415,13 @@ providers:
   # zero 429s). zai-coding-plan has no override -- it inherits the global
   # max_workers default below, tuned down for its tighter limit.
   max_workers: 5
-- name: openai
-  api_key_env: OPENAI_API_KEY
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
+- name: zai-coding-plan
+  api_key_env: ZAI_API_KEY
+  base_url: https://api.z.ai/api/coding/paas/v4
+  seed: 42
+  default: false
 default_provider: opencode
 # Max concurrent agent requests per resource (Orchestrator's ThreadPoolExecutor
 # size) when no provider/model override applies. Kept conservative because

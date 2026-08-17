@@ -162,8 +162,205 @@ async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     assert rebuilt_model.value == "test-fast-model"
 
 
+async def test_agents_tab_advanced_shows_tools_and_extra_body(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """creators_publishers is the one agent configured with
+    tools: [lookup_organization] in the real config/agents.yaml; every
+    agent sets extra_body (disabling deepseek's default reasoning mode,
+    required alongside Instructor's forced tool_choice). Both must be
+    visible in the read-only Advanced section for transparency -- same
+    treatment already given to depends_on/fields.
+
+    load_pipeline_config() rewrites config/agents.yaml's opencode/
+    thinking-shaped extra_body to visor's openrouter/reasoning-shaped
+    default before the app ever sees it (see bootstrap.py's
+    apply_external_user_provider_overrides) -- assert on that shape, not
+    the on-disk file's."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    await user.should_see("Tools: lookup_organization")
+    await user.should_see("Extra request options:")
+    await user.should_see("reasoning")
+
+
+async def test_agents_tab_pipeline_behavior_toggles_persist(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Pipeline-wide toggles (enable_content_fetch, enable_doi_resolution,
+    ...) used to be reachable only by hand-editing the downloaded JSON and
+    re-uploading it -- and re-uploading didn't even round-trip 2 of them
+    (see test_agents_page.py). Flip two here directly and confirm Save +
+    Download reflects both."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="pipeline-enable-content-fetch")
+
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    assert content_fetch_checkbox.value is True  # config/agents.yaml ships enable_content_fetch: true
+    content_fetch_checkbox.value = False
+
+    doi_checkbox = list(user.find(marker="pipeline-enable-doi-resolution").elements)[0]
+    assert doi_checkbox.value is False  # config/agents.yaml never sets this -- model default
+    doi_checkbox.value = True
+
+    user.find(marker="agents-save").click()
+    user.find(marker="agents-download").click()
+
+    response = await user.download.next(timeout=5)
+    assert response.status_code == 200
+    payload = json.loads(response.content)
+    assert payload["enable_content_fetch"] is False
+    assert payload["enable_doi_resolution"] is True
+
+
+async def test_run_form_shows_fetched_content_auto_fetch_hint(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The manual "Fetched content" field predates enable_content_fetch
+    (now on by default in config/agents.yaml) -- without this hint a user
+    could think they must paste HTML by hand, when the pipeline already
+    fetches the page itself whenever the flag is on and this is left
+    blank."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    # visor's default is openrouter (see bootstrap.py's
+    # apply_external_user_provider_overrides), not config/agents.yaml's
+    # on-disk opencode -- that's the key the Run tab's gate actually asks
+    # for.
+    user.find(marker="settings-provider-edit-openrouter").click()  # reveal its key input
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-fetched_content")
+    await user.should_see("leave blank to let the pipeline fetch")
+
+
+async def test_run_form_has_context_hints_field(user: User, monkeypatch, tmp_path) -> None:
+    """context_hints (commit 407f3da) is a real, still-live convention --
+    config/agents.yaml's shared system_prompt treats a "context_hints" input
+    key as externally pre-verified evidence, trusted like the resource's own
+    content unless the resource's own text contradicts it. ResourceDescription
+    passes it through automatically (extra="allow"), but the Run form never
+    exposed a field for it -- a user had no way to give the agents this kind
+    of free-text clue (publish year, file count, authors, etc.) without
+    switching to Paste JSON."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-context_hints")
+    await user.should_see("Context hints (optional)")
+    await user.should_see("externally verified")
+
+    hints_input = list(user.find(marker="run-input-context_hints").elements)[0]
+    assert "published in" in hints_input._props.get("placeholder", "").lower()
+
+
+async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path) -> None:
+    """A user relying on an auto-updating alias (e.g. OpenRouter's
+    "~deepseek/deepseek-v4-flash-latest") wants to confirm the real,
+    resolved version it actually served -- PipelineResult.models_used
+    carries that per-agent, so the Result phase should show it. Monkeypatch
+    run_single (not a real LLM call) so this stays in the fast, non-live
+    tier -- same technique as test_agents_page.py's fakes."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import MetadataDocument, ResourceDescription, TokenUsage
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        document=MetadataDocument(fields={"titles": []}),
+        token_usage=TokenUsage(prompt_tokens=10, completion_tokens=5),
+        models_used={"core_metadata": "deepseek/deepseek-v4-flash-2508"},
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-success")
+    await user.should_see(marker="result-models-used")
+    await user.should_see("core_metadata")
+    await user.should_see("deepseek/deepseek-v4-flash-2508")
+
+
+async def test_run_form_fields_have_example_placeholders(user: User, monkeypatch, tmp_path) -> None:
+    """Empty inputs give no clue what format is expected -- a placeholder
+    (grayed hint text, not a prefilled value the user has to remember to
+    clear) fixes that for every form field, not just the ones with a
+    separate caption underneath."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    url_input = list(user.find(marker="run-input-url").elements)[0]
+    assert url_input._props.get("placeholder")
+    doi_input = list(user.find(marker="run-input-doi").elements)[0]
+    assert doi_input._props.get("placeholder")
+
+
+async def test_run_form_has_doi_field_and_marks_optional_fields(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """doi is a real ResourceDescription field (like url/title/description/
+    fetched_content) but was missing from the Run tab's form entirely -- a
+    user with a DOI already in hand had no way to enter it without
+    switching to Paste JSON. Also: url/title/description are the only
+    fields where at least one is required (see the "Fill at least url,
+    title, or description" check in _run()); doi/publisher/frequency/
+    fetched_content are all purely optional and should say so."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-doi")
+    await user.should_see("DOI (optional)")
+    await user.should_see("Publisher (optional)")
+    await user.should_see("Frequency (optional)")
+
+
 async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -> None:
-    """The real default config already declares all 4 pool providers
+    """The real default config already declares all 5 pool providers
     (config/agents.yaml), so "Other (custom)" is the only reachable
     choice out of the box — exactly the path a user adding a provider
     the pool doesn't have would take."""
@@ -238,9 +435,10 @@ async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    # openai is genuinely unused: the 5 main agents run on opencode and
-    # dataverse export's Subject Classifier (config/dataverse_export.yaml)
-    # runs on zai-coding-plan.
+    # openai is genuinely unused: visor's live default (see bootstrap.py's
+    # apply_external_user_provider_overrides) runs every agent -- the 5
+    # main ones and dataverse export's Subject Classifier alike -- on
+    # openrouter, leaving opencode unused here too, not just openai.
     await user.should_see(marker="settings-provider-remove-openai")
 
     user.find(marker="settings-provider-remove-openai").click()
@@ -253,14 +451,16 @@ async def test_settings_remove_provider_in_use_is_blocked(user: User, monkeypatc
 
     await user.open("/")
     user.find(marker="tab-settings").click()
-    # opencode is config/agents.yaml's default provider — every agent uses
-    # it out of the box, so removing it must be refused.
-    await user.should_see(marker="settings-provider-remove-opencode")
+    # openrouter is visor's actual default (see bootstrap.py's
+    # apply_external_user_provider_overrides) -- every agent uses it here,
+    # even though config/agents.yaml's on-disk default_provider is
+    # opencode, so removing it must be refused.
+    await user.should_see(marker="settings-provider-remove-openrouter")
 
-    user.find(marker="settings-provider-remove-opencode").click()
+    user.find(marker="settings-provider-remove-openrouter").click()
 
-    await user.should_see("Can't remove 'opencode'")
-    await user.should_see(marker="settings-provider-remove-opencode")  # still there
+    await user.should_see("Can't remove 'openrouter'")
+    await user.should_see(marker="settings-provider-remove-openrouter")  # still there
 
 
 async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypatch, tmp_path) -> None:

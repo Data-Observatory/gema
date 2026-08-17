@@ -870,3 +870,43 @@ class TestPipelineResultTokenUsage:
 
         assert len(results) == 1
         assert results[0].token_usage == TokenUsage()
+
+
+class TestPipelineResultModelsUsed:
+    """models_used surfaces the *resolved* model per agent (e.g. what an
+    OpenRouter '~...-latest' alias actually served), keyed by agent id --
+    useful for a user who wants to confirm the real version behind an
+    auto-updating alias, not just the configured name."""
+
+    def test_successful_run_reports_resolved_model_per_agent(self, tmp_path) -> None:
+        class FakeLLMClientWithModel(FakeLLMClient):
+            def complete_with_usage(self, prompt, response_model, system_prompt=None, **kw):  # noqa: ANN001, ANN201
+                return self.complete(prompt, response_model, system_prompt, **kw), TokenUsage(
+                    prompt_tokens=20, completion_tokens=10, model="deepseek/deepseek-v4-flash-2508"
+                )
+
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        factory = lambda provider, **kw: FakeLLMClientWithModel(  # noqa: E731
+            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        assert results[0].models_used == {"titles-agent": "deepseek/deepseek-v4-flash-2508"}
+
+    def test_client_without_usage_support_reports_empty_models_used(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        assert results[0].models_used == {}

@@ -15,6 +15,10 @@ class TokenUsage(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
+    # The provider's own resolved model id for this call (e.g. what an
+    # OpenRouter "~...-latest" alias actually served) -- empty when unknown
+    # (a mock/fake client, or a cache hit, which reports zero usage too).
+    model: str = ""
 
     @model_validator(mode="after")
     def _calculate_total(self) -> TokenUsage:
