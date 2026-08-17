@@ -214,6 +214,24 @@ services:
     depends_on:
       - dataverse
 
+  caddy:
+    container_name: "caddy"
+    image: caddy:2.9-alpine
+    restart: on-failure
+    environment:
+      - VISOR_PORT=${VISOR_PORT:-8001}
+    ports:
+      - "${CADDY_PORT:-8000}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - dataverse
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - dataverse
+      - uploader
+
 networks:
   dataverse:
     driver: bridge

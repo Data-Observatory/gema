@@ -112,6 +112,12 @@ def run() -> None:
             port=int(os.environ.get("VISOR_PORT", "8080")),
             reload=False,
             show=False,
+            # Lets NiceGUI correctly prefix its asset/websocket URLs when
+            # served behind a reverse proxy on a subpath (e.g. Caddy's
+            # /visor/*, stripped before reaching this process) — confirmed
+            # live against a real Caddy handle_path setup, including the
+            # socket.io handshake, not just static asset links.
+            root_path=os.environ.get("VISOR_ROOT_PATH", ""),
         )
 
 

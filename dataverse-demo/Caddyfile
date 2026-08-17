@@ -1,0 +1,52 @@
+# Single Tailscale-facing entrypoint fanning out to the three demo
+# services by path.
+#
+# /catalogo (Dataverse) is BROKEN as a subpath and there is no clean fix —
+# confirmed live, not a guess: GET /catalogo/ 302s to
+# "/loginpage.xhtml;jsessionid=...?redirectPage=%2Fdataverse.xhtml", a
+# root-relative redirect with no /catalogo prefix, so the browser bounces
+# out of the proxied path entirely and 404s. Dataverse (JSF/Payara)
+# generates root-relative links throughout, and Payara's context-root is
+# fixed at WAR deployment time — DATAVERSE_SITEURL only affects outbound
+# link generation (emails, API responses), not how the running app
+# addresses its own pages/assets. There's no supported way to make the
+# upstream gdcc/dataverse image aware of a non-root deployment path. If you
+# need Dataverse itself behind Tailscale, share it on its own port/URL
+# directly (see the README's own Tailscale section) rather than through
+# this Caddyfile — kept here anyway since /up and /visor genuinely work.
+#
+# /visor (visor's hosted mode) DOES work, confirmed live including the
+# socket.io websocket handshake — NiceGUI has real reverse-proxy subpath
+# support via uvicorn's root_path. Requires starting visor with
+# VISOR_ROOT_PATH=/visor (see visor/app.py's run()) — without it, visor's
+# own asset/websocket URLs come back unprefixed and this path breaks the
+# same way /catalogo does.
+
+:80 {
+	redir /catalogo /catalogo/ permanent
+	redir /up /up/ permanent
+	redir /visor /visor/ permanent
+
+	handle_path /catalogo/* {
+		reverse_proxy dataverse:8080
+	}
+
+	# uploader's own templates use relative links (upload.html's form posts
+	# to "upload", not "/upload") specifically so this works correctly.
+	handle_path /up/* {
+		reverse_proxy uploader:8090
+	}
+
+	# visor is not a container in this stack -- it's the operator's own
+	# launcher/hosted-mode process running on the host machine
+	# (VISOR_NATIVE=0, VISOR_ROOT_PATH=/visor -- see the caveat above).
+	# host.docker.internal needs the extra_hosts entry on the caddy service
+	# below (host-gateway) since this isn't Docker Desktop.
+	handle_path /visor/* {
+		reverse_proxy host.docker.internal:{$VISOR_PORT}
+	}
+
+	handle {
+		respond "Nothing here. Try /catalogo, /up, or /visor" 404
+	}
+}

@@ -129,6 +129,35 @@ using the token baked into the container's environment. Scope Tailscale
 ACLs the same way, and use a token scoped to a non-admin account if you
 don't want attendees' traffic able to do anything an admin token can do.
 
+## Caddy (single entrypoint for Tailscale)
+
+If you're sharing this over Tailscale (below) and don't want to open/remember
+three separate ports, `caddy` (service in `compose.yml`, `Caddyfile` at the
+repo root of this folder) fans out one port to path-based routes:
+
+- **`/up`** → the uploader form. Works fully — confirmed live, including a
+  real dataset upload through the proxy.
+- **`/visor`** → visor's own hosted mode, running on your host machine (not
+  a container — start it with `VISOR_NATIVE=0 VISOR_PORT=8001
+  VISOR_ROOT_PATH=/visor python -m visor.app`; `VISOR_ROOT_PATH` is required,
+  not optional — see `.env.example`). Works fully — confirmed live, assets
+  *and* the socket.io websocket handshake all correctly prefixed.
+- **`/catalogo`** (Dataverse) is **broken and not fixable from Caddy's
+  side** — confirmed live, not a guess. Dataverse redirects unauthenticated
+  visitors to a root-relative `/loginpage.xhtml` with no `/catalogo` prefix,
+  bouncing the browser straight out of the proxied path into a 404. This is
+  structural: Dataverse (JSF/Payara) emits root-relative links everywhere,
+  and Payara's context-root is fixed at WAR deployment time — nothing
+  `DATAVERSE_SITEURL` or a reverse proxy can do about it without a
+  Payara-level context-root change, which the upstream `gdcc/dataverse`
+  image doesn't support. If attendees need to reach Dataverse itself
+  directly, share port 8080 on its own (see the Tailscale section below) —
+  the route is still defined in the Caddyfile since `/up` and `/visor`
+  genuinely work, but don't rely on `/catalogo`.
+
+Default port is 8000 (`CADDY_PORT` in `.env`). `docker compose up -d caddy`
+brings it up alongside everything else.
+
 ## Sharing it over Tailscale (remote attendees)
 
 For a live workshop where attendees aren't on the same LAN, serve this over
