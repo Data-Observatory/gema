@@ -153,6 +153,34 @@ repo root of this folder) fans out one port to path-based routes:
 Default port is 8000 (`CADDY_PORT` in `.env`). `docker compose up -d caddy`
 brings it up alongside everything else.
 
+**Changing the port**: set `CADDY_PORT` in `.env` (e.g. `CADDY_PORT=8123`)
+and recreate the container — `Caddyfile` itself has no hardcoded host port
+(`:80` in there is container-internal, never exposed directly), so this env
+var is the single control point. All three routes move together since
+they're all paths under that one port, not separate ports:
+
+```bash
+docker compose up -d --force-recreate caddy
+```
+
+**`VISOR_ROOT_PATH` is not optional — a real trap if forgotten.** If you
+start visor without it and load `/meta`, the page loads but shows
+*"Your browser does not support ES modules. Please use a modern browser."*
+— this is misleading, it's not actually a browser problem. Without
+`VISOR_ROOT_PATH`, visor emits its JS module URLs as `/_nicegui/...`
+instead of `/meta/_nicegui/...`; Caddy's `/meta/*` route never sees a bare
+`/_nicegui/...` request, so it 404s, the `<script type="module">` tag
+silently fails to load, and the browser falls back to that static warning
+text. Confirmed live — this exact symptom, this exact cause. Always start
+visor for `/meta` with all three of these set:
+
+```bash
+VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta python -m visor.app
+```
+
+(`VISOR_PORT` here must match `VISOR_PORT` in `.env`, which is what tells
+`caddy` which port on `host.docker.internal` to reach.)
+
 ## Sharing it over Tailscale (remote attendees)
 
 For a live workshop where attendees aren't on the same LAN, serve this over
@@ -207,6 +235,34 @@ live.
    before the live event: `curl http://<tailscale-address>:8080/api/info/version`
    should return the real version JSON, same as the localhost check earlier
    in this README.
+
+### Tailscale Funnel (public internet, not just your tailnet)
+
+Everything above shares to devices already on *your* tailnet. If attendees
+don't have Tailscale installed/aren't on your tailnet at all, use
+[Funnel](https://tailscale.com/kb/1223/funnel) instead to expose the Caddy
+port to the public internet over HTTPS:
+
+```bash
+tailscale funnel --bg 8123   # use your actual CADDY_PORT
+```
+
+This publishes `https://<your-machine>.<tailnet>.ts.net` (port 443) →
+`http://127.0.0.1:8123` on this machine — root/`/up`/`/meta` all become
+reachable at that one HTTPS URL, no port number for attendees to remember
+at all. Check state with `tailscale funnel status`; turn it off with
+`tailscale funnel reset`.
+
+**Prerequisite**: Funnel isn't on by default — enable it once for this node
+in the Tailscale admin console (or grant the `funnel` node attribute via
+your tailnet's ACL).
+
+**This is meaningfully different from the tailnet-only sharing above: it's
+the public internet, not just your tailnet.** Anyone with the URL reaches
+it — there's no ACL scoping "only these attendees' devices" the way there
+is with plain Tailscale. Step 5 above (change the default admin password
+before opening this up) applies much harder here, since there's no
+network-level restriction backing it up at all.
 
 ## Resetting
 
