@@ -204,6 +204,7 @@ services:
     restart: on-failure
     environment:
       - DATAVERSE_URL=http://dataverse:8080
+      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
       - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
       - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
     ports:

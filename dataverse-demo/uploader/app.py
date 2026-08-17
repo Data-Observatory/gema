@@ -17,6 +17,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 DATAVERSE_URL = os.environ.get("DATAVERSE_URL", "http://dataverse:8080")
+# Separate from DATAVERSE_URL: that one is the container-internal address
+# used for API calls, unreachable from an attendee's own browser. This is
+# what the result link is built from instead.
+DATAVERSE_PUBLIC_URL = os.environ.get("DATAVERSE_PUBLIC_URL", "http://localhost:8080")
 API_TOKEN = os.environ.get("DATAVERSE_API_TOKEN", "")
 DEFAULT_COLLECTION = os.environ.get("DATAVERSE_COLLECTION_ALIAS", "root")
 
@@ -54,6 +58,16 @@ async def upload(
         )
 
     raw = await file.read() if file is not None and file.filename else pasted_json.encode()
+    if not raw.strip():
+        return templates.TemplateResponse(
+            request,
+            "upload.html",
+            {
+                "collection": collection,
+                "result": None,
+                "error": "No JSON provided — paste it in the text box or choose a file first.",
+            },
+        )
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -108,7 +122,7 @@ async def upload(
             "error": publish_error,
             "result": {
                 "persistent_id": persistent_id,
-                "url": f"{DATAVERSE_URL}/citation?persistentId={persistent_id}",
+                "url": f"{DATAVERSE_PUBLIC_URL}/citation?persistentId={persistent_id}",
                 "published": publish and not publish_error,
             },
         },
