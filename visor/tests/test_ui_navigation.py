@@ -33,6 +33,25 @@ async def test_tabs_render_and_are_freely_navigable(user: User, monkeypatch, tmp
     await user.should_see(marker="run-settings-gate")
 
 
+async def test_settings_save_clears_stale_llm_client_cache(user: User, monkeypatch, tmp_path) -> None:
+    """create_llm_client()'s cache key is provider+model+temperature+... --
+    never the API key's value -- so saving a new key must invalidate
+    already-cached clients or the old key silently keeps being used. Fails
+    without app.py's reset_client_cache() call in _after_settings_saved."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from metadata_enricher.llm.factory import _client_cache
+
+    _client_cache["fake-provider|fake-model|t=0.0|seed=None|mt=None|c=True|r=True|eb=None"] = object()
+    assert _client_cache
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-save").click()
+
+    assert not _client_cache
+
+
 async def test_agents_tab_json_download_reflects_model_edit(user: User, monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 

@@ -21,6 +21,7 @@ from visor.bootstrap import (
     load_pipeline_config,
     load_providers_pool_safe,
 )
+from metadata_enricher.llm.factory import reset_client_cache
 from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
@@ -87,6 +88,12 @@ def main_page() -> None:
 
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
+        # create_llm_client()'s cache key is provider+model+temperature+...
+        # -- never the API key's actual value -- so an already-cached
+        # client for the same provider/model keeps using whatever key was
+        # set when it was first created. Without this, changing a key here
+        # has no effect until the whole visor process restarts.
+        reset_client_cache()
         refresh_run_tab()
         tabs.set_value(run_tab)
 
