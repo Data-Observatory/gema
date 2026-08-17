@@ -53,7 +53,7 @@ for _pkg in ("uvicorn", "nicegui", "instructor", "openai"):
     hiddenimports += _pkg_hiddenimports
 
 a = Analysis(  # noqa: F821 - PyInstaller injects these names at spec exec time
-    [str(repo_root / "visor" / "app.py")],
+    [str(repo_root / "visor" / "launcher.py")],
     pathex=[str(repo_root), str(repo_root / "src")],
     binaries=binaries,
     datas=datas,
