@@ -44,7 +44,20 @@ def main_page() -> None:
         ui.label(_config_error or "Unknown configuration error")
         return
 
-    pipeline_config = _pipeline_config
+    # Deep copies, not aliases -- main_page() runs once per browser
+    # connection, and agents_page.py / settings_page.py both mutate these
+    # objects in place (per-agent provider/model/temperature, the provider
+    # list, the Dataverse export card). In native mode there's only ever
+    # one session so this changes nothing observable; in hosted mode
+    # (VISOR_NATIVE=0, multiple people connecting to the same process) a
+    # bare alias would let one user's edit leak into every other user's
+    # session.
+    pipeline_config = _pipeline_config.model_copy(deep=True)
+    dataverse_export_config = (
+        _dataverse_export_config.model_copy(deep=True)
+        if _dataverse_export_config is not None
+        else None
+    )
     schema = _schema
 
     apply_to_environ(load_settings())
@@ -69,7 +82,7 @@ def main_page() -> None:
         schema,
         current_settings=load_settings,
         on_go_to_settings=_go_to_settings,
-        dataverse_export_config=_dataverse_export_config,
+        dataverse_export_config=dataverse_export_config,
     )
 
     def _after_settings_saved(settings: VisorSettings) -> None:
@@ -83,9 +96,9 @@ def main_page() -> None:
         load_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
-        dataverse_export_config=_dataverse_export_config,
+        dataverse_export_config=dataverse_export_config,
     )
-    render_agents(agents_panel, pipeline_config, _dataverse_export_config)
+    render_agents(agents_panel, pipeline_config, dataverse_export_config)
 
 
 def run() -> None:
