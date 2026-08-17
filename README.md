@@ -104,9 +104,15 @@ for a real one).
   "url": "https://example.org/dataset/rainfall-2024",
   "title": "Annual Rainfall Measurements 2024",
   "description": "Monthly rainfall totals by station, national weather service.",
-  "publisher": "Servicio Meteorológico Nacional"
+  "publisher": "Servicio Meteorológico Nacional",
+  "context_hints": "Published in 2024. Contains 3 data files (CSV, XLSX, PDF). 4 authors listed in the source repository, not mentioned on the page."
 }
 ```
+
+`context_hints` is a free-text field for anything you already know that
+isn't stated in the resource's own content — the agents treat it as
+trusted, externally-verified evidence, but the resource's own text always
+wins if it explicitly says something different.
 
 Save it as e.g. `my_dataset.json`.
 

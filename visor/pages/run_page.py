@@ -28,7 +28,16 @@ from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.settings import VisorSettings, missing_required
 
-FORM_FIELDS = ("url", "title", "description", "doi", "publisher", "frequency", "fetched_content")
+FORM_FIELDS = (
+    "url",
+    "title",
+    "description",
+    "doi",
+    "publisher",
+    "frequency",
+    "fetched_content",
+    "context_hints",
+)
 
 # At least one of url/title/description is required (see the check in
 # _run() below) -- every other field is purely optional, so its label says
@@ -39,6 +48,26 @@ FORM_FIELD_LABELS = {
     "publisher": "Publisher (optional)",
     "frequency": "Frequency (optional)",
     "fetched_content": "Fetched Content (optional)",
+    "context_hints": "Context hints (optional)",
+}
+
+# Renders as a multi-line ui.textarea instead of a single-line ui.input --
+# free-text prose, same as fetched_content's own content, not a short value.
+FORM_TEXTAREA_FIELDS = {"context_hints"}
+
+# Example values shown as grayed placeholder text (never a prefilled
+# value the user has to remember to clear before submitting).
+FORM_FIELD_PLACEHOLDERS = {
+    "url": "https://example.org/dataset/rainfall-2024",
+    "title": "Annual Rainfall Measurements 2024",
+    "description": "Monthly rainfall totals by station, national weather service.",
+    "doi": "10.5880/GFZ.2.4.2021.001",
+    "publisher": "Servicio Meteorológico Nacional",
+    "frequency": "Monthly",
+    "context_hints": (
+        "Published in 2024. Contains 3 data files (CSV, XLSX, PDF). "
+        "4 authors listed in the source repository, not mentioned on the page."
+    ),
 }
 
 JSON_TEMPLATE = """{
@@ -48,7 +77,8 @@ JSON_TEMPLATE = """{
   "doi": "Existing DOI, if this resource already has one (optional)",
   "publisher": "Publishing organization (optional)",
   "frequency": "Update frequency, e.g. Monthly (optional)",
-  "fetched_content": "Raw HTML/text already fetched from the URL, if you have it (optional)"
+  "fetched_content": "Raw HTML/text already fetched from the URL, if you have it (optional)",
+  "context_hints": "Externally verified clues the resource's own text doesn't state -- e.g. publish year, file count, authors (optional)"
 }"""
 
 
@@ -115,19 +145,28 @@ def _render_form_phase(
 
     form_box = ui.column().classes("w-full")
     with form_box:
-        inputs: dict[str, ui.input] = {}
+        inputs: dict[str, ui.input | ui.textarea] = {}
         for name in FORM_FIELDS:
             label = FORM_FIELD_LABELS.get(name, name.replace("_", " ").title())
-            inputs[name] = (
-                ui.input(label)
-                .classes("w-full")
-                .mark(f"run-input-{name}")
-            )
+            placeholder = FORM_FIELD_PLACEHOLDERS.get(name)
+            widget: ui.input | ui.textarea
+            if name in FORM_TEXTAREA_FIELDS:
+                widget = ui.textarea(label, placeholder=placeholder).props("rows=3")
+            else:
+                widget = ui.input(label, placeholder=placeholder)
+            inputs[name] = widget.classes("w-full").mark(f"run-input-{name}")
             if name == "fetched_content":
                 ui.label(
                     "Optional — leave blank to let the pipeline fetch this "
                     "automatically from the URL (see Pipeline behavior in "
                     "the Agents tab)."
+                ).classes("text-caption q-mb-sm")
+            elif name == "context_hints":
+                ui.label(
+                    "Optional — externally verified clues the resource's own "
+                    "text doesn't state (publish year, file count, authors, "
+                    "license, anything you already know). Trusted like the "
+                    "resource's own content unless its text says otherwise."
                 ).classes("text-caption q-mb-sm")
     form_box.bind_visibility_from(mode, "value", value="Fill a form")
 

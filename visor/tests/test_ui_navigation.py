@@ -246,6 +246,55 @@ async def test_run_form_shows_fetched_content_auto_fetch_hint(
     await user.should_see("leave blank to let the pipeline fetch")
 
 
+async def test_run_form_has_context_hints_field(user: User, monkeypatch, tmp_path) -> None:
+    """context_hints (commit 407f3da) is a real, still-live convention --
+    config/agents.yaml's shared system_prompt treats a "context_hints" input
+    key as externally pre-verified evidence, trusted like the resource's own
+    content unless the resource's own text contradicts it. ResourceDescription
+    passes it through automatically (extra="allow"), but the Run form never
+    exposed a field for it -- a user had no way to give the agents this kind
+    of free-text clue (publish year, file count, authors, etc.) without
+    switching to Paste JSON."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-context_hints")
+    await user.should_see("Context hints (optional)")
+    await user.should_see("externally verified")
+
+    hints_input = list(user.find(marker="run-input-context_hints").elements)[0]
+    assert "published in" in hints_input._props.get("placeholder", "").lower()
+
+
+async def test_run_form_fields_have_example_placeholders(user: User, monkeypatch, tmp_path) -> None:
+    """Empty inputs give no clue what format is expected -- a placeholder
+    (grayed hint text, not a prefilled value the user has to remember to
+    clear) fixes that for every form field, not just the ones with a
+    separate caption underneath."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    url_input = list(user.find(marker="run-input-url").elements)[0]
+    assert url_input._props.get("placeholder")
+    doi_input = list(user.find(marker="run-input-doi").elements)[0]
+    assert doi_input._props.get("placeholder")
+
+
 async def test_run_form_has_doi_field_and_marks_optional_fields(
     user: User, monkeypatch, tmp_path
 ) -> None:
