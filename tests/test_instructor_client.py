@@ -173,6 +173,31 @@ class TestInstructorLLMClient:
 
     @patch("metadata_enricher.llm.instructor_client.OpenAI")
     @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_with_usage_extracts_resolved_model(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        """The configured model can be an alias (e.g. OpenRouter's
+        '~deepseek/deepseek-v4-flash-latest') -- completion.model is what
+        the provider actually served, which is what a user wants to verify
+        the real version behind an auto-updating alias."""
+        config = LLMConfig(model="~deepseek/deepseek-v4-flash-latest", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+
+        fake_response = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        fake_completion.model = "deepseek/deepseek-v4-flash-2508"
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_response,
+            fake_completion,
+        )
+
+        _result, usage = client.complete_with_usage(prompt="hello", response_model=SimpleOutput)
+
+        assert usage.model == "deepseek/deepseek-v4-flash-2508"
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
     def test_complete_raw_returns_content(
         self, mock_instructor: MagicMock, mock_openai: MagicMock
     ) -> None:
@@ -389,6 +414,37 @@ class TestCompleteWithTools:
         assert usage.prompt_tokens == 10 + 10 + 20
         assert usage.completion_tokens == 5 + 5 + 8
         assert usage.total_tokens == 15 + 15 + 28
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_resolved_model_comes_from_final_completion(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """The tool-loop's raw rounds use the same model but their responses
+        are discarded; only the final structured-output call's completion is
+        what's returned, so its .model is the one worth reporting."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        mock_execute_tool.return_value = '{"found": false}'
+
+        tool_call = self._tool_call("call_1", "lookup_organization", '{"name": "X"}')
+        client._raw_client.chat.completions.create.return_value = self._raw_response([tool_call])
+
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        fake_completion.model = "deepseek/deepseek-v4-flash-2508"
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        _result, usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"], max_tool_rounds=2
+        )
+
+        assert usage.model == "deepseek/deepseek-v4-flash-2508"
 
 
 class TestReaskToolsNoneCrashPatch:

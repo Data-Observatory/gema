@@ -28,15 +28,57 @@ from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.settings import VisorSettings, missing_required
 
-FORM_FIELDS = ("url", "title", "description", "publisher", "frequency", "fetched_content")
+FORM_FIELDS = (
+    "url",
+    "title",
+    "description",
+    "doi",
+    "publisher",
+    "frequency",
+    "fetched_content",
+    "context_hints",
+)
+
+# At least one of url/title/description is required (see the check in
+# _run() below) -- every other field is purely optional, so its label says
+# so. "doi" gets its own display label since name.title() would render it
+# "Doi", not the acronym.
+FORM_FIELD_LABELS = {
+    "doi": "DOI (optional)",
+    "publisher": "Publisher (optional)",
+    "frequency": "Frequency (optional)",
+    "fetched_content": "Fetched Content (optional)",
+    "context_hints": "Context hints (optional)",
+}
+
+# Renders as a multi-line ui.textarea instead of a single-line ui.input --
+# free-text prose, same as fetched_content's own content, not a short value.
+FORM_TEXTAREA_FIELDS = {"context_hints"}
+
+# Example values shown as grayed placeholder text (never a prefilled
+# value the user has to remember to clear before submitting).
+FORM_FIELD_PLACEHOLDERS = {
+    "url": "https://example.org/dataset/rainfall-2024",
+    "title": "Annual Rainfall Measurements 2024",
+    "description": "Monthly rainfall totals by station, national weather service.",
+    "doi": "10.5880/GFZ.2.4.2021.001",
+    "publisher": "Servicio Meteorológico Nacional",
+    "frequency": "Monthly",
+    "context_hints": (
+        "Published in 2024. Contains 3 data files (CSV, XLSX, PDF). "
+        "4 authors listed in the source repository, not mentioned on the page."
+    ),
+}
 
 JSON_TEMPLATE = """{
   "url": "https://example.org/dataset",
   "title": "Dataset title",
   "description": "A short description of what this dataset contains.",
+  "doi": "Existing DOI, if this resource already has one (optional)",
   "publisher": "Publishing organization (optional)",
   "frequency": "Update frequency, e.g. Monthly (optional)",
-  "fetched_content": "Raw HTML/text already fetched from the URL, if you have it (optional)"
+  "fetched_content": "Raw HTML/text already fetched from the URL, if you have it (optional)",
+  "context_hints": "Externally verified clues the resource's own text doesn't state -- e.g. publish year, file count, authors (optional)"
 }"""
 
 
@@ -103,12 +145,29 @@ def _render_form_phase(
 
     form_box = ui.column().classes("w-full")
     with form_box:
-        inputs = {
-            name: ui.input(name.replace("_", " ").title())
-            .classes("w-full")
-            .mark(f"run-input-{name}")
-            for name in FORM_FIELDS
-        }
+        inputs: dict[str, ui.input | ui.textarea] = {}
+        for name in FORM_FIELDS:
+            label = FORM_FIELD_LABELS.get(name, name.replace("_", " ").title())
+            placeholder = FORM_FIELD_PLACEHOLDERS.get(name)
+            widget: ui.input | ui.textarea
+            if name in FORM_TEXTAREA_FIELDS:
+                widget = ui.textarea(label, placeholder=placeholder).props("rows=3")
+            else:
+                widget = ui.input(label, placeholder=placeholder)
+            inputs[name] = widget.classes("w-full").mark(f"run-input-{name}")
+            if name == "fetched_content":
+                ui.label(
+                    "Optional — leave blank to let the pipeline fetch this "
+                    "automatically from the URL (see Pipeline behavior in "
+                    "the Agents tab)."
+                ).classes("text-caption q-mb-sm")
+            elif name == "context_hints":
+                ui.label(
+                    "Optional — externally verified clues the resource's own "
+                    "text doesn't state (publish year, file count, authors, "
+                    "license, anything you already know). Trusted like the "
+                    "resource's own content unless its text says otherwise."
+                ).classes("text-caption q-mb-sm")
     form_box.bind_visibility_from(mode, "value", value="Fill a form")
 
     paste_box = ui.column().classes("w-full")
@@ -225,6 +284,19 @@ def _render_token_usage(result: PipelineResult) -> None:
     ).classes("text-caption").mark("result-token-usage")
 
 
+def _render_models_used(result: PipelineResult) -> None:
+    """The resolved model each agent actually ran with -- e.g. what an
+    OpenRouter "~...-latest" alias really served, not just its configured
+    name. Absent entirely (a mock client, or every call was a cache hit)
+    means nothing to show, same convention as _render_token_usage."""
+    if not result.models_used:
+        return
+    with ui.column().classes("gap-0").mark("result-models-used"):
+        ui.label("Models used:").classes("text-caption")
+        for agent_id, model in sorted(result.models_used.items()):
+            ui.label(f"- {agent_id}: {model}").classes("text-caption")
+
+
 def _render_running_phase(state: _RunViewState) -> None:
     ui.label("Running…").classes("text-h5")
     _render_submitted_input(state.submitted_text)
@@ -277,6 +349,7 @@ def _render_result_phase(
     _render_submitted_input(state.submitted_text)
     if state.result is not None:
         _render_token_usage(state.result)
+        _render_models_used(state.result)
 
     if state.result is not None and state.result.success:
         assert state.result.document is not None

@@ -33,6 +33,7 @@ class PipelineResult:
         source_path: str | None = None,
         warnings: list[str] | None = None,
         token_usage: TokenUsage | None = None,
+        models_used: dict[str, str] | None = None,
     ) -> None:
         self.resource = resource
         self.document = document
@@ -40,6 +41,7 @@ class PipelineResult:
         self.source_path = source_path
         self.warnings = warnings or []
         self.token_usage = token_usage if token_usage is not None else TokenUsage()
+        self.models_used = models_used or {}
 
     @property
     def success(self) -> bool:
@@ -69,6 +71,32 @@ def _aggregate_token_usage(agent_results: list[AgentResult]) -> TokenUsage:
             total_tokens=total.total_tokens + usage.total_tokens,
         )
     return total
+
+
+def _build_models_used(agent_results: list[AgentResult], registry: AgentRegistry) -> dict[str, str]:
+    """Map agent id -> the resolved model it actually ran with (e.g. what an
+    OpenRouter "~...-latest" alias actually served), for display -- so a
+    user relying on an auto-updating alias can confirm the real version.
+
+    Skips an agent entirely when its TokenUsage carries no model (a mock/
+    fake client, or a cache hit -- both already report zero usage for the
+    same reason, see _aggregate_token_usage's docstring).
+    """
+    field_to_agent = {
+        field_name: config.id
+        for config in registry.get_agent_configs()
+        for field_name in config.fields
+    }
+    models: dict[str, str] = {}
+    seen: set[int] = set()
+    for result in agent_results:
+        agent_id = field_to_agent.get(result.field_name)
+        if agent_id is None or id(result.token_usage) in seen:
+            continue
+        seen.add(id(result.token_usage))
+        if result.token_usage.model:
+            models[agent_id] = result.token_usage.model
+    return models
 
 
 class Pipeline:
@@ -227,6 +255,7 @@ class Pipeline:
             return PipelineResult(resource=resource, error=f"Orchestration failed: {exc}")
 
         token_usage = _aggregate_token_usage(agent_results)
+        models_used = _build_models_used(agent_results, registry)
 
         # Every agent errored (e.g. bad API key, unreachable provider) — this must
         # surface as a failure, not a "successful" empty document.
@@ -235,7 +264,10 @@ class Pipeline:
             summary = "; ".join(distinct_errors[:3])
             logger.error("All agents failed for resource: %s", summary)
             return PipelineResult(
-                resource=resource, error=f"All agents failed: {summary}", token_usage=token_usage
+                resource=resource,
+                error=f"All agents failed: {summary}",
+                token_usage=token_usage,
+                models_used=models_used,
             )
 
         # 4. Merge agent results into a MetadataDocument
@@ -245,7 +277,10 @@ class Pipeline:
         except Exception as exc:
             logger.error("Merge failed: %s", exc)
             return PipelineResult(
-                resource=resource, error=f"Merge failed: {exc}", token_usage=token_usage
+                resource=resource,
+                error=f"Merge failed: {exc}",
+                token_usage=token_usage,
+                models_used=models_used,
             )
 
         if not document.fields:
@@ -254,6 +289,7 @@ class Pipeline:
                 resource=resource,
                 error="No fields extracted — all agents returned empty results",
                 token_usage=token_usage,
+                models_used=models_used,
             )
 
         # Some (not all — that case returned earlier) agents failed. The resulting
@@ -273,6 +309,7 @@ class Pipeline:
                     resource=resource,
                     error=f"Fields failed: {', '.join(fields)} ({summary})",
                     token_usage=token_usage,
+                    models_used=models_used,
                 )
             warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
             logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
@@ -307,5 +344,9 @@ class Pipeline:
                 logger.warning("PID validation failed: %s", exc)
 
         return PipelineResult(
-            resource=resource, document=document, warnings=warnings, token_usage=token_usage
+            resource=resource,
+            document=document,
+            warnings=warnings,
+            token_usage=token_usage,
+            models_used=models_used,
         )

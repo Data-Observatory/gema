@@ -16,8 +16,16 @@ agent is set to here is what Settings' "used by: ..." captions reflect —
 the two tabs describe the same underlying assignment from two different
 angles.
 
-Prompt/fields/depends_on are read-only in a collapsed "Advanced" section
-for transparency. Download/Upload operate on the *entire* PipelineConfig,
+Prompt/fields/depends_on (and tools/extra_body, when an agent sets them)
+are read-only in a collapsed "Advanced" section for transparency.
+
+A "Pipeline behavior" card above the agent cards exposes the
+PipelineConfig-level toggles (enable_content_fetch, enable_doi_resolution,
+enable_identifier_enrichment, validate_pids, validate_pids_live) as plain
+checkboxes — previously only reachable by hand-editing the downloaded
+JSON and re-uploading it.
+
+Download/Upload operate on the *entire* PipelineConfig,
 not just what the cards expose — a user can download, hand-edit anything
 (including the prompt) in a text editor, and re-upload; the cards are a
 friendly view, not the only way to change things. Upload re-validates
@@ -127,6 +135,57 @@ def render_agents(
             temp_inputs: dict[str, ui.number] = {}
             provider_selects: dict[str, ui.select] = {}
 
+            with ui.card().classes("w-full q-mt-md"):
+                ui.label("Pipeline behavior").classes("text-subtitle1 text-bold")
+                ui.label(
+                    "These apply to the whole pipeline, not a single agent."
+                ).classes("text-caption")
+
+                content_fetch_checkbox = (
+                    ui.checkbox(
+                        "Fetch page content automatically",
+                        value=pipeline_config.enable_content_fetch,
+                    )
+                    .tooltip(
+                        "Fetches each resource's URL and feeds the page text to the "
+                        "agents when they don't already have it."
+                    )
+                    .mark("pipeline-enable-content-fetch")
+                )
+                doi_resolution_checkbox = (
+                    ui.checkbox(
+                        "Resolve DOIs automatically",
+                        value=pipeline_config.enable_doi_resolution,
+                    )
+                    .tooltip("Looks up a bare DOI to help fill in missing metadata.")
+                    .mark("pipeline-enable-doi-resolution")
+                )
+                identifier_enrichment_checkbox = (
+                    ui.checkbox(
+                        "Enrich identifiers (ROR / ORCID / ISNI)",
+                        value=pipeline_config.enable_identifier_enrichment,
+                    )
+                    .tooltip(
+                        "Resolves ROR/ISNI identifiers for creators, publishers, and "
+                        "funders the agents left blank."
+                    )
+                    .mark("pipeline-enable-identifier-enrichment")
+                )
+                validate_pids_checkbox = (
+                    ui.checkbox(
+                        "Validate persistent identifiers",
+                        value=pipeline_config.validate_pids,
+                    )
+                    .mark("pipeline-validate-pids")
+                )
+                validate_pids_live_checkbox = (
+                    ui.checkbox(
+                        "Validate PIDs live (real network calls)",
+                        value=pipeline_config.validate_pids_live,
+                    )
+                    .mark("pipeline-validate-pids-live")
+                )
+
             for agent in pipeline_config.agents:
                 with ui.card().classes("w-full q-mt-md"):
                     ui.label(agent.name).classes("text-subtitle1 text-bold")
@@ -183,6 +242,10 @@ def render_agents(
                     with ui.expansion("Advanced", icon="tune").classes("w-full q-mt-sm"):
                         ui.label(f"Runs after: {', '.join(agent.depends_on) or '(nothing — runs first)'}")
                         ui.label(f"Produces fields: {', '.join(agent.fields)}")
+                        if agent.tools:
+                            ui.label(f"Tools: {', '.join(agent.tools)}")
+                        if agent.extra_body:
+                            ui.label(f"Extra request options: {agent.extra_body}")
                         ui.label("Prompt (read-only here — edit via the downloaded JSON)").classes(
                             "text-caption q-mt-sm"
                         )
@@ -256,6 +319,11 @@ def render_agents(
                         )
 
             def _save() -> None:
+                pipeline_config.enable_content_fetch = content_fetch_checkbox.value
+                pipeline_config.enable_doi_resolution = doi_resolution_checkbox.value
+                pipeline_config.enable_identifier_enrichment = identifier_enrichment_checkbox.value
+                pipeline_config.validate_pids = validate_pids_checkbox.value
+                pipeline_config.validate_pids_live = validate_pids_live_checkbox.value
                 for agent in pipeline_config.agents:
                     agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None
@@ -303,6 +371,8 @@ async def _handle_upload(
     pipeline_config.strategies = validated.strategies
     pipeline_config.max_workers = validated.max_workers
     pipeline_config.enable_identifier_enrichment = validated.enable_identifier_enrichment
+    pipeline_config.enable_content_fetch = validated.enable_content_fetch
+    pipeline_config.enable_doi_resolution = validated.enable_doi_resolution
     pipeline_config.validate_pids = validated.validate_pids
     pipeline_config.validate_pids_live = validated.validate_pids_live
 

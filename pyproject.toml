@@ -7,7 +7,7 @@ name = "metadata-enricher"
 version = "0.1.0"
 description = "Multi-agent metadata enrichment library with pluggable schema support"
 readme = "README.md"
-license = "MIT"
+license = "AGPL-3.0-only"
 requires-python = ">=3.11"
 authors = [{ name = "Álvaro P.L." }]
 dependencies = [
