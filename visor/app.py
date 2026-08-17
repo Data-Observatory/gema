@@ -15,7 +15,6 @@ import logging
 import os
 
 from nicegui import ui
-from nicegui.elements.tabs import Tab, Tabs
 
 from visor.bootstrap import (
     load_dataverse_export_config_safe,
@@ -63,38 +62,18 @@ def main_page() -> None:
 
     apply_to_environ(load_settings())
 
-    # Operator-facing lockdown for untrusted hosted guests (e.g. workshop
-    # attendees over Tailscale): Settings/Agents can leak API key presence
-    # and let a guest repoint every other guest's pipeline, so when this is
-    # set they're not created at all -- just the Run panel's content,
-    # directly, no tabs bar needed for a single tab.
-    hosted_guest = os.environ.get("VISOR_HOSTED_GUEST", "0") == "1"
-
-    tabs: Tabs | None = None
-    settings_tab: Tab | None = None
-    run_tab: Tab | None = None
-
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
-        if hosted_guest:
-            run_panel: ui.element = ui.column().classes("w-full")
-        else:
-            with ui.tabs().classes("w-full") as tabs:
-                settings_tab = ui.tab("Settings").mark("tab-settings")
-                agents_tab = ui.tab("Agents").mark("tab-agents")
-                run_tab = ui.tab("Run").mark("tab-run")
+        with ui.tabs().classes("w-full") as tabs:
+            settings_tab = ui.tab("Settings").mark("tab-settings")
+            agents_tab = ui.tab("Agents").mark("tab-agents")
+            run_tab = ui.tab("Run").mark("tab-run")
 
-            with ui.tab_panels(tabs, value=run_tab).classes("w-full"):
-                settings_panel = ui.tab_panel(settings_tab)
-                agents_panel = ui.tab_panel(agents_tab)
-                run_panel = ui.tab_panel(run_tab)
+        with ui.tab_panels(tabs, value=run_tab).classes("w-full"):
+            settings_panel = ui.tab_panel(settings_tab)
+            agents_panel = ui.tab_panel(agents_tab)
+            run_panel = ui.tab_panel(run_tab)
 
     def _go_to_settings() -> None:
-        if tabs is None or settings_tab is None:
-            ui.notify(
-                "Settings are managed by whoever is hosting this session.",
-                type="warning",
-            )
-            return
         tabs.set_value(settings_tab)
 
     refresh_run_tab = render_run_form(
@@ -106,21 +85,10 @@ def main_page() -> None:
         dataverse_export_config=dataverse_export_config,
     )
 
-    if hosted_guest:
-        return
-
-    # Narrowed to plain local names (not `tabs`/`run_tab` themselves) so the
-    # closure below captures a value mypy knows is non-optional -- narrowing
-    # from an `assert` on the outer variable doesn't carry into a nested
-    # function's body.
-    assert tabs is not None and run_tab is not None
-    non_hosted_tabs: Tabs = tabs
-    non_hosted_run_tab: Tab = run_tab
-
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
         refresh_run_tab()
-        non_hosted_tabs.set_value(non_hosted_run_tab)
+        tabs.set_value(run_tab)
 
     render_settings(
         settings_panel,
