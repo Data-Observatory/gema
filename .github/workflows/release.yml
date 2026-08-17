@@ -1,0 +1,131 @@
+name: release
+
+# Builds visor's standalone executables for all three OSes and a
+# metadata-enricher wheel/sdist, then publishes everything to a GitHub
+# Release. Triggered by pushing a tag like v0.1.0 (or manually via
+# workflow_dispatch for a re-run against an existing tag).
+#
+# Reuses the same PyInstaller spec / installer scripts as
+# visor-build.yml (which just validates the build on every PR into
+# main); this workflow additionally packages the outputs and attaches
+# them to a Release instead of a transient workflow artifact.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and release (e.g. v0.1.0)"
+        required: true
+
+jobs:
+  build-visor:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra visor --group visor-build
+
+      - name: Run visor test suite
+        run: make test-visor
+
+      - name: Build PyInstaller bundle
+        run: uv run pyinstaller visor/visor.spec --noconfirm
+
+      - name: Compile Windows installer (Inno Setup)
+        if: runner.os == 'Windows'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.9
+        with:
+          path: visor/installer/windows.iss
+
+      - name: Build macOS .dmg
+        if: runner.os == 'macOS'
+        run: bash visor/installer/macos_build_dmg.sh
+
+      - name: Package Linux onedir build
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x dist/Visor-portable
+          tar -C dist -czf Visor-linux-x86_64.tar.gz Visor
+
+      - name: Stage release assets (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp dist_installer/Visor-Setup.exe release-assets/Visor-Setup-windows-x86_64.exe
+          cp dist/Visor-portable.exe release-assets/Visor-portable-windows-x86_64.exe
+
+      - name: Stage release assets (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p release-assets
+          cp dist/Visor.dmg release-assets/Visor-macos.dmg
+          cp dist/Visor-portable release-assets/Visor-portable-macos
+
+      - name: Stage release assets (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p release-assets
+          cp Visor-linux-x86_64.tar.gz release-assets/
+          cp dist/Visor-portable release-assets/Visor-portable-linux-x86_64
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ runner.os }}
+          path: release-assets/*
+          if-no-files-found: error
+
+  build-wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-wheel
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: [build-visor, build-wheel]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: release-assets-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*
