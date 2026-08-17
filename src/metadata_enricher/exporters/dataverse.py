@@ -254,6 +254,22 @@ def _build_keywords(document: MetadataDocument) -> list[str]:
     return [s["subject_name"] for s in subjects if s.get("subject_name")]
 
 
+def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
+    """The one hook back to the original web resource — DataCite's own
+    `ResourceDescription.url` has no field of its own in the DataCite
+    output otherwise, but Dataverse's citation block has a matching
+    primitive field for exactly this (confirmed live against a real
+    Dataverse 6.11 instance's citation metadata block on 2026-08-17:
+    `alternativeURL`, typeClass primitive, multiple=False, description
+    "Another URL where one can view or access the data in the Dataset").
+    """
+    resource = document.get_field("resource") or {}
+    url = resource.get("url")
+    if not url:
+        return None
+    return _primitive_field("alternativeURL", str(url))
+
+
 def classify_subject(
     document: MetadataDocument,
     export_config: DataverseExportConfig,
@@ -340,6 +356,7 @@ def to_dataverse_json(
     contacts = _build_dataset_contact(document, authors, warnings)
     descriptions = _build_descriptions(document, warnings)
     keywords = _build_keywords(document)
+    alternative_url = _build_alternative_url(document)
 
     if export_config.enabled and provider is not None:
         subject, token_usage = classify_subject(document, export_config, provider, llm_client=llm_client)
@@ -372,6 +389,8 @@ def to_dataverse_json(
                 ],
             )
         )
+    if alternative_url is not None:
+        fields.append(alternative_url)
 
     dataset_json = {
         "datasetVersion": {

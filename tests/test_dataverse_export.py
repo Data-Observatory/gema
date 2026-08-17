@@ -227,6 +227,29 @@ class TestKeywords:
         assert not any(f["typeName"] == "keyword" for f in fields)
 
 
+class TestAlternativeURL:
+    def test_maps_resource_url_to_alternative_url(self):
+        doc = make_document(
+            titles=[{"name": "T", "title_type": "MainTitle"}],
+            resource={"url": "https://example.org/dataset"},
+        )
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
+        assert url_field == {
+            "value": "https://example.org/dataset",
+            "typeClass": "primitive",
+            "multiple": False,
+            "typeName": "alternativeURL",
+        }
+
+    def test_no_alternative_url_field_when_no_resource_url(self):
+        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        assert not any(f["typeName"] == "alternativeURL" for f in fields)
+
+
 class TestSubjectClassification:
     def test_disabled_defaults_to_other_with_no_warning(self):
         """Disabling is an intentional choice, not missing data — must not warn."""
