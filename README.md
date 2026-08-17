@@ -226,6 +226,7 @@ The main pipeline configuration file. Key fields:
   model: deepseek-v4-flash
   temperature: 0.2
   depends_on: []
+  context_fields: []  # field names to surface from depends_on agents' output
   use_chain_of_thought: true
 ```
 
@@ -255,10 +256,16 @@ for the exact rule.
 
 ## Agents (DataCite 4.6)
 
-The default config defines 5 agents. None currently declares a `depends_on`, so
-all 5 run as a single parallel wave (Kahn topological sort collapses to one
-wave when there are no edges) — `depends_on` stays available per-agent for
-whenever a future agent needs another's output first.
+The default config defines 5 agents, resolved (via Kahn topological sort
+over `depends_on`) into **3 execution waves**, not 1 — agents within a
+wave run concurrently; each wave waits for the previous one to finish,
+since it needs that wave's merged output:
+
+| Wave | Agent(s) | Depends on | Why |
+|------|----------|------------|-----|
+| 1 (parallel) | `core_metadata`, `classification`, `media_files` | — | No cross-agent data needed |
+| 2 | `creators_publishers` | `core_metadata` | Reuses `core_metadata`'s editor/maintainer/producer names (via `context_fields: [resource]`) instead of re-deriving them, so both agents name the same institution consistently |
+| 3 | `rights_funding_citations` | `core_metadata`, `creators_publishers` | Needs `resource` and `publishers` (via `context_fields`) for citation formatting |
 
 | Agent | Fields |
 |-------|--------|
