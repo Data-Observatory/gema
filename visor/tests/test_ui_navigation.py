@@ -246,6 +246,32 @@ async def test_run_form_shows_fetched_content_auto_fetch_hint(
     await user.should_see("leave blank to let the pipeline fetch")
 
 
+async def test_run_form_has_doi_field_and_marks_optional_fields(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """doi is a real ResourceDescription field (like url/title/description/
+    fetched_content) but was missing from the Run tab's form entirely -- a
+    user with a DOI already in hand had no way to enter it without
+    switching to Paste JSON. Also: url/title/description are the only
+    fields where at least one is required (see the "Fill at least url,
+    title, or description" check in _run()); doi/publisher/frequency/
+    fetched_content are all purely optional and should say so."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-doi")
+    await user.should_see("DOI (optional)")
+    await user.should_see("Publisher (optional)")
+    await user.should_see("Frequency (optional)")
+
+
 async def test_settings_add_custom_provider(user: User, monkeypatch, tmp_path) -> None:
     """The real default config already declares all 5 pool providers
     (config/agents.yaml), so "Other (custom)" is the only reachable

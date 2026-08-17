@@ -28,12 +28,24 @@ from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.settings import VisorSettings, missing_required
 
-FORM_FIELDS = ("url", "title", "description", "publisher", "frequency", "fetched_content")
+FORM_FIELDS = ("url", "title", "description", "doi", "publisher", "frequency", "fetched_content")
+
+# At least one of url/title/description is required (see the check in
+# _run() below) -- every other field is purely optional, so its label says
+# so. "doi" gets its own display label since name.title() would render it
+# "Doi", not the acronym.
+FORM_FIELD_LABELS = {
+    "doi": "DOI (optional)",
+    "publisher": "Publisher (optional)",
+    "frequency": "Frequency (optional)",
+    "fetched_content": "Fetched Content (optional)",
+}
 
 JSON_TEMPLATE = """{
   "url": "https://example.org/dataset",
   "title": "Dataset title",
   "description": "A short description of what this dataset contains.",
+  "doi": "Existing DOI, if this resource already has one (optional)",
   "publisher": "Publishing organization (optional)",
   "frequency": "Update frequency, e.g. Monthly (optional)",
   "fetched_content": "Raw HTML/text already fetched from the URL, if you have it (optional)"
@@ -105,8 +117,9 @@ def _render_form_phase(
     with form_box:
         inputs: dict[str, ui.input] = {}
         for name in FORM_FIELDS:
+            label = FORM_FIELD_LABELS.get(name, name.replace("_", " ").title())
             inputs[name] = (
-                ui.input(name.replace("_", " ").title())
+                ui.input(label)
                 .classes("w-full")
                 .mark(f"run-input-{name}")
             )
