@@ -14,22 +14,43 @@ blocked-API key made configurable via `.env` instead of hardcoded). Source:
 
 ## Quick start
 
+Everything below in one pass — base Dataverse stack, the upload proxy wired
+with a real token, Caddy fanning out one port, and visor for `/meta`. Each
+step is explained in detail further down; this is just the commands.
+
 ```bash
 cd dataverse-demo
 cp .env.example .env
 # edit .env: at minimum change BLOCKED_API_KEY to something only you know
-docker compose up
+
+docker compose up -d
+# first boot takes a few minutes — watch for `bootstrap` exiting with
+# "Done, your instance has been configured for demo or eval."
+docker logs -f bootstrap
+
+# wire the uploader's Dataverse API token — bootstrap already generated one
+./scripts/get_admin_token.sh
+# paste the printed token into .env as DATAVERSE_API_TOKEN, then:
+docker compose up -d --force-recreate uploader caddy
 ```
 
-First boot takes a few minutes (Postgres + Solr + the Dataverse app itself
-starting, then the `bootstrap` container runs `demo/init.sh` to configure a
-fresh instance). Watch for `bootstrap` exiting with "Done, your instance has
-been configured for demo or eval." — that's the signal everything else is up.
+In a separate terminal, run visor for the `/meta` route (not a container —
+see "Caddy" below for why `VISOR_ROOT_PATH` is required, not optional):
 
-Visit **http://localhost:8080** and log in:
+```bash
+VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta python -m visor.app
+```
 
-- username: `dataverseAdmin`
-- password: `admin1`
+Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
+
+- **http://localhost:8000/** — Dataverse UI (`dataverseAdmin` / `admin1`)
+- **http://localhost:8000/up/** — upload form for attendees
+- **http://localhost:8000/meta/** — visor
+
+(Or hit each service directly without Caddy: 8080 / 8090 / 8001.)
+
+Sharing this beyond localhost (Tailscale, Funnel), resetting between runs,
+and the DataCite → Dataverse translator are all covered in detail below.
 
 ## Requirements
 
