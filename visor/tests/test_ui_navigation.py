@@ -273,6 +273,44 @@ async def test_run_form_has_context_hints_field(user: User, monkeypatch, tmp_pat
     assert "published in" in hints_input._props.get("placeholder", "").lower()
 
 
+async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path) -> None:
+    """A user relying on an auto-updating alias (e.g. OpenRouter's
+    "~deepseek/deepseek-v4-flash-latest") wants to confirm the real,
+    resolved version it actually served -- PipelineResult.models_used
+    carries that per-agent, so the Result phase should show it. Monkeypatch
+    run_single (not a real LLM call) so this stays in the fast, non-live
+    tier -- same technique as test_agents_page.py's fakes."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import MetadataDocument, ResourceDescription, TokenUsage
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        document=MetadataDocument(fields={"titles": []}),
+        token_usage=TokenUsage(prompt_tokens=10, completion_tokens=5),
+        models_used={"core_metadata": "deepseek/deepseek-v4-flash-2508"},
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-success")
+    await user.should_see(marker="result-models-used")
+    await user.should_see("core_metadata")
+    await user.should_see("deepseek/deepseek-v4-flash-2508")
+
+
 async def test_run_form_fields_have_example_placeholders(user: User, monkeypatch, tmp_path) -> None:
     """Empty inputs give no clue what format is expected -- a placeholder
     (grayed hint text, not a prefilled value the user has to remember to

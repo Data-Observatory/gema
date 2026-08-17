@@ -180,14 +180,17 @@ class InstructorLLMClient:
             **create_kwargs
         )
         usage = getattr(completion, "usage", None)
+        _raw_model = getattr(completion, "model", None)
+        resolved_model = _raw_model if isinstance(_raw_model, str) else ""
         token_usage = (
             TokenUsage(
                 prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
                 completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
                 total_tokens=getattr(usage, "total_tokens", 0) or 0,
+                model=resolved_model,
             )
             if usage is not None
-            else TokenUsage()
+            else TokenUsage(model=resolved_model)
         )
         return cast(BaseModel, result), token_usage
 
@@ -341,6 +344,8 @@ class InstructorLLMClient:
             **create_kwargs
         )
         final_usage = getattr(completion, "usage", None)
+        _raw_model = getattr(completion, "model", None)
+        resolved_model = _raw_model if isinstance(_raw_model, str) else ""
         if final_usage is not None:
             total_usage = TokenUsage(
                 prompt_tokens=total_usage.prompt_tokens + (final_usage.prompt_tokens or 0),
@@ -348,6 +353,14 @@ class InstructorLLMClient:
                     total_usage.completion_tokens + (final_usage.completion_tokens or 0)
                 ),
                 total_tokens=total_usage.total_tokens + (final_usage.total_tokens or 0),
+                model=resolved_model,
+            )
+        else:
+            total_usage = TokenUsage(
+                prompt_tokens=total_usage.prompt_tokens,
+                completion_tokens=total_usage.completion_tokens,
+                total_tokens=total_usage.total_tokens,
+                model=resolved_model,
             )
         return cast(BaseModel, result), total_usage
 

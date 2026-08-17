@@ -123,6 +123,18 @@ class TestTokenUsage:
         assert usage.completion_tokens == 0
         assert usage.total_tokens == 0
 
+    def test_model_defaults_to_empty_string(self):
+        """No model recorded (mock client, cache hit) -> empty, not None --
+        keeps callers from needing a None-check to display it."""
+        usage = TokenUsage()
+        assert usage.model == ""
+
+    def test_model_explicit_value(self):
+        """The provider's own resolved model id (e.g. what an OpenRouter
+        '~...-latest' alias actually served) round-trips unchanged."""
+        usage = TokenUsage(model="deepseek/deepseek-v4-flash-2508")
+        assert usage.model == "deepseek/deepseek-v4-flash-2508"
+
     def test_extra_fields_forbidden(self):
         """extra='forbid'."""
         with pytest.raises(ValidationError):

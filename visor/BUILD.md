@@ -141,9 +141,11 @@ while you flip over to Settings and back).
   3. *Result* — Download/"Run another" buttons pinned above a fixed-height
      `ui.scroll_area` holding the JSON (or the error, on failure); a
      token-usage line ("N in / M out, T total") when the pipeline reports
-     any; the "Submitted input" panel carries over from the running phase;
-     the log collapses into a "Show details (N lines)" expander,
-     auto-expanded on failure since that's exactly when it's the answer.
+     any; a "Models used" list (agent id -> resolved model, see below) when
+     any agent's call reported one; the "Submitted input" panel carries
+     over from the running phase; the log collapses into a "Show details
+     (N lines)" expander, auto-expanded on failure since that's exactly
+     when it's the answer.
 
 These three decisions (in-place phases vs. a separate Result tab, cards+download/upload vs. a raw JSON editor for Agents, and confirming the fixed-height-scroll-with-pinned-actions pattern) were run past an Opus-level design consult before building, given a non-technical audience — see the commit history for the full rationale.
 
@@ -168,6 +170,20 @@ called) — the number shown is "cost of running this now," not "value of
 the data." Cache entries written before this existed are read as legacy
 bare-shape values (no usage recorded) rather than breaking — confirmed
 directly against the real committed `tests/fixtures/golden/cache/cache.db`.
+
+### Resolved model per agent
+
+`TokenUsage.model` carries the provider's own resolved model id for that
+call (`completion.model` from the OpenAI-compatible response) — needed
+because a configured model can be an auto-updating alias (e.g.
+OpenRouter's `~deepseek/deepseek-v4-flash-latest`, see
+`bootstrap.py::apply_external_user_provider_overrides`), and the alias
+name alone doesn't tell you which concrete checkpoint actually served the
+request. `pipeline.py::_build_models_used` maps agent id -> resolved model
+(skipping any agent whose call reported none — a mock/fake client or a
+cache hit, same as token usage) into `PipelineResult.models_used`,
+surfaced as visor's Result-phase "Models used" list. Empty entirely means
+nothing to show, not an error.
 
 ## Testing
 

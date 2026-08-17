@@ -284,6 +284,19 @@ def _render_token_usage(result: PipelineResult) -> None:
     ).classes("text-caption").mark("result-token-usage")
 
 
+def _render_models_used(result: PipelineResult) -> None:
+    """The resolved model each agent actually ran with -- e.g. what an
+    OpenRouter "~...-latest" alias really served, not just its configured
+    name. Absent entirely (a mock client, or every call was a cache hit)
+    means nothing to show, same convention as _render_token_usage."""
+    if not result.models_used:
+        return
+    with ui.column().classes("gap-0").mark("result-models-used"):
+        ui.label("Models used:").classes("text-caption")
+        for agent_id, model in sorted(result.models_used.items()):
+            ui.label(f"- {agent_id}: {model}").classes("text-caption")
+
+
 def _render_running_phase(state: _RunViewState) -> None:
     ui.label("Running…").classes("text-h5")
     _render_submitted_input(state.submitted_text)
@@ -336,6 +349,7 @@ def _render_result_phase(
     _render_submitted_input(state.submitted_text)
     if state.result is not None:
         _render_token_usage(state.result)
+        _render_models_used(state.result)
 
     if state.result is not None and state.result.success:
         assert state.result.document is not None
