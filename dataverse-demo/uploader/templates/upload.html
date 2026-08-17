@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Upload to Dataverse</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; }
+    textarea { width: 100%; height: 12rem; font-family: monospace; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    .error { background: #fde8e8; border: 1px solid #f5b5b5; padding: 0.75rem; border-radius: 4px; }
+    .result { background: #e6f7e6; border: 1px solid #a8d8a8; padding: 0.75rem; border-radius: 4px; }
+    button { margin-top: 1.5rem; padding: 0.6rem 1.2rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Upload a dataset to Dataverse</h1>
+  <p>Paste the Dataverse-native JSON exported from metadata-enricher, or upload the file.</p>
+
+  {% if error %}
+    <div class="error"><strong>Error:</strong> {{ error }}</div>
+  {% endif %}
+  {% if result %}
+    <div class="result">
+      Created: <a href="{{ result.url }}" target="_blank">{{ result.persistent_id }}</a>
+      {% if result.published %}(published){% else %}(draft — publish it from the Dataverse UI){% endif %}
+    </div>
+  {% endif %}
+
+  <form action="/upload" method="post" enctype="multipart/form-data">
+    <label for="collection">Collection alias</label>
+    <input type="text" id="collection" name="collection" value="{{ collection }}">
+
+    <label for="pasted_json">Paste JSON</label>
+    <textarea id="pasted_json" name="pasted_json" placeholder="{&#10;  &quot;datasetVersion&quot;: { ... }&#10;}"></textarea>
+
+    <label for="file">...or upload a file</label>
+    <input type="file" id="file" name="file" accept="application/json">
+
+    <label><input type="checkbox" name="publish" value="true"> Publish immediately (otherwise left as a draft)</label>
+
+    <button type="submit">Upload</button>
+  </form>
+</body>
+</html>

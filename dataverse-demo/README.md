@@ -103,6 +103,32 @@ contact email found anywhere in the source metadata, a real gap between
 DataCite and Dataverse's required fields, not a bug — so check those
 before publishing.
 
+## Upload proxy (for attendees without API tooling)
+
+`uploader/` is a very light FastAPI service — one form, no auth of its own,
+no database — that takes a Dataverse-native JSON payload (paste or file
+upload) and forwards it to this instance's native API
+(`POST /api/dataverses/:alias/datasets`), the same call `scripts/smoke_test.sh`
+makes by hand. It's for attendees who have metadata-enricher/visor output
+but no `curl`/API-token workflow of their own.
+
+It's part of `compose.yml` (service `uploader`, port 8090) so it comes up
+with everything else. Set `DATAVERSE_API_TOKEN` in `.env` first — see
+`.env.example` — otherwise the form loads but every submission fails with
+a clear "no token configured" error rather than a silent 401. Visit
+**http://localhost:8080** on the Dataverse side stays the admin/API story;
+**http://localhost:8090** is the plain form attendees actually use.
+
+Datasets are created as drafts unless the "Publish immediately" checkbox
+is ticked — leave it unticked if you want to review before making
+attendees' uploads publicly visible.
+
+This has the exact same secret-exposure shape as the section below: anyone
+who can reach port 8090 can create datasets in `DATAVERSE_COLLECTION_ALIAS`
+using the token baked into the container's environment. Scope Tailscale
+ACLs the same way, and use a token scoped to a non-admin account if you
+don't want attendees' traffic able to do anything an admin token can do.
+
 ## Sharing it over Tailscale (remote attendees)
 
 For a live workshop where attendees aren't on the same LAN, serve this over
@@ -160,9 +186,17 @@ live.
 
 ## Resetting
 
-Data lives in `./data/` (gitignored). Stop the stack (`Ctrl-C` or
-`docker compose down`) and delete `./data/` to start completely fresh —
-useful between practice runs before the actual live event.
+Data lives in named Docker volumes (`dv_app_data`, `dv_app_secrets`,
+`dv_postgres_data`, `dv_solr_data`, `dv_solr_conf`), not a host directory.
+Stop the stack and wipe them to start completely fresh — useful between
+practice runs before the actual live event:
+
+```bash
+docker compose down -v
+```
+
+(`-v` is what removes the named volumes; a plain `docker compose down`
+leaves them in place for next time.)
 
 ## The DataCite → Dataverse translator
 
