@@ -497,6 +497,38 @@ async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypa
     await user.should_see("already exists")
 
 
+async def test_settings_save_shows_edited_key_not_stale_value(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression: editing a provider's key and saving must not visually
+    revert to the pre-edit value. _save() used to refresh the Settings body
+    from the `current` VisorSettings captured at page load, which was never
+    updated after a save -- so the very next redraw of this tab (even
+    without navigating away) showed the old key again, though the correct
+    one was already on disk."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-opencode").click()
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+
+    user.find(marker="settings-input-OPENCODE_API_KEY").type("first-key")
+    user.find(marker="settings-save").click()
+    # See test_settings_edit_existing_provider_base_url's comment: refresh()
+    # is unawaited fire-and-forget, needs an explicit tick before the next
+    # find() below would otherwise still see the pre-refresh element.
+    await asyncio.sleep(0.1)
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-opencode")
+    user.find(marker="settings-provider-edit-opencode").click()
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+    key_input = list(user.find(marker="settings-input-OPENCODE_API_KEY").elements)[0]
+    assert key_input.value == "first-key"
+
+
 async def test_settings_tab_lists_key_input_for_every_declared_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:
