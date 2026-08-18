@@ -30,6 +30,7 @@ from typing import Callable
 from nicegui import ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from visor.i18n import t
 from visor.settings import (
     VisorSettings,
     addable_providers,
@@ -37,6 +38,12 @@ from visor.settings import (
     providers_using,
     save_settings,
 )
+
+# Internal, language-independent sentinel for the add-provider picker's
+# "not one of the known pool entries" choice -- only its displayed label
+# is translated; pool_by_name never has a real provider under this key,
+# so the equality check in _apply_choice() below stays unambiguous.
+_CUSTOM_PROVIDER = "__custom__"
 
 
 def render_settings(
@@ -56,12 +63,8 @@ def render_settings(
     just_added: list[str] = []
 
     with container:
-        ui.label("Settings").classes("text-h5")
-        ui.label(
-            "API keys are saved only on this computer and used only to talk "
-            "to the provider each key belongs to — never bundled with the "
-            "app or shared with anyone else."
-        ).classes("text-caption")
+        ui.label(t("settings.title")).classes("text-h5")
+        ui.label(t("settings.intro")).classes("text-caption")
 
         @ui.refreshable
         def body() -> None:
@@ -70,15 +73,16 @@ def render_settings(
             auto_expand = just_added.pop() if just_added else None
 
             with ui.card().classes("w-full q-mt-md"):
-                ui.label("Providers").classes("text-subtitle1 text-bold")
-                ui.label(
-                    "Connection details and API key for every provider — which "
-                    "one each agent actually uses is set in the Agents tab."
-                ).classes("text-caption")
+                ui.label(t("settings.providers.title")).classes("text-subtitle1 text-bold")
+                ui.label(t("settings.providers.intro")).classes("text-caption")
 
                 for provider in pipeline_config.providers:
                     used_by = providers_using(pipeline_config, provider.api_key_env)
-                    hint = f"used by: {', '.join(used_by)}" if used_by else "not currently used by any agent"
+                    hint = (
+                        t("settings.providers.used_by", agents=", ".join(used_by))
+                        if used_by
+                        else t("settings.providers.not_used")
+                    )
 
                     edit_panel_ref: list[ui.column] = []
 
@@ -88,14 +92,17 @@ def render_settings(
                     def _remove(name: str = provider.name) -> None:
                         users = [a.id for a in pipeline_config.agents if a.provider == name]
                         if dataverse_export_config is not None and dataverse_export_config.agent.provider == name:
-                            users.append("dataverse export's Subject Classifier")
+                            users.append(t("settings.providers.dataverse_subject_classifier"))
                         if users:
-                            ui.notify(f"Can't remove '{name}' — used by: {', '.join(users)}", type="negative")
+                            ui.notify(
+                                t("settings.providers.remove_blocked", name=name, users=", ".join(users)),
+                                type="negative",
+                            )
                             return
                         pipeline_config.providers[:] = [
                             p for p in pipeline_config.providers if p.name != name
                         ]
-                        ui.notify(f"Removed provider '{name}'", type="positive")
+                        ui.notify(t("settings.providers.removed", name=name), type="positive")
                         body.refresh()
 
                     with ui.row().classes("w-full items-center q-mt-sm no-wrap"):
@@ -113,13 +120,13 @@ def render_settings(
                     edit_panel_ref.append(edit_panel)
                     with edit_panel:
                         url_input = (
-                            ui.input("Base URL", value=provider.base_url or "")
+                            ui.input(t("settings.base_url.label"), value=provider.base_url or "")
                             .classes("w-full")
                             .mark(f"settings-provider-url-{provider.name}")
                         )
                         key_input = (
                             ui.input(
-                                f"{provider.api_key_env} key",
+                                t("settings.key.label", env=provider.api_key_env),
                                 password=True,
                                 password_toggle_button=True,
                                 value=current.env.get(provider.api_key_env, ""),
@@ -138,7 +145,7 @@ def render_settings(
                     ref[0].set_visibility(not ref[0].visible)
 
                 with ui.row().classes("w-full items-center no-wrap"):
-                    ui.label("Add a provider").classes("text-subtitle2 text-bold flex-grow")
+                    ui.label(t("settings.add_provider.title")).classes("text-subtitle2 text-bold flex-grow")
                     ui.button(icon="add", on_click=_toggle_add).props("flat round dense").mark(
                         "settings-add-provider-toggle"
                     )
@@ -147,29 +154,36 @@ def render_settings(
                 add_panel.set_visibility(False)
                 add_panel_ref.append(add_panel)
                 with add_panel:
-                    ui.label(
-                        "Pick one from the list to autofill its connection details, "
-                        "or choose \"Other (custom)\" for a provider not listed here."
-                    ).classes("text-caption")
+                    ui.label(t("settings.add_provider.help")).classes("text-caption")
 
                     existing_names = {p.name for p in pipeline_config.providers}
                     pool = addable_providers(known_providers, pipeline_config)
                     pool_by_name = {p.name: p for p in pool}
-                    CUSTOM = "Other (custom)"
-                    choice_options = [*[p.name for p in pool], CUSTOM]
+                    choice_options = {p.name: p.name for p in pool}
+                    choice_options[_CUSTOM_PROVIDER] = t("settings.add_provider.custom")
 
-                    choice_select = ui.select(choice_options, value=CUSTOM, label="Provider").classes(
-                        "w-full"
-                    ).mark("settings-add-provider-choice")
-                    name_input = ui.input("Name").classes("w-full").mark("settings-add-provider-name")
-                    url_new_input = ui.input("Base URL").classes("w-full").mark("settings-add-provider-url")
+                    choice_select = ui.select(
+                        choice_options, value=_CUSTOM_PROVIDER, label=t("settings.add_provider.provider_label")
+                    ).classes("w-full").mark("settings-add-provider-choice")
+                    name_input = (
+                        ui.input(t("settings.add_provider.name_label"))
+                        .classes("w-full")
+                        .mark("settings-add-provider-name")
+                    )
+                    url_new_input = (
+                        ui.input(t("settings.add_provider.url_label"))
+                        .classes("w-full")
+                        .mark("settings-add-provider-url")
+                    )
                     env_name_input = (
-                        ui.input("Environment variable name for its key")
+                        ui.input(t("settings.add_provider.env_label"))
                         .classes("w-full")
                         .mark("settings-add-provider-env-name")
                     )
                     key_new_input = (
-                        ui.input("API key", password=True, password_toggle_button=True)
+                        ui.input(
+                            t("settings.add_provider.key_label"), password=True, password_toggle_button=True
+                        )
                         .classes("w-full")
                         .mark("settings-add-provider-key")
                     )
@@ -191,10 +205,10 @@ def render_settings(
                     def _add_provider() -> None:
                         name = name_input.value.strip()
                         if not name:
-                            ui.notify("Provider name is required", type="negative")
+                            ui.notify(t("settings.add_provider.name_required"), type="negative")
                             return
                         if name in existing_names:
-                            ui.notify(f"Provider '{name}' already exists", type="negative")
+                            ui.notify(t("settings.add_provider.duplicate", name=name), type="negative")
                             return
                         env_name_value = (
                             env_name_input.value.strip()
@@ -214,16 +228,14 @@ def render_settings(
                             # other key here.
                             current.env[env_name_value] = key_new_input.value
                         just_added[:] = [name]
-                        ui.notify(f"Added provider '{name}' — set its key below and Save", type="positive")
+                        ui.notify(t("settings.add_provider.added", name=name), type="positive")
                         body.refresh()
 
-                    ui.button("Add provider", on_click=_add_provider).classes("q-mt-sm").mark(
-                        "settings-add-provider-submit"
-                    )
+                    ui.button(t("settings.add_provider.submit"), on_click=_add_provider).classes(
+                        "q-mt-sm"
+                    ).mark("settings-add-provider-submit")
 
-            ui.label("Optional — lets ORCID be searched by author name").classes(
-                "text-subtitle2 q-mt-md"
-            )
+            ui.label(t("settings.orcid.title")).classes("text-subtitle2 q-mt-md")
             for env_name in optional_env_vars():
                 env_inputs[env_name] = (
                     ui.input(
@@ -251,10 +263,10 @@ def render_settings(
                 # to the pre-save value the moment Settings is redrawn, even
                 # though the correct value is already on disk.
                 current = new_settings
-                ui.notify("Settings saved", type="positive")
+                ui.notify(t("settings.saved"), type="positive")
                 body.refresh()
                 on_saved(new_settings)
 
-            ui.button("Save & Continue", on_click=_save).classes("q-mt-md").mark("settings-save")
+            ui.button(t("settings.save"), on_click=_save).classes("q-mt-md").mark("settings-save")
 
         body()
