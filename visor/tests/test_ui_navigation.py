@@ -330,6 +330,46 @@ async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path)
     await user.should_see("deepseek/deepseek-v4-flash-2508")
 
 
+async def test_result_phase_shows_real_error_not_unknown(user: User, monkeypatch, tmp_path) -> None:
+    """Regression: a resource that fails without run_single() raising (e.g.
+    every agent's provider call rejected an invalid API key) returns a
+    PipelineResult with .error set and .success False -- it doesn't raise.
+    _execute()'s except block used to be the only place state.error was
+    ever set, so this path left state.error at its default None and the
+    failure UI always showed the generic "Unknown error" fallback instead
+    of the real reason. Also checks the auth-error message gets rewritten
+    into something actionable instead of the raw provider text."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import ResourceDescription
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        error="All agents failed: Error code: 401 - No auth credentials found",
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-failure")
+    await user.should_see(marker="result-error")
+    error_label = list(user.find(marker="result-error").elements)[0]
+    assert "Unknown error" not in error_label.text
+    assert "API key for this provider was rejected" in error_label.text
+    assert "Check it in Settings" in error_label.text
+
+
 async def test_run_form_fields_have_example_placeholders(user: User, monkeypatch, tmp_path) -> None:
     """Empty inputs give no clue what format is expected -- a placeholder
     (grayed hint text, not a prefilled value the user has to remember to

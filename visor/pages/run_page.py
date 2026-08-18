@@ -239,6 +239,33 @@ def _render_form_phase(
     ui.button("Run", on_click=_run).classes("q-mt-md").mark("run-submit")
 
 
+_AUTH_ERROR_MARKERS = (
+    "401",
+    "unauthorized",
+    "invalid api key",
+    "incorrect api key",
+    "no auth credentials",
+    "authenticationerror",
+)
+
+
+def _friendly_error(raw: str) -> str:
+    """Rewrite a raw provider/transport error into something a non-programmer
+    can act on. Providers report an invalid/revoked key as a bare HTTP 401
+    with wording that varies (OpenRouter's "No auth credentials found" reads
+    nothing like an API-key problem), so pattern-match the common shells
+    instead of showing that text verbatim. The original string still reaches
+    the user via the "Show details" log expansion below — this only changes
+    the headline."""
+    lowered = raw.lower()
+    if any(marker in lowered for marker in _AUTH_ERROR_MARKERS):
+        return (
+            "The API key for this provider was rejected. Check it in "
+            f"Settings — it may be missing, mistyped, or revoked. ({raw})"
+        )
+    return raw
+
+
 async def _execute(
     pipeline_config: PipelineConfig, input_path: Path, state: _RunViewState, refresh: Callable[[], object]
 ) -> None:
@@ -251,11 +278,19 @@ async def _execute(
         # parallel, while this await is in flight.
         result = await run.io_bound(run_single, pipeline_config, input_path)
     except Exception as exc:  # noqa: BLE001
-        state.error = str(exc)
+        state.error = _friendly_error(str(exc))
         state.result = None
     else:
         state.result = result
-        state.error = None
+        # PipelineResult.success wraps a resource-level failure (e.g. every
+        # agent's provider call rejected an invalid key) without raising --
+        # result.error carries the real reason, but the render side only
+        # ever reads state.error, which the `except` branch above never
+        # touched on this path. Without this, a failed-but-not-raised run
+        # showed a bare "Unknown error" no matter what actually went wrong.
+        # (result is run.io_bound()'s declared return type, never actually
+        # None here — see _download_dataverse's identical guard below.)
+        state.error = _friendly_error(result.error) if result and result.error else None
     finally:
         state.log_lines.extend(drain(state.capture.queue))
         stop_capturing(state.capture)
