@@ -165,3 +165,64 @@ class TestFactory:
         client_b = create_llm_client(provider, model="gpt-4", seed=99)
 
         assert client_a is not client_b
+
+
+class TestExplicitApiKey:
+    """api_key=... bypasses provider.api_key_env/os.environ entirely --
+    visor's per-session key injection needs this (see visor/glue.py):
+    os.environ is one process-wide value, unusable once two hosted
+    sessions hold different keys for the same provider."""
+
+    def test_works_without_the_env_var_set(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        monkeypatch.delenv("TEST_API_KEY", raising=False)
+        client = create_llm_client(
+            provider=make_provider(), model="gpt-4", api_key="sk-explicit-123"
+        )
+        assert hasattr(client, "complete")
+
+    def test_takes_precedence_over_the_env_var(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        monkeypatch.setenv("TEST_API_KEY", "sk-from-environ")
+        create_llm_client(provider=make_provider(), model="gpt-4", api_key="sk-explicit-123")
+
+        config = mock_instructor.call_args.kwargs["config"]
+        assert config.api_key.get_secret_value() == "sk-explicit-123"
+
+    def test_different_explicit_keys_do_not_share_a_cached_client(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        """The actual bug this parameter exists to fix: two sessions with
+        different keys for the same provider/model must never collide on
+        one cached client and silently share whichever key built it
+        first."""
+        monkeypatch.delenv("TEST_API_KEY", raising=False)
+        provider = make_provider()
+
+        client_a = create_llm_client(provider, model="gpt-4", api_key="sk-session-a")
+        client_b = create_llm_client(provider, model="gpt-4", api_key="sk-session-b")
+
+        assert client_a is not client_b
+        assert len(_client_cache) == 2
+
+    def test_same_explicit_key_returns_the_cached_client(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        monkeypatch.delenv("TEST_API_KEY", raising=False)
+        provider = make_provider()
+
+        client_a = create_llm_client(provider, model="gpt-4", api_key="sk-session-a")
+        client_b = create_llm_client(provider, model="gpt-4", api_key="sk-session-a")
+
+        assert client_a is client_b
+
+    def test_env_var_path_cache_key_is_unaffected(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        """Omitting api_key (every existing call site) must keep producing
+        the exact same cache key shape as before -- no `|k=...` suffix."""
+        monkeypatch.setenv("TEST_API_KEY", "sk-test-123")
+        create_llm_client(provider=make_provider(), model="gpt-4")
+        assert list(_client_cache.keys()) == ["test-provider|gpt-4|t=0.0|seed=None|mt=None|c=True|r=True|eb=None"]

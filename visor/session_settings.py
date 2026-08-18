@@ -21,23 +21,29 @@ EMPTY, never seeded from the operator's own file-based settings: doing
 that would leak the operator's real API key value into every guest's
 storage the moment they open the page.
 
-Residual limitation worth knowing about: apply_to_environ() still injects
-a key into the one process-wide os.environ (create_llm_client() has no
-other seam to read a key from -- see llm/factory.py). run_page.py refreshes
-os.environ from this session's own settings immediately before each run to
-keep the window tight, but two hosted sessions submitting a run for the
-same provider at the exact same instant with different keys can still
-race on that shared process state. Removing that race entirely would mean
-threading an explicit resolved key through Pipeline/LLMClient construction
-instead of env vars -- a real follow-up, out of scope here.
+Previously, run_page.py worked around the one process-wide os.environ
+(create_llm_client()'s only key-resolution seam) by refreshing it from
+this session's own settings immediately before each run -- narrowing,
+but not closing, a race where two hosted sessions submitting a run for
+the same provider at the exact same instant with different keys could
+still collide on that shared process state. build_llm_factory() below
+closes it properly: create_llm_client() now accepts an explicit api_key
+that bypasses os.environ entirely, and AgentRegistry already calls
+through an injectable llm_factory rather than create_llm_client
+directly (see agents/registry.py) -- so visor never needs to touch
+os.environ for provider keys at all.
 """
 
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from nicegui import app
 
+from metadata_enricher.config.models import ProviderConfig
+from metadata_enricher.llm.base import LLMClient
+from metadata_enricher.llm.factory import create_llm_client
 from visor.settings import VisorSettings, load_settings, save_settings
 
 _STORAGE_KEY = "visor_settings"
@@ -62,3 +68,37 @@ def save_session_settings(settings: VisorSettings) -> None:
         save_settings(settings)
         return
     app.storage.user[_STORAGE_KEY] = settings.to_dict()
+
+
+def build_llm_factory(settings: VisorSettings) -> Any:
+    """An LLMClientFactory (see agents/registry.py) closing over *settings*'
+    own keys -- pass to visor.glue.run_single(llm_factory=...) so this
+    session's run always uses its own key for a provider, never whatever
+    the process-wide os.environ currently happens to hold. Falls back to
+    create_llm_client's normal os.environ lookup when this session hasn't
+    got a key for that particular provider (e.g. one it doesn't use),
+    rather than failing outright.
+
+    Return type is Any, not the LLMClientFactory Protocol, so this module
+    doesn't have to import agents.registry (a heavier, orchestration-layer
+    module) just for a type annotation -- the closure's call shape matches
+    structurally, which is all a Protocol ever checks.
+    """
+
+    def factory(
+        provider: ProviderConfig,
+        model: str,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        extra_body: dict[str, Any] | None = None,
+    ) -> LLMClient:
+        return create_llm_client(
+            provider,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            extra_body=extra_body,
+            api_key=settings.env.get(provider.api_key_env) or None,
+        )
+
+    return factory

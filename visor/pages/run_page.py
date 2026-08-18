@@ -16,7 +16,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from nicegui import events, run, ui
 
@@ -29,6 +29,7 @@ from metadata_enricher.schemas.base import Schema
 from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_from_text
 from visor.i18n import t
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
+from visor.session_settings import build_llm_factory
 from visor.settings import VisorSettings, apply_to_environ, missing_required
 
 
@@ -247,14 +248,10 @@ def _render_form_phase(
             status.text = t("run.error.read_input", error=exc)
             return
 
-        # In hosted mode, os.environ is the one shared, process-wide seam
-        # create_llm_client() reads a key from (see llm/factory.py) --
-        # refreshing it from this session's own settings right before
-        # dispatch keeps it correct for the overwhelmingly common case
-        # (runs don't start at the exact same instant); two hosted
-        # sessions submitting a run for the same provider simultaneously
-        # can still race on that shared process state -- see
-        # visor/session_settings.py's module docstring.
+        # Only ORCID's optional env vars (ORCID_CLIENT_ID/SECRET, read
+        # directly from os.environ by enrichers/orcid_client.py) actually
+        # need this now -- LLM provider keys go through llm_factory below
+        # instead, which never touches os.environ at all.
         apply_to_environ(current_settings())
 
         state.phase = "running"
@@ -264,7 +261,13 @@ def _render_form_phase(
         state.start_time = time.monotonic()
         state.elapsed_seconds = None
         refresh()
-        await _execute(pipeline_config, input_path, state, refresh)
+        # Built fresh per run (not cached on state) from this session's
+        # current settings -- a per-session closure over its own API keys,
+        # so a concurrent hosted session's run can never end up using this
+        # session's key or vice versa (see session_settings.py's
+        # build_llm_factory docstring for why os.environ can't do this).
+        llm_factory = build_llm_factory(current_settings())
+        await _execute(pipeline_config, input_path, state, refresh, llm_factory)
 
     def _clear_cache() -> None:
         clear_response_cache()
@@ -303,7 +306,11 @@ def _friendly_error(raw: str) -> str:
 
 
 async def _execute(
-    pipeline_config: PipelineConfig, input_path: Path, state: _RunViewState, refresh: Callable[[], object]
+    pipeline_config: PipelineConfig,
+    input_path: Path,
+    state: _RunViewState,
+    refresh: Callable[[], object],
+    llm_factory: Any,
 ) -> None:
     assert state.capture is not None
     try:
@@ -313,7 +320,11 @@ async def _execute(
         # running-phase's ui.timer drains state.capture.queue live, in
         # parallel, while this await is in flight.
         result = await run.io_bound(
-            run_single, pipeline_config, input_path, run_id=state.capture.run_id
+            run_single,
+            pipeline_config,
+            input_path,
+            run_id=state.capture.run_id,
+            llm_factory=llm_factory,
         )
     except Exception as exc:  # noqa: BLE001
         state.error = _friendly_error(str(exc))
