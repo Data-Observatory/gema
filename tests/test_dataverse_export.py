@@ -174,6 +174,49 @@ class TestDatasetContact:
         assert contact_field["value"][0]["datasetContactEmail"]["value"] == "creator@example.org"
         assert result.warnings == []
 
+    def test_extracts_email_from_resource_contact_with_extra_data(self):
+        """Regression: a source page's contact text is often more than a
+        bare address ("person@example.org; +34 123 456 789") -- the raw
+        string used to be passed straight through as datasetContactEmail,
+        producing an invalid value Dataverse would reject."""
+        doc = make_document(
+            titles=[{"name": "T", "title_type": "MainTitle"}],
+            resource={"contact": "person@example.org; +34 123 456 789"},
+            creators=[{"creator_name": "Someone"}],
+            descriptions=[{"description": "D."}],
+        )
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
+        assert contact_field["value"][0]["datasetContactEmail"]["value"] == "person@example.org"
+        assert result.warnings == []
+
+    def test_extracts_email_from_resource_contact_when_phone_comes_first(self):
+        """A plain split on ";" would grab the phone number here instead --
+        must search for the email pattern, not assume position."""
+        doc = make_document(
+            titles=[{"name": "T", "title_type": "MainTitle"}],
+            resource={"contact": "+34 123 456 789; person@example.org"},
+            creators=[{"creator_name": "Someone"}],
+            descriptions=[{"description": "D."}],
+        )
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
+        assert contact_field["value"][0]["datasetContactEmail"]["value"] == "person@example.org"
+
+    def test_extracts_email_from_creator_email_with_extra_data(self):
+        doc = make_document(
+            titles=[{"name": "T", "title_type": "MainTitle"}],
+            resource={"contact": ""},
+            creators=[{"creator_name": "Someone", "email": "creator@example.org; fax: 555-1234"}],
+            descriptions=[{"description": "D."}],
+        )
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
+        assert contact_field["value"][0]["datasetContactEmail"]["value"] == "creator@example.org"
+
     def test_placeholder_with_warning_when_nothing_found(self):
         """Real gap in DataCite -> Dataverse mapping: DataCite has no
         guaranteed contact-email field. Must warn, never fabricate
