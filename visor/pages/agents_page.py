@@ -56,8 +56,9 @@ from typing import Callable
 from nicegui import events, run, ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
-from visor.settings import load_settings
+from visor.session_settings import load_session_settings
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,9 @@ def _model_options(options: list[str], current_model: str) -> list[str]:
 
 
 def _resolve_api_key(provider: ProviderConfig) -> str | None:
-    return load_settings().env.get(provider.api_key_env) or os.environ.get(provider.api_key_env)
+    return load_session_settings().env.get(provider.api_key_env) or os.environ.get(
+        provider.api_key_env
+    )
 
 
 async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> None:
@@ -84,12 +87,12 @@ async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> 
         models = await run.io_bound(fetch_provider_models, provider, api_key)
     except Exception as exc:  # noqa: BLE001 - surfaced to the user, never fatal
         logger.warning("Could not fetch models for provider %s: %s", provider.name, exc)
-        ui.notify(f"Could not fetch models for '{provider.name}': {exc}", type="negative")
+        ui.notify(t("agents.models.fetch_failed", provider=provider.name, error=exc), type="negative")
         return
     if models is None:  # run.io_bound's typing allows None; fetch_provider_models never returns it
         models = []
     model_select.set_options(_model_options(models, model_select.value or ""))
-    ui.notify(f"Loaded {len(models)} models for '{provider.name}'", type="positive")
+    ui.notify(t("agents.models.loaded", provider=provider.name, count=len(models)), type="positive")
 
 
 def render_agents(
@@ -99,16 +102,12 @@ def render_agents(
 ) -> None:
     container.clear()
     with container:
-        ui.label("Agents").classes("text-h5")
-        ui.label(
-            "Each step of the pipeline is handled by one agent. Set which provider "
-            "and model it uses below — leave model blank to use the provider's "
-            "default. Add the matching API key in the Settings tab."
-        ).classes("text-caption")
+        ui.label(t("agents.title")).classes("text-h5")
+        ui.label(t("agents.intro")).classes("text-caption")
 
         with ui.row().classes("q-mt-sm items-center"):
             ui.button(
-                "Download configuration (JSON)", on_click=lambda: _download(pipeline_config)
+                t("agents.download"), on_click=lambda: _download(pipeline_config)
             ).props("outline").mark("agents-download")
 
             async def _on_upload(e: events.UploadEventArguments) -> None:
@@ -118,7 +117,7 @@ def render_agents(
             # tall drop-zone with a big empty file-list area reserved below
             # the button — auto_upload means that list is never shown anyway.
             ui.upload(
-                label="Upload configuration (JSON)",
+                label=t("agents.upload"),
                 auto_upload=True,
                 on_upload=_on_upload,
             ).props("flat bordered").classes("w-64").style("max-height: 44px; overflow: hidden").mark(
@@ -136,51 +135,43 @@ def render_agents(
             provider_selects: dict[str, ui.select] = {}
 
             with ui.card().classes("w-full q-mt-md"):
-                ui.label("Pipeline behavior").classes("text-subtitle1 text-bold")
-                ui.label(
-                    "These apply to the whole pipeline, not a single agent."
-                ).classes("text-caption")
+                ui.label(t("agents.pipeline_behavior.title")).classes("text-subtitle1 text-bold")
+                ui.label(t("agents.pipeline_behavior.intro")).classes("text-caption")
 
                 content_fetch_checkbox = (
                     ui.checkbox(
-                        "Fetch page content automatically",
+                        t("agents.checkbox.content_fetch"),
                         value=pipeline_config.enable_content_fetch,
                     )
-                    .tooltip(
-                        "Fetches each resource's URL and feeds the page text to the "
-                        "agents when they don't already have it."
-                    )
+                    .tooltip(t("agents.checkbox.content_fetch.tooltip"))
                     .mark("pipeline-enable-content-fetch")
                 )
                 doi_resolution_checkbox = (
                     ui.checkbox(
-                        "Resolve DOIs automatically",
+                        t("agents.checkbox.doi_resolution"),
                         value=pipeline_config.enable_doi_resolution,
                     )
-                    .tooltip("Looks up a bare DOI to help fill in missing metadata.")
+                    .tooltip(t("agents.checkbox.doi_resolution.tooltip"))
                     .mark("pipeline-enable-doi-resolution")
                 )
                 identifier_enrichment_checkbox = (
                     ui.checkbox(
-                        "Enrich identifiers (ROR / ORCID / ISNI)",
+                        t("agents.checkbox.identifier_enrichment"),
                         value=pipeline_config.enable_identifier_enrichment,
                     )
-                    .tooltip(
-                        "Resolves ROR/ISNI identifiers for creators, publishers, and "
-                        "funders the agents left blank."
-                    )
+                    .tooltip(t("agents.checkbox.identifier_enrichment.tooltip"))
                     .mark("pipeline-enable-identifier-enrichment")
                 )
                 validate_pids_checkbox = (
                     ui.checkbox(
-                        "Validate persistent identifiers",
+                        t("agents.checkbox.validate_pids"),
                         value=pipeline_config.validate_pids,
                     )
                     .mark("pipeline-validate-pids")
                 )
                 validate_pids_live_checkbox = (
                     ui.checkbox(
-                        "Validate PIDs live (real network calls)",
+                        t("agents.checkbox.validate_pids_live"),
                         value=pipeline_config.validate_pids_live,
                     )
                     .mark("pipeline-validate-pids-live")
@@ -197,7 +188,7 @@ def render_agents(
                             ui.select(
                                 provider_names,
                                 value=agent.provider,
-                                label="Provider",
+                                label=t("agents.provider_label"),
                             )
                             .classes("w-48")
                             .mark(f"agent-provider-{agent.id}")
@@ -206,7 +197,7 @@ def render_agents(
                             ui.select(
                                 _model_options([], agent.model or ""),
                                 value=agent.model or "",
-                                label="Model",
+                                label=t("agents.model_label"),
                                 with_input=True,
                                 new_value_mode="add-unique",
                             )
@@ -220,16 +211,16 @@ def render_agents(
                                 None,
                             )
                             if provider is None:
-                                ui.notify("Pick a provider first", type="negative")
+                                ui.notify(t("agents.pick_provider_first"), type="negative")
                                 return None
                             return _refresh_models(provider, model_inputs[aid])
 
                         ui.button(icon="refresh", on_click=_refresh_for_agent).props("flat round").tooltip(
-                            "Fetch this provider's real model list"
+                            t("agents.refresh_models.tooltip")
                         ).mark(f"agent-model-refresh-{agent.id}")
                         temp_inputs[agent.id] = (
                             ui.number(
-                                "Temperature",
+                                t("agents.temperature_label"),
                                 value=agent.temperature,
                                 min=0.0,
                                 max=2.0,
@@ -239,16 +230,15 @@ def render_agents(
                             .mark(f"agent-temperature-{agent.id}")
                         )
 
-                    with ui.expansion("Advanced", icon="tune").classes("w-full q-mt-sm"):
-                        ui.label(f"Runs after: {', '.join(agent.depends_on) or '(nothing — runs first)'}")
-                        ui.label(f"Produces fields: {', '.join(agent.fields)}")
+                    with ui.expansion(t("agents.advanced"), icon="tune").classes("w-full q-mt-sm"):
+                        deps = ", ".join(agent.depends_on) or t("agents.runs_after.nothing")
+                        ui.label(t("agents.runs_after", deps=deps))
+                        ui.label(t("agents.produces_fields", fields=", ".join(agent.fields)))
                         if agent.tools:
-                            ui.label(f"Tools: {', '.join(agent.tools)}")
+                            ui.label(t("agents.tools", tools=", ".join(agent.tools)))
                         if agent.extra_body:
-                            ui.label(f"Extra request options: {agent.extra_body}")
-                        ui.label("Prompt (read-only here — edit via the downloaded JSON)").classes(
-                            "text-caption q-mt-sm"
-                        )
+                            ui.label(t("agents.extra_body", extra_body=agent.extra_body))
+                        ui.label(t("agents.prompt_readonly")).classes("text-caption q-mt-sm")
                         ui.code(agent.prompt, language=None).classes("w-full")
 
             dataverse_enabled_checkbox = None
@@ -257,15 +247,11 @@ def render_agents(
             dataverse_temp_input = None
             if dataverse_export_config is not None:
                 with ui.card().classes("w-full q-mt-md"):
-                    ui.label("Dataverse Export — Subject Classifier").classes("text-subtitle1 text-bold")
-                    ui.label(
-                        "Optional: classifies this resource into Dataverse's required Subject "
-                        "category when you download a Dataverse-format JSON. Turn off to always "
-                        "use \"Other\" instead, with no extra LLM call."
-                    ).classes("text-caption")
+                    ui.label(t("agents.dataverse.title")).classes("text-subtitle1 text-bold")
+                    ui.label(t("agents.dataverse.intro")).classes("text-caption")
 
                     dataverse_enabled_checkbox = (
-                        ui.checkbox("Enabled", value=dataverse_export_config.enabled)
+                        ui.checkbox(t("agents.dataverse.enabled"), value=dataverse_export_config.enabled)
                         .mark("dataverse-export-enabled")
                     )
                     with ui.row().classes("w-full items-end"):
@@ -273,7 +259,7 @@ def render_agents(
                             ui.select(
                                 provider_names,
                                 value=dataverse_export_config.agent.provider,
-                                label="Provider",
+                                label=t("agents.provider_label"),
                             )
                             .classes("w-48")
                             .mark("dataverse-export-provider")
@@ -282,7 +268,7 @@ def render_agents(
                             ui.select(
                                 _model_options([], dataverse_export_config.agent.model or ""),
                                 value=dataverse_export_config.agent.model or "",
-                                label="Model — a fast/cheap tier is enough for a 14-way classification",
+                                label=t("agents.dataverse.model_label"),
                                 with_input=True,
                                 new_value_mode="add-unique",
                             )
@@ -297,18 +283,18 @@ def render_agents(
                                 None,
                             )
                             if provider is None:
-                                ui.notify("Pick a provider first", type="negative")
+                                ui.notify(t("agents.pick_provider_first"), type="negative")
                                 return None
                             return _refresh_models(provider, _dataverse_model_select)
 
                         ui.button(icon="refresh", on_click=_refresh_dataverse_models).props(
                             "flat round"
-                        ).tooltip("Fetch this provider's real model list").mark(
+                        ).tooltip(t("agents.refresh_models.tooltip")).mark(
                             "dataverse-export-model-refresh"
                         )
                         dataverse_temp_input = (
                             ui.number(
-                                "Temperature",
+                                t("agents.temperature_label"),
                                 value=dataverse_export_config.agent.temperature,
                                 min=0.0,
                                 max=2.0,
@@ -337,10 +323,10 @@ def render_agents(
                     dataverse_export_config.agent.provider = dataverse_provider_select.value
                     dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
-                ui.notify("Agent settings updated for this session", type="positive")
+                ui.notify(t("agents.save.done"), type="positive")
                 cards.refresh()
 
-            ui.button("Save changes", on_click=_save).classes("q-mt-md").mark("agents-save")
+            ui.button(t("agents.save"), on_click=_save).classes("q-mt-md").mark("agents-save")
 
         cards()
 
@@ -361,7 +347,7 @@ async def _handle_upload(
         validated = PipelineConfig(**data)
     except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
         logger.warning("Rejected uploaded agents config: %s", exc)
-        ui.notify(f"Could not apply this file: {exc}", type="negative")
+        ui.notify(t("agents.upload.rejected", error=exc), type="negative")
         return
 
     pipeline_config.schema_name = validated.schema_name
@@ -377,4 +363,4 @@ async def _handle_upload(
     pipeline_config.validate_pids_live = validated.validate_pids_live
 
     refresh_cards()
-    ui.notify(f"Applied uploaded configuration ({len(validated.agents)} agents)", type="positive")
+    ui.notify(t("agents.upload.applied", count=len(validated.agents)), type="positive")

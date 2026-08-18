@@ -9,6 +9,12 @@ place — see agents_page.py's module docstring) leaked into every other
 session. Each session is meant to be able to manage its own config
 independently, without affecting anyone else's.
 
+Settings (API keys) had the same problem from a different cause: unlike
+PipelineConfig, VisorSettings was never in-memory per-session state to
+begin with — every session read from and wrote to the one shared
+settings.json file. See visor/session_settings.py for the fix and its
+documented residual limitation.
+
 Uses the same in-process ``nicegui.testing.User`` harness as
 test_ui_navigation.py / test_app_e2e.py, plus the ``create_user`` fixture
 (undocumented here, but shipped by nicegui.testing.user_plugin) to open a
@@ -59,3 +65,36 @@ async def test_agent_edit_does_not_leak_across_sessions(
     response_b = await user_b.download.next(timeout=5)
     agents_by_id_b = {a["id"]: a for a in json.loads(response_b.content)["agents"]}
     assert agents_by_id_b["core_metadata"]["provider"] == original_provider
+
+
+async def test_settings_key_does_not_leak_across_hosted_sessions(
+    user: User, create_user: Callable[[], User], monkeypatch, tmp_path
+) -> None:
+    """Regression: in hosted mode (VISOR_NATIVE=0 -- see visor/session_settings.py),
+    every session's Settings tab ultimately read from and wrote to the one
+    shared settings.json, so changing a provider's key in one browser was
+    visible -- and, worse, silently overwritten -- in every other
+    connected session. Each hosted session must get its own private
+    VisorSettings, backed by NiceGUI's per-browser app.storage.user."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("VISOR_NATIVE", "0")
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-opencode").click()
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+    user.find(marker="settings-input-OPENCODE_API_KEY").type("session-a-key")
+    user.find(marker="settings-save").click()
+
+    # A second, independent browser session against the same running
+    # process -- without per-session storage this would see session A's
+    # key (or, after a save of its own, permanently clobber it).
+    user_b = create_user()
+    await user_b.open("/")
+    user_b.find(marker="tab-settings").click()
+    await user_b.should_see(marker="settings-provider-edit-opencode")
+    user_b.find(marker="settings-provider-edit-opencode").click()
+    await user_b.should_see(marker="settings-input-OPENCODE_API_KEY")
+    key_input_b = list(user_b.find(marker="settings-input-OPENCODE_API_KEY").elements)[0]
+    assert key_input_b.value == ""

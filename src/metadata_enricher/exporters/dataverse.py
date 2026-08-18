@@ -26,6 +26,7 @@ against a running instance — not recalled from memory.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -173,11 +174,27 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
     return entries
 
 
+# A source page's "contact" text is often more than a bare address --
+# "someone@example.org; +34 123 456 789" or "Contact: someone@example.org
+# (fax: ...)" -- and an agent extracting it verbatim passes the whole
+# string through. Dataverse's datasetContactEmail field expects a real
+# address, so search for one instead of using the raw text; a plain
+# split on ";" would break if the email isn't the first segment.
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+
+def _extract_email(raw: str | None) -> str | None:
+    if not raw:
+        return None
+    match = _EMAIL_RE.search(raw)
+    return match.group(0) if match else None
+
+
 def _build_dataset_contact(
     document: MetadataDocument, authors: list[dict[str, dict[str, Any]]], warnings: list[str]
 ) -> list[dict[str, dict[str, Any]]]:
     resource = document.get_field("resource") or {}
-    email = resource.get("contact")
+    email = _extract_email(resource.get("contact"))
     name = None
     if not email:
         # DataCite has no guaranteed contact-email field — resource.contact
@@ -186,8 +203,9 @@ def _build_dataset_contact(
         # one; Dataverse still requires *some* value, so this is flagged
         # as a warning, not silently fabricated.
         for creator in document.get_field("creators") or []:
-            if creator.get("email"):
-                email = creator["email"]
+            creator_email = _extract_email(creator.get("email"))
+            if creator_email:
+                email = creator_email
                 name = creator.get("creator_name")
                 break
     if not email:

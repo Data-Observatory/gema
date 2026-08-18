@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import secrets
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 APP_NAME = "metagen-visor"
 SETTINGS_FILENAME = "settings.json"
+STORAGE_SECRET_FILENAME = "storage_secret.txt"
 
 # Read directly by metadata_enricher.enrichers.orcid_client via os.environ —
 # not part of any ProviderConfig, so they can't be derived from agents.yaml.
@@ -56,6 +58,29 @@ def settings_path() -> Path:
     """Where the local settings.json lives — resolves correctly on Windows
     (%APPDATA%), macOS (~/Library/Application Support), and Linux (XDG)."""
     return Path(user_config_dir(APP_NAME)) / SETTINGS_FILENAME
+
+
+def storage_secret() -> str:
+    """Key NiceGUI's app.storage.user (a signed per-browser cookie, used for
+    the language preference) with -- generated once and persisted next to
+    settings.json so existing cookies keep working across restarts, instead
+    of a fresh random key on every process start forcing every browser back
+    to the default language. Not a secret in the API-key sense: it only
+    signs a language-preference cookie, so sharing it across every session
+    on this machine (hosted or native) is fine."""
+    path = Path(user_config_dir(APP_NAME)) / STORAGE_SECRET_FILENAME
+    if path.is_file():
+        existing = path.read_text(encoding="utf-8").strip()
+        if existing:
+            return existing
+    secret = secrets.token_hex(32)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(secret, encoding="utf-8")
+    try:
+        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+    except OSError:
+        logger.debug("Could not restrict permissions on %s (unsupported on this OS)", path)
+    return secret
 
 
 def load_settings(path: Path | None = None) -> VisorSettings:

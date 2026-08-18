@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 import os
 
-from nicegui import ui
+from nicegui import events, ui
 
 from visor.bootstrap import (
     load_dataverse_export_config_safe,
@@ -22,10 +22,12 @@ from visor.bootstrap import (
     load_providers_pool_safe,
 )
 from metadata_enricher.llm.factory import reset_client_cache
+from visor.i18n import LANGUAGES, current_language, set_language, t
 from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
-from visor.settings import VisorSettings, apply_to_environ, load_settings
+from visor.session_settings import load_session_settings
+from visor.settings import VisorSettings, apply_to_environ, storage_secret
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +43,8 @@ _known_providers = load_providers_pool_safe()
 @ui.page("/")
 def main_page() -> None:
     if _pipeline_config is None or _schema is None:
-        ui.label("Configuration problem").classes("text-h5 text-negative")
-        ui.label(_config_error or "Unknown configuration error")
+        ui.label(t("app.config_error.title")).classes("text-h5 text-negative")
+        ui.label(_config_error or t("app.config_error.unknown"))
         return
 
     # Deep copies, not aliases -- main_page() runs once per browser
@@ -61,13 +63,31 @@ def main_page() -> None:
     )
     schema = _schema
 
-    apply_to_environ(load_settings())
+    apply_to_environ(load_session_settings())
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
+
+        def _on_language_change(e: events.ValueChangeEventArguments[str]) -> None:
+            set_language(e.value)
+            # Every label/caption below was rendered once, synchronously, in
+            # whatever language was active at the time -- there is no
+            # reactive binding to flip them individually, so a full reload
+            # (re-running main_page() from scratch) is the simplest correct
+            # way to apply a language switch. This does drop in-progress
+            # form input / an in-flight run, same tradeoff as navigating
+            # away and back.
+            ui.navigate.reload()
+
+        ui.select(
+            LANGUAGES,
+            value=current_language(),
+            on_change=_on_language_change,
+        ).props("dense outlined").classes("self-end").mark("language-select")
+
         with ui.tabs().classes("w-full") as tabs:
-            settings_tab = ui.tab("Settings").mark("tab-settings")
-            agents_tab = ui.tab("Agents").mark("tab-agents")
-            run_tab = ui.tab("Run").mark("tab-run")
+            settings_tab = ui.tab(t("app.tab.settings")).mark("tab-settings")
+            agents_tab = ui.tab(t("app.tab.agents")).mark("tab-agents")
+            run_tab = ui.tab(t("app.tab.run")).mark("tab-run")
 
         with ui.tab_panels(tabs, value=run_tab).classes("w-full"):
             settings_panel = ui.tab_panel(settings_tab)
@@ -81,7 +101,7 @@ def main_page() -> None:
         run_panel,
         pipeline_config,
         schema,
-        current_settings=load_settings,
+        current_settings=load_session_settings,
         on_go_to_settings=_go_to_settings,
         dataverse_export_config=dataverse_export_config,
     )
@@ -100,7 +120,7 @@ def main_page() -> None:
     render_settings(
         settings_panel,
         pipeline_config,
-        load_settings(),
+        load_session_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
         dataverse_export_config=dataverse_export_config,
@@ -110,8 +130,18 @@ def main_page() -> None:
 
 def run() -> None:
     native = os.environ.get("VISOR_NATIVE", "1") != "0"
+    # Needed for app.storage.user (the per-browser language preference) --
+    # without it NiceGUI raises at first access instead of silently no-op'ing.
+    secret = storage_secret()
     if native:
-        ui.run(title="Visor", native=True, reload=False, show=True, window_size=(1100, 800))
+        ui.run(
+            title="Visor",
+            native=True,
+            reload=False,
+            show=True,
+            window_size=(1100, 800),
+            storage_secret=secret,
+        )
     else:
         ui.run(
             title="Visor",
@@ -125,6 +155,7 @@ def run() -> None:
             # live against a real Caddy handle_path setup, including the
             # socket.io handshake, not just static asset links.
             root_path=os.environ.get("VISOR_ROOT_PATH", ""),
+            storage_secret=secret,
         )
 
 

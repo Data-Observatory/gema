@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -55,6 +56,7 @@ def create_llm_client(
     cache_dir: Path | None = None,
     cache_ttl: timedelta | None = None,
     extra_body: dict[str, Any] | None = None,
+    api_key: str | None = None,
 ) -> LLMClient:
     """Create a fully configured LLM client from a provider config.
 
@@ -78,28 +80,45 @@ def create_llm_client(
         extra_body: Raw OpenAI-compatible request body overrides, merged in
             alongside seed (e.g. {"thinking": {"type": "disabled"}} to work
             around DeepSeek V4's thinking mode rejecting forced tool_choice).
+        api_key: Explicit key value, bypassing provider.api_key_env/os.environ
+            entirely when given (visor's per-session key injection — see
+            visor/glue.py — needs this: os.environ is one process-wide value,
+            unusable when two hosted sessions hold different keys for the
+            same provider). Omitted (the default) preserves the original
+            env-var-only behavior byte-for-byte, cache key included.
 
     Returns:
         Configured LLMClient (wrapped with cache + retry).
 
     Raises:
-        ValueError: If the API key environment variable is not set.
+        ValueError: If api_key is omitted and the provider's API key
+            environment variable is not set.
     """
     extra_body_key = json.dumps(extra_body, sort_keys=True) if extra_body else None
     cache_key = (
         f"{provider.name}|{model}|t={temperature}|seed={seed}|mt={max_tokens}"
         f"|c={use_cache}|r={use_retry}|eb={extra_body_key}"
     )
+    if api_key is not None:
+        # Only appended for the explicit-key path -- keeps the env-var
+        # path's cache key byte-identical to before. Without this,
+        # two sessions passing *different* explicit keys for the same
+        # provider/model would collide on one cached client and silently
+        # share whichever key built it first (the same class of bug
+        # reset_client_cache() exists to guard against for the env-var
+        # path — see visor/app.py's _after_settings_saved).
+        key_fingerprint = hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:16]
+        cache_key += f"|k={key_fingerprint}"
     if cache_key in _client_cache:
         return _client_cache[cache_key]
 
-    api_key = _resolve_api_key(provider.api_key_env)
+    resolved_api_key = api_key if api_key is not None else _resolve_api_key(provider.api_key_env)
 
     resolved_seed = seed if seed is not None else provider.seed
 
     config = LLMConfig(
         model=model,
-        api_key=SecretStr(api_key),
+        api_key=SecretStr(resolved_api_key),
         base_url=provider.base_url,
         temperature=temperature,
         seed=resolved_seed,
@@ -135,3 +154,17 @@ def reset_client_cache() -> None:
     global _shared_cache_manager
     _client_cache.clear()
     _shared_cache_manager = None
+
+
+def clear_response_cache() -> None:
+    """Purge every cached LLM response from the shared on-disk cache.
+
+    Distinct from reset_client_cache(): that only drops in-memory client
+    instances (so a changed API key takes effect) and never touches the
+    on-disk diskcache.Cache at ~/.cache/metagen -- dropping the
+    CacheManager reference doesn't delete its backing files, since a new
+    one just reopens the same directory. This actually empties it, so
+    re-running the same resource calls the LLM again instead of replaying
+    a prior cached response.
+    """
+    _get_shared_cache_manager().clear()
