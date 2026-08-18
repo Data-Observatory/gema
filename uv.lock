@@ -745,6 +745,76 @@ wheels = [
 ]
 
 [[package]]
+name = "gema"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "diskcache" },
+    { name = "httpx" },
+    { name = "instructor" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+    { name = "rapidfuzz" },
+    { name = "tenacity" },
+    { name = "typer" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "json-semantic-diff" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+]
+visor = [
+    { name = "nicegui" },
+    { name = "platformdirs" },
+    { name = "pywebview" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "deepeval" },
+]
+visor-build = [
+    { name = "pyinstaller" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "diskcache", specifier = ">=5.6.0" },
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "instructor", specifier = ">=1.0.0" },
+    { name = "json-semantic-diff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
+    { name = "nicegui", marker = "extra == 'visor'", specifier = ">=1.4.0" },
+    { name = "openai", specifier = ">=1.0.0" },
+    { name = "platformdirs", marker = "extra == 'visor'", specifier = ">=4.0.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "pydantic-settings", specifier = ">=2.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0.0" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "pywebview", marker = "extra == 'visor'", specifier = ">=5.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "rapidfuzz", specifier = ">=3.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
+    { name = "tenacity", specifier = ">=8.0.0" },
+    { name = "typer", specifier = ">=0.12.0" },
+    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.0" },
+]
+provides-extras = ["dev", "visor"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "deepeval", specifier = ">=4.0.7" }]
+visor-build = [{ name = "pyinstaller", specifier = ">=6.0" }]
+
+[[package]]
 name = "grpcio"
 version = "1.81.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1348,76 +1418,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
 ]
-
-[[package]]
-name = "metadata-enricher"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "diskcache" },
-    { name = "httpx" },
-    { name = "instructor" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
-    { name = "pyyaml" },
-    { name = "rapidfuzz" },
-    { name = "tenacity" },
-    { name = "typer" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "json-semantic-diff" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-]
-visor = [
-    { name = "nicegui" },
-    { name = "platformdirs" },
-    { name = "pywebview" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "deepeval" },
-]
-visor-build = [
-    { name = "pyinstaller" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "diskcache", specifier = ">=5.6.0" },
-    { name = "httpx", specifier = ">=0.27.0" },
-    { name = "instructor", specifier = ">=1.0.0" },
-    { name = "json-semantic-diff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
-    { name = "nicegui", marker = "extra == 'visor'", specifier = ">=1.4.0" },
-    { name = "openai", specifier = ">=1.0.0" },
-    { name = "platformdirs", marker = "extra == 'visor'", specifier = ">=4.0.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pydantic-settings", specifier = ">=2.0.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0.0" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "pywebview", marker = "extra == 'visor'", specifier = ">=5.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "rapidfuzz", specifier = ">=3.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
-    { name = "tenacity", specifier = ">=8.0.0" },
-    { name = "typer", specifier = ">=0.12.0" },
-    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.0" },
-]
-provides-extras = ["dev", "visor"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "deepeval", specifier = ">=4.0.7" }]
-visor-build = [{ name = "pyinstaller", specifier = ">=6.0" }]
 
 [[package]]
 name = "multidict"
