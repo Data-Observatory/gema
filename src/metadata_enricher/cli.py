@@ -1,4 +1,4 @@
-"""CLI entry point for the metagen command."""
+"""CLI entry point for the gema command."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ from metadata_enricher.validation import PreFlightValidator
 logger = logging.getLogger(__name__)
 
 app = typer.Typer(
-    name="metagen",
-    help="Metadata Enricher — automatic metadata generation",
+    name="gema",
+    help="Gema — automatic metadata generation",
     no_args_is_help=True,
 )
 
@@ -41,7 +41,7 @@ def _setup_logging(verbose: bool, quiet: bool) -> None:
 
 def _version_callback(value: bool) -> None:
     if value:
-        typer.echo(f"metagen {__version__}")
+        typer.echo(f"gema {__version__}")
         raise typer.Exit()
 
 
@@ -59,7 +59,7 @@ def callback(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable debug logging"),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Minimal output"),
 ) -> None:
-    # usecwd=True: search from the directory the user actually runs metagen from
+    # usecwd=True: search from the directory the user actually runs gema from
     # (not from this source file's location under site-packages/src).
     load_dotenv(find_dotenv(usecwd=True))
     _setup_logging(verbose, quiet)

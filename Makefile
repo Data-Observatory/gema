@@ -29,7 +29,7 @@ typecheck:
 	uv run mypy src/ scripts/
 
 run:
-	uv run metagen
+	uv run gema
 
 build-visor:
 	uv run pyinstaller visor/visor.spec --noconfirm
