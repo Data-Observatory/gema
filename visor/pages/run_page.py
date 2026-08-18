@@ -299,7 +299,9 @@ async def _execute(
         # the app looks hung regardless of actual pipeline speed. The
         # running-phase's ui.timer drains state.capture.queue live, in
         # parallel, while this await is in flight.
-        result = await run.io_bound(run_single, pipeline_config, input_path)
+        result = await run.io_bound(
+            run_single, pipeline_config, input_path, run_id=state.capture.run_id
+        )
     except Exception as exc:  # noqa: BLE001
         state.error = _friendly_error(str(exc))
         state.result = None

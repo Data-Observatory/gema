@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextvars
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
@@ -87,7 +88,16 @@ class Orchestrator:
                 # Multiple agents — run in parallel
                 with ThreadPoolExecutor(max_workers=min(self._max_workers, len(wave))) as executor:
                     future_to_agent = {
+                        # contextvars.copy_context() (a fresh one per
+                        # submission -- the same Context object can't be
+                        # entered concurrently on more than one thread)
+                        # carries caller-set context, such as visor's
+                        # per-run log-capture id (see
+                        # visor/log_stream.py's activate_run), into this
+                        # agent's own worker thread. Plain thread-locals
+                        # don't cross thread boundaries on their own.
                         executor.submit(
+                            contextvars.copy_context().run,
                             self._registry.get_agent(aid).run,
                             resource,
                             upstream_fields=upstream_fields,
