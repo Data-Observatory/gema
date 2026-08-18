@@ -26,7 +26,8 @@ from visor.i18n import LANGUAGES, current_language, set_language, t
 from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
-from visor.settings import VisorSettings, apply_to_environ, load_settings, storage_secret
+from visor.session_settings import load_session_settings
+from visor.settings import VisorSettings, apply_to_environ, storage_secret
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def main_page() -> None:
     )
     schema = _schema
 
-    apply_to_environ(load_settings())
+    apply_to_environ(load_session_settings())
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
 
@@ -100,7 +101,7 @@ def main_page() -> None:
         run_panel,
         pipeline_config,
         schema,
-        current_settings=load_settings,
+        current_settings=load_session_settings,
         on_go_to_settings=_go_to_settings,
         dataverse_export_config=dataverse_export_config,
     )
@@ -119,7 +120,7 @@ def main_page() -> None:
     render_settings(
         settings_panel,
         pipeline_config,
-        load_settings(),
+        load_session_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
         dataverse_export_config=dataverse_export_config,

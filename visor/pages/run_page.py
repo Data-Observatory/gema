@@ -29,7 +29,7 @@ from metadata_enricher.schemas.base import Schema
 from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_from_text
 from visor.i18n import t
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
-from visor.settings import VisorSettings, missing_required
+from visor.settings import VisorSettings, apply_to_environ, missing_required
 
 
 def _format_duration(seconds: float) -> str:
@@ -126,7 +126,7 @@ def render_run_form(
             return
 
         if state.phase == "form":
-            _render_form_phase(pipeline_config, state, body.refresh)
+            _render_form_phase(pipeline_config, state, body.refresh, current_settings)
         elif state.phase == "running":
             _render_running_phase(state)
         else:
@@ -154,7 +154,10 @@ _MODE_UPLOAD = "upload"
 
 
 def _render_form_phase(
-    pipeline_config: PipelineConfig, state: _RunViewState, refresh: Callable[[], object]
+    pipeline_config: PipelineConfig,
+    state: _RunViewState,
+    refresh: Callable[[], object],
+    current_settings: Callable[[], VisorSettings],
 ) -> None:
     ui.label(t("run.title")).classes("text-h5")
 
@@ -243,6 +246,16 @@ def _render_form_phase(
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
             status.text = t("run.error.read_input", error=exc)
             return
+
+        # In hosted mode, os.environ is the one shared, process-wide seam
+        # create_llm_client() reads a key from (see llm/factory.py) --
+        # refreshing it from this session's own settings right before
+        # dispatch keeps it correct for the overwhelmingly common case
+        # (runs don't start at the exact same instant); two hosted
+        # sessions submitting a run for the same provider simultaneously
+        # can still race on that shared process state -- see
+        # visor/session_settings.py's module docstring.
+        apply_to_environ(current_settings())
 
         state.phase = "running"
         state.log_lines = []

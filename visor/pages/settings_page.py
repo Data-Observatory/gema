@@ -31,12 +31,12 @@ from nicegui import ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
 from visor.i18n import t
+from visor.session_settings import save_session_settings
 from visor.settings import (
     VisorSettings,
     addable_providers,
     optional_env_vars,
     providers_using,
-    save_settings,
 )
 
 # Internal, language-independent sentinel for the add-provider picker's
@@ -256,7 +256,7 @@ def render_settings(
                     default_provider=current.default_provider,
                     env={name: field.value for name, field in env_inputs.items() if field.value},
                 )
-                save_settings(new_settings)
+                save_session_settings(new_settings)
                 # body.refresh() below re-renders every input's initial value
                 # from `current` -- without reassigning it first, the just-
                 # saved edit (e.g. a corrected API key) would visually revert

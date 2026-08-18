@@ -58,7 +58,7 @@ from nicegui import events, run, ui
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
-from visor.settings import load_settings
+from visor.session_settings import load_session_settings
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,9 @@ def _model_options(options: list[str], current_model: str) -> list[str]:
 
 
 def _resolve_api_key(provider: ProviderConfig) -> str | None:
-    return load_settings().env.get(provider.api_key_env) or os.environ.get(provider.api_key_env)
+    return load_session_settings().env.get(provider.api_key_env) or os.environ.get(
+        provider.api_key_env
+    )
 
 
 async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> None:
