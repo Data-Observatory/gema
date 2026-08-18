@@ -330,6 +330,68 @@ async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path)
     await user.should_see("deepseek/deepseek-v4-flash-2508")
 
 
+async def test_result_phase_shows_elapsed_time(user: User, monkeypatch, tmp_path) -> None:
+    """The result phase should report how long the run actually took, using
+    the same wall-clock span the running phase's live "Elapsed" label was
+    counting up."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        document=MetadataDocument(fields={"titles": []}),
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-success")
+    await user.should_see(marker="result-elapsed")
+    elapsed_label = list(user.find(marker="result-elapsed").elements)[0]
+    assert elapsed_label.text.startswith("Completed in ")
+
+
+async def test_run_form_clear_cache_button_purges_response_cache(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression: re-submitting the same resource used to always replay a
+    cached LLM response with no way to force a fresh call short of waiting
+    out the 7-day TTL or restarting visor. The Clear cache button on the Run
+    tab must call the real cache-purge function, not just reset the
+    in-memory client cache (see clear_response_cache's docstring for why
+    those are different)."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    calls = []
+    monkeypatch.setattr("visor.pages.run_page.clear_response_cache", lambda: calls.append(True))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-clear-cache")
+    user.find(marker="run-clear-cache").click()
+
+    assert calls == [True]
+    await user.should_see("Cache cleared")
+
+
 async def test_result_phase_shows_real_error_not_unknown(user: User, monkeypatch, tmp_path) -> None:
     """Regression: a resource that fails without run_single() raising (e.g.
     every agent's provider call rejected an invalid API key) returns a

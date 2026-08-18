@@ -13,6 +13,7 @@ anything underneath.
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -21,12 +22,22 @@ from nicegui import events, run, ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
 from metadata_enricher.exporters.dataverse import to_dataverse_json
+from metadata_enricher.llm.factory import clear_response_cache
 from metadata_enricher.output import OutputWriter
 from metadata_enricher.pipeline import PipelineResult
 from metadata_enricher.schemas.base import Schema
 from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_from_text
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.settings import VisorSettings, missing_required
+
+
+def _format_duration(seconds: float) -> str:
+    """Renders as "1m 23s" above a minute, "45s" below it -- avoids a
+    "0m 45s" clutter for the overwhelmingly common single-resource run."""
+    total = int(seconds)
+    minutes, secs = divmod(total, 60)
+    return f"{minutes}m {secs:02d}s" if minutes else f"{secs}s"
+
 
 FORM_FIELDS = (
     "url",
@@ -90,6 +101,8 @@ class _RunViewState:
     log_lines: list[str] = field(default_factory=list)
     capture: LogCapture | None = None
     submitted_text: str = ""
+    start_time: float | None = None  # time.monotonic(), not wall-clock
+    elapsed_seconds: float | None = None
 
 
 def render_run_form(
@@ -233,10 +246,24 @@ def _render_form_phase(
         state.log_lines = []
         state.submitted_text = submitted_text
         state.capture = start_capturing()
+        state.start_time = time.monotonic()
+        state.elapsed_seconds = None
         refresh()
         await _execute(pipeline_config, input_path, state, refresh)
 
-    ui.button("Run", on_click=_run).classes("q-mt-md").mark("run-submit")
+    def _clear_cache() -> None:
+        clear_response_cache()
+        ui.notify("Cache cleared — the next run will call the LLM again.", type="positive")
+
+    with ui.row().classes("items-center q-mt-md"):
+        ui.button("Run", on_click=_run).mark("run-submit")
+        ui.button("Clear cache", on_click=_clear_cache).props("outline").mark(
+            "run-clear-cache"
+        )
+        ui.label(
+            "Same input currently reruns instantly from a cached response — "
+            "clear the cache first to force a fresh LLM call."
+        ).classes("text-caption")
 
 
 _AUTH_ERROR_MARKERS = (
@@ -296,6 +323,9 @@ async def _execute(
         stop_capturing(state.capture)
         state.capture = None
         input_path.unlink(missing_ok=True)
+        state.elapsed_seconds = (
+            time.monotonic() - state.start_time if state.start_time is not None else None
+        )
         state.phase = "result"
         refresh()
 
@@ -338,6 +368,7 @@ def _render_running_phase(state: _RunViewState) -> None:
     with ui.row().classes("items-center"):
         ui.spinner(size="lg")
         ui.label("This can take a minute or more — one LLM call per pipeline step.")
+        elapsed_label = ui.label("Elapsed: 0s").classes("text-caption").mark("run-elapsed")
 
     log_box = ui.log(max_lines=500).classes("w-full").style("height: 260px").mark("run-log")
     for line in state.log_lines:
@@ -347,6 +378,8 @@ def _render_running_phase(state: _RunViewState) -> None:
         if state.phase != "running" or state.capture is None:
             timer.active = False
             return
+        if state.start_time is not None:
+            elapsed_label.text = f"Elapsed: {_format_duration(time.monotonic() - state.start_time)}"
         for line in drain(state.capture.queue):
             state.log_lines.append(line)
             log_box.push(line)
@@ -367,6 +400,8 @@ def _render_result_phase(
         state.error = None
         state.log_lines = []
         state.submitted_text = ""
+        state.start_time = None
+        state.elapsed_seconds = None
         refresh()
 
     with ui.row().classes("items-center q-mb-sm"):
@@ -380,6 +415,11 @@ def _render_result_phase(
                     on_click=lambda: _download_dataverse(state, pipeline_config, dataverse_export_config),
                 ).props("outline").mark("result-download-dataverse")
         ui.button("Run another", on_click=_reset).mark("result-back")
+
+    if state.elapsed_seconds is not None:
+        ui.label(f"Completed in {_format_duration(state.elapsed_seconds)}").classes(
+            "text-caption"
+        ).mark("result-elapsed")
 
     _render_submitted_input(state.submitted_text)
     if state.result is not None:

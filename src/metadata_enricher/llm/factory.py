@@ -135,3 +135,17 @@ def reset_client_cache() -> None:
     global _shared_cache_manager
     _client_cache.clear()
     _shared_cache_manager = None
+
+
+def clear_response_cache() -> None:
+    """Purge every cached LLM response from the shared on-disk cache.
+
+    Distinct from reset_client_cache(): that only drops in-memory client
+    instances (so a changed API key takes effect) and never touches the
+    on-disk diskcache.Cache at ~/.cache/metagen -- dropping the
+    CacheManager reference doesn't delete its backing files, since a new
+    one just reopens the same directory. This actually empties it, so
+    re-running the same resource calls the LLM again instead of replaying
+    a prior cached response.
+    """
+    _get_shared_cache_manager().clear()
