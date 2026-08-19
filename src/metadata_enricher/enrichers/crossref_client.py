@@ -57,9 +57,9 @@ class CrossrefClient:
         )
         headers = {
             "User-Agent": (
-                f"metagen/0.1 (doi-resolver; mailto:{self._mailto})"
+                f"gema/0.1 (doi-resolver; mailto:{self._mailto})"
                 if self._mailto
-                else "metagen/0.1 (doi-resolver)"
+                else "gema/0.1 (doi-resolver)"
             )
         }
         # quote(safe="/") -- a DOI's own '/' is a real structural part of the

@@ -39,7 +39,7 @@ def _resolve_url(url: str) -> str:
         return f"https://doi.org/{url}"
     return url
 
-USER_AGENT = "Mozilla/5.0 (compatible; metagen-eval/1.0)"
+USER_AGENT = "Mozilla/5.0 (compatible; gema-eval/1.0)"
 
 
 def clean_html_to_text(html: str, max_len: int = 8000) -> str:

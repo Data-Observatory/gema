@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Live evaluator: run Pipeline with real API, score vs golden outputs, write report.
 
-Runs the full metagen Pipeline against every input in the golden inputs directory,
+Runs the full gema Pipeline against every input in the golden inputs directory,
 compares the actual output (fresh API calls, no cache replay) to the expected
 output via LLM-as-judge semantic scoring, and writes a Markdown report to ``reports/``.
 
@@ -387,7 +387,7 @@ def main(argv: list[str] | None = None) -> None:
 
         # Run Pipeline with fresh API calls (temp cache dir)
         try:
-            with tempfile.TemporaryDirectory(prefix="metagen_live_eval_") as tmpdir:
+            with tempfile.TemporaryDirectory(prefix="gema_live_eval_") as tmpdir:
                 cache_dir = Path(tmpdir) / "cache"
                 cache_dir.mkdir(parents=True, exist_ok=True)
 

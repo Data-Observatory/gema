@@ -23,7 +23,7 @@ from metadata_enricher.enrichers.ror_client import (
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CACHE_DIR = Path.home() / ".cache" / "metagen" / "identifiers"
+DEFAULT_CACHE_DIR = Path.home() / ".cache" / "gema" / "identifiers"
 DEFAULT_TTL = timedelta(days=30)
 
 

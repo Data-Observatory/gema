@@ -130,7 +130,7 @@ class RORClient:
         Raises:
             httpx.HTTPStatusError: On 4xx/5xx responses.
         """
-        headers = {"User-Agent": "metagen/0.1 (identifier-resolver)"}
+        headers = {"User-Agent": "gema/0.1 (identifier-resolver)"}
         if self._client_id:
             headers["Client-Id"] = self._client_id
         response = self._client.get(self.BASE_URL, params=params, headers=headers)
