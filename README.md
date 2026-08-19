@@ -1,4 +1,4 @@
-# Gema
+# GEMA!
 
 [![CI](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml)
 [![Visor Build](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml)
