@@ -255,7 +255,7 @@ Produces **two** targets from one spec, in one PyInstaller run:
   on disk (the onefile archive is zlib-compressed as a whole), but
   self-extracts to a fresh temp dir on *every* launch, so it's slower
   to start than onedir. Verified booting headless on Linux (HTTP 200,
-  same first-run config-seeding into `~/.config/metagen/agents.yaml`
+  same first-run config-seeding into `~/.config/gema/agents.yaml`
   as the onedir build) — not yet verified as a real double-click on
   Windows/macOS.
 
@@ -337,7 +337,7 @@ Linux sandbox. What was actually verified here:
   the first-run config-seeding path (`visor/bootstrap.py`), verified by
   running the frozen exe from a directory outside the repo with a fake
   `$HOME` and no config anywhere, and confirming it correctly copied the
-  bundled default into `~/.config/metagen/agents.yaml`.
+  bundled default into `~/.config/gema/agents.yaml`.
 - The `visor-build.yml` workflow has now run on a real `windows-latest`
   runner. First run caught a real bug: the test step called
   `uv run pytest visor/tests -v` directly instead of `make test-visor`,

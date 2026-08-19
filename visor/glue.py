@@ -4,7 +4,7 @@ Deliberately thin: every object here is imported straight from
 metadata_enricher (Pipeline, PipelineConfig, FilesystemInputSource) — never
 from metadata_enricher.cli. This module exists only to turn "JSON text from
 a form/paste/upload" into a temp file FilesystemInputSource can read, the
-same way a user's real input file would be read by `metagen process`.
+same way a user's real input file would be read by `gema process`.
 """
 
 from __future__ import annotations

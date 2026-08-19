@@ -1,6 +1,6 @@
 """Local, per-user secrets storage for visor.
 
-Deliberately separate from ``~/.config/metagen/agents.yaml`` (the pipeline
+Deliberately separate from ``~/.config/gema/agents.yaml`` (the pipeline
 behavior config a non-programmer must never hand-edit — see
 ``metadata_enricher.config.loader.find_config``). This module owns a small
 JSON file holding only secrets (API keys, ORCID credentials) and the
@@ -28,7 +28,7 @@ from metadata_enricher.config.models import PipelineConfig, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
-APP_NAME = "metagen-visor"
+APP_NAME = "gema-visor"
 SETTINGS_FILENAME = "settings.json"
 STORAGE_SECRET_FILENAME = "storage_secret.txt"
 
