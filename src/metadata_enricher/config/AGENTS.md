@@ -46,8 +46,8 @@ All `model_config = ConfigDict(extra="forbid")`.
 - `find_config()` — search order:
   1. Explicit `--config` arg
   2. `./config/agents.yaml`
-  3. `~/.config/metagen/agents.yaml`
-  4. `$METAGEN_CONFIG` env var
+  3. `~/.config/gema/agents.yaml`
+  4. `$GEMA_CONFIG` env var
 - Raises on empty YAML (line 53-55).
 
 ## Migration (`migrate.py`)

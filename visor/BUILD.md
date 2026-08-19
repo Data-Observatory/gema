@@ -1,6 +1,6 @@
 # Building visor
 
-`visor` is a local-first desktop UI for `metadata-enricher`, so non-programmers
+`visor` is a local-first desktop UI for `gema`, so non-programmers
 can run the pipeline without touching Python or the CLI. It's a NiceGUI app
 (`visor/app.py`) frozen into a standalone installer with PyInstaller — no
 Docker, no Python, no `uv` required on the end user's machine.

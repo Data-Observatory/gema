@@ -1,6 +1,6 @@
-# Delivery Alternatives for `metagen`
+# Delivery Alternatives for `gema`
 
-Reference catalog of options for delivering `metagen` to non-technical librarians.
+Reference catalog of options for delivering `gema` to non-technical librarians.
 Surveyed June 2026. Each option lists cost, setup time, friction (1=easiest, 5=hardest),
 and a real example where one is known.
 
@@ -32,7 +32,7 @@ Do you have IT support to host a server?
 
 Gradio wraps a Python function in a web UI in ~20 lines. Native support for forms,
 file upload, streaming LLM output, markdown rendering. HF Spaces gives you a secrets
-tab for API keys, git-push-to-deploy, and auto-HTTPS. URL: `https://<org>-metagen.hf.space`.
+tab for API keys, git-push-to-deploy, and auto-HTTPS. URL: `https://<org>-gema.hf.space`.
 
 - **Gradio docs:** https://www.gradio.app/
 - **HF Spaces docs:** https://huggingface.co/docs/hub/spaces
@@ -71,7 +71,7 @@ This is the **literal "pseudo-static website"** pattern. Architecture:
 
 1. Static form on GitHub Pages (HTML/JS, no backend).
 2. Form submit → `repository_dispatch` event → triggers GitHub Action.
-3. Action runs `metagen` in CI runner (API key stored in **GitHub Actions secrets**, never exposed).
+3. Action runs `gema` in CI runner (API key stored in **GitHub Actions secrets**, never exposed).
 4. Action writes output JSON to a branch, opens a PR.
 5. Librarian gets email, reviews PR, merges.
 6. Merge triggers GH Pages rebuild → new output available for download.
@@ -118,7 +118,7 @@ Multi-page, file upload, data tables, downloads are all native. `st.secrets` for
 
 Spin up a small VM, install Tailscale + Caddy + FastAPI.
 Caddy gives auto-HTTPS. Tailscale gives private mesh access — **zero public exposure**.
-URL: `https://metagen.youruni.ts.net` (only resolves inside the tailnet).
+URL: `https://gema.youruni.ts.net` (only resolves inside the tailnet).
 
 - **Tailscale:** https://tailscale.com/
 - **Tailscale ACLs:** https://tailscale.com/kb/1018/acls
@@ -159,7 +159,7 @@ without network, so you'd need a local proxy for offline use.
 | Friction | 3/5 |
 | Best for | Libraries where staff already use ChatGPT and want a similar interface |
 
-Wrap `metagen` as a **Pipe Function** — it appears as a "model" in the sidebar.
+Wrap `gema` as a **Pipe Function** — it appears as a "model" in the sidebar.
 Librarians chat with it like ChatGPT.
 
 - **Open WebUI:** https://openwebui.com/
@@ -278,7 +278,7 @@ Croissant Baker).
 
 ---
 
-## Recommended Path for `metagen`
+## Recommended Path for `gema`
 
 | Phase | Tool | Why |
 |---|---|---|
@@ -291,17 +291,17 @@ Croissant Baker).
 
 ## Comparable Tools — AI/LLM Scholarly Metadata Enrichment
 
-Tools with the same scope as `metagen` (generate or enrich scholarly metadata using
+Tools with the same scope as `gema` (generate or enrich scholarly metadata using
 LLMs or other AI). Organized by closeness of scope.
 
 ### Tier 1 — Direct same-scope (LLM-generated scholarly metadata)
 
-These are the closest competitors to `metagen`. All use LLMs to generate or enrich
+These are the closest competitors to `gema`. All use LLMs to generate or enrich
 scholarly dataset metadata from minimal inputs.
 
 | Tool | Scope | Notes |
 |---|---|---|
-| **Croissant Baker** | LLM-assisted ML dataset metadata in [Croissant](https://github.com/mlcommons/croissant) schema | MLCommons. Web UI + LLM. Closest analogue to `metagen`. https://github.com/mlcommons/croissant |
+| **Croissant Baker** | LLM-assisted ML dataset metadata in [Croissant](https://github.com/mlcommons/croissant) schema | MLCommons. Web UI + LLM. Closest analogue to `gema`. https://github.com/mlcommons/croissant |
 | **AutoDDG** | Auto Data Documentation Generator — LLM produces Data Documentation Guidelines from datasets | Academic project. https://github.com/sahitj/AutoDDG (search required — multiple forks exist) |
 | **LLMDap** | LLM-generated Data Management Plans (DMPs) | Academic; DMPs are metadata-adjacent. https://github.com/research-boring/llmdap (search required) |
 | **Dataverse AI Assistant** | AI-assisted metadata entry for [Dataverse](https://dataverse.org/) installations | Harvard IQSS has explored AI helpers; check current Dataverse releases. https://dataverse.org/ |
@@ -310,7 +310,7 @@ scholarly dataset metadata from minimal inputs.
 
 These use traditional NLP/ML (CRF, transformers, regex) to extract metadata from PDFs
 or documents. Useful as comparators for output quality and as **input enrichers** for
-`metagen` (e.g., run Grobid on a PDF → feed to `metagen` for LLM expansion).
+`gema` (e.g., run Grobid on a PDF → feed to `gema` for LLM expansion).
 
 | Tool | Scope | Notes |
 |---|---|---|
@@ -323,7 +323,7 @@ or documents. Useful as comparators for output quality and as **input enrichers*
 
 ### Tier 3 — Repository platforms with AI features
 
-These are the systems `metagen` could plug into or replace metadata entry for. Most
+These are the systems `gema` could plug into or replace metadata entry for. Most
 have experimented with AI suggestions in the last 2-3 years.
 
 | Platform | AI feature | Link |
@@ -372,7 +372,7 @@ specialized tool must beat them on UX, structure, or domain knowledge.
 
 **These are NOT scholarly metadata tools** — they catalog enterprise data warehouses
 (tables, columns, lineage). Listed here only because the term "metadata enrichment" is
-ambiguous. `metagen` is NOT in this category.
+ambiguous. `gema` is NOT in this category.
 
 - **OpenMetadata**: https://open-metadata.org/
 - **DataHub** (Acryl Data): https://datahubproject.io/
@@ -383,13 +383,13 @@ ambiguous. `metagen` is NOT in this category.
 - **Alation**: https://www.alation.com/
 - **Collibra**: https://www.collibra.com/
 
-### Where `metagen` fits in this landscape
+### Where `gema` fits in this landscape
 
-- **`metagen` is Tier 1** — direct LLM generation of DataCite 4.6 metadata.
+- **`gema` is Tier 1** — direct LLM generation of DataCite 4.6 metadata.
 - **Closest direct competitor: Croissant Baker** (different schema, same approach).
 - **Differentiator opportunities:**
   1. **DataCite-specific** (most LLM tools target ML schemas or generic JSON).
-  2. **Multi-agent pipeline** (most tools use single LLM call — `metagen` orchestrates 5 specialized agents).
+  2. **Multi-agent pipeline** (most tools use single LLM call — `gema` orchestrates 5 specialized agents).
   3. **Side-by-side diff viewer** (no Tier 1-3 competitor has this).
   4. **Chilean gov data / Spanish prompts** (no competitor specializes in this corpus).
 
@@ -397,5 +397,5 @@ ambiguous. `metagen` is NOT in this category.
 
 ## See Also
 
-- [CONFIGURATION.md](./CONFIGURATION.md) — `metagen` runtime config
-- Project README — `metagen` CLI usage
+- [CONFIGURATION.md](./CONFIGURATION.md) — `gema` runtime config
+- Project README — `gema` CLI usage

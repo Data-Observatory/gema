@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`metadata-enricher` (CLI: `metagen`) — a multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference implementation) from minimal resource descriptions (URL, title, description, DOI). Python 3.11+, uv-managed, `pydantic` v2 + `typer` + `openai`/`instructor`.
+`gema` — a multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference implementation) from minimal resource descriptions (URL, title, description, DOI). Python 3.11+, uv-managed, `pydantic` v2 + `typer` + `openai`/`instructor`.
 
 ## Commands
 
@@ -25,10 +25,10 @@ uv run pytest tests/test_X.py::TestClass::test_name -v  # single test
 uv run pytest -k "not live"                             # skip tests needing real API keys
 uv run pytest -m regression                             # golden-output regression tests only
 
-uv run metagen list-schemas
-uv run metagen list-providers --config config/agents.yaml
-uv run metagen validate examples/sample_input01.json
-uv run metagen process examples/sample_input01.json --config config/agents.yaml --output output.json
+uv run gema list-schemas
+uv run gema list-providers --config config/agents.yaml
+uv run gema validate examples/sample_input01.json
+uv run gema process examples/sample_input01.json --config config/agents.yaml --output output.json
 ```
 
 No Docker, no pre-commit hooks. GitHub Actions CI exists (`.github/workflows/ci.yml` + `visor-build.yml`), gating the branch flow: any branch → PR into `dev` (`ci.yml`: ruff on `src/ tests/ scripts/ visor/`, mypy on `src/` and `visor --exclude visor/tests`, `pytest -m "not live" --cov=metadata_enricher`, `make test-visor`) → PR into `main` (same checks again, plus `visor-build.yml`'s full multi-OS build matrix). CI never runs anything marked `live` (real LLM calls/cost) — that stays manual-only. Note the ruff/mypy scope in CI includes `visor/` (a separate subpackage, undocumented here — this file covers `metadata_enricher` only); local `make lint`/`make typecheck` do not cover `visor/`, so a clean local run does not guarantee a clean CI run if `visor/` was touched.
@@ -65,7 +65,7 @@ Agents run in parallel waves based on `depends_on`, computed via Kahn topologica
 
 ### LLM client middleware stack
 
-Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` (OpenAI + Instructor structured output) -> `RetryableLLMClient` (tenacity transport retry) -> `CachedLLMClient` (diskcache, 7-day TTL at `~/.cache/metagen/`). Works with any OpenAI-compatible endpoint (OpenAI, OpenRouter, vLLM, Ollama, ZAI, OpenCode) — adding a provider is config-only (`config/providers.yaml`), never code. Clients are cached module-globally by a composite key of provider+model+temperature+seed+max_tokens+use_cache+use_retry.
+Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` (OpenAI + Instructor structured output) -> `RetryableLLMClient` (tenacity transport retry) -> `CachedLLMClient` (diskcache, 7-day TTL at `~/.cache/gema/`). Works with any OpenAI-compatible endpoint (OpenAI, OpenRouter, vLLM, Ollama, ZAI, OpenCode) — adding a provider is config-only (`config/providers.yaml`), never code. Clients are cached module-globally by a composite key of provider+model+temperature+seed+max_tokens+use_cache+use_retry.
 
 **Retry rules are load-bearing** (`llm/retry.py`): `pydantic.ValidationError`, `InstructorRetryException`, and `ValueError` are **never** retried (they belong to the Instructor layer, not the transport — retrying would loop forever on malformed LLM output). Transport errors (timeouts, connection errors, HTTP 429, and per-config HTTP 5xx) **are** retried.
 
@@ -104,7 +104,7 @@ Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` 
 ## Configuration
 
 - Runtime config lives at repo-root `config/` (YAML/JSON, not code) — distinct from `src/metadata_enricher/config/` (the loader/models code). Main file: `config/agents.yaml`; provider connections: `config/providers.yaml`.
-- Config search order (`config/loader.py:find_config()`): explicit `--config` -> `./config/agents.yaml` -> `~/.config/metagen/agents.yaml` -> `$METAGEN_CONFIG` env var.
+- Config search order (`config/loader.py:find_config()`): explicit `--config` -> `./config/agents.yaml` -> `~/.config/gema/agents.yaml` -> `$GEMA_CONFIG` env var.
 - `${VAR}` syntax in YAML is expanded via `os.path.expandvars()` before pydantic validation.
 - `PipelineConfig` cross-validates at construction (fail-fast): `default_provider` and every `agent.provider` must exist in `providers`; every `agent.depends_on` must exist in `agents`; no duplicate agent IDs.
 - API keys come from `.env` (copy from `.env.example`): `OPENAI_API_KEY`, `ZAI_API_KEY`, or `OPENCODE_API_KEY`.

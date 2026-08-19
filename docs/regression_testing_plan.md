@@ -1,4 +1,4 @@
-# Regression & Reproducibility Testing Plan for `metagen`
+# Regression & Reproducibility Testing Plan for `gema`
 
 **Created:** 2026-06-23
 **Status:** Approved by user; executing autonomously
@@ -7,7 +7,7 @@
 
 ## Goal
 
-Verify `metagen` produces **comparable (semantically similar)** outputs across runs, prompt edits, model upgrades, and dependency bumps. NOT exact-match reproducibility — temperature=0 + seed gets close, but GPU non-determinism means we use **semantic similarity ≥ 0.85** as the regression bar.
+Verify `gema` produces **comparable (semantically similar)** outputs across runs, prompt edits, model upgrades, and dependency bumps. NOT exact-match reproducibility — temperature=0 + seed gets close, but GPU non-determinism means we use **semantic similarity ≥ 0.85** as the regression bar.
 
 ---
 
@@ -155,7 +155,7 @@ Not in scope for this autonomous run.
 ## Critical Risks
 
 1. **ZAI/GLM-5.2 seed support unknown** — Phase 1.3 smoke-tests. Fallback: cache-only determinism (works because cache key includes seed after Phase 1.4).
-2. **Cache key change is breaking** — old `~/.cache/metagen/` entries won't match new keys. Document `make clean-cache` procedure.
+2. **Cache key change is breaking** — old `~/.cache/gema/` entries won't match new keys. Document `make clean-cache` procedure.
 3. **json-semantic-diff is young** — if it lacks features, fallback to `structeval` or hand-rolled Jaccard/cosine on field sets.
 4. **Prompt changes invalidate cache** — document re-record procedure prominently.
 

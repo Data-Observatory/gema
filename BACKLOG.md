@@ -357,7 +357,7 @@ enough context to pick up cold; prune entries once actually done.
     Personal creators are the ones most likely to carry an affiliation at
     all). Fixed to collect affiliations regardless of the role's own
     name_type.
-  - `metagen list-known-providers`'s `providers.yaml` lookup was a bare
+  - `gema list-known-providers`'s `providers.yaml` lookup was a bare
     cwd-relative `Path("config/providers.yaml")`, unlike every other
     config-reading command (which goes through `find_config()`'s
     multi-location search cascade). Now resolved as a sibling of wherever
@@ -431,7 +431,7 @@ enough context to pick up cold; prune entries once actually done.
   end state visor's picker does — the pool is a UX nicety (autofill), not a
   capability. Evaluated and rejected: plumbing `providers.yaml` into the
   pipeline itself — nothing to wire in, since visor doesn't feed it into
-  execution either. **Done** (2026-08-11): `metagen list-known-providers`
+  execution either. **Done** (2026-08-11): `gema list-known-providers`
   CLI command reads the same pool, for discoverability parity of the
   autofill convenience.
 - **`max_workers` bump when production model moves off zai-coding-plan —
@@ -449,7 +449,7 @@ enough context to pick up cold; prune entries once actually done.
   {type: disabled}}` on all 5 agents (the plumbing — `AgentConfig.extra_body`
   → `create_llm_client` — already existed, unused, with a docstring already
   anticipating exactly this fix; just needed setting in the YAML). Verified
-  live end-to-end (`metagen process`) before and after the fix. Also found
+  live end-to-end (`gema process`) before and after the fix. Also found
   `tests/test_regression.py`'s `_make_factory` had drifted out of sync with
   `scripts/record_golden.py`'s (the one it's commented as "mirroring") —
   missing the `extra_body` passthrough param entirely, so regression tests
