@@ -60,9 +60,21 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 def is_port_free(port: int, host: str = "0.0.0.0") -> bool:
     """A real bind-and-release check, not a guess — matches the interface
-    the hosted server itself binds to (visor.app.run()'s host="0.0.0.0")."""
+    the hosted server itself binds to (visor.app.run()'s host="0.0.0.0").
+
+    SO_REUSEADDR means different things on different platforms: on POSIX
+    it only lets a bind succeed against a socket lingering in TIME_WAIT,
+    which is what we want (no false "busy" from our own prior run's
+    teardown). On Windows it's far more permissive -- it lets bind()
+    succeed even against a socket that's actively LISTENing, which made
+    this always report free. SO_EXCLUSIVEADDRUSE is Windows's equivalent
+    of POSIX's actual exclusivity guarantee.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if sys.platform == "win32":
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)  # type: ignore[attr-defined]
+        else:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             sock.bind((host, port))
         except OSError:
