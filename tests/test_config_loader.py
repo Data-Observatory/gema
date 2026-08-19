@@ -214,11 +214,11 @@ class TestFindConfig:
         assert found == agents.resolve()
 
     def test_user_config_dir(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-        """Finds ~/.config/metagen/agents.yaml when it exists."""
+        """Finds ~/.config/gema/agents.yaml when it exists."""
         monkeypatch.chdir(tmp_path)  # no ./config/agents.yaml
         # Patch home dir to tmp_path so we can control ~/.config
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        user_cfg = tmp_path / ".config" / "metagen" / "agents.yaml"
+        user_cfg = tmp_path / ".config" / "gema" / "agents.yaml"
         user_cfg.parent.mkdir(parents=True)
         user_cfg.write_text(
             "schema_name: datacite-4.6\nagents: []\nproviders: []\n", encoding="utf-8"
@@ -226,8 +226,8 @@ class TestFindConfig:
         found = find_config()
         assert found == user_cfg.resolve()
 
-    def test_metagen_config_env_var(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-        """Finds the path from $METAGEN_CONFIG env var."""
+    def test_gema_config_env_var(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        """Finds the path from $GEMA_CONFIG env var."""
         monkeypatch.chdir(tmp_path)  # no ./config/agents.yaml
         monkeypatch.setattr(Path, "home", lambda: tmp_path)  # no ~/.config/...
         env_cfg = tmp_path / "from_env" / "agents.yaml"
@@ -235,7 +235,7 @@ class TestFindConfig:
         env_cfg.write_text(
             "schema_name: datacite-4.6\nagents: []\nproviders: []\n", encoding="utf-8"
         )
-        monkeypatch.setenv("METAGEN_CONFIG", str(env_cfg))
+        monkeypatch.setenv("GEMA_CONFIG", str(env_cfg))
         found = find_config()
         assert found == env_cfg.resolve()
 
@@ -253,10 +253,10 @@ class TestFindConfig:
         cwd_cfg = tmp_path / "config" / "agents.yaml"
         cwd_cfg.write_text("b: 2\n", encoding="utf-8")
 
-        # Location 4: $METAGEN_CONFIG
+        # Location 4: $GEMA_CONFIG
         env_cfg = tmp_path / "env.yaml"
         env_cfg.write_text("d: 4\n", encoding="utf-8")
-        monkeypatch.setenv("METAGEN_CONFIG", str(env_cfg))
+        monkeypatch.setenv("GEMA_CONFIG", str(env_cfg))
 
         found = find_config(explicit=explicit)
         assert found == explicit.resolve()
