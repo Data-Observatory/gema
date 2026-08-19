@@ -1,7 +1,7 @@
 # Dataverse demo stack
 
 A local, disposable Dataverse instance for the live exercise: attendees fill
-in a resource description, run it through `metadata-enricher`/visor to get
+in a resource description, run it through `gema`/visor to get
 DataCite JSON, convert that to Dataverse's native JSON (separate, upcoming
 work — see below), and upload the resulting dataset to *this* instance so
 everyone can see how it renders.
@@ -104,7 +104,7 @@ mechanism works — that's `example_dataset.json`'s whole point, a small
 hand-written payload. The translator now exists
 (`metadata_enricher.exporters.dataverse`, separate branch) — use
 `scripts/export_from_metadata_enricher.py` to generate a real one from an
-actual metadata-enricher output instead:
+actual gema output instead:
 
 ```bash
 cd /path/to/repo/root   # needs metadata_enricher importable
@@ -119,7 +119,7 @@ with the correct title/author pulled straight from actual DataCite
 output — not a synthetic example. Without `--classify`, Subject defaults
 to `"Other"` (no LLM call, no cost); add `--classify` to run the real
 classification call (needs the provider's API key set, same as running
-metadata-enricher itself). Either way it prints any warnings — e.g. no
+gema itself). Either way it prints any warnings — e.g. no
 contact email found anywhere in the source metadata, a real gap between
 DataCite and Dataverse's required fields, not a bug — so check those
 before publishing.
@@ -130,7 +130,7 @@ before publishing.
 no database — that takes a Dataverse-native JSON payload (paste or file
 upload) and forwards it to this instance's native API
 (`POST /api/dataverses/:alias/datasets`), the same call `scripts/smoke_test.sh`
-makes by hand. It's for attendees who have metadata-enricher/visor output
+makes by hand. It's for attendees who have gema/visor output
 but no `curl`/API-token workflow of their own.
 
 It's part of `compose.yml` (service `uploader`, port 8090) so it comes up

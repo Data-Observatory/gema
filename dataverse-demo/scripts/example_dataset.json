@@ -59,7 +59,7 @@
             "value": [
               {
                 "dsDescriptionValue": {
-                  "value": "A minimal dataset used to smoke-test the Dataverse API pathway (create, upload, publish) before wiring in real metadata-enricher output.",
+                  "value": "A minimal dataset used to smoke-test the Dataverse API pathway (create, upload, publish) before wiring in real gema output.",
                   "multiple": false,
                   "typeClass": "primitive",
                   "typeName": "dsDescriptionValue"
