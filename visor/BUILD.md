@@ -24,8 +24,8 @@ irm https://astral.sh/uv/install.ps1 | iex
 # 2. Get the repo onto the Windows filesystem — clone fresh, don't work
 #    off \\wsl$\... (slow, and uv/PyInstaller can choke on cross-FS locking)
 cd C:\dev
-git clone <repo-url> proj-metadata-agents
-cd proj-metadata-agents
+git clone <repo-url> gema
+cd gema
 git checkout visor
 
 # 3. Install deps and smoke-test unfrozen (fastest way to check WebView2 etc.)

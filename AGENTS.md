@@ -11,7 +11,7 @@
 ## STRUCTURE
 
 ```
-proj-metadata-agents/
+gema/
 ├── src/metadata_enricher/    # Main package (src-layout). See ./src/metadata_enricher/AGENTS.md
 ├── tests/                    # 24 pytest files, 1:1 per module. See ./tests/AGENTS.md
 ├── config/                   # Runtime YAML/JSON configs (NOT code). Legacy in config/legacy/

@@ -1,7 +1,7 @@
 # Gema
 
-[![CI](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml)
-[![Visor Build](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml)
+[![CI](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml)
+[![Visor Build](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![uv](https://img.shields.io/badge/managed%20by-uv-3d3d3d)](https://docs.astral.sh/uv/)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
@@ -31,7 +31,7 @@ Visor ships with a working default configuration.
 
 ```bash
 git clone <repo-url>
-cd proj-metadata-agents
+cd gema
 uv sync --extra dev --extra visor --group visor-build
 uv run python -m visor.app            # opens a native desktop window
 ```
@@ -70,7 +70,7 @@ the known platform caveats).
 
 ```bash
 git clone <repo-url>
-cd proj-metadata-agents
+cd gema
 uv sync --extra dev
 ```
 
