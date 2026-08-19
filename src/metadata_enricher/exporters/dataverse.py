@@ -273,19 +273,27 @@ def _build_keywords(document: MetadataDocument) -> list[str]:
 
 
 def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
-    """The one hook back to the original web resource — DataCite's own
-    `ResourceDescription.url` has no field of its own in the DataCite
-    output otherwise, but Dataverse's citation block has a matching
-    primitive field for exactly this (confirmed live against a real
-    Dataverse 6.11 instance's citation metadata block on 2026-08-17:
+    """The one hook back to the original web resource — DataCite has no
+    dedicated `url` property; `core_metadata`'s prompt puts the resource's
+    URL (or, when present, its DOI) in `resource.identifier`, tagged by
+    `resource.identifier_type` (see config/agents.yaml and
+    DataCiteSchema46._normalize_resource). Dataverse's citation block has
+    a matching primitive field for exactly this (confirmed live against a
+    real Dataverse 6.11 instance's citation metadata block on 2026-08-17:
     `alternativeURL`, typeClass primitive, multiple=False, description
     "Another URL where one can view or access the data in the Dataset").
+    A DOI identifier isn't itself a URL, so it's resolved through
+    doi.org first.
     """
     resource = document.get_field("resource") or {}
-    url = resource.get("url")
-    if not url:
+    identifier = resource.get("identifier")
+    if not identifier:
         return None
-    return _primitive_field("alternativeURL", str(url))
+    if str(resource.get("identifier_type", "")).upper() == "DOI":
+        url = f"https://doi.org/{identifier}"
+    else:
+        url = str(identifier)
+    return _primitive_field("alternativeURL", url)
 
 
 def classify_subject(

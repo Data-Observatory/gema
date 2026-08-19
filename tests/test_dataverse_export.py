@@ -271,10 +271,10 @@ class TestKeywords:
 
 
 class TestAlternativeURL:
-    def test_maps_resource_url_to_alternative_url(self):
+    def test_maps_resource_identifier_url_to_alternative_url(self):
         doc = make_document(
             titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"url": "https://example.org/dataset"},
+            resource={"identifier": "https://example.org/dataset", "identifier_type": "URL"},
         )
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
@@ -286,7 +286,17 @@ class TestAlternativeURL:
             "typeName": "alternativeURL",
         }
 
-    def test_no_alternative_url_field_when_no_resource_url(self):
+    def test_resolves_doi_identifier_through_doi_org(self):
+        doc = make_document(
+            titles=[{"name": "T", "title_type": "MainTitle"}],
+            resource={"identifier": "10.5880/GFZ.2.4.2021.001", "identifier_type": "DOI"},
+        )
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
+        assert url_field["value"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
+
+    def test_no_alternative_url_field_when_no_resource_identifier(self):
         doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
