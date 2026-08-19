@@ -286,7 +286,7 @@ def run_pipeline_on(
         return json.loads(json_str), None
 
     if fresh_cache:
-        with tempfile.TemporaryDirectory(prefix="metagen_validate_real_") as tmpdir:
+        with tempfile.TemporaryDirectory(prefix="gema_validate_real_") as tmpdir:
             return _run(Path(tmpdir) / "cache")
     return _run(None)
 
@@ -416,7 +416,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(2)
 
     enrich = not args.no_enrich
-    http_client = None if args.no_resolve else httpx.Client(headers={"User-Agent": "metagen-validate-real/0.1"})
+    http_client = None if args.no_resolve else httpx.Client(headers={"User-Agent": "gema-validate-real/0.1"})
 
     reports: list[InputReport] = []
     try:

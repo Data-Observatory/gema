@@ -1,7 +1,7 @@
 # Dataverse demo stack
 
 A local, disposable Dataverse instance for the live exercise: attendees fill
-in a resource description, run it through `metadata-enricher`/visor to get
+in a resource description, run it through `gema`/visor to get
 DataCite JSON, convert that to Dataverse's native JSON (separate, upcoming
 work — see below), and upload the resulting dataset to *this* instance so
 everyone can see how it renders.
@@ -14,22 +14,43 @@ blocked-API key made configurable via `.env` instead of hardcoded). Source:
 
 ## Quick start
 
+Everything below in one pass — base Dataverse stack, the upload proxy wired
+with a real token, Caddy fanning out one port, and visor for `/meta`. Each
+step is explained in detail further down; this is just the commands.
+
 ```bash
 cd dataverse-demo
 cp .env.example .env
 # edit .env: at minimum change BLOCKED_API_KEY to something only you know
-docker compose up
+
+docker compose up -d
+# first boot takes a few minutes — watch for `bootstrap` exiting with
+# "Done, your instance has been configured for demo or eval."
+docker logs -f bootstrap
+
+# wire the uploader's Dataverse API token — bootstrap already generated one
+./scripts/get_admin_token.sh
+# paste the printed token into .env as DATAVERSE_API_TOKEN, then:
+docker compose up -d --force-recreate uploader caddy
 ```
 
-First boot takes a few minutes (Postgres + Solr + the Dataverse app itself
-starting, then the `bootstrap` container runs `demo/init.sh` to configure a
-fresh instance). Watch for `bootstrap` exiting with "Done, your instance has
-been configured for demo or eval." — that's the signal everything else is up.
+In a separate terminal, run visor for the `/meta` route (not a container —
+see "Caddy" below for why `VISOR_ROOT_PATH` is required, not optional):
 
-Visit **http://localhost:8080** and log in:
+```bash
+VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta uv run python -m visor.app
+```
 
-- username: `dataverseAdmin`
-- password: `admin1`
+Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
+
+- **http://localhost:8000/** — Dataverse UI (`dataverseAdmin` / `admin1`)
+- **http://localhost:8000/up/** — upload form for attendees
+- **http://localhost:8000/meta/** — visor
+
+(Or hit each service directly without Caddy: 8080 / 8090 / 8001.)
+
+Sharing this beyond localhost (Tailscale, Funnel), resetting between runs,
+and the DataCite → Dataverse translator are all covered in detail below.
 
 ## Requirements
 
@@ -83,7 +104,7 @@ mechanism works — that's `example_dataset.json`'s whole point, a small
 hand-written payload. The translator now exists
 (`metadata_enricher.exporters.dataverse`, separate branch) — use
 `scripts/export_from_metadata_enricher.py` to generate a real one from an
-actual metadata-enricher output instead:
+actual gema output instead:
 
 ```bash
 cd /path/to/repo/root   # needs metadata_enricher importable
@@ -98,10 +119,88 @@ with the correct title/author pulled straight from actual DataCite
 output — not a synthetic example. Without `--classify`, Subject defaults
 to `"Other"` (no LLM call, no cost); add `--classify` to run the real
 classification call (needs the provider's API key set, same as running
-metadata-enricher itself). Either way it prints any warnings — e.g. no
+gema itself). Either way it prints any warnings — e.g. no
 contact email found anywhere in the source metadata, a real gap between
 DataCite and Dataverse's required fields, not a bug — so check those
 before publishing.
+
+## Upload proxy (for attendees without API tooling)
+
+`uploader/` is a very light FastAPI service — one form, no auth of its own,
+no database — that takes a Dataverse-native JSON payload (paste or file
+upload) and forwards it to this instance's native API
+(`POST /api/dataverses/:alias/datasets`), the same call `scripts/smoke_test.sh`
+makes by hand. It's for attendees who have gema/visor output
+but no `curl`/API-token workflow of their own.
+
+It's part of `compose.yml` (service `uploader`, port 8090) so it comes up
+with everything else. Set `DATAVERSE_API_TOKEN` in `.env` first — see
+`.env.example` — otherwise the form loads but every submission fails with
+a clear "no token configured" error rather than a silent 401. Visit
+**http://localhost:8080** on the Dataverse side stays the admin/API story;
+**http://localhost:8090** is the plain form attendees actually use.
+
+Datasets are created as drafts unless the "Publish immediately" checkbox
+is ticked — leave it unticked if you want to review before making
+attendees' uploads publicly visible.
+
+This has the exact same secret-exposure shape as the section below: anyone
+who can reach port 8090 can create datasets in `DATAVERSE_COLLECTION_ALIAS`
+using the token baked into the container's environment. Scope Tailscale
+ACLs the same way, and use a token scoped to a non-admin account if you
+don't want attendees' traffic able to do anything an admin token can do.
+
+## Caddy (single entrypoint for Tailscale)
+
+If you're sharing this over Tailscale (below) and don't want to open/remember
+three separate ports, `caddy` (service in `compose.yml`, `Caddyfile` at the
+repo root of this folder) fans out one port to path-based routes:
+
+- **`/up`** → the uploader form. Works fully — confirmed live, including a
+  real dataset upload through the proxy.
+- **`/meta`** → visor's own hosted mode, running on your host machine (not
+  a container — start it with `VISOR_NATIVE=0 VISOR_PORT=8001
+  VISOR_ROOT_PATH=/meta python -m visor.app`; `VISOR_ROOT_PATH` is required,
+  not optional — see `.env.example`). Works fully — confirmed live, assets
+  *and* the socket.io websocket handshake all correctly prefixed.
+- **everything else** falls through to Dataverse at the root — deliberate,
+  not a fallback for lack of trying: Dataverse (JSF/Payara) emits
+  root-relative links throughout and Payara's context-root is fixed at WAR
+  deployment time, so it can't live under a subpath at all (confirmed live
+  earlier — a `/catalogo/*` attempt 302'd to a root-relative
+  `/loginpage.xhtml` with no prefix and 404'd). Keeping it at the root
+  sidesteps that entirely, since no path-stripping/rewriting happens for it.
+
+Default port is 8000 (`CADDY_PORT` in `.env`). `docker compose up -d caddy`
+brings it up alongside everything else.
+
+**Changing the port**: set `CADDY_PORT` in `.env` (e.g. `CADDY_PORT=8123`)
+and recreate the container — `Caddyfile` itself has no hardcoded host port
+(`:80` in there is container-internal, never exposed directly), so this env
+var is the single control point. All three routes move together since
+they're all paths under that one port, not separate ports:
+
+```bash
+docker compose up -d --force-recreate caddy
+```
+
+**`VISOR_ROOT_PATH` is not optional — a real trap if forgotten.** If you
+start visor without it and load `/meta`, the page loads but shows
+*"Your browser does not support ES modules. Please use a modern browser."*
+— this is misleading, it's not actually a browser problem. Without
+`VISOR_ROOT_PATH`, visor emits its JS module URLs as `/_nicegui/...`
+instead of `/meta/_nicegui/...`; Caddy's `/meta/*` route never sees a bare
+`/_nicegui/...` request, so it 404s, the `<script type="module">` tag
+silently fails to load, and the browser falls back to that static warning
+text. Confirmed live — this exact symptom, this exact cause. Always start
+visor for `/meta` with all three of these set:
+
+```bash
+VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta python -m visor.app
+```
+
+(`VISOR_PORT` here must match `VISOR_PORT` in `.env`, which is what tells
+`caddy` which port on `host.docker.internal` to reach.)
 
 ## Sharing it over Tailscale (remote attendees)
 
@@ -158,11 +257,47 @@ live.
    should return the real version JSON, same as the localhost check earlier
    in this README.
 
+### Tailscale Funnel (public internet, not just your tailnet)
+
+Everything above shares to devices already on *your* tailnet. If attendees
+don't have Tailscale installed/aren't on your tailnet at all, use
+[Funnel](https://tailscale.com/kb/1223/funnel) instead to expose the Caddy
+port to the public internet over HTTPS:
+
+```bash
+tailscale funnel --bg 8123   # use your actual CADDY_PORT
+```
+
+This publishes `https://<your-machine>.<tailnet>.ts.net` (port 443) →
+`http://127.0.0.1:8123` on this machine — root/`/up`/`/meta` all become
+reachable at that one HTTPS URL, no port number for attendees to remember
+at all. Check state with `tailscale funnel status`; turn it off with
+`tailscale funnel reset`.
+
+**Prerequisite**: Funnel isn't on by default — enable it once for this node
+in the Tailscale admin console (or grant the `funnel` node attribute via
+your tailnet's ACL).
+
+**This is meaningfully different from the tailnet-only sharing above: it's
+the public internet, not just your tailnet.** Anyone with the URL reaches
+it — there's no ACL scoping "only these attendees' devices" the way there
+is with plain Tailscale. Step 5 above (change the default admin password
+before opening this up) applies much harder here, since there's no
+network-level restriction backing it up at all.
+
 ## Resetting
 
-Data lives in `./data/` (gitignored). Stop the stack (`Ctrl-C` or
-`docker compose down`) and delete `./data/` to start completely fresh —
-useful between practice runs before the actual live event.
+Data lives in named Docker volumes (`dv_app_data`, `dv_app_secrets`,
+`dv_postgres_data`, `dv_solr_data`, `dv_solr_conf`), not a host directory.
+Stop the stack and wipe them to start completely fresh — useful between
+practice runs before the actual live event:
+
+```bash
+docker compose down -v
+```
+
+(`-v` is what removes the named volumes; a plain `docker compose down`
+leaves them in place for next time.)
 
 ## The DataCite → Dataverse translator
 

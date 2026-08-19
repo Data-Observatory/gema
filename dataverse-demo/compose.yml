@@ -5,7 +5,7 @@ version: "2.4"
 # (see ../doc/sphinx-guides/source/container/running/demo.rst in that repo for
 # the full walkthrough this file follows).
 #
-# Two deliberate deviations from the vanilla file, both explained in README.md:
+# Three deliberate deviations from the vanilla file, all explained in README.md:
 # 1. The "demo" persona is already selected (dev commented out, demo
 #    uncommented, ./demo volume mount uncommented) - this is a multi-person
 #    live demo, not a single-developer sandbox, so the more-secure persona
@@ -15,6 +15,15 @@ version: "2.4"
 #    official guide explicitly says to change this from "unblockme" to
 #    something only you know; hardcoding a "secret" in a committed file
 #    would defeat that entirely.
+# 3. The stateful runtime data mounts (dataverse app data/secrets, postgres,
+#    solr) use named Docker volumes instead of the vanilla file's `./data/...`
+#    bind mounts. postgres and solr each chown their data directory to their
+#    own uid at startup; a bind mount onto a host filesystem that can't do
+#    real per-file chown (NTFS, exFAT, some network shares) makes them
+#    crash-loop ("Operation not permitted"). Named volumes are Docker-managed
+#    storage, unaffected by the host filesystem - works the same on every OS,
+#    no host config needed. `./demo` stays a bind mount - it's a read-only
+#    script directory, not runtime data, so it never needs chown.
 
 services:
 
@@ -55,8 +64,8 @@ services:
       - solr
       - dv_initializer
     volumes:
-      - ./data/app/data:/dv
-      - ./data/app/secrets:/secrets
+      - dv_app_data:/dv
+      - dv_app_secrets:/secrets
     tmpfs:
       - /dumps:mode=1777,size=2052M
       - /tmp:mode=1777,size=2052M
@@ -90,7 +99,7 @@ services:
       - -c
       - "fix-fs-perms.sh dv"
     volumes:
-      - ./data/app/data:/dv
+      - dv_app_data:/dv
 
   previewers-provider:
     image: trivadis/dataverse-previewers-provider:latest
@@ -136,7 +145,7 @@ services:
     networks:
       - dataverse
     volumes:
-      - ./data/postgresql/data:/var/lib/postgresql/data
+      - dv_postgres_data:/var/lib/postgresql/data
 
   solr_initializer:
     container_name: "solr_initializer"
@@ -147,8 +156,8 @@ services:
       - -c
       - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
     volumes:
-      - ./data/solr/data:/var/solr
-      - ./data/solr/conf:/solr-template
+      - dv_solr_data:/var/solr
+      - dv_solr_conf:/solr-template
 
   solr:
     container_name: "solr"
@@ -168,8 +177,8 @@ services:
       - "collection1"
       - "/template"
     volumes:
-      - ./data/solr/data:/var/solr
-      - ./data/solr/conf:/template
+      - dv_solr_data:/var/solr
+      - dv_solr_conf:/template
 
   smtp:
     container_name: "smtp"
@@ -189,6 +198,47 @@ services:
     tmpfs:
       - /mail:mode=1777,size=128M
 
+  uploader:
+    container_name: "uploader"
+    build: ./uploader
+    restart: on-failure
+    environment:
+      - DATAVERSE_URL=http://dataverse:8080
+      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
+      - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
+      - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
+    ports:
+      - "8090:8090"
+    networks:
+      - dataverse
+    depends_on:
+      - dataverse
+
+  caddy:
+    container_name: "caddy"
+    image: caddy:2.9-alpine
+    restart: on-failure
+    environment:
+      - VISOR_PORT=${VISOR_PORT:-8001}
+    ports:
+      - "${CADDY_PORT:-8000}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - dataverse
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - dataverse
+      - uploader
+
 networks:
   dataverse:
     driver: bridge
+
+volumes:
+  dv_app_data:
+  dv_app_secrets:
+  dv_postgres_data:
+  dv_solr_data:
+  dv_solr_conf:

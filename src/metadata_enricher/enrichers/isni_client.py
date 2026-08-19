@@ -105,7 +105,7 @@ class ISNIClient:
             httpx.HTTPStatusError: On 4xx/5xx responses.
             httpx.HTTPError: On network/transport errors.
         """
-        headers = {"User-Agent": "metagen/0.1 (identifier-resolver)"}
+        headers = {"User-Agent": "gema/0.1 (identifier-resolver)"}
         response = self._client.get(
             self.BASE_URL, params=params, headers=headers
         )

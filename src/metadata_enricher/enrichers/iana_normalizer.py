@@ -2,7 +2,7 @@
 
 Provides deterministic normalization of media type (MIME) strings against the
 IANA media types registry. Uses a bundled JSON snapshot with automatic
-background refresh to ~/.cache/proj-metadata-agents/.
+background refresh to ~/.cache/gema/iana/.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 IANA_XML_URL = "https://www.iana.org/assignments/media-types/media-types.xml"
 IANA_NS = {"ian": "http://www.iana.org/assignments"}
 CACHE_FILENAME = "iana_media_types.json"
-DEFAULT_CACHE_DIR = Path.home() / ".cache" / "proj-metadata-agents"
+DEFAULT_CACHE_DIR = Path.home() / ".cache" / "gema" / "iana"
 STALE_DAYS = 30
 
 
@@ -31,7 +31,7 @@ class IANANormalizer:
     """Normalizes format strings against the IANA media types registry.
 
     Loads a bundled JSON snapshot by default. Checks for a fresher cached
-    version in ~/.cache/proj-metadata-agents/. Auto-refreshes from the IANA
+    version in ~/.cache/gema/iana/. Auto-refreshes from the IANA
     XML registry if the cache is older than 30 days.
 
     Unknown MIME types are preserved unchanged — never nulled, never errored.
@@ -52,7 +52,7 @@ class IANANormalizer:
                           a PyInstaller-frozen bundle alike, unlike a
                           repo-root-relative path.
             cache_dir: Directory for cached data. Defaults to
-                       ~/.cache/proj-metadata-agents/.
+                       ~/.cache/gema/iana/.
         """
         if bundled_path is None:
             bundled_path = str(
@@ -262,7 +262,7 @@ class IANANormalizer:
         """Fetch the IANA media types XML via httpx."""
         response = httpx.get(
             IANA_XML_URL,
-            headers={"User-Agent": "proj-metadata-agents/1.0"},
+            headers={"User-Agent": "gema/1.0"},
             timeout=httpx.Timeout(30.0),
             follow_redirects=True,
         )

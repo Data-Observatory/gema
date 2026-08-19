@@ -6,12 +6,12 @@
 
 ## OVERVIEW
 
-`metadata-enricher` (`metagen`) — multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference impl) from minimal resource descriptions. Python 3.11+, uv-managed, hatchling-built, pydantic-v2 + typer + openai/instructor.
+`gema` — multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference impl) from minimal resource descriptions. Python 3.11+, uv-managed, hatchling-built, pydantic-v2 + typer + openai/instructor.
 
 ## STRUCTURE
 
 ```
-proj-metadata-agents/
+gema/
 ├── src/metadata_enricher/    # Main package (src-layout). See ./src/metadata_enricher/AGENTS.md
 ├── tests/                    # 24 pytest files, 1:1 per module. See ./tests/AGENTS.md
 ├── config/                   # Runtime YAML/JSON configs (NOT code). Legacy in config/legacy/
@@ -64,7 +64,7 @@ proj-metadata-agents/
 - **Agent prompts use `str.format_map(SafeDict(...))`** — missing template vars render as `""` instead of `KeyError`. See `agents/base.py:10-14`.
 - **LLM client middleware stack** — `InstructorLLMClient → RetryableLLMClient → CachedLLMClient`. Built by `factory.py`, cached by composite key (provider+model+temp+seed+max_tokens+use_cache+use_retry).
 - **Orchestrator = Kahn topological sort + ThreadPoolExecutor** — agents run in parallel waves respecting `depends_on`. Single-agent waves skip thread pool. Cycle detection raises `ValueError`.
-- **7-day disk cache** — `~/.cache/metagen/`, SHA-256 keyed by prompt+model+response_model. See `cache.py`.
+- **7-day disk cache** — `~/.cache/gema/`, SHA-256 keyed by prompt+model+response_model. See `cache.py`.
 - **`conftest.py` sys.path surgery** — ensures `src/metadata_enricher` shadows any flat-layout original. Lines 6-12.
 - **DataCite `"Collections"` capital C is intentional** — `schemas/datacite.py:628`. Preserves legacy merger behavior.
 
@@ -75,9 +75,9 @@ uv sync --extra dev                              # Install
 make test                                        # pytest with coverage
 make lint                                        # ruff check src/ tests/
 make typecheck                                   # mypy src/ (strict)
-uv run metagen list-schemas                      # CLI: list schemas
-uv run metagen validate examples/sample_input01.json
-uv run metagen process <input> --config config/agents.yaml --output out.json  # end-to-end
+uv run gema list-schemas                      # CLI: list schemas
+uv run gema validate examples/sample_input01.json
+uv run gema process <input> --config config/agents.yaml --output out.json  # end-to-end
 uv run pytest tests/test_X.py -v -m live         # Real API key tests
 uv run pytest -k "not live"                      # Skip live tests
 ```
@@ -86,7 +86,7 @@ uv run pytest -k "not live"                      # Skip live tests
 
 - **No CI/CD, no Docker, no pre-commit** — only `Makefile`. All checks run manually.
 - **`.env` required** — copy `.env.example` to `.env`, fill `OPENAI_API_KEY` / `ZAI_API_KEY` / `OPENCODE_API_KEY`.
-- **Config search order** — `find_config()`: explicit `--config` → `./config/agents.yaml` → `~/.config/metagen/agents.yaml` → `$METAGEN_CONFIG`.
+- **Config search order** — `find_config()`: explicit `--config` → `./config/agents.yaml` → `~/.config/gema/agents.yaml` → `$GEMA_CONFIG`.
 - **YAML env var expansion** — `${VAR}` syntax supported in configs via `os.path.expandvars()` (`loader.py:50`).
 - **Pipeline + CLI work end-to-end** (`pipeline.py`, `cli.py:process`); per-resource error isolation, exit 1 only on total failure.
 - **Only DataCite 4.6 ships** — custom schemas must implement `Schema` Protocol.

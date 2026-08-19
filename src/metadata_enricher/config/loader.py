@@ -64,8 +64,8 @@ def find_config(explicit: Path | None = None) -> Path:
     ------------
     1. *explicit* path (if provided and the file exists).
     2. ``./config/agents.yaml`` (relative to the current working directory).
-    3. ``~/.config/metagen/agents.yaml`` (user-level config).
-    4. The path stored in the ``METAGEN_CONFIG`` environment variable
+    3. ``~/.config/gema/agents.yaml`` (user-level config).
+    4. The path stored in the ``GEMA_CONFIG`` environment variable
        (if set and the file exists).
 
     Parameters
@@ -90,9 +90,9 @@ def find_config(explicit: Path | None = None) -> Path:
         candidates.append(Path(explicit).resolve())
 
     candidates.append(Path("config/agents.yaml").resolve())
-    candidates.append(Path.home() / ".config" / "metagen" / "agents.yaml")
+    candidates.append(Path.home() / ".config" / "gema" / "agents.yaml")
 
-    env_val = os.environ.get("METAGEN_CONFIG")
+    env_val = os.environ.get("GEMA_CONFIG")
     if env_val:
         candidates.append(Path(env_val).resolve())
 

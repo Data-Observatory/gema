@@ -14,7 +14,7 @@ boots, whether it found config/agents.yaml directly (running from an
 editable repo checkout) or a frozen build's seeded copy. Only the
 underlying files (config/agents.yaml, and any seeded user copy of it) stay
 pinned to opencode/deepseek-v4-flash on disk — that's what CI, the test
-suite, and `metagen process` from the CLI actually run against.
+suite, and `gema process` from the CLI actually run against.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from metadata_enricher.schemas.base import Schema
 logger = logging.getLogger(__name__)
 
 BUNDLED_CONFIG_SUBPATH = Path("visor_default_config") / "agents.yaml"
-DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "metagen" / "agents.yaml"
+DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "gema" / "agents.yaml"
 
 # Provider/model swap applied by load_pipeline_config() to every config
 # visor loads, regardless of where it came from. config/agents.yaml (and

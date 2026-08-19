@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert a metadata-enricher DataCite JSON output into Dataverse's native
+"""Convert a gema DataCite JSON output into Dataverse's native
 dataset JSON, ready for smoke_test.sh's "create dataset" step.
 
 Run from the repo root (needs the same venv metadata_enricher lives in):
@@ -12,7 +12,7 @@ Without --classify, Subject classification is skipped (config's `enabled`
 still applies if you do pass it, but this flag lets you skip the LLM call
 — and its cost — when you just want a quick structural check). With
 --classify, uses config/dataverse_export.yaml's provider/model, which
-needs that provider's API key set (same as running metadata-enricher itself).
+needs that provider's API key set (same as running gema itself).
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ from metadata_enricher.types import MetadataDocument  # noqa: E402
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input_json", type=Path, help="A metadata-enricher DataCite JSON output file")
+    parser.add_argument("input_json", type=Path, help="A gema DataCite JSON output file")
     parser.add_argument("--output", type=Path, default=Path("dataset.json"))
     parser.add_argument(
         "--classify",

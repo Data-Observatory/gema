@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record golden expected outputs and cache snapshot for regression testing.
 
-Runs the metagen Pipeline against all input files in the golden inputs directory,
+Runs the gema Pipeline against all input files in the golden inputs directory,
 with pinned model+seed+temperature, and saves the outputs + cache bundle.
 
 Prerequisites:

@@ -1,10 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 """PyInstaller spec for visor — builds two targets from one Analysis:
 
-1. Visor/ (onedir) — the primary target, fed into the Windows/macOS
+1. GemaVisor/ (onedir) — the primary target, fed into the Windows/macOS
    installers. Faster startup, smaller AV/SmartScreen scan surface per
    launch. See visor/BUILD.md for why this is the recommended default.
-2. Visor-portable(.exe) (onefile) — a single-file, no-install-step
+2. GemaVisor-portable(.exe) (onefile) — a single-file, no-install-step
    executable for locked-down machines (no admin rights, USB stick,
    etc). Self-extracts to a fresh temp dir on *every* launch, so startup
    is noticeably slower than the onedir build. Measured on the Linux
@@ -53,7 +53,7 @@ for _pkg in ("uvicorn", "nicegui", "instructor", "openai"):
     hiddenimports += _pkg_hiddenimports
 
 a = Analysis(  # noqa: F821 - PyInstaller injects these names at spec exec time
-    [str(repo_root / "visor" / "app.py")],
+    [str(repo_root / "visor" / "launcher.py")],
     pathex=[str(repo_root), str(repo_root / "src")],
     binaries=binaries,
     datas=datas,
@@ -72,7 +72,7 @@ exe = EXE(  # noqa: F821
     a.scripts,
     [],
     exclude_binaries=True,
-    name="Visor",
+    name="GemaVisor",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -92,7 +92,7 @@ coll = COLLECT(  # noqa: F821
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="Visor",
+    name="GemaVisor",
 )
 
 # Onefile portable build — exclude_binaries=False + no COLLECT() after is
@@ -104,7 +104,7 @@ exe_portable = EXE(  # noqa: F821
     a.binaries,
     a.datas,
     [],
-    name="Visor-portable",
+    name="GemaVisor-portable",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -122,7 +122,7 @@ if sys.platform == "darwin":
     # double-clickable .app needs an explicit BUNDLE() with an Info.plist.
     app = BUNDLE(  # noqa: F821
         coll,
-        name="Visor.app",
+        name="GemaVisor.app",
         icon=None,
-        bundle_identifier="cl.dataobservatory.visor",
+        bundle_identifier="cl.dataobservatory.gema-visor",
     )

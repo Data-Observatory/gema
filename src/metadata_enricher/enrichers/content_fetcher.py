@@ -44,7 +44,7 @@ _MAIN_TAGS = frozenset({"main", "article"})
 # trust (e.g. an empty shell with just a heading) -- falls back to whole-page.
 _MIN_MAIN_TEXT_LEN = 200
 
-USER_AGENT = "Mozilla/5.0 (compatible; metagen/1.0)"
+USER_AGENT = "Mozilla/5.0 (compatible; gema/1.0)"
 
 
 class _MainContentParser(HTMLParser):

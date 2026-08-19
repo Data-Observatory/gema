@@ -1,5 +1,5 @@
 """Architecture guard: visor must consume metadata_enricher directly, never
-metadata_enricher.cli or the metagen CLI itself — see the visor plan doc's
+metadata_enricher.cli or the gema CLI itself — see the visor plan doc's
 hard architecture rule. Mirrors tests/test_orchestrator.py's source-scanning
 pattern for the "no hardcoded agent names" invariant, but parses the AST
 (rather than substring-matching) so this doesn't false-positive on the CLI
@@ -58,22 +58,22 @@ def _call_target(node: ast.Call) -> tuple[str, str] | None:
     return None
 
 
-def _contains_metagen_string(node: ast.AST) -> bool:
+def _contains_gema_string(node: ast.AST) -> bool:
     for sub in ast.walk(node):
-        if isinstance(sub, ast.Constant) and isinstance(sub.value, str) and "metagen" in sub.value:
+        if isinstance(sub, ast.Constant) and isinstance(sub.value, str) and "gema" in sub.value:
             return True
     return False
 
 
-def _shells_out_to_metagen(tree: ast.Module) -> bool:
-    """Catch subprocess.run(["metagen", ...]) / os.system("metagen ...") style
+def _shells_out_to_gema(tree: ast.Module) -> bool:
+    """Catch subprocess.run(["gema", ...]) / os.system("gema ...") style
     evasions of the "import the library directly" rule. Deliberately scoped
     to actual subprocess/os.system call sites — a bare string constant
-    mentioning "metagen" (e.g. the ~/.config/metagen/ path convention
+    mentioning "gema" (e.g. the ~/.config/gema/ path convention
     find_config() itself already uses) is not a violation on its own."""
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and _call_target(node) in _SUBPROCESS_CALL_NAMES:
-            if _contains_metagen_string(node):
+            if _contains_gema_string(node):
                 return True
     return False
 
@@ -93,10 +93,10 @@ class TestNoCliImport:
     @pytest.mark.parametrize(
         "path", _visor_source_files(), ids=lambda p: str(p.relative_to(_VISOR_DIR))
     )
-    def test_no_metagen_subprocess_shellout(self, path: Path) -> None:
+    def test_no_gema_subprocess_shellout(self, path: Path) -> None:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        assert not _shells_out_to_metagen(tree), (
-            f"{path.relative_to(_VISOR_DIR)} shells out to the 'metagen' CLI via subprocess/os.system "
+        assert not _shells_out_to_gema(tree), (
+            f"{path.relative_to(_VISOR_DIR)} shells out to the 'gema' CLI via subprocess/os.system "
             "— visor must call metadata_enricher's library API directly instead."
         )
 
@@ -133,8 +133,8 @@ class TestDetectorItself:
             ast.parse('"""Never import metadata_enricher.cli here."""\nimport os')
         )
 
-    def test_flags_metagen_subprocess_call(self) -> None:
-        assert _shells_out_to_metagen(ast.parse('subprocess.run(["metagen", "process"])'))
+    def test_flags_gema_subprocess_call(self) -> None:
+        assert _shells_out_to_gema(ast.parse('subprocess.run(["gema", "process"])'))
 
     def test_does_not_flag_unrelated_string(self) -> None:
-        assert not _shells_out_to_metagen(ast.parse('x = "not the cli command"'))
+        assert not _shells_out_to_gema(ast.parse('x = "not the cli command"'))

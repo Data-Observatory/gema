@@ -62,30 +62,30 @@ jobs:
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
         with:
-          name: visor-windows-installer
-          path: dist_installer/Visor-Setup.exe
+          name: gema-visor-windows-installer
+          path: dist_installer/GemaVisor-Setup.exe
           if-no-files-found: error
 
       - name: Upload Windows portable exe
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
         with:
-          name: visor-windows-portable
-          path: dist/Visor-portable.exe
+          name: gema-visor-windows-portable
+          path: dist/GemaVisor-portable.exe
           if-no-files-found: error
 
       - name: Upload macOS dmg
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
-          name: visor-macos-dmg
-          path: dist/Visor.dmg
+          name: gema-visor-macos-dmg
+          path: dist/GemaVisor.dmg
           if-no-files-found: error
 
       - name: Upload macOS portable executable
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
-          name: visor-macos-portable
-          path: dist/Visor-portable
+          name: gema-visor-macos-portable
+          path: dist/GemaVisor-portable
           if-no-files-found: error

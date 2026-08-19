@@ -26,6 +26,7 @@ against a running instance — not recalled from memory.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -173,11 +174,27 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
     return entries
 
 
+# A source page's "contact" text is often more than a bare address --
+# "someone@example.org; +34 123 456 789" or "Contact: someone@example.org
+# (fax: ...)" -- and an agent extracting it verbatim passes the whole
+# string through. Dataverse's datasetContactEmail field expects a real
+# address, so search for one instead of using the raw text; a plain
+# split on ";" would break if the email isn't the first segment.
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+
+def _extract_email(raw: str | None) -> str | None:
+    if not raw:
+        return None
+    match = _EMAIL_RE.search(raw)
+    return match.group(0) if match else None
+
+
 def _build_dataset_contact(
     document: MetadataDocument, authors: list[dict[str, dict[str, Any]]], warnings: list[str]
 ) -> list[dict[str, dict[str, Any]]]:
     resource = document.get_field("resource") or {}
-    email = resource.get("contact")
+    email = _extract_email(resource.get("contact"))
     name = None
     if not email:
         # DataCite has no guaranteed contact-email field — resource.contact
@@ -186,8 +203,9 @@ def _build_dataset_contact(
         # one; Dataverse still requires *some* value, so this is flagged
         # as a warning, not silently fabricated.
         for creator in document.get_field("creators") or []:
-            if creator.get("email"):
-                email = creator["email"]
+            creator_email = _extract_email(creator.get("email"))
+            if creator_email:
+                email = creator_email
                 name = creator.get("creator_name")
                 break
     if not email:
@@ -252,6 +270,30 @@ def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list
 def _build_keywords(document: MetadataDocument) -> list[str]:
     subjects = document.get_field("subjects") or []
     return [s["subject_name"] for s in subjects if s.get("subject_name")]
+
+
+def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
+    """The one hook back to the original web resource — DataCite has no
+    dedicated `url` property; `core_metadata`'s prompt puts the resource's
+    URL (or, when present, its DOI) in `resource.identifier`, tagged by
+    `resource.identifier_type` (see config/agents.yaml and
+    DataCiteSchema46._normalize_resource). Dataverse's citation block has
+    a matching primitive field for exactly this (confirmed live against a
+    real Dataverse 6.11 instance's citation metadata block on 2026-08-17:
+    `alternativeURL`, typeClass primitive, multiple=False, description
+    "Another URL where one can view or access the data in the Dataset").
+    A DOI identifier isn't itself a URL, so it's resolved through
+    doi.org first.
+    """
+    resource = document.get_field("resource") or {}
+    identifier = resource.get("identifier")
+    if not identifier:
+        return None
+    if str(resource.get("identifier_type", "")).upper() == "DOI":
+        url = f"https://doi.org/{identifier}"
+    else:
+        url = str(identifier)
+    return _primitive_field("alternativeURL", url)
 
 
 def classify_subject(
@@ -340,6 +382,7 @@ def to_dataverse_json(
     contacts = _build_dataset_contact(document, authors, warnings)
     descriptions = _build_descriptions(document, warnings)
     keywords = _build_keywords(document)
+    alternative_url = _build_alternative_url(document)
 
     if export_config.enabled and provider is not None:
         subject, token_usage = classify_subject(document, export_config, provider, llm_client=llm_client)
@@ -372,6 +415,8 @@ def to_dataverse_json(
                 ],
             )
         )
+    if alternative_url is not None:
+        fields.append(alternative_url)
 
     dataset_json = {
         "datasetVersion": {

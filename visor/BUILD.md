@@ -1,6 +1,6 @@
 # Building visor
 
-`visor` is a local-first desktop UI for `metadata-enricher`, so non-programmers
+`visor` is a local-first desktop UI for `gema`, so non-programmers
 can run the pipeline without touching Python or the CLI. It's a NiceGUI app
 (`visor/app.py`) frozen into a standalone installer with PyInstaller — no
 Docker, no Python, no `uv` required on the end user's machine.
@@ -24,8 +24,8 @@ irm https://astral.sh/uv/install.ps1 | iex
 # 2. Get the repo onto the Windows filesystem — clone fresh, don't work
 #    off \\wsl$\... (slow, and uv/PyInstaller can choke on cross-FS locking)
 cd C:\dev
-git clone <repo-url> proj-metadata-agents
-cd proj-metadata-agents
+git clone <repo-url> gema
+cd gema
 git checkout visor
 
 # 3. Install deps and smoke-test unfrozen (fastest way to check WebView2 etc.)
@@ -52,7 +52,7 @@ choco install innosetup          # or download from jrsoftware.org
 iscc visor\installer\windows.iss
 ```
 
-Produces `dist_installer\Visor-Setup.exe` — double-click it like a real user.
+Produces `dist_installer\GemaVisor-Setup.exe` — double-click it like a real user.
 
 To run the test suite the same way CI does:
 
@@ -243,19 +243,19 @@ make build-visor      # uv run pyinstaller visor/visor.spec --noconfirm
 
 Produces **two** targets from one spec, in one PyInstaller run:
 
-- `dist/Visor/` (onedir, Linux/Windows) / `dist/Visor.app` (macOS) —
+- `dist/GemaVisor/` (onedir, Linux/Windows) / `dist/GemaVisor.app` (macOS) —
   the primary target, fed into the installers below. Fast startup, no
   extraction step per launch — see `visor/visor.spec`'s docstring for
   the full rationale (AV/SmartScreen scan surface, support
   transparency).
-- `dist/Visor-portable.exe` (Windows) / `dist/Visor-portable` (macOS/
+- `dist/GemaVisor-portable.exe` (Windows) / `dist/GemaVisor-portable` (macOS/
   Linux) — a single-file, no-install-step executable. Useful for
   locked-down machines without admin rights to run an installer.
   Measured on the Linux build: **76MB vs 223MB** for onedir — smaller
   on disk (the onefile archive is zlib-compressed as a whole), but
   self-extracts to a fresh temp dir on *every* launch, so it's slower
   to start than onedir. Verified booting headless on Linux (HTTP 200,
-  same first-run config-seeding into `~/.config/metagen/agents.yaml`
+  same first-run config-seeding into `~/.config/gema/agents.yaml`
   as the onedir build) — not yet verified as a real double-click on
   Windows/macOS.
 
@@ -272,7 +272,7 @@ producing both.
 
 After `make build-visor` on Windows, compile `visor/installer/windows.iss`
 with Inno Setup (`iscc visor/installer/windows.iss`, or the GUI) — produces
-`dist_installer/Visor-Setup.exe`: a normal double-click installer with a
+`dist_installer/GemaVisor-Setup.exe`: a normal double-click installer with a
 Start Menu entry and uninstaller.
 
 Native-window mode (`ui.run(native=True)`, visor's default) needs the Edge
@@ -289,7 +289,7 @@ After `make build-visor` on macOS, run:
 bash visor/installer/macos_build_dmg.sh
 ```
 
-Produces `dist/Visor.dmg` via `hdiutil` (built into every Mac, no extra
+Produces `dist/GemaVisor.dmg` via `hdiutil` (built into every Mac, no extra
 dependency) from the `.app` bundle. `visor/visor.spec` explicitly adds a
 `BUNDLE()` step (guarded by `sys.platform == "darwin"`) — a plain PyInstaller
 `COLLECT` alone produces just a folder on macOS too, not a real
@@ -337,7 +337,7 @@ Linux sandbox. What was actually verified here:
   the first-run config-seeding path (`visor/bootstrap.py`), verified by
   running the frozen exe from a directory outside the repo with a fake
   `$HOME` and no config anywhere, and confirming it correctly copied the
-  bundled default into `~/.config/metagen/agents.yaml`.
+  bundled default into `~/.config/gema/agents.yaml`.
 - The `visor-build.yml` workflow has now run on a real `windows-latest`
   runner. First run caught a real bug: the test step called
   `uv run pytest visor/tests -v` directly instead of `make test-visor`,

@@ -70,7 +70,7 @@ class TestVersionOption:
     def test_version_output(self) -> None:
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
-        assert "metagen" in result.stdout
+        assert "gema" in result.stdout
 
 
 class TestHelpOption:

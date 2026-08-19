@@ -5,11 +5,11 @@ This is the config-and-CLI reference. For per-script flags (`record_golden.py`,
 [`../scripts/README.md`](../scripts/README.md) — flags live in one place per tool,
 not copied here.
 
-## `metagen` CLI
+## `gema` CLI
 
 ```bash
-uv run metagen --help
-uv run metagen <command> --help
+uv run gema --help
+uv run gema <command> --help
 ```
 
 **Global options** (before the subcommand): `--config/-c PATH` (falls back to
@@ -29,8 +29,8 @@ any partial failure as a hard failure. `--max-workers` overrides the config's
 `max_workers` for this run — lower it first if a provider is rate-limiting (429s).
 
 ```bash
-uv run metagen process examples/sample_input01.json -o output.json
-uv run metagen process tests/fixtures/geoportal/inputs -o reports/manual/ --max-workers 1
+uv run gema process examples/sample_input01.json -o output.json
+uv run gema process tests/fixtures/geoportal/inputs -o reports/manual/ --max-workers 1
 ```
 
 Exit codes for `process`: `0` all resources fully succeeded · `1` every resource
@@ -62,7 +62,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `providers` | `list[ProviderConfig]` | yes | LLM provider connection settings (at least 1) |
 | `default_provider` | `str` | no | Provider name used when an agent omits the `provider` field |
 | `strategies` | `dict[str, str]` | no | Reserved for future strategy/override configuration |
-| `max_workers` | `int` | no | `4` | Max concurrent agent requests per resource (one wave's `ThreadPoolExecutor` size). Lower if the provider rate-limits (429s); override per-run with `metagen process --max-workers N` |
+| `max_workers` | `int` | no | `4` | Max concurrent agent requests per resource (one wave's `ThreadPoolExecutor` size). Lower if the provider rate-limits (429s); override per-run with `gema process --max-workers N` |
 | `enable_identifier_enrichment` | `bool` | no | `false` | Resolve creator/publisher/funder org names to ROR/ISNI (live API calls), and personal creators with a given/family name split to ORCID |
 | `validate_pids` | `bool` | no | `true` | Check every DOI/ROR/ISNI found in the output for correct format on **every run** — no flag needed. Problems become `PipelineResult.warnings`, never a hard failure |
 | `validate_pids_live` | `bool` | no | `true` | On top of the format check, actually look each PID up against doi.org/ror.org/isni.org to confirm it resolves. Set `false` to keep the format check but skip the live network calls |

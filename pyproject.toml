@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "metadata-enricher"
+name = "gema"
 version = "0.1.0"
 description = "Multi-agent metadata enrichment library with pluggable schema support"
 readme = "README.md"
@@ -40,7 +40,7 @@ visor = [
 ]
 
 [project.scripts]
-metagen = "metadata_enricher.cli:app"
+gema = "metadata_enricher.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/metadata_enricher"]

@@ -1,12 +1,12 @@
 {
-  "name": "Metadata Enricher Demo",
-  "alias": "metagen-demo",
+  "name": "Gema Demo",
+  "alias": "gema-demo",
   "dataverseContacts": [
     {
       "contactEmail": "demo@example.org"
     }
   ],
   "affiliation": "Data Observatory",
-  "description": "Live exercise collection for the metadata-enricher / visor workshop.",
+  "description": "Live exercise collection for the gema / visor workshop.",
   "dataverseType": "RESEARCH_PROJECTS"
 }

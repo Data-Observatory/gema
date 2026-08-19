@@ -1,0 +1,38 @@
+# Single Tailscale-facing entrypoint fanning out to the three demo
+# services by path. Dataverse stays at the root ("/") deliberately — it's
+# not path-prefix-aware (JSF/Payara generates root-relative links
+# throughout, and Payara's context-root is fixed at WAR deployment time,
+# confirmed live: a /catalogo/* attempt earlier 302'd to a root-relative
+# /loginpage.xhtml with no prefix and 404'd). /up and /meta are handled
+# first and everything else falls through to Dataverse unmodified.
+#
+# /meta (visor's hosted mode) DOES work as a genuine subpath, confirmed
+# live including the socket.io websocket handshake — NiceGUI has real
+# reverse-proxy subpath support via uvicorn's root_path. Requires starting
+# visor with VISOR_ROOT_PATH=/meta (see visor/app.py's run()) — without it,
+# visor's own asset/websocket URLs come back unprefixed and this route
+# breaks the same way a Dataverse subpath would.
+
+:80 {
+	redir /up /up/ permanent
+	redir /meta /meta/ permanent
+
+	# uploader's own templates use relative links (upload.html's form posts
+	# to "upload", not "/upload") specifically so this works correctly.
+	handle_path /up/* {
+		reverse_proxy uploader:8090
+	}
+
+	# visor is not a container in this stack -- it's the operator's own
+	# launcher/hosted-mode process running on the host machine
+	# (VISOR_NATIVE=0, VISOR_ROOT_PATH=/meta -- see the caveat above).
+	# host.docker.internal needs the extra_hosts entry on the caddy service
+	# below (host-gateway) since this isn't Docker Desktop.
+	handle_path /meta/* {
+		reverse_proxy host.docker.internal:{$VISOR_PORT}
+	}
+
+	handle {
+		reverse_proxy dataverse:8080
+	}
+}

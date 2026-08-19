@@ -41,7 +41,7 @@ class CacheManager:
     ) -> None:
         self.default_ttl = default_ttl
         if cache_dir is None:
-            cache_dir = Path.home() / ".cache" / "metagen"
+            cache_dir = Path.home() / ".cache" / "gema"
         cache_dir.mkdir(parents=True, exist_ok=True)
         self._cache = diskcache.Cache(str(cache_dir))
         logger.debug("CacheManager initialised at %s", cache_dir)

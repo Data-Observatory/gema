@@ -1,7 +1,7 @@
 # Golden Dataset for Regression Testing
 
 This directory holds the golden dataset used by `tests/test_regression.py` to verify
-that `metagen` produces semantically equivalent outputs across code changes, prompt
+that `gema` produces semantically equivalent outputs across code changes, prompt
 edits, and dependency bumps.
 
 ## Subdirectories

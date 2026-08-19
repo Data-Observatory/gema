@@ -1431,7 +1431,7 @@ default_provider: opencode
 # opencode, which has its own `max_workers: 5` override above (confirmed safe
 # empirically, zero 429s) that takes precedence over this global default via
 # PipelineConfig.effective_max_workers's cascade. Override per-invocation with
-# `metagen process --max-workers N`.
+# `gema process --max-workers N`.
 max_workers: 1
 # Post-merge resolution of ROR/ISNI identifiers for creators/publishers/
 # funders that the LLM left blank (prompts intentionally no longer supply a

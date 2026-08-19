@@ -204,7 +204,7 @@ def validate_pids(
     """
     owns_client = False
     if resolve and client is None:
-        client = httpx.Client(headers={"User-Agent": "metagen-pid-validator/0.1"})
+        client = httpx.Client(headers={"User-Agent": "gema-pid-validator/0.1"})
         owns_client = True
 
     try:

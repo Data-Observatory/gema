@@ -43,7 +43,7 @@ enrichers/
 ```
 Organization name → IdentifierResolver.resolve(name)
                        │
-                       ├── 1. Check diskcache (~/.cache/metagen/identifiers/, 30-day TTL)
+                       ├── 1. Check diskcache (~/.cache/gema/identifiers/, 30-day TTL)
                        │      Hit? → return cached IdentifierMatch or None (negative cache)
                        │
                        ├── 2. ROR ?affiliation=, else ?query= + rapidfuzz WRatio (threshold 90)

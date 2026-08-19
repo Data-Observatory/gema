@@ -1,7 +1,7 @@
 # Scripts
 
 Helper scripts for development and data maintenance — flags for each one, one
-section per script. For the `metagen` CLI, `agents.yaml`/config fields, and which
+section per script. For the `gema` CLI, `agents.yaml`/config fields, and which
 test tier to reach for, see [`../docs/CONFIGURATION.md`](../docs/CONFIGURATION.md)
 instead — that content isn't duplicated here.
 
@@ -19,7 +19,7 @@ No arguments. Internet connection required.
 
 ## `record_golden.py`
 
-Runs the full `metagen` Pipeline against all input files in `tests/fixtures/golden/inputs/`
+Runs the full `gema` Pipeline against all input files in `tests/fixtures/golden/inputs/`
 and records the expected outputs + cache snapshot.
 
 **Prerequisites:**
@@ -67,7 +67,7 @@ offline regression testing.
 
 ## `run_live_eval.py`
 
-Runs the full `metagen` Pipeline with REAL API calls (no cache replay) against all
+Runs the full `gema` Pipeline with REAL API calls (no cache replay) against all
 golden inputs, scores each output against the expected golden output using LLM-as-judge
 (DeepEval `GEval` + per-field hand-rolled scorer, both from `eval_common.py` — see
 above), and writes a Markdown report.
@@ -123,7 +123,7 @@ structural changes without API costs.
 
 ## `validate_real_output.py`
 
-Runs the real `metagen` Pipeline (live LLM calls, and by default live ROR/ISNI/ORCID
+Runs the real `gema` Pipeline (live LLM calls, and by default live ROR/ISNI/ORCID
 enrichment) against one or more real inputs, and checks whether the output would
 survive a human reviewer's sanity check before publishing: valid JSON, non-placeholder
 titles/creators/dates, a real Abstract, subjects and topics, and every DOI/ROR/ISNI
@@ -132,7 +132,7 @@ found anywhere in the output validated against its real format — and, unless
 confirm it actually resolves.
 
 **Note:** the PID checks (format + live resolution) also run automatically on
-*every* `metagen process` run now — see `validate_pids`/`validate_pids_live` in
+*every* `gema process` run now — see `validate_pids`/`validate_pids_live` in
 [`../docs/CONFIGURATION.md`](../docs/CONFIGURATION.md). This script shares that
 same logic (`enrichers/pid_validator.py`) but adds the structural/content checks
 (titles, abstract, subjects, topics) and a detailed batch report on top — reach

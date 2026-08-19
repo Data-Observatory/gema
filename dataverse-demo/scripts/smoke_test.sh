@@ -28,7 +28,7 @@
 set -euo pipefail
 
 SERVER_URL="${SERVER_URL:-http://localhost:8080}"
-COLLECTION_ALIAS="${COLLECTION_ALIAS:-metagen-demo}"
+COLLECTION_ALIAS="${COLLECTION_ALIAS:-gema-demo}"
 
 if [ -z "${API_TOKEN:-}" ]; then
   echo "Set API_TOKEN first — run ./get_admin_token.sh to find it." >&2

@@ -1,7 +1,7 @@
-# Metadata Enricher (metagen)
+# GEMA!
 
-[![CI](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/ci.yml)
-[![Visor Build](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/proj-metadata-agents/actions/workflows/visor-build.yml)
+[![CI](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml)
+[![Visor Build](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![uv](https://img.shields.io/badge/managed%20by-uv-3d3d3d)](https://docs.astral.sh/uv/)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
@@ -14,7 +14,7 @@ Two ways to use it:
 
 - **Visor** — a point-and-click desktop app. No terminal, no Python
   knowledge required.
-- **`metagen`** — a CLI/library for scripting, batch jobs, and CI.
+- **`gema`** — a CLI/library for scripting, batch jobs, and CI.
 
 ---
 
@@ -31,7 +31,7 @@ Visor ships with a working default configuration.
 
 ```bash
 git clone <repo-url>
-cd proj-metadata-agents
+cd gema
 uv sync --extra dev --extra visor --group visor-build
 uv run python -m visor.app            # opens a native desktop window
 ```
@@ -46,7 +46,7 @@ VISOR_PORT=8001 VISOR_NATIVE=0 uv run python -m visor.app
 ```
 
 It prints a URL (`http://127.0.0.1:<port>`) — open that in a browser. On
-first run it seeds a writable config at `~/.config/metagen/agents.yaml`
+first run it seeds a writable config at `~/.config/gema/agents.yaml`
 and defaults every agent to OpenRouter (see
 [Provider defaults](#provider-defaults-opencode-vs-openrouter) below); add
 your `OPENROUTER_API_KEY` on the Settings tab and you're ready to run.
@@ -59,7 +59,7 @@ yourself, or grab the artifact from a `visor-build.yml` workflow run — see
 (Windows `.exe` installer, macOS `.dmg`, portable single-file builds, and
 the known platform caveats).
 
-## The `metagen` CLI
+## The `gema` CLI
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ the known platform caveats).
 
 ```bash
 git clone <repo-url>
-cd proj-metadata-agents
+cd gema
 uv sync --extra dev
 ```
 
@@ -89,7 +89,7 @@ uv sync --extra dev
 ### Processing your own dataset
 
 This is the real workflow — not a test fixture, an actual new resource you want
-DataCite metadata for. Everything here is `uv run metagen ...`; no test suite
+DataCite metadata for. Everything here is `uv run gema ...`; no test suite
 involved.
 
 **1. Describe the resource as JSON.** Minimum useful fields: `url`, `title`,
@@ -119,7 +119,7 @@ Save it as e.g. `my_dataset.json`.
 **2. Pre-flight check it — no API key needed, no cost.**
 
 ```bash
-uv run metagen validate my_dataset.json
+uv run gema validate my_dataset.json
 ```
 
 Fixes anything the schema needs before you spend a real API call.
@@ -131,11 +131,11 @@ live, and every PID in the result gets checked for real (format + live registry
 lookup — see the testing-tiers table in [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md)).
 
 ```bash
-uv run metagen process my_dataset.json --output my_dataset_metadata.json
+uv run gema process my_dataset.json --output my_dataset_metadata.json
 ```
 
 **4. Read the result.** `my_dataset_metadata.json` is the full DataCite 4.6 record.
-Check stderr too — that's where `metagen` prints anything worth knowing:
+Check stderr too — that's where `gema` prints anything worth knowing:
 
 ```
 Processed 1/1 resources successfully
@@ -156,7 +156,7 @@ field just needs a human look.
 instead of a file — output then needs to be a directory too, one JSON per input:
 
 ```bash
-uv run metagen process my_datasets/ --output my_datasets_output/
+uv run gema process my_datasets/ --output my_datasets_output/
 ```
 
 **6. Want the detailed human-reviewer-style report** (is the abstract real, are
@@ -244,7 +244,7 @@ See `config/agents.yaml` and `config/providers.yaml` for full examples.
 ### Provider defaults: opencode vs. OpenRouter
 
 `config/agents.yaml` on disk pins every agent to `opencode` /
-`deepseek-v4-flash` — that's what CI, the test suite, and `metagen process`
+`deepseek-v4-flash` — that's what CI, the test suite, and `gema process`
 from the CLI actually run against, so results stay reproducible and cheap
 for anyone working on this library. Visor is different: regardless of
 whether it finds `config/agents.yaml` directly or seeds a fresh copy for a

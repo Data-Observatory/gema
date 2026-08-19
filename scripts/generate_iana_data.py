@@ -25,7 +25,7 @@ NS = {"ian": "http://www.iana.org/assignments"}
 def fetch_xml(url: str) -> str:
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": "proj-metadata-agents/1.0"},
+        headers={"User-Agent": "gema/1.0"},
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         content: bytes = resp.read()
