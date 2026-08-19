@@ -52,7 +52,7 @@ choco install innosetup          # or download from jrsoftware.org
 iscc visor\installer\windows.iss
 ```
 
-Produces `dist_installer\Visor-Setup.exe` — double-click it like a real user.
+Produces `dist_installer\GemaVisor-Setup.exe` — double-click it like a real user.
 
 To run the test suite the same way CI does:
 
@@ -243,12 +243,12 @@ make build-visor      # uv run pyinstaller visor/visor.spec --noconfirm
 
 Produces **two** targets from one spec, in one PyInstaller run:
 
-- `dist/Visor/` (onedir, Linux/Windows) / `dist/Visor.app` (macOS) —
+- `dist/GemaVisor/` (onedir, Linux/Windows) / `dist/GemaVisor.app` (macOS) —
   the primary target, fed into the installers below. Fast startup, no
   extraction step per launch — see `visor/visor.spec`'s docstring for
   the full rationale (AV/SmartScreen scan surface, support
   transparency).
-- `dist/Visor-portable.exe` (Windows) / `dist/Visor-portable` (macOS/
+- `dist/GemaVisor-portable.exe` (Windows) / `dist/GemaVisor-portable` (macOS/
   Linux) — a single-file, no-install-step executable. Useful for
   locked-down machines without admin rights to run an installer.
   Measured on the Linux build: **76MB vs 223MB** for onedir — smaller
@@ -272,7 +272,7 @@ producing both.
 
 After `make build-visor` on Windows, compile `visor/installer/windows.iss`
 with Inno Setup (`iscc visor/installer/windows.iss`, or the GUI) — produces
-`dist_installer/Visor-Setup.exe`: a normal double-click installer with a
+`dist_installer/GemaVisor-Setup.exe`: a normal double-click installer with a
 Start Menu entry and uninstaller.
 
 Native-window mode (`ui.run(native=True)`, visor's default) needs the Edge
@@ -289,7 +289,7 @@ After `make build-visor` on macOS, run:
 bash visor/installer/macos_build_dmg.sh
 ```
 
-Produces `dist/Visor.dmg` via `hdiutil` (built into every Mac, no extra
+Produces `dist/GemaVisor.dmg` via `hdiutil` (built into every Mac, no extra
 dependency) from the `.app` bundle. `visor/visor.spec` explicitly adds a
 `BUNDLE()` step (guarded by `sys.platform == "darwin"`) — a plain PyInstaller
 `COLLECT` alone produces just a folder on macOS too, not a real

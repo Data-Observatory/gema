@@ -1,7 +1,7 @@
 name: release
 
-# Builds visor's standalone executables for all three OSes and a
-# metadata-enricher wheel/sdist, then publishes everything to a GitHub
+# Builds Gema Visor's standalone executables for all three OSes and a
+# gema wheel/sdist, then publishes everything to a GitHub
 # Release. Triggered by pushing a tag like v0.1.0 (or manually via
 # workflow_dispatch for a re-run against an existing tag).
 #
@@ -59,30 +59,30 @@ jobs:
       - name: Package Linux onedir build
         if: runner.os == 'Linux'
         run: |
-          chmod +x dist/Visor-portable
-          tar -C dist -czf Visor-linux-x86_64.tar.gz Visor
+          chmod +x dist/GemaVisor-portable
+          tar -C dist -czf GemaVisor-linux-x86_64.tar.gz GemaVisor
 
       - name: Stage release assets (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
           mkdir -p release-assets
-          cp dist_installer/Visor-Setup.exe release-assets/Visor-Setup-windows-x86_64.exe
-          cp dist/Visor-portable.exe release-assets/Visor-portable-windows-x86_64.exe
+          cp dist_installer/GemaVisor-Setup.exe release-assets/GemaVisor-Setup-windows-x86_64.exe
+          cp dist/GemaVisor-portable.exe release-assets/GemaVisor-portable-windows-x86_64.exe
 
       - name: Stage release assets (macOS)
         if: runner.os == 'macOS'
         run: |
           mkdir -p release-assets
-          cp dist/Visor.dmg release-assets/Visor-macos.dmg
-          cp dist/Visor-portable release-assets/Visor-portable-macos
+          cp dist/GemaVisor.dmg release-assets/GemaVisor-macos.dmg
+          cp dist/GemaVisor-portable release-assets/GemaVisor-portable-macos
 
       - name: Stage release assets (Linux)
         if: runner.os == 'Linux'
         run: |
           mkdir -p release-assets
-          cp Visor-linux-x86_64.tar.gz release-assets/
-          cp dist/Visor-portable release-assets/Visor-portable-linux-x86_64
+          cp GemaVisor-linux-x86_64.tar.gz release-assets/
+          cp dist/GemaVisor-portable release-assets/GemaVisor-portable-linux-x86_64
 
       - uses: actions/upload-artifact@v7
         with:
