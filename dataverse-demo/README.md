@@ -38,7 +38,7 @@ In a separate terminal, run visor for the `/meta` route (not a container —
 see "Caddy" below for why `VISOR_ROOT_PATH` is required, not optional):
 
 ```bash
-VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta python -m visor.app
+VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta uv run python -m visor.app
 ```
 
 Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
