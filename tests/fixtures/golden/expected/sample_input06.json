@@ -1,11 +1,11 @@
 {
   "resource": {
-    "identifier": "10.5880/gfz.4.1.2020.012",
+    "identifier": "10.5880/GFZ.4.1.2020.012",
     "identifier_type": "DOI",
     "editor": "GFZ Data Services",
     "maintainer": "",
-    "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
-    "producer": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+    "contact": "Victor, Pia (GFZ German Research Centre for Geosciences, Potsdam, Germany)",
+    "producer": "Mittelstädt, Jana; Victor, Pia (GFZ German Research Centre for Geosciences, Potsdam, Germany)",
     "publication_year": "2020",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -85,7 +85,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación del dataset según los metadatos de GFZ Data Services"
+      "date_information": "Año de publicación del dataset según los metadatos de GFZ Data Services (publicationYear)"
     }
   ],
   "descriptions": [
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Cordillera de la Costa, norte de Chile (19°12’S - 25°12’S)",
+      "geo_location_place": "Norte de Chile (Cordillera de la Costa)",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de la Cordillera de la Costa en el norte de Chile, entre 19°12’S y 25°12’S",
+      "geo_description": "Cobertura del segmento más septentrional del Sistema de Fallas de Atacama en la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S",
       "coverage": "regional"
     }
   ],
@@ -138,7 +138,7 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Active faults",
+      "subject_name": "active faults",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -156,13 +156,13 @@
       "value_uri": ""
     },
     {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
+      "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > PLATE TECTONICS > FAULT MOVEMENT",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
       "scheme_uri": "",
       "value_uri": ""
