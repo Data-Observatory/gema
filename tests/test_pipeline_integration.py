@@ -600,6 +600,35 @@ class TestPipelineIdentifierEnrichmentWiring:
         assert results[0].success is True
         assert fake.called_with_country is None
 
+    def test_overrides_path_reaches_the_real_resolver(self, tmp_path, llm_factory):
+        """No identifier_enricher injected here on purpose -- exercises
+        Pipeline's own construction of IdentifierResolver(overrides=...)
+        from config.identifier_overrides_path, not a fake."""
+        overrides_file = tmp_path / "overrides.yaml"
+        overrides_file.write_text(
+            "overrides:\n  - name: Test Org\n    ror_id: https://ror.org/test123\n",
+            encoding="utf-8",
+        )
+        config = make_test_config()
+        config.enable_identifier_enrichment = True
+        config.identifier_overrides_path = str(overrides_file)
+
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+
+        assert pipeline._enricher is not None
+        match = pipeline._enricher._resolver._overrides.lookup("Test Org")
+        assert match is not None
+        assert match.ror_id == "https://ror.org/test123"
+
+    def test_no_overrides_path_means_no_overrides_configured(self, llm_factory):
+        config = make_test_config()
+        config.enable_identifier_enrichment = True
+
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+
+        assert pipeline._enricher is not None
+        assert pipeline._enricher._resolver._overrides.lookup("Anything") is None
+
 
 class FakeDOIResolver:
     """Stand-in for DOIResolverEnricher — marks the document, no network."""

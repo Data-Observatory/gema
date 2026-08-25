@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from metadata_enricher.agents.registry import AgentRegistry, LLMClientFactory
@@ -138,9 +139,17 @@ class Pipeline:
         self._enricher = identifier_enricher
         if self._enricher is None and config.enable_identifier_enrichment:
             from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
+            from metadata_enricher.enrichers.identifier_overrides import IdentifierOverrides
             from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 
-            self._enricher = IdentifierEnricher(IdentifierResolver())
+            overrides_path = (
+                Path(config.identifier_overrides_path)
+                if config.identifier_overrides_path
+                else None
+            )
+            self._enricher = IdentifierEnricher(
+                IdentifierResolver(overrides=IdentifierOverrides(overrides_path))
+            )
 
         # Same explicit-injection-wins, opt-in-only-if-configured pattern as
         # the identifier enricher above.

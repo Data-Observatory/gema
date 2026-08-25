@@ -11,6 +11,7 @@ from typing import Any
 import diskcache
 
 from metadata_enricher.enrichers.fuzzy_matcher import match_organization, normalize_org_name
+from metadata_enricher.enrichers.identifier_overrides import IdentifierOverrides
 from metadata_enricher.enrichers.identifier_types import IdentifierMatch
 from metadata_enricher.enrichers.isni_client import ISNIClient
 from metadata_enricher.enrichers.orcid_client import ORCIDClient
@@ -31,9 +32,11 @@ DEFAULT_TTL = timedelta(days=30)
 class IdentifierResolver:
     """Resolves organization and person names to ROR/ISNI/ORCID identifiers.
 
-    Organization resolution (``resolve``) always checks BOTH registries —
-    it does not stop at the first hit:
-    1. Check disk cache (key = SHA-256 of normalized name).
+    Organization resolution (``resolve``) checks, in order:
+    0. A human-curated override (``IdentifierOverrides``), if one is
+       configured — wins outright, no network call, not cached (it's
+       already free).
+    1. Check disk cache (key = SHA-256 of normalized name + country).
     2. ROR ?affiliation= endpoint, then ?query= + rapidfuzz fuzzy matching
        (threshold 90) if affiliation found nothing.
     3. ISNI SRU pica.nw search + fuzzy matching — always attempted, even if
@@ -61,11 +64,13 @@ class IdentifierResolver:
         cache_dir: Path | None = None,
         cache_ttl: timedelta = DEFAULT_TTL,
         fuzzy_threshold: float = 90.0,
+        overrides: IdentifierOverrides | None = None,
     ) -> None:
         self._ror = ror_client or RORClient()
         self._isni = isni_client or ISNIClient()
         self._orcid = orcid_client or ORCIDClient()
         self._threshold = fuzzy_threshold
+        self._overrides = overrides
 
         cache_dir = cache_dir or DEFAULT_CACHE_DIR
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -81,9 +86,18 @@ class IdentifierResolver:
         candidate whose own country disagrees is deprioritized, not
         eliminated (see ``fuzzy_matcher.match_organization``). It does not
         reach ISNI matching — ISNI SRU results carry no country field.
+
+        A human-curated override (see ``IdentifierOverrides``) is checked
+        first, before the disk cache and before any network call — it
+        always wins over the heuristic chain below.
         """
         if not name or not name.strip():
             return None
+
+        if self._overrides is not None:
+            override_match = self._overrides.lookup(name, country)
+            if override_match is not None:
+                return override_match
 
         normalized = normalize_org_name(name)
         if not normalized:

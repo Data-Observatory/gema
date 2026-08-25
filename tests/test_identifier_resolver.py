@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from metadata_enricher.enrichers.identifier_overrides import IdentifierOverrides
 from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 
 MOCK_ROR_ORG = {
@@ -58,6 +59,7 @@ def _make_resolver(
     isni_side_effect: Exception | None = None,
     orcid_result: dict | None = None,
     orcid_side_effect: Exception | None = None,
+    overrides: IdentifierOverrides | None = None,
 ) -> tuple[IdentifierResolver, MagicMock, MagicMock, MagicMock]:
     ror = MagicMock()
     if ror_affil_side_effect:
@@ -83,6 +85,7 @@ def _make_resolver(
         isni_client=isni,
         orcid_client=orcid,
         cache_dir=tmp_path / "test_cache",
+        overrides=overrides,
     )
     return resolver, ror, isni, orcid
 
@@ -195,6 +198,73 @@ class TestCountryHint:
         resolver.resolve("Ministerio de Hacienda")
         resolver.resolve("Ministerio de Hacienda", country=None)
         assert ror.search_affiliation.call_count == 1
+
+
+# --------------------------------------------------------------------------
+
+
+class TestOverridesPrecedence:
+    """IdentifierResolver: a human-curated override wins outright."""
+
+    def _overrides_from(self, tmp_path: Path, yaml_content: str) -> IdentifierOverrides:
+        path = tmp_path / "overrides.yaml"
+        path.write_text(yaml_content, encoding="utf-8")
+        return IdentifierOverrides(path)
+
+    def test_override_hit_skips_network_entirely(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Ministerio de Hacienda\n    ror_id: https://ror.org/curated\n"
+        )
+        resolver, ror, isni, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/curated"
+        assert result.matched_via == "override"
+        assert not ror.search_affiliation.called
+        assert not ror.search_query.called
+        assert not isni.search_organizations.called
+
+    def test_override_miss_falls_through_to_normal_resolution(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Some Unrelated Org\n    ror_id: https://ror.org/other\n"
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/01h6h5x94"
+        assert result.matched_via == "ror_affiliation"
+        assert ror.search_affiliation.called
+
+    def test_no_overrides_configured_behaves_as_before(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=None)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.matched_via == "ror_affiliation"
+
+    def test_override_result_is_not_cached(self, tmp_path: Path) -> None:
+        """Overrides are already free -- no need to round-trip through the
+        disk cache, and doing so would need its own cache-key scheme."""
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Ministerio de Hacienda\n    ror_id: https://ror.org/curated\n"
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        resolver.resolve("Ministerio de Hacienda")
+        resolver.resolve("Ministerio de Hacienda")
+        assert not ror.search_affiliation.called
+
+    def test_country_specific_override_takes_precedence(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path,
+            "overrides:\n"
+            "  - name: Ministerio de Hacienda\n"
+            "    country: CL\n"
+            "    ror_id: https://ror.org/cl-specific\n",
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/cl-specific"
+        assert not ror.search_affiliation.called
 
 
 # --------------------------------------------------------------------------
