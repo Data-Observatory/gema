@@ -563,7 +563,11 @@ class TestProvenance:
         publisher = doc.get_field("publishers")[0]
         assert publisher["publisher_identifier_matched_via"] == "override"
 
-    def test_review_status_is_preserved_in_provenance(self) -> None:
+    def test_review_status_org_match_is_not_auto_attached(self) -> None:
+        """Deliberate behavior change (2026-08-25, code review follow-up):
+        org identifiers (ROR/ISNI) now get the same status=="auto" gate
+        ORCID already had -- a wrong PID is worse than a missing one, so an
+        ambiguous match is logged, not attached, for orgs too."""
         resolver = MagicMock()
         resolver.resolve.return_value = IdentifierMatch(
             ror_id="https://ror.org/ambiguous",
@@ -579,6 +583,69 @@ class TestProvenance:
             ]
         })
         enricher.enrich(doc)
-        entry = doc.get_field("creators")[0]["name_identifiers"][0]
-        assert entry["status"] == "review"
-        assert entry["confidence"] == 0.5
+        assert doc.get_field("creators")[0]["name_identifiers"] == []
+
+
+# --------------------------------------------------------------------------
+
+
+def _review_resolver(ror_id: str = "https://ror.org/ambiguous") -> MagicMock:
+    resolver = MagicMock()
+    resolver.resolve.return_value = IdentifierMatch(
+        ror_id=ror_id,
+        org_name="Some Org",
+        confidence=0.5,
+        matched_via="ror_query_fuzzy",
+        status="review",
+    )
+    return resolver
+
+
+class TestStatusGatingAllPaths:
+    """IdentifierEnricher: status=="auto" gate applies to every org-identifier path."""
+
+    def test_affiliation_identifier_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Some Org",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [{"name_identifier": "already-set"}],
+                    "affiliations": [{"affiliation": "Universidad de Chile"}],
+                }
+            ]
+        })
+        enricher.enrich(doc)
+        affil = doc.get_field("creators")[0]["affiliations"][0]
+        assert "affiliation_identifier" not in affil
+        assert "affiliation_identifier_matched_via" not in affil
+
+    def test_publisher_identifier_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher.get("publisher_identifier") is None
+        assert "publisher_identifier_matched_via" not in publisher
+
+    def test_funder_identifiers_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "Some Funder", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc)
+        assert doc.get_field("funding_references")[0]["funder_identifiers"] == []
+
+    def test_auto_status_still_attaches_normally(self) -> None:
+        """Control: the existing 'auto' fixture (_mock_resolver) still works
+        unchanged -- this gate only rejects 'review'/'nomatch', not 'auto'."""
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher["publisher_identifier"] == "https://ror.org/01h6h5x94"
