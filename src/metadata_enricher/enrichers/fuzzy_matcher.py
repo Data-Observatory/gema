@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 from typing import Any
 
 from rapidfuzz import fuzz, process
@@ -23,11 +24,75 @@ _LEGAL_SUFFIXES = re.compile(
     re.IGNORECASE,
 )
 
+# Spanish institutional-abbreviation forms common in the Chilean/LatAm
+# government-data corpus this project targets (see CLAUDE.md). Deliberately
+# NOT a hardcoded acronym -> full-name dictionary (e.g. "UdeC" -> "Universidad
+# de Concepción") — that requires verified institutional ground truth this
+# function has no way to check, and belongs in the curated overrides store
+# (enrichers/identifier_overrides.py) instead, matching this project's stance
+# against ungrounded invented institutional facts (see BACKLOG.md). Only
+# Spanish forms are covered — gema's corpus is Chilean/Spanish-primary;
+# Portuguese-specific abbreviations aren't included since there's no real
+# Portuguese-corpus data here to verify them against. Accent folding below
+# already normalizes most Spanish/Portuguese spelling differences for free
+# (e.g. "Ministério"/"Ministerio" both fold to the same token) without
+# needing a language-specific rule.
+_ABBREVIATIONS: dict[str, str] = {
+    # "u." alone (not "u. de") is deliberately excluded -- it collides with
+    # the bare "U." in "U.S.", "U.K.", "U.N.", "U.E." and similar, which are
+    # plausible in an org name too (confirmed by a real false-positive on
+    # "U.S.-Chile" during testing: bare "u." expanded to "universidad" mid-word).
+    "u. de": "universidad de",
+    "univ.": "universidad",
+    "min.": "ministerio",
+    "inst.": "instituto",
+    "dept.": "departamento",
+    "depto.": "departamento",
+    "mun.": "municipalidad",
+    "gob.": "gobierno",
+    "subsec.": "subsecretaria",
+    "serv.": "servicio",
+}
+
+# Longest-first alternation so "univ." matches whole, not as a shorter key's
+# stray leftover. Internal whitespace in a multi-word key (e.g. "u. de")
+# matches \s+, not a literal single space -- messy input hasn't had its
+# whitespace collapsed yet at this point in normalize_org_name.
+_ABBREVIATION_RE = re.compile(
+    r"\b("
+    + "|".join(
+        r"\s+".join(re.escape(part) for part in key.split(" "))
+        for key in sorted(_ABBREVIATIONS, key=len, reverse=True)
+    )
+    + r")",
+    re.IGNORECASE,
+)
+
 # Punctuation to remove (keep word chars, whitespace, and hyphens).
 _PUNCTUATION = re.compile(r"[^\w\s-]")
 
 # Collapse multiple whitespace characters.
 _WHITESPACE = re.compile(r"\s+")
+
+
+def _fold_accents(name: str) -> str:
+    """NFKD-normalize and drop combining marks, e.g. 'Educación' -> 'educacion'.
+
+    Locale-agnostic (unlike the abbreviation dict above) — benefits Spanish
+    and Portuguese alike. Mirrors ``scripts/eval_common.py``'s ``_norm()``,
+    the existing precedent for this exact technique elsewhere in this
+    codebase, rather than adding a new ``unidecode`` dependency for it.
+    """
+    folded = unicodedata.normalize("NFKD", name)
+    return "".join(c for c in folded if not unicodedata.combining(c))
+
+
+def _expand_abbreviations(name: str) -> str:
+    def _replace(m: re.Match[str]) -> str:
+        key = re.sub(r"\s+", " ", m.group(0).lower())
+        return _ABBREVIATIONS[key]
+
+    return _ABBREVIATION_RE.sub(_replace, name)
 
 
 def normalize_org_name(name: str) -> str:
@@ -36,10 +101,12 @@ def normalize_org_name(name: str) -> str:
     Steps:
     1. Strip whitespace
     2. Lowercase
-    3. Remove common legal suffixes (inc, ltd, llc, gmbh, corp, etc.)
-    4. Remove punctuation (keep hyphens and alphanumeric)
-    5. Collapse multiple spaces to single space
-    6. Strip again
+    3. Fold accents (NFKD, drop combining marks)
+    4. Expand common Spanish institutional abbreviations (u./univ./min./...)
+    5. Remove common legal suffixes (inc, ltd, llc, gmbh, corp, etc.)
+    6. Remove punctuation (keep hyphens and alphanumeric)
+    7. Collapse multiple spaces to single space
+    8. Strip again
 
     Args:
         name: Raw organization name (may have suffixes, mixed case, punctuation).
@@ -54,12 +121,16 @@ def normalize_org_name(name: str) -> str:
         'mit'
         >>> normalize_org_name("Universidad de Chile")
         'universidad de chile'
+        >>> normalize_org_name("U. de Concepción")
+        'universidad de concepcion'
     """
     if not name:
         return ""
 
     name = name.strip()
     name = name.lower()
+    name = _fold_accents(name)
+    name = _expand_abbreviations(name)
     name = _LEGAL_SUFFIXES.sub("", name)
     name = _PUNCTUATION.sub("", name)
     name = _WHITESPACE.sub(" ", name)

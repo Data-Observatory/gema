@@ -41,11 +41,59 @@ class TestNormalizeOrgName:
     def test_empty_string(self) -> None:
         assert normalize_org_name("") == ""
 
-    def test_spanish_accents_preserved(self) -> None:
+    def test_spanish_accents_folded(self) -> None:
+        """Deliberate behavior change (P1, 2026-08-25): accents now fold to
+        their base letter (NFKD, drop combining marks) so 'Concepción' and
+        a source that types 'Concepcion' compare equal — was previously
+        preserved verbatim, which this test used to assert."""
         assert (
             normalize_org_name("Universidad de Concepción")
-            == "universidad de concepción"
+            == "universidad de concepcion"
         )
+
+    def test_accent_and_unaccented_forms_match(self) -> None:
+        assert normalize_org_name("Concepción") == normalize_org_name("Concepcion")
+
+
+# ---------- abbreviation expansion (P1, 2026-08-25) ----------
+
+
+class TestAbbreviationExpansion:
+    """normalize_org_name: Spanish institutional-abbreviation expansion."""
+
+    def test_u_de_expands_to_universidad_de(self) -> None:
+        assert normalize_org_name("U. de Concepción") == "universidad de concepcion"
+
+    def test_univ_expands_to_universidad(self) -> None:
+        assert normalize_org_name("Univ. de Concepción") == "universidad de concepcion"
+
+    def test_min_expands_to_ministerio(self) -> None:
+        assert normalize_org_name("Min. de Salud") == "ministerio de salud"
+
+    def test_inst_expands_to_instituto(self) -> None:
+        assert normalize_org_name("Inst. Nacional de Estadísticas") == "instituto nacional de estadisticas"
+
+    def test_depto_expands_to_departamento(self) -> None:
+        assert normalize_org_name("Depto. de Geografía") == "departamento de geografia"
+
+    def test_expansion_matches_unabbreviated_form(self) -> None:
+        assert normalize_org_name("U. de Chile") == normalize_org_name("Universidad de Chile")
+
+    def test_bare_u_is_not_expanded(self) -> None:
+        """Only the compound 'u. de' triggers expansion -- bare 'u.' would
+        collide with 'U.S.', 'U.K.', 'U.N.', etc. (see test_preserves_hyphens,
+        which caught this as a real false-positive during development)."""
+        assert normalize_org_name("U.S.-Chile") == "us-chile"
+
+    def test_messy_whitespace_still_expands(self) -> None:
+        assert normalize_org_name("U.   de   Concepción") == "universidad de concepcion"
+
+    def test_expansion_is_case_insensitive(self) -> None:
+        assert normalize_org_name("MIN. DE SALUD") == "ministerio de salud"
+
+    def test_no_false_positive_inside_longer_word(self) -> None:
+        """'menu.' must not trigger the 'u. de' or any other pattern."""
+        assert normalize_org_name("menu.") == "menu"
 
 
 # ---------- match_organization ----------
