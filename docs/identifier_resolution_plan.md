@@ -1,7 +1,7 @@
 # Identifier Resolution Improvement Plan (ROR / ORCID / ISNI)
 
 **Created:** 2026-08-25
-**Status:** In progress — P0#1-3 done (2026-08-25), P0#4 and P1/P2 not started
+**Status:** P0 fully done (2026-08-25). P1/P2 not started — P1 recommended next; P2 stays trigger-conditional, not default work (see its own section).
 **Trigger:** Comparison of `gema`'s identifier-enrichment subsystem against `openalex-guts` (OpenAlex's backend pipeline), reviewed independently by Opus after an initial pass.
 
 ## Goal
@@ -65,9 +65,13 @@ Every ROR v2 record `gema` already fetches carries an `external_ids` array that 
 
 **Tests to update:** `tests/test_identifier_resolver.py::TestMergeBothSources` (7 tests, including `test_isni_always_checked_even_when_ror_affiliation_succeeds`, which asserts `matched_via == "ror_affiliation+isni_sru"` — this assertion is exactly what this change removes and needs rewriting, not just re-running).
 
-### 4. Persist match provenance
+### 4. Persist match provenance — DONE (2026-08-25)
 
-Currently `IdentifierMatch` carries `confidence`, `matched_via`, and `status` internally (`identifier_types.py`), but none of it survives into the written `MetadataDocument` — a curated catalog has no record of *why* an identifier was attached, which matters more here than for OpenAlex (which only tracks a bare numeric confidence).
+Implemented on `feature/identifier-resolution-improvements`. Two new helpers in `identifier_enricher.py` — `_identifier_entry` (list-entry shape: `name_identifiers`/`funder_identifiers`, provenance as unprefixed sibling keys `matched_via`/`confidence`/`status`) and `_provenance` (single-slot shape: `affiliation_identifier`/`publisher_identifier`, provenance as `{field}_matched_via`/`{field}_confidence`/`{field}_status` — prefixed to avoid colliding with any other key on that dict). Applies uniformly to every source: ROR/ISNI org matches, ORCID person matches, and overrides (transparently, since an override just returns an `IdentifierMatch` with `matched_via="override"` through the exact same code path — no special-casing needed). Confirmed the "no stripping risk" prediction correct by running the real pipeline: the golden-fixture re-record below shows the new keys landing in the output untouched. 8 new tests (`TestProvenance`, `test_identifier_enricher.py`) covering all four field shapes, ORCID, override passthrough, and `review`-status preservation.
+
+**Required a golden-fixture re-record** (`make record-golden`, real LLM + live ROR/ISNI/ORCID calls, user-approved given the API cost/fixture-touching implications) — the new keys are a real output-shape change, exactly the case `CLAUDE.md` flags. Diff reviewed field-by-field before committing: identifier-related changes are exactly the new provenance keys; everything else (wording, creator-name variants, category counts) is ordinary live-LLM/live-registry nondeterminism unrelated to any P0 change — confirmed no agent prompt, schema normalizer, or org-name-extraction code was touched anywhere in P0#1-4. All 6 fixtures pass again (previously 5/6 failed at `creators`/`publishers` similarity 0.000 immediately after this change, before re-recording). Full suite green (928 passed), ruff clean, mypy clean on the touched file.
+
+Original scoping, for reference: `IdentifierMatch` carries `confidence`, `matched_via`, and `status` internally (`identifier_types.py`), but none of it survives into the written `MetadataDocument` — a curated catalog has no record of *why* an identifier was attached, which matters more here than for OpenAlex (which only tracks a bare numeric confidence).
 
 **Correction:** there is no stripping risk to guard against here, so this is simpler than it first looked. `IdentifierEnricher` runs post-merge (`pipeline.py`, after the schema normalizers have already built the document) and is never re-run through `_normalize_creators`/`_normalize_funding_references` afterward — so nothing downstream can strip anything the enricher adds. Separately, even if a normalizer *did* re-run, `name_identifiers`/`funder_identifiers` are passed through **wholesale** (`item.get("name_identifiers", [])`, `schemas/datacite.py:434,452,819`) rather than rebuilt key-by-key from an allowlist, so nested sibling keys inside each identifier dict would survive regardless.
 
