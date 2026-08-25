@@ -1,7 +1,7 @@
 # Identifier Resolution Improvement Plan (ROR / ORCID / ISNI)
 
 **Created:** 2026-08-25
-**Status:** In progress — P0#1-2 done (2026-08-25), P0#3-4 and P1/P2 not started
+**Status:** In progress — P0#1-3 done (2026-08-25), P0#4 and P1/P2 not started
 **Trigger:** Comparison of `gema`'s identifier-enrichment subsystem against `openalex-guts` (OpenAlex's backend pipeline), reviewed independently by Opus after an initial pass.
 
 ## Goal
@@ -50,7 +50,9 @@ Key on `(normalized_name, country)`, not name alone — "Ministerio de Salud" re
 
 **Tests to update:** `tests/test_identifier_resolver.py` (new override-precedence tests), `tests/test_pipeline.py`/config tests for the new field.
 
-### 3. Exploit ROR's own `external_ids` — with a corrected rationale
+### 3. Exploit ROR's own `external_ids` — with a corrected rationale — DONE (2026-08-25)
+
+Implemented on `feature/identifier-resolution-improvements`. `IdentifierResolver._try_resolve` now returns a ROR match as-is (no independent ISNI SRU call at all) whenever it already carries its own linked `isni_id` — the class docstring and `_merge_org_matches`' docstring were rewritten to match (the "always checks BOTH registries... either can independently confirm" claim was false the moment `_merge_org_matches`'s `min()`/`"review" if either side is` logic is read closely: the independent check could only ever demote, never confirm). Confirmed real, not free: `matched_via` for a ROR-affiliation match with its own ISNI changed from `"ror_affiliation+isni_sru"` to plain `"ror_affiliation"`, and any case where ISNI-SRU previously demoted such a match to `"review"` now comes back `"auto"`. `TestMergeBothSources`'s two affected tests rewritten (`test_isni_skipped_when_ror_already_has_its_own_isni`, `test_rors_own_linked_isni_returned_as_is`), one new test added for the `?query=`+fuzzy path; the merge/demotion tests on the still-reachable path (ROR record genuinely carrying no ISNI) needed no change. Full suite green (921 passed), ruff clean, mypy clean on the touched file (same pre-existing `yaml`-stub gap noted in P0#2, unrelated).
 
 Every ROR v2 record `gema` already fetches carries an `external_ids` array that can include ISNI, GRID, Wikidata, and FundRef IDs (`ror_client.py:extract_isni` already reads the ISNI case). Currently `identifier_resolver._try_resolve` still runs an **independent** ISNI SRU search and merges it with whatever ROR returned via `_merge_org_matches`.
 
