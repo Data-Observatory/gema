@@ -38,6 +38,7 @@ from typing import Any
 import httpx
 import yaml
 
+from metadata_enricher.enrichers.fuzzy_matcher import normalize_org_name
 from metadata_enricher.enrichers.ror_client import RORClient, get_display_name
 
 
@@ -222,9 +223,22 @@ def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
 
     Returns the number of entries promoted.
     """
+
+    def _dedup_key(name: str, country: str | None) -> tuple[str, str | None]:
+        # Must match IdentifierOverrides._load_entry's own normalization
+        # (normalize_org_name + country.strip().upper()) exactly -- otherwise
+        # two promote runs that differ only in raw casing (e.g. country "cl"
+        # vs "CL") would write two YAML entries that collide silently at
+        # load time instead of merging cleanly here.
+        return (
+            normalize_org_name(name),
+            country.strip().upper() if country and country.strip() else None,
+        )
+
     review = json.loads(review_path.read_text(encoding="utf-8"))
     by_key = {
-        (e.get("name"), e.get("country")): e for e in _load_overrides_entries(overrides_path)
+        _dedup_key(e.get("name", ""), e.get("country")): e
+        for e in _load_overrides_entries(overrides_path)
     }
 
     promoted = 0
@@ -235,7 +249,7 @@ def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
             continue
         name = entry["org_name"]
         country = entry.get("country") or None
-        by_key[(name, country)] = {
+        by_key[_dedup_key(name, country)] = {
             "name": name,
             "country": country,
             "ror_id": ror_id or None,
@@ -276,7 +290,10 @@ def main() -> None:
         return
 
     if args.ground_truth_dir is None or args.output is None:
-        print("--ground-truth-dir and --output are required (unless using --promote-from)", file=sys.stderr)
+        print(
+            "--ground-truth-dir and --output are required (unless using --promote-from)",
+            file=sys.stderr,
+        )
         sys.exit(1)
     if not args.ground_truth_dir.is_dir():
         print(f"Not a directory: {args.ground_truth_dir}", file=sys.stderr)
