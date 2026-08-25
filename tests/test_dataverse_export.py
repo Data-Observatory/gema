@@ -439,10 +439,9 @@ class TestAgainstRealGoldenFixture:
         }
         assert fields_by_name["title"]["value"] == "Gastos municipales (presupuesto abierto)"
         assert (
-            fields_by_name["author"]["value"][0]["authorName"]["value"]
-            == "Ministerio de Hacienda - Gobierno de Chile"
+            fields_by_name["author"]["value"][0]["authorName"]["value"] == "Ministerio de Hacienda"
         )
-        assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ROR"
+        assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ISNI"
         assert fields_by_name["subject"]["value"] == ["Other"]
         assert "keyword" in fields_by_name
         # This real fixture has no resource.contact and no creator email —

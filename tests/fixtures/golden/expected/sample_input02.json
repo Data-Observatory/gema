@@ -38,10 +38,36 @@
     {
       "name": "Ciencias Naturales y Exactas",
       "sub_category": "Ciencias biológicas"
+    },
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias medioambientales"
     }
   ],
   "citations": [],
-  "creators": [],
+  "creators": [
+    {
+      "creator_name": "Data Observatory Foundation",
+      "creator_name_type": "Organizational",
+      "given_name": "",
+      "family_name": "",
+      "email": "",
+      "genre": "",
+      "type": "Organization",
+      "contributor_type": "",
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/027nn6b17",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        }
+      ],
+      "affiliations": []
+    }
+  ],
   "dates": [],
   "descriptions": [
     {
@@ -71,12 +97,12 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Data Observatory",
+      "publisher_name": "Data Observatory Foundation",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
       "lang": "es",
-      "publisher_identifier_matched_via": "ror_affiliation+isni_sru",
+      "publisher_identifier_matched_via": "ror_affiliation",
       "publisher_identifier_confidence": 1.0,
       "publisher_identifier_status": "auto"
     }
@@ -97,7 +123,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Características ecológicas -- Chile",
+      "subject_name": "Características ecológicas -- Especies -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

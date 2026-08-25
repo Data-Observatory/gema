@@ -43,7 +43,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Instituto Nacional de Estadísticas",
+      "creator_name": "Oficina de Estudios y Políticas Agrarias",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -53,30 +53,22 @@
       "contributor_type": "",
       "name_identifiers": [
         {
-          "name_identifier": "https://ror.org/03ftrk873",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        },
-        {
-          "name_identifier": "0000000122544402",
+          "name_identifier": "0000000119427969",
           "name_identifier_scheme": "ISNI",
           "scheme_uri": "https://isni.org",
-          "matched_via": "ror_affiliation",
+          "matched_via": "isni_sru",
           "confidence": 1.0,
           "status": "auto"
         }
       ],
       "affiliations": [
         {
-          "affiliation": "Ministerio de Economía, Fomento y Turismo",
-          "affiliation_identifier": "0000000404784842",
-          "affiliation_identifier_scheme": "ISNI",
+          "affiliation": "Ministerio de Agricultura",
+          "affiliation_identifier": "https://ror.org/05nqvv719",
+          "affiliation_identifier_scheme": "ROR",
           "scheme_uri": "",
-          "affiliation_identifier_matched_via": "isni_sru",
-          "affiliation_identifier_confidence": 0.975,
+          "affiliation_identifier_matched_via": "ror_affiliation+isni_sru",
+          "affiliation_identifier_confidence": 0.9,
           "affiliation_identifier_status": "auto"
         }
       ]
@@ -86,7 +78,7 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes del recurso"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes recopilados en la capa"
     },
     {
       "date": "2014",
@@ -108,7 +100,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Capa vectorial de ganado bovino para la Isla de Pascua, con polígonos de división administrativa y distritos censales INE",
+      "geo_description": "Cobertura de la capa para la Isla de Pascua, con polígonos de división administrativa y distritos censales INE",
       "coverage": "local"
     }
   ],
@@ -146,19 +138,13 @@
   ],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua",
+      "subject_name": "Censo Agropecuario 2007 -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "División administrativa -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Distritos censales -- INE",
+      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

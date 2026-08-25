@@ -5,7 +5,7 @@
     "editor": "Instituto Nacional de Estadísticas (Chile)",
     "maintainer": "",
     "contact": "",
-    "producer": "Instituto Nacional de Estadísticas (INE) de Chile",
+    "producer": "Instituto Nacional de Estadísticas (Chile)",
     "publication_year": "2021",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -28,16 +28,16 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Científicos de datos",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
-    },
-    {
       "audience": "Ciudadanos",
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
+    },
+    {
+      "audience": "Periodistas",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -49,7 +49,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Instituto Nacional de Estadísticas (INE) de Chile",
+      "creator_name": "Instituto Nacional de Estadísticas (Chile)",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -57,7 +57,16 @@
       "genre": "",
       "type": "Organization",
       "contributor_type": "",
-      "name_identifiers": [],
+      "name_identifiers": [
+        {
+          "name_identifier": "0000000122317381",
+          "name_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org",
+          "matched_via": "isni_sru",
+          "confidence": 1.0,
+          "status": "review"
+        }
+      ],
       "affiliations": [
         {
           "affiliation": "Ministerio de Economía, Fomento y Turismo",
@@ -65,7 +74,7 @@
           "affiliation_identifier_scheme": "ISNI",
           "scheme_uri": "",
           "affiliation_identifier_matched_via": "isni_sru",
-          "affiliation_identifier_confidence": 0.975,
+          "affiliation_identifier_confidence": 1.0,
           "affiliation_identifier_status": "auto"
         }
       ]
@@ -75,7 +84,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de los datos de la Encuesta de Presupuestos Familiares (EPF) según los indicadores del portal (Años 2021-2022)"
+      "date_information": "Período de referencia de los datos de la Encuesta de Presupuestos Familiares (EPF), según los indicadores del portal (años 2021-2022)"
     }
   ],
   "descriptions": [
@@ -92,7 +101,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de los hogares chilenos encuestados",
+      "geo_description": "Cobertura nacional de los hogares chilenos, incluyendo el total de capitales regionales",
       "coverage": "nacional"
     }
   ],
@@ -120,6 +129,12 @@
   "rights": [],
   "subjects": [
     {
+      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
       "subject_name": "Ingresos y gastos de los hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
@@ -127,12 +142,6 @@
     },
     {
       "subject_name": "Presupuesto familiar -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Patrones de consumo -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
