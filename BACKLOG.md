@@ -494,6 +494,36 @@ enough context to pick up cold; prune entries once actually done.
   - Cross-border same-name collision (P0#1's real, known limitation) logged
     separately above, not solved by this work — see that entry.
 
+  **Independent code review (2026-08-25) found 10 more issues on the same
+  branch; 9 fixed same-day** (ISNI-skip status check, defensive
+  `_merge_org_matches`, cache-key country normalization, dict-spread-order
+  footgun in `_try_ror_query`, `promote_to_overrides` dedup-key
+  normalization, `AGENTS.md` accuracy, deduped accent-folding into one
+  `fuzzy_matcher.fold_accents()`, line-length cleanup) — **and one fixed as
+  a follow-up**: org identifiers (ROR/ISNI) were attached to
+  `name_identifiers`/`publisher_identifier`/`funder_identifiers` regardless
+  of match status, unlike ORCID's existing `status=="auto"` gate
+  (`_enrich_personal_creator`) — self-contradicting the "wrong PID worse
+  than missing" rationale P0#4's own provenance docstring states. Now
+  gated the same way ORCID already was. See the commit(s) right after this
+  entry for detail.
+
+- **`CountryExtractor` called redundantly, up to 6x per resource — found in
+  the same review, not fixed.** `agents/base.py:_build_resource_dict` calls
+  `CountryExtractor.extract_country()` once per agent (5 agents wired in
+  `config/agents.yaml`), and `pipeline.py`'s identifier-enrichment step
+  (P0#1 above) calls it once more for the same resource — up to 6 redundant
+  regex scans over the same `fetched_content`/`url`, no memoization
+  anywhere. **Not fixed**: the extraction itself is a handful of bounded
+  regex searches (`fetched_content` is capped at 8000 chars by
+  `content_fetcher.py`'s `max_len`), so the real cost is sub-millisecond
+  ×6 — not worth the structural refactor (threading one precomputed value
+  through `agents/base.py`, `orchestrator.py`, and `pipeline.py`) for a
+  currently negligible saving. Documented as a known characteristic in
+  `enrichers/AGENTS.md`'s NOTES section. Revisit only if `fetched_content`
+  size limits change materially or profiling ever shows this mattering in
+  practice.
+
 ## Pipeline / infra
 
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
