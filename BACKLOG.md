@@ -418,6 +418,39 @@ enough context to pick up cold; prune entries once actually done.
   every query-endpoint fallback lookup since the client was written —
   see `fix(enrichers): stop sending an illegal limit param...`.
 
+- **Cross-border same-name institution collision — known accepted
+  limitation, no fix planned.** Surfaced during the country-hint work
+  (`docs/identifier_resolution_plan.md` P0#1, 2026-08-25): the country hint
+  used to disambiguate ROR `?query=` candidates
+  (`enrichers/fuzzy_matcher.py:match_organization`'s `country_hint`) is
+  computed **once per resource**, from the dataset page's own URL/HTML
+  (`country_extractor.CountryExtractor`), and applied uniformly to every
+  creator/affiliation/publisher/funder in it. A resource genuinely citing a
+  foreign institution that happens to share a name with a domestic one
+  (e.g. a Chilean-hosted dataset naming an Argentine "Instituto Nacional de
+  Estadística," with Chile also having an org by that name) can go either
+  way: if only the correct foreign org is a ROR candidate, the country
+  penalty can drop it below threshold entirely (a match lost that would
+  have succeeded before the country hint existed); if a same-named
+  domestic decoy also exists as a candidate, it can outrank the correct
+  org whenever their raw name-similarity scores are close — which they
+  will be, since the names are identical. The penalty only ever flips an
+  outcome when the two candidates' names are already near-identical (the
+  common-noun-institution-name case this hint was built for, e.g.
+  government ministries) — a weak coincidental match elsewhere never gets
+  promoted over a strong correct one.
+
+  **Real fix would need per-affiliation country detection** — parsed from
+  each affiliation string's own address/context, not the hosting page's
+  URL/HTML — which is a materially bigger task than this plan's scope
+  (identifier *resolution* over already-extracted names, not name/context
+  extraction itself). **Not attempted.** Mitigated in practice, not solved,
+  by two other P0 items in the same plan: the persistent override store
+  (`config/overrides.yaml`, P0#2, done 2026-08-25) lets a human bypass the
+  heuristic entirely for a known cross-border case, and match-provenance
+  logging (P0#4, not yet done) would make a bad auto-attach auditable
+  instead of silent.
+
 ## Pipeline / infra
 
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects
