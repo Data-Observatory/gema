@@ -271,20 +271,21 @@ class TestOverridesPrecedence:
 
 
 class TestMergeBothSources:
-    """IdentifierResolver: ROR and ISNI are both always checked and merged."""
+    """IdentifierResolver: ISNI is checked only when ROR's own record has none."""
 
-    def test_isni_always_checked_even_when_ror_affiliation_succeeds(self, tmp_path: Path) -> None:
+    def test_isni_skipped_when_ror_already_has_its_own_isni(self, tmp_path: Path) -> None:
+        """A ROR record already carrying a linked ISNI is trusted outright —
+        no independent ISNI SRU call at all, since that call could only ever
+        demote (never confirm) a match that's already verified registry data."""
         resolver, ror, isni, _ = _make_resolver(
             tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[MOCK_ISNI_RESULT]
         )
         resolver.resolve("Ministerio de Hacienda")
-        assert isni.search_organizations.called, (
-            "ISNI must be checked even when ROR affiliation already found a match"
-        )
+        assert not isni.search_organizations.called
 
-    def test_rors_own_linked_isni_wins_over_independent_isni_hit(self, tmp_path: Path) -> None:
-        """ROR's own external_ids ISNI is verified registry data — prefer it
-        over a separately fuzzy-matched ISNI SRU result for the same org."""
+    def test_rors_own_linked_isni_returned_as_is(self, tmp_path: Path) -> None:
+        """ROR's own external_ids ISNI is verified registry data — used
+        as-is, with no independent ISNI SRU lookup to disagree with it."""
         resolver, _, _, _ = _make_resolver(
             tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[MOCK_ISNI_RESULT]
         )
@@ -292,7 +293,29 @@ class TestMergeBothSources:
         assert result is not None
         assert result.ror_id == "https://ror.org/01h6h5x94"
         assert result.isni_id == "0000000123456789"  # ROR's own, not MOCK_ISNI_RESULT's
-        assert result.matched_via == "ror_affiliation+isni_sru"
+        assert result.matched_via == "ror_affiliation"
+        assert result.status == "auto"
+        assert result.confidence == 1.0
+
+    def test_isni_skipped_on_ror_query_fuzzy_match_too(self, tmp_path: Path) -> None:
+        """Same skip behavior on the ?query=+fuzzy path, not just ?affiliation=."""
+        org_with_isni = {
+            **MOCK_ROR_QUERY_ORG,
+            "external_ids": [
+                {"type": "isni", "preferred": "0000 0009 9999 9999", "all": []},
+            ],
+        }
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[org_with_isni],
+            isni_results=[MOCK_ISNI_RESULT],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert result is not None
+        assert result.isni_id == "0000000999999999"
+        assert result.matched_via == "ror_query_fuzzy"
+        assert not isni.search_organizations.called
 
     def test_independent_isni_used_when_ror_record_has_none(self, tmp_path: Path) -> None:
         ror_org_no_isni = {**MOCK_ROR_ORG, "external_ids": []}

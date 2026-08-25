@@ -39,14 +39,20 @@ class IdentifierResolver:
     1. Check disk cache (key = SHA-256 of normalized name + country).
     2. ROR ?affiliation= endpoint, then ?query= + rapidfuzz fuzzy matching
        (threshold 90) if affiliation found nothing.
-    3. ISNI SRU pica.nw search + fuzzy matching — always attempted, even if
-       ROR already found a match, since ROR and ISNI cover different
-       organizations and either can independently confirm an identifier the
-       other missed.
-    4. If both ROR and ISNI found something, the two matches are merged into
-       one ``IdentifierMatch`` carrying both identifiers. If only one source
-       found something, that match is returned unchanged. If neither did,
-       returns None (cached as a negative result).
+    3. If ROR found a match that already carries its own linked ISNI
+       (``external_ids``), that ISNI is trusted outright and returned as-is
+       — no independent ISNI SRU call is made. ROR's own linked ISNI is
+       verified registry data; an independent ISNI SRU search can only ever
+       demote the combined confidence/status (never raise it — see
+       ``_merge_org_matches``), so it would add noise, not a real signal.
+    4. Otherwise, ISNI SRU pica.nw search + fuzzy matching is attempted —
+       whether or not ROR found a match, since ROR and ISNI cover different
+       organizations and this is the only way to catch an ISNI when ROR's
+       own record doesn't carry one (or ROR found nothing at all).
+    5. If both ROR and ISNI found something at this point, the two matches
+       are merged into one ``IdentifierMatch`` (``_merge_org_matches``). If
+       only one source found something, that match is returned unchanged.
+       If neither did, returns None (cached as a negative result).
 
     Person resolution (``resolve_person``) looks up ORCID by exact
     given-name/family-name (+ optional affiliation) — see its docstring for
@@ -175,6 +181,14 @@ class IdentifierResolver:
         if ror_match is None:
             ror_match = self._try_ror_query(original_name, normalized_name, country)
 
+        if ror_match is not None and ror_match.isni_id:
+            # ROR's own linked ISNI is verified registry data -- trust it
+            # outright and skip the independent ISNI SRU check entirely.
+            # The check below can only ever DEMOTE a ROR hit's
+            # confidence/status (see _merge_org_matches), never confirm it,
+            # so skipping it here removes noise, not a real signal.
+            return ror_match
+
         isni_match = self._try_isni(original_name, normalized_name)
 
         if ror_match is None:
@@ -186,15 +200,18 @@ class IdentifierResolver:
     def _merge_org_matches(
         self, ror_match: IdentifierMatch, isni_match: IdentifierMatch
     ) -> IdentifierMatch:
-        """Combine independent ROR and ISNI matches for the same org name.
+        """Combine a ROR match with an independently-found ISNI SRU match.
 
-        ROR's own linked ISNI (if it has one) is preferred over the
-        independently fuzzy-matched ISNI SRU result, since it's verified
-        registry data rather than a name-similarity guess.
+        Only reached when *ror_match* has no ISNI of its own (see
+        ``_try_resolve`` — a ROR record already carrying a linked ISNI never
+        reaches this far). The independent ISNI check can only ever demote
+        the combined confidence/status below the ROR match's own, never
+        raise it above — it's a corroborating signal at best, not a second
+        vote of confidence.
         """
         return IdentifierMatch(
             ror_id=ror_match.ror_id,
-            isni_id=ror_match.isni_id or isni_match.isni_id,
+            isni_id=isni_match.isni_id,
             org_name=ror_match.org_name,
             confidence=min(ror_match.confidence, isni_match.confidence),
             matched_via=f"{ror_match.matched_via}+{isni_match.matched_via}",
