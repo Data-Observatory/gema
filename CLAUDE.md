@@ -101,6 +101,16 @@ Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` 
 - Regenerate golden fixtures after prompt edits, model upgrades, or dependency bumps that change output shape: `make record-golden` then commit `tests/fixtures/golden/`.
 - Mark real-API tests `@pytest.mark.live`; run everything else with `uv run pytest -m "not live"`.
 
+## Documentation hygiene
+
+Keep `docs/` minimal. Do not create a new `.md` file (plan, design doc, comparison
+writeup, survey) unless the user explicitly asks for one — the default channel for
+analysis/planning output is the conversation itself, not a file. When a doc already
+in `docs/` finishes its job — every deliverable it planned now exists in the
+codebase, or its recommendation was superseded by a different actual decision — treat
+it as done and delete it rather than leaving it to rot; git history keeps it
+recoverable if ever needed. This applies until the user says otherwise.
+
 ## Configuration
 
 - Runtime config lives at repo-root `config/` (YAML/JSON, not code) — distinct from `src/metadata_enricher/config/` (the loader/models code). Main file: `config/agents.yaml`; provider connections: `config/providers.yaml`.
