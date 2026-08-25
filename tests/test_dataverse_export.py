@@ -441,7 +441,13 @@ class TestAgainstRealGoldenFixture:
         assert (
             fields_by_name["author"]["value"][0]["authorName"]["value"] == "Ministerio de Hacienda"
         )
-        assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ISNI"
+        # No authorIdentifierScheme here (2026-08-25): this fixture's own
+        # identifier match came back ambiguous (status=="review") and is
+        # correctly withheld by IdentifierEnricher's status=="auto" gate —
+        # so there's nothing to map. Identifier mapping itself is covered
+        # by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
+        # against a synthetic fixture that actually carries one.
+        assert "authorIdentifierScheme" not in fields_by_name["author"]["value"][0]
         assert fields_by_name["subject"]["value"] == ["Other"]
         assert "keyword" in fields_by_name
         # This real fixture has no resource.contact and no creator email —

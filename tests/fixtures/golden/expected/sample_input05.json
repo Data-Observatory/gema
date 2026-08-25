@@ -32,6 +32,12 @@
       "mediator": "Gerente",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "categories": [
@@ -78,7 +84,7 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes recopilados en la capa"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes de la capa"
     },
     {
       "date": "2014",
@@ -100,7 +106,7 @@
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de la capa para la Isla de Pascua, con polígonos de división administrativa y distritos censales INE",
+      "geo_description": "Cobertura del dataset según el título: ganado bovino en Isla de Pascua",
       "coverage": "local"
     }
   ],
@@ -132,7 +138,7 @@
       "rights_identifier": "",
       "rights_identifier_scheme": "",
       "scheme_uri": "",
-      "rights_condition": "Los productos cartográficos elaborados con esta capa que representen los límites internacionales del país deben obtener autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol).",
+      "rights_condition": "Los productos cartográficos elaborados con esta capa de información que involucren la representación de los límites internacionales del país deben obtener una autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol).",
       "rights_holder": "Oficina de Estudios y Políticas Agrarias"
     }
   ],

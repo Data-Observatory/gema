@@ -38,36 +38,10 @@
     {
       "name": "Ciencias Naturales y Exactas",
       "sub_category": "Ciencias biológicas"
-    },
-    {
-      "name": "Ciencias Naturales y Exactas",
-      "sub_category": "Ciencias medioambientales"
     }
   ],
   "citations": [],
-  "creators": [
-    {
-      "creator_name": "Data Observatory Foundation",
-      "creator_name_type": "Organizational",
-      "given_name": "",
-      "family_name": "",
-      "email": "",
-      "genre": "",
-      "type": "Organization",
-      "contributor_type": "",
-      "name_identifiers": [
-        {
-          "name_identifier": "https://ror.org/027nn6b17",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        }
-      ],
-      "affiliations": []
-    }
-  ],
+  "creators": [],
   "dates": [],
   "descriptions": [
     {
@@ -97,12 +71,12 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Data Observatory Foundation",
+      "publisher_name": "Data Observatory",
       "publisher_identifier": "https://ror.org/027nn6b17",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
       "lang": "es",
-      "publisher_identifier_matched_via": "ror_affiliation",
+      "publisher_identifier_matched_via": "ror_affiliation+isni_sru",
       "publisher_identifier_confidence": 1.0,
       "publisher_identifier_status": "auto"
     }
@@ -123,7 +97,7 @@
       "value_uri": ""
     },
     {
-      "subject_name": "Características ecológicas -- Especies -- Chile",
+      "subject_name": "Ecología -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -134,7 +108,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "yearly",
-      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso"
+      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso (Anual)"
     }
   ],
   "titles": [
