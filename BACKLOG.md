@@ -448,8 +448,51 @@ enough context to pick up cold; prune entries once actually done.
   by two other P0 items in the same plan: the persistent override store
   (`config/overrides.yaml`, P0#2, done 2026-08-25) lets a human bypass the
   heuristic entirely for a known cross-border case, and match-provenance
-  logging (P0#4, not yet done) would make a bad auto-attach auditable
-  instead of silent.
+  logging (P0#4, done 2026-08-25) makes a bad auto-attach auditable instead
+  of silent.
+
+- **ROR/ORCID/ISNI identifier-resolution improvements — done (2026-08-25),
+  full plan and rationale in `docs/identifier_resolution_plan.md`.**
+  Followed a comparison of gema's identifier subsystem against
+  `openalex-guts` (OpenAlex's backend pipeline), reviewed independently by
+  Opus before and during implementation. Summary (see the plan doc for
+  file-level detail, Critical Risks, and verification steps):
+  - **P0#1**: the `detected_country` signal `agents/base.py` already
+    computed for LLM prompts is now also threaded into ROR `?query=` fuzzy
+    matching as a soft re-rank hint (never a hard filter), plus a matching
+    fix to `identifier_resolver.py`'s cache key so the same org name in two
+    countries stops colliding on one cached result.
+  - **P0#2**: `config/overrides.yaml` — a persistent, human-curated
+    ROR/ISNI override store, checked before any network call. Closes the
+    open "human picks or rejects each candidate" step from this section's
+    earlier `curate_ror_isni.py` entry above: that script now has a
+    `--promote-from`/`--promote-to` mode turning reviewed decisions into
+    durable overrides instead of a one-off review file.
+  - **P0#3**: `IdentifierResolver` now trusts ROR's own linked ISNI outright
+    and skips the independent ISNI SRU check whenever ROR already has one —
+    that check could only ever demote a match's confidence, never confirm
+    it, so it was pure noise in that case.
+  - **P0#4**: every attached identifier now carries its match provenance
+    (`matched_via`/`confidence`/`status`) in the output — previously
+    computed and discarded.
+  - **P1**: `fuzzy_matcher.normalize_org_name` gained accent folding (NFKD)
+    and a Spanish institutional-abbreviation dict (`u. de`/`univ.`/`min.`/
+    `inst.`/etc.) — deliberately excludes a bare `u.` form (real false
+    positive against `"U.S.-Chile"`, caught by an existing test) and any
+    hardcoded acronym→name mapping (`UdeC`/`PUC`-style — needs verified
+    ground truth, belongs in the overrides store instead, not guessed).
+  - **P2 (local ROR-dump ingestion) intentionally not implemented** —
+    stays trigger-conditional (real rate-limiting or an offline-run
+    requirement), not default work; doing it anyway would fit OpenAlex's
+    corpus-scale problem, not gema's.
+  - Two golden-fixture re-records required (P0#4's and P1's output-shape
+    changes each broke `creators`/`publishers` similarity against the
+    pinned fixtures) — both reviewed field-by-field before committing, both
+    confirmed additive/quality-improving, not regressions. Also fixed one
+    fixture-dependent assertion outside the regression suite itself
+    (`tests/test_dataverse_export.py::TestAgainstRealGoldenFixture`).
+  - Cross-border same-name collision (P0#1's real, known limitation) logged
+    separately above, not solved by this work — see that entry.
 
 ## Pipeline / infra
 
