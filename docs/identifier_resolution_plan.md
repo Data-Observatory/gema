@@ -1,7 +1,7 @@
 # Identifier Resolution Improvement Plan (ROR / ORCID / ISNI)
 
 **Created:** 2026-08-25
-**Status:** P0 fully done (2026-08-25). P1/P2 not started — P1 recommended next; P2 stays trigger-conditional, not default work (see its own section).
+**Status:** P0 and P1 fully done (2026-08-25). P2 intentionally not started — stays trigger-conditional, not default work (see its own section). All recommended work in this plan is now complete; P2 is the only remaining item and it's a deliberate non-default.
 **Trigger:** Comparison of `gema`'s identifier-enrichment subsystem against `openalex-guts` (OpenAlex's backend pipeline), reviewed independently by Opus after an initial pass.
 
 ## Goal
@@ -84,9 +84,15 @@ Original scoping, for reference: `IdentifierMatch` carries `confidence`, `matche
 
 ---
 
-## P1 — locale-aware normalization
+## P1 — locale-aware normalization — DONE (2026-08-25)
 
-`fuzzy_matcher.py`'s `_LEGAL_SUFFIXES` regex only strips Anglo/EU commercial suffixes (`inc|ltd|llc|gmbh|corp|...`) and `normalize_org_name` has no abbreviation-expansion step at all. `openalex-guts`'s `RORStrategy` does both (unidecode folding + a hand-written abbreviation dict), but its dict (`univ→university`, `inst→institute`, `tech→technology`) is English-centric and near-useless for the Chilean/LatAm public-sector corpus `gema` actually processes.
+Implemented on `feature/identifier-resolution-improvements`. `fuzzy_matcher.normalize_org_name` gained accent folding (NFKD, drop combining marks — mirrors `scripts/eval_common.py`'s existing `_norm()` rather than adding a `unidecode` dependency) and a Spanish institutional-abbreviation dict, applied before legal-suffix stripping and punctuation removal.
+
+**Deviation from the original scoping, found during implementation:** the abbreviation dict does NOT include a bare `u.` → `universidad` entry as first drafted — only the compound `u. de` → `universidad de`. A bare `u.` collided with the very common `U.S.`/`U.K.`/`U.N.` initial-letter pattern; caught as a real false positive on `"U.S.-Chile"` by the existing `test_preserves_hyphens` test before it ever shipped. Also, per the original scoping's own reasoning, did **not** add a hardcoded acronym→full-name dictionary (`UdeC`/`PUC`-style — this needs verified institutional ground truth, belongs in the P0#2 overrides store instead) or Portuguese-specific abbreviation forms (no real Portuguese-corpus data to verify against; accent folding alone already normalizes most Spanish/Portuguese spelling differences for free). `WRatio@90` kept unchanged as scoped.
+
+**Required a second golden-fixture re-record** in the same session (same `make record-golden` procedure, same review discipline as P0#4's) — normalization changes shift which ROR/ISNI candidate wins a fuzzy match. Diff reviewed field-by-field: the identifier-matching shifts are legitimate (e.g. a shorter re-extracted creator name correctly resolving with lower confidence via ISNI instead of a stale high-confidence ROR match keyed to a longer name string it no longer received). Also surfaced and fixed a third fixture-dependent test outside the regression suite itself — `tests/test_dataverse_export.py::TestAgainstRealGoldenFixture` hardcoded a literal creator name and ROR scheme read from the same golden file. 12 new tests (`TestAbbreviationExpansion`, `test_fuzzy_matcher.py`) plus 2 rewritten (the old accent-preservation test now asserts folding). Full suite green (939 passed), ruff clean.
+
+Original scoping, for reference: `fuzzy_matcher.py`'s `_LEGAL_SUFFIXES` regex only strips Anglo/EU commercial suffixes (`inc|ltd|llc|gmbh|corp|...`) and `normalize_org_name` has no abbreviation-expansion step at all. `openalex-guts`'s `RORStrategy` does both (unidecode folding + a hand-written abbreviation dict), but its dict (`univ→university`, `inst→institute`, `tech→technology`) is English-centric and near-useless for the Chilean/LatAm public-sector corpus `gema` actually processes.
 
 | File | Change |
 |------|--------|
