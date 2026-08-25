@@ -386,3 +386,68 @@ class TestEnrichEdgeCases:
         })
         enricher.enrich(doc)
         resolver.resolve.assert_not_called()
+
+
+# --------------------------------------------------------------------------
+
+
+class TestCountryPassthrough:
+    """IdentifierEnricher: the optional country hint reaches every resolve() call."""
+
+    def test_country_forwarded_for_organizational_creator(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Ministerio de Hacienda",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [],
+                }
+            ]
+        })
+        enricher.enrich(doc, country="CL")
+        resolver.resolve.assert_called_once_with("Ministerio de Hacienda", "CL")
+
+    def test_country_forwarded_for_affiliation(self) -> None:
+        """Affiliation resolution only runs for Organizational creators —
+        a Personal creator's ``continue`` (see ``_enrich_creators``) skips
+        the affiliations block entirely, so an Organizational creator with
+        an already-set name identifier isolates just the affiliation call."""
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Some Org",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [{"name_identifier": "already-set"}],
+                    "affiliations": [{"affiliation": "Universidad de Chile"}],
+                }
+            ]
+        })
+        enricher.enrich(doc, country="CL")
+        resolver.resolve.assert_called_once_with("Universidad de Chile", "CL")
+
+    def test_country_forwarded_for_publisher(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc, country="AR")
+        resolver.resolve.assert_called_once_with("Some Publisher", "AR")
+
+    def test_country_forwarded_for_funder(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "Some Funder", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc, country="AR")
+        resolver.resolve.assert_called_once_with("Some Funder", "AR")
+
+    def test_no_country_defaults_to_none(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        resolver.resolve.assert_called_once_with("Some Publisher", None)

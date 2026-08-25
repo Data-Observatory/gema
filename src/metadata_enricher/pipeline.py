@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from metadata_enricher.agents.registry import AgentRegistry, LLMClientFactory
 from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.enrichers.country_extractor import CountryExtractor
 from metadata_enricher.input_sources.base import InputSource
 from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.orchestrator import Orchestrator
@@ -20,6 +21,10 @@ if TYPE_CHECKING:
     from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
 
 logger = logging.getLogger(__name__)
+
+# Same instance/behavior as agents/base.py's — reused here so identifier
+# enrichment sees the same country hint the agents' own prompts were given.
+_country_extractor = CountryExtractor()
 
 
 class PipelineResult:
@@ -326,7 +331,10 @@ class Pipeline:
         # 6. Post-merge identifier enrichment
         if self._enricher is not None:
             try:
-                document = self._enricher.enrich(document)
+                detected_country = _country_extractor.extract_country(
+                    html_content=resource.fetched_content, url=resource.url
+                )
+                document = self._enricher.enrich(document, country=detected_country)
             except Exception as exc:
                 logger.warning("Identifier enrichment failed: %s", exc)
 

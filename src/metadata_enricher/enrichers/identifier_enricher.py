@@ -69,13 +69,17 @@ class IdentifierEnricher:
     def __init__(self, resolver: IdentifierResolver) -> None:
         self._resolver = resolver
 
-    def enrich(self, document: MetadataDocument) -> MetadataDocument:
-        self._enrich_creators(document)
-        self._enrich_publishers(document)
-        self._enrich_funding_references(document)
+    def enrich(self, document: MetadataDocument, country: str | None = None) -> MetadataDocument:
+        """Enrich *document* in place. *country* (ISO 3166-1 alpha-2, e.g.
+        from ``country_extractor.CountryExtractor``) is an optional hint
+        passed through to org resolution — see ``IdentifierResolver.resolve``.
+        """
+        self._enrich_creators(document, country)
+        self._enrich_publishers(document, country)
+        self._enrich_funding_references(document, country)
         return document
 
-    def _enrich_creators(self, document: MetadataDocument) -> None:
+    def _enrich_creators(self, document: MetadataDocument, country: str | None = None) -> None:
         creators = document.get_field("creators")
         if not creators or not isinstance(creators, list):
             return
@@ -95,7 +99,7 @@ class IdentifierEnricher:
 
             name = creator.get("creator_name", "")
             if name and not has_real_id:
-                identifiers = _all_identifiers(self._resolver.resolve(name))
+                identifiers = _all_identifiers(self._resolver.resolve(name, country))
                 if identifiers:
                     creator["name_identifiers"] = [
                         {
@@ -117,7 +121,9 @@ class IdentifierEnricher:
                     affil_name = affil.get("affiliation", "")
                     if not affil_name:
                         continue
-                    identifier = _preferred_identifier(self._resolver.resolve(affil_name))
+                    identifier = _preferred_identifier(
+                        self._resolver.resolve(affil_name, country)
+                    )
                     if identifier:
                         id_value, scheme = identifier
                         affil["affiliation_identifier"] = id_value
@@ -152,7 +158,7 @@ class IdentifierEnricher:
             }
         ]
 
-    def _enrich_publishers(self, document: MetadataDocument) -> None:
+    def _enrich_publishers(self, document: MetadataDocument, country: str | None = None) -> None:
         publishers = document.get_field("publishers")
         if not publishers or not isinstance(publishers, list):
             return
@@ -165,14 +171,16 @@ class IdentifierEnricher:
             name = publisher.get("publisher_name", "")
             if not name:
                 continue
-            identifier = _preferred_identifier(self._resolver.resolve(name))
+            identifier = _preferred_identifier(self._resolver.resolve(name, country))
             if identifier:
                 id_value, scheme = identifier
                 publisher["publisher_identifier"] = id_value
                 publisher["publisher_identifier_scheme"] = scheme
                 publisher["publisher_scheme_uri"] = _SCHEME_URI[scheme]
 
-    def _enrich_funding_references(self, document: MetadataDocument) -> None:
+    def _enrich_funding_references(
+        self, document: MetadataDocument, country: str | None = None
+    ) -> None:
         funding = document.get_field("funding_references")
         if not funding or not isinstance(funding, list):
             return
@@ -188,7 +196,7 @@ class IdentifierEnricher:
             name = ref.get("funder_name", "")
             if not name:
                 continue
-            identifiers = _all_identifiers(self._resolver.resolve(name))
+            identifiers = _all_identifiers(self._resolver.resolve(name, country))
             if identifiers:
                 ref["funder_identifiers"] = [
                     {

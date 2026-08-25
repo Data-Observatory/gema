@@ -72,6 +72,9 @@ def match_organization(
     name_key: str = "name",
     threshold: float = 90.0,
     gap_threshold: float = 5.0,
+    country_hint: str | None = None,
+    country_key: str = "country_code",
+    country_penalty: float = 15.0,
 ) -> tuple[dict[str, Any] | None, float, str]:
     """Match an organization name against a list of candidate dicts.
 
@@ -86,6 +89,17 @@ def match_organization(
         threshold: Minimum score (0-100) for a valid match. Default 90.0.
         gap_threshold: If the gap between top-1 and top-2 scores is less than
                        this, the match is flagged as ``"review"``. Default 5.0.
+        country_hint: Optional ISO 3166-1 alpha-2 country code (e.g. from
+                      ``country_extractor``). A HINT, not a gate — a candidate
+                      whose own country disagrees is deprioritized by
+                      *country_penalty* points, never eliminated outright.
+                      A candidate with no known country (missing/empty
+                      *country_key*) is never penalized — unknown is not a
+                      disagreement. ``None`` (default) disables this entirely.
+        country_key: Key in each candidate dict holding its own country code,
+                     compared case-insensitively against *country_hint*.
+        country_penalty: Score points subtracted from a country-mismatched
+                         candidate before ranking, when *country_hint* is set.
 
     Returns:
         Tuple of ``(best_candidate_dict_or_None, score, status)`` where status
@@ -108,17 +122,33 @@ def match_organization(
         normalize_org_name(str(c.get(name_key, ""))) for c in candidates
     ]
 
-    # Get top results with score_cutoff for early termination
+    # Without a country hint, only the top 2 are needed (existing fast path,
+    # unchanged). With a hint, every candidate must be scored first so the
+    # country penalty can re-rank the full field before picking the top 2.
+    limit = len(candidate_names) if country_hint else 2
     results = process.extract(
         normalized_query,
         candidate_names,
         scorer=fuzz.WRatio,
-        limit=2,
+        limit=limit,
         score_cutoff=threshold - 10,
     )
 
     if not results:
         return None, 0.0, "nomatch"
+
+    if country_hint:
+        hint = country_hint.strip().upper()
+        adjusted: list[tuple[str, float, int]] = []
+        for name, score, idx in results:
+            candidate_country = candidates[idx].get(country_key)
+            mismatch = (
+                isinstance(candidate_country, str)
+                and candidate_country.strip().upper() not in ("", hint)
+            )
+            adjusted.append((name, score - country_penalty if mismatch else score, idx))
+        adjusted.sort(key=lambda r: r[1], reverse=True)
+        results = adjusted[:2]
 
     best_match_str, best_score, best_idx = results[0]
 

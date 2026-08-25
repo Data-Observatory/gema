@@ -182,3 +182,95 @@ class TestMatchOrganizationEdgeCases:
         match, score, status = match_organization("Some Org", candidates)
         assert match is None
         assert status == "nomatch"
+
+
+# ---------- country_hint ----------
+
+
+class TestMatchOrganizationCountryHint:
+    """match_organization: country_hint is a soft re-rank, never a hard filter."""
+
+    def test_no_hint_is_unaffected_by_country_field(self) -> None:
+        """A 'wrong' country_code on a candidate must not matter at all
+        when no hint is given — the default, unchanged fast path."""
+        candidates = [{"name": "Ministerio de Salud", "country_code": "AR"}]
+        match, score, status = match_organization("Ministerio de Salud", candidates)
+        assert match is not None
+        assert score == 100.0
+        assert status == "auto"
+
+    def test_matching_country_not_penalized(self) -> None:
+        candidates = [{"name": "Ministerio de Salud", "country_code": "CL"}]
+        match, score, status = match_organization(
+            "Ministerio de Salud", candidates, country_hint="CL"
+        )
+        assert match is not None
+        assert score == 100.0
+        assert status == "auto"
+
+    def test_country_hint_case_insensitive(self) -> None:
+        candidates = [{"name": "Ministerio de Salud", "country_code": "cl"}]
+        match, score, status = match_organization(
+            "Ministerio de Salud", candidates, country_hint="cl"
+        )
+        assert match is not None
+        assert score == 100.0
+
+    def test_unknown_country_not_penalized(self) -> None:
+        """A candidate with no country_code at all is not a disagreement —
+        this is what ISNI candidates look like, and what a real ROR record
+        with no location data would look like."""
+        candidates = [{"name": "Ministerio de Salud"}]
+        match, score, status = match_organization(
+            "Ministerio de Salud", candidates, country_hint="CL"
+        )
+        assert match is not None
+        assert score == 100.0
+
+    def test_mismatched_country_is_deprioritized_not_hard_rejected(self) -> None:
+        """A country mismatch subtracts points (here dropping an exact
+        match below the default threshold, same as any other low-scoring
+        candidate would) — it is not a special-cased hard filter. Proven by
+        the next test, where a lower threshold accepts the exact same
+        mismatched candidate."""
+        candidates = [{"name": "Ministerio de Salud", "country_code": "AR"}]
+        match, score, status = match_organization(
+            "Ministerio de Salud", candidates, country_hint="CL", country_penalty=15.0
+        )
+        assert match is None
+        assert score == 85.0  # 100.0 raw - 15.0 penalty
+        assert status == "nomatch"
+
+    def test_mismatched_country_still_returned_when_score_clears_threshold(self) -> None:
+        candidates = [{"name": "Ministerio de Salud", "country_code": "AR"}]
+        match, score, status = match_organization(
+            "Ministerio de Salud",
+            candidates,
+            country_hint="CL",
+            country_penalty=15.0,
+            threshold=80.0,
+        )
+        assert match is not None
+        assert score == 85.0
+        assert status == "auto"
+
+    def test_country_hint_disambiguates_same_name_different_countries(self) -> None:
+        """The exact 'Ministerio de Salud' collision the plan calls out —
+        two orgs sharing a name, distinguishable only by country. Without a
+        hint, an identical-score tie is ambiguous ('review'); with the
+        right hint, it resolves cleanly to the matching-country candidate."""
+        candidates = [
+            {"name": "Ministerio de Salud", "country_code": "AR"},
+            {"name": "Ministerio de Salud", "country_code": "CL"},
+        ]
+
+        _, _, status_no_hint = match_organization("Ministerio de Salud", candidates)
+        assert status_no_hint == "review"  # tied score, ambiguous without a hint
+
+        match, score, status = match_organization(
+            "Ministerio de Salud", candidates, country_hint="CL"
+        )
+        assert match is not None
+        assert match["country_code"] == "CL"
+        assert score == 100.0
+        assert status == "auto"

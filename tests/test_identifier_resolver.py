@@ -36,6 +36,17 @@ MOCK_ISNI_RESULT = {
     "org_type": "Government",
 }
 
+MOCK_ROR_QUERY_ORG_AR = {
+    **MOCK_ROR_QUERY_ORG,
+    "id": "https://ror.org/aaaa1111",
+    "locations": [{"geonames_details": {"country_code": "AR"}}],
+}
+MOCK_ROR_QUERY_ORG_CL = {
+    **MOCK_ROR_QUERY_ORG,
+    "id": "https://ror.org/bbbb2222",
+    "locations": [{"geonames_details": {"country_code": "CL"}}],
+}
+
 
 def _make_resolver(
     tmp_path: Path,
@@ -128,6 +139,62 @@ class TestResolveRORQuery:
         )
         result = resolver.resolve("Completely Different Organization Name")
         assert result is None
+
+
+# --------------------------------------------------------------------------
+
+
+class TestCountryHint:
+    """IdentifierResolver: the optional country hint reaches ROR ?query= only."""
+
+    def test_country_disambiguates_tied_ror_query_candidates(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[MOCK_ROR_QUERY_ORG_AR, MOCK_ROR_QUERY_ORG_CL],
+            isni_results=[],
+        )
+        result = resolver.resolve("Universidad de Chile", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/bbbb2222"
+        assert result.status == "auto"
+
+    def test_no_country_hint_leaves_tie_ambiguous(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[MOCK_ROR_QUERY_ORG_AR, MOCK_ROR_QUERY_ORG_CL],
+            isni_results=[],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert result is not None
+        assert result.status == "review"
+
+    def test_country_does_not_change_isni_call(self, tmp_path: Path) -> None:
+        """ISNI SRU results carry no country field — the hint must not
+        reach or affect the ISNI call at all."""
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path, ror_org=None, ror_query_results=[], isni_results=[MOCK_ISNI_RESULT]
+        )
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        isni.search_organizations.assert_called_once_with("Ministerio de Hacienda", max_records=5)
+
+    def test_cache_key_isolated_by_country(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[])
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert ror.search_affiliation.call_count == 1
+        resolver.resolve("Ministerio de Hacienda", country="AR")
+        assert ror.search_affiliation.call_count == 2, (
+            "a different country must not reuse another country's cached result"
+        )
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert ror.search_affiliation.call_count == 2, "same country should still hit cache"
+
+    def test_no_country_and_explicit_none_share_a_cache_entry(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG)
+        resolver.resolve("Ministerio de Hacienda")
+        resolver.resolve("Ministerio de Hacienda", country=None)
+        assert ror.search_affiliation.call_count == 1
 
 
 # --------------------------------------------------------------------------

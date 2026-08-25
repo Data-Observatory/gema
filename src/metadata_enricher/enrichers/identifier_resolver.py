@@ -16,6 +16,7 @@ from metadata_enricher.enrichers.isni_client import ISNIClient
 from metadata_enricher.enrichers.orcid_client import ORCIDClient
 from metadata_enricher.enrichers.ror_client import (
     RORClient,
+    extract_country,
     extract_isni,
     extract_parent,
     get_display_name,
@@ -71,7 +72,16 @@ class IdentifierResolver:
         self._cache: diskcache.Cache = diskcache.Cache(str(cache_dir))
         self._cache_ttl = int(cache_ttl.total_seconds())
 
-    def resolve(self, name: str) -> IdentifierMatch | None:
+    def resolve(self, name: str, country: str | None = None) -> IdentifierMatch | None:
+        """Resolve an organization name, optionally boosted by a country hint.
+
+        *country* (ISO 3166-1 alpha-2, e.g. ``"CL"`` — typically from
+        ``country_extractor.CountryExtractor``) is a HINT for the ROR
+        ``?query=``+fuzzy fallback path only, never a hard filter: a
+        candidate whose own country disagrees is deprioritized, not
+        eliminated (see ``fuzzy_matcher.match_organization``). It does not
+        reach ISNI matching — ISNI SRU results carry no country field.
+        """
         if not name or not name.strip():
             return None
 
@@ -79,14 +89,14 @@ class IdentifierResolver:
         if not normalized:
             return None
 
-        cache_key = self._make_key("org", normalized)
+        cache_key = self._make_key("org", normalized, country)
         cached = self._cache.get(cache_key)
         if cached is not None:
             if cached.get("__negative__"):
                 return None
             return IdentifierMatch.model_validate(cached)
 
-        result = self._try_resolve(name, normalized)
+        result = self._try_resolve(name, normalized, country)
         self._store(cache_key, result)
         return result
 
@@ -136,13 +146,20 @@ class IdentifierResolver:
         else:
             self._cache.set(cache_key, {"__negative__": True}, expire=self._cache_ttl)
 
-    def _make_key(self, kind: str, normalized_name: str) -> str:
-        return hashlib.sha256(f"{kind}:{normalized_name}".encode()).hexdigest()
+    def _make_key(self, kind: str, normalized_name: str, country: str | None = None) -> str:
+        # Country folded in so the same org name in two countries never
+        # collides on one cached result. Changing this key format is a
+        # breaking cache change (as it was for temperature/seed in
+        # llm/cache.py) — existing ~/.cache/gema/identifiers entries go
+        # cold on deploy, which is expected, not a bug.
+        return hashlib.sha256(f"{kind}:{normalized_name}:{country or ''}".encode()).hexdigest()
 
-    def _try_resolve(self, original_name: str, normalized_name: str) -> IdentifierMatch | None:
+    def _try_resolve(
+        self, original_name: str, normalized_name: str, country: str | None = None
+    ) -> IdentifierMatch | None:
         ror_match = self._try_ror_affiliation(original_name)
         if ror_match is None:
-            ror_match = self._try_ror_query(original_name, normalized_name)
+            ror_match = self._try_ror_query(original_name, normalized_name, country)
 
         isni_match = self._try_isni(original_name, normalized_name)
 
@@ -182,7 +199,9 @@ class IdentifierResolver:
             return None
         return self._build_match_from_ror(org, "ror_affiliation")
 
-    def _try_ror_query(self, name: str, normalized_name: str) -> IdentifierMatch | None:
+    def _try_ror_query(
+        self, name: str, normalized_name: str, country: str | None = None
+    ) -> IdentifierMatch | None:
         try:
             candidates_raw = self._ror.search_query(name, limit=5)
         except Exception as exc:
@@ -190,9 +209,12 @@ class IdentifierResolver:
             return None
         if not candidates_raw:
             return None
-        candidates = [{"name": get_display_name(o), **o} for o in candidates_raw]
+        candidates = [
+            {"name": get_display_name(o), "country_code": extract_country(o), **o}
+            for o in candidates_raw
+        ]
         best, score, status = match_organization(
-            name, candidates, name_key="name", threshold=self._threshold
+            name, candidates, name_key="name", threshold=self._threshold, country_hint=country
         )
         if best is None:
             return None
