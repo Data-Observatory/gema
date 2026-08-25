@@ -75,13 +75,15 @@ _PUNCTUATION = re.compile(r"[^\w\s-]")
 _WHITESPACE = re.compile(r"\s+")
 
 
-def _fold_accents(name: str) -> str:
+def fold_accents(name: str) -> str:
     """NFKD-normalize and drop combining marks, e.g. 'Educación' -> 'educacion'.
 
     Locale-agnostic (unlike the abbreviation dict above) — benefits Spanish
-    and Portuguese alike. Mirrors ``scripts/eval_common.py``'s ``_norm()``,
-    the existing precedent for this exact technique elsewhere in this
-    codebase, rather than adding a new ``unidecode`` dependency for it.
+    and Portuguese alike. The canonical implementation of this technique in
+    this codebase — ``scripts/eval_common.py``'s ``_norm()`` calls this
+    directly rather than keeping its own copy, so there's one place to fix
+    if a Unicode edge case ever needs it. Not adding a ``unidecode``
+    dependency for something two lines of stdlib already do.
     """
     folded = unicodedata.normalize("NFKD", name)
     return "".join(c for c in folded if not unicodedata.combining(c))
@@ -129,7 +131,7 @@ def normalize_org_name(name: str) -> str:
 
     name = name.strip()
     name = name.lower()
-    name = _fold_accents(name)
+    name = fold_accents(name)
     name = _expand_abbreviations(name)
     name = _LEGAL_SUFFIXES.sub("", name)
     name = _PUNCTUATION.sub("", name)
