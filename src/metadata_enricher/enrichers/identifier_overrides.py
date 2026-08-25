@@ -76,7 +76,9 @@ class IdentifierOverrides:
         if not normalized:
             return
         country = entry.get("country")
-        country_key = country.strip().upper() if isinstance(country, str) and country.strip() else None
+        country_key = (
+            country.strip().upper() if isinstance(country, str) and country.strip() else None
+        )
         ror_id = entry.get("ror_id") or None
         isni_id = entry.get("isni_id") or None
         if not ror_id and not isni_id:

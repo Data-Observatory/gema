@@ -361,6 +361,37 @@ class TestMergeBothSources:
         assert result is not None
         assert result.status == "review"
 
+    def test_ambiguous_ror_match_with_own_isni_still_checks_isni_independently(
+        self, tmp_path: Path
+    ) -> None:
+        """The isni-skip optimization only applies when the ROR match is
+        itself unambiguous ('auto') -- an ambiguous ('review') ROR match
+        stays 'review' either way, so there's no reason to skip the one
+        extra corroborating check. ROR's own linked ISNI must still win the
+        merge (never silently replaced by the independently-fuzzy-matched
+        one) -- see _merge_org_matches's defensive `or` preference."""
+        ambiguous_org_a = {
+            **MOCK_ROR_QUERY_ORG,
+            "id": "https://ror.org/01q2pz218",
+            "external_ids": [
+                {"type": "isni", "preferred": "0000 0001 1111 1111", "all": []},
+            ],
+        }
+        ambiguous_org_b = {**MOCK_ROR_QUERY_ORG, "id": "https://ror.org/99999999x"}
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[ambiguous_org_a, ambiguous_org_b],
+            isni_results=[MOCK_ISNI_RESULT],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert isni.search_organizations.called, (
+            "an ambiguous ROR match must not skip the independent ISNI check"
+        )
+        assert result is not None
+        assert result.status == "review"
+        assert result.isni_id == "0000000111111111"  # ROR's own -- not MOCK_ISNI_RESULT's
+
 
 # --------------------------------------------------------------------------
 

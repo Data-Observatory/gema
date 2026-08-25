@@ -251,7 +251,11 @@ class IdentifierEnricher:
             if identifiers:
                 ref["funder_identifiers"] = [
                     _identifier_entry(
-                        id_value, scheme, "funder_identifier", "funder_identifier_type", funder_match
+                        id_value,
+                        scheme,
+                        "funder_identifier",
+                        "funder_identifier_type",
+                        funder_match,
                     )
                     for id_value, scheme in identifiers
                 ]

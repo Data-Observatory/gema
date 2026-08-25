@@ -100,6 +100,12 @@ class IdentifierResolver:
         if not name or not name.strip():
             return None
 
+        # Normalized once here so "cl" and "CL" share one cache entry --
+        # match_organization() already normalizes internally for matching
+        # purposes, but the cache key didn't, so two functionally-identical
+        # hints used to cost two ROR/ISNI round-trips instead of one.
+        country = country.strip().upper() if country and country.strip() else None
+
         if self._overrides is not None:
             override_match = self._overrides.lookup(name, country)
             if override_match is not None:
@@ -181,12 +187,16 @@ class IdentifierResolver:
         if ror_match is None:
             ror_match = self._try_ror_query(original_name, normalized_name, country)
 
-        if ror_match is not None and ror_match.isni_id:
+        if ror_match is not None and ror_match.isni_id and ror_match.status == "auto":
             # ROR's own linked ISNI is verified registry data -- trust it
             # outright and skip the independent ISNI SRU check entirely.
-            # The check below can only ever DEMOTE a ROR hit's
-            # confidence/status (see _merge_org_matches), never confirm it,
-            # so skipping it here removes noise, not a real signal.
+            # The check below can only ever DEMOTE a match's confidence/
+            # status (see _merge_org_matches), never confirm it, so skipping
+            # it here removes noise, not a real signal -- but ONLY when
+            # ror_match itself is already unambiguous ("auto"). If ror_match
+            # is itself ambiguous ("review", e.g. two close-scoring ?query=
+            # candidates), it stays ambiguous either way, so there's no
+            # reason to skip the one extra corroborating data point.
             return ror_match
 
         isni_match = self._try_isni(original_name, normalized_name)
@@ -202,16 +212,20 @@ class IdentifierResolver:
     ) -> IdentifierMatch:
         """Combine a ROR match with an independently-found ISNI SRU match.
 
-        Only reached when *ror_match* has no ISNI of its own (see
-        ``_try_resolve`` — a ROR record already carrying a linked ISNI never
-        reaches this far). The independent ISNI check can only ever demote
-        the combined confidence/status below the ROR match's own, never
-        raise it above — it's a corroborating signal at best, not a second
-        vote of confidence.
+        Normally reached only when *ror_match* has no ISNI of its own or is
+        itself ambiguous (see ``_try_resolve``'s skip condition) — but
+        ``ror_match.isni_id or isni_match.isni_id`` below is a defensive
+        preference, not a caller-enforced invariant: a verified ROR-linked
+        ISNI must never be silently discarded in favor of a lower-confidence
+        independently-fuzzy-matched one, regardless of how this function is
+        reached. The independent ISNI check can only ever demote the
+        combined confidence/status below the ROR match's own, never raise it
+        above — it's a corroborating signal at best, not a second vote of
+        confidence.
         """
         return IdentifierMatch(
             ror_id=ror_match.ror_id,
-            isni_id=isni_match.isni_id,
+            isni_id=ror_match.isni_id or isni_match.isni_id,
             org_name=ror_match.org_name,
             confidence=min(ror_match.confidence, isni_match.confidence),
             matched_via=f"{ror_match.matched_via}+{isni_match.matched_via}",
@@ -241,7 +255,11 @@ class IdentifierResolver:
         if not candidates_raw:
             return None
         candidates = [
-            {"name": get_display_name(o), "country_code": extract_country(o), **o}
+            # Raw record spread FIRST -- the computed name/country_code must
+            # always win if a ROR record ever carries its own top-level
+            # "name"/"country_code" keys (dormant today, since v2 records
+            # nest these under "names"/"locations", but not guaranteed).
+            {**o, "name": get_display_name(o), "country_code": extract_country(o)}
             for o in candidates_raw
         ]
         best, score, status = match_organization(
