@@ -43,6 +43,37 @@ def _preferred_identifier(match: IdentifierMatch | None) -> tuple[str, str] | No
     return identifiers[0] if identifiers else None
 
 
+def _identifier_entry(
+    id_value: str, scheme: str, id_key: str, scheme_key: str, match: IdentifierMatch
+) -> dict[str, Any]:
+    """One name_identifier/funder_identifier-shaped list entry, carrying
+    the match's provenance (why this identifier was attached) as sibling
+    keys — a curated catalog needs that more than OpenAlex's bare numeric
+    confidence does, since a wrong PID here is worse than a missing one.
+    """
+    return {
+        id_key: id_value,
+        scheme_key: scheme,
+        "scheme_uri": _SCHEME_URI[scheme],
+        "matched_via": match.matched_via,
+        "confidence": match.confidence,
+        "status": match.status,
+    }
+
+
+def _provenance(field_prefix: str, match: IdentifierMatch) -> dict[str, Any]:
+    """Provenance keys for a single-slot field (affiliation_identifier,
+    publisher_identifier) — prefixed so they never collide with another
+    key on the same dict, unlike a name_identifiers/funder_identifiers list
+    entry, which is already its own namespace (see _identifier_entry).
+    """
+    return {
+        f"{field_prefix}_matched_via": match.matched_via,
+        f"{field_prefix}_confidence": match.confidence,
+        f"{field_prefix}_status": match.status,
+    }
+
+
 class IdentifierEnricher:
     """Enriches a MetadataDocument with resolved ROR/ISNI/ORCID identifiers.
 
@@ -64,6 +95,15 @@ class IdentifierEnricher:
 
     Fields already populated by the LLM are preserved — the enricher only
     fills EMPTY identifier fields.
+
+    Every identifier attached also carries its match provenance —
+    ``matched_via``/``confidence``/``status`` as sibling keys on a
+    ``name_identifiers``/``funder_identifiers`` list entry, or
+    ``{field}_matched_via``/``{field}_confidence``/``{field}_status`` for a
+    single-slot field (``affiliation_identifier``, ``publisher_identifier``)
+    — so a human reviewing the catalog can tell an unambiguous ROR
+    affiliation hit from an ambiguous fuzzy match without re-running
+    resolution.
     """
 
     def __init__(self, resolver: IdentifierResolver) -> None:
@@ -99,16 +139,16 @@ class IdentifierEnricher:
 
             name = creator.get("creator_name", "")
             if name and not has_real_id:
-                identifiers = _all_identifiers(self._resolver.resolve(name, country))
-                if identifiers:
-                    creator["name_identifiers"] = [
-                        {
-                            "name_identifier": id_value,
-                            "name_identifier_scheme": scheme,
-                            "scheme_uri": _SCHEME_URI[scheme],
-                        }
-                        for id_value, scheme in identifiers
-                    ]
+                match = self._resolver.resolve(name, country)
+                if match is not None:
+                    identifiers = _all_identifiers(match)
+                    if identifiers:
+                        creator["name_identifiers"] = [
+                            _identifier_entry(
+                                id_value, scheme, "name_identifier", "name_identifier_scheme", match
+                            )
+                            for id_value, scheme in identifiers
+                        ]
 
             affiliations = creator.get("affiliations", [])
             if isinstance(affiliations, list):
@@ -121,13 +161,15 @@ class IdentifierEnricher:
                     affil_name = affil.get("affiliation", "")
                     if not affil_name:
                         continue
-                    identifier = _preferred_identifier(
-                        self._resolver.resolve(affil_name, country)
-                    )
+                    affil_match = self._resolver.resolve(affil_name, country)
+                    if affil_match is None:
+                        continue
+                    identifier = _preferred_identifier(affil_match)
                     if identifier:
                         id_value, scheme = identifier
                         affil["affiliation_identifier"] = id_value
                         affil["affiliation_identifier_scheme"] = scheme
+                        affil.update(_provenance("affiliation_identifier", affil_match))
 
     def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
         given_name = creator.get("given_name", "")
@@ -151,11 +193,13 @@ class IdentifierEnricher:
             )
             return
         creator["name_identifiers"] = [
-            {
-                "name_identifier": f"https://orcid.org/{match.orcid_id}",
-                "name_identifier_scheme": "ORCID",
-                "scheme_uri": _SCHEME_URI["ORCID"],
-            }
+            _identifier_entry(
+                f"https://orcid.org/{match.orcid_id}",
+                "ORCID",
+                "name_identifier",
+                "name_identifier_scheme",
+                match,
+            )
         ]
 
     def _enrich_publishers(self, document: MetadataDocument, country: str | None = None) -> None:
@@ -171,12 +215,16 @@ class IdentifierEnricher:
             name = publisher.get("publisher_name", "")
             if not name:
                 continue
-            identifier = _preferred_identifier(self._resolver.resolve(name, country))
+            pub_match = self._resolver.resolve(name, country)
+            if pub_match is None:
+                continue
+            identifier = _preferred_identifier(pub_match)
             if identifier:
                 id_value, scheme = identifier
                 publisher["publisher_identifier"] = id_value
                 publisher["publisher_identifier_scheme"] = scheme
                 publisher["publisher_scheme_uri"] = _SCHEME_URI[scheme]
+                publisher.update(_provenance("publisher_identifier", pub_match))
 
     def _enrich_funding_references(
         self, document: MetadataDocument, country: str | None = None
@@ -196,13 +244,14 @@ class IdentifierEnricher:
             name = ref.get("funder_name", "")
             if not name:
                 continue
-            identifiers = _all_identifiers(self._resolver.resolve(name, country))
+            funder_match = self._resolver.resolve(name, country)
+            if funder_match is None:
+                continue
+            identifiers = _all_identifiers(funder_match)
             if identifiers:
                 ref["funder_identifiers"] = [
-                    {
-                        "funder_identifier": id_value,
-                        "funder_identifier_type": scheme,
-                        "scheme_uri": _SCHEME_URI[scheme],
-                    }
+                    _identifier_entry(
+                        id_value, scheme, "funder_identifier", "funder_identifier_type", funder_match
+                    )
                     for id_value, scheme in identifiers
                 ]
