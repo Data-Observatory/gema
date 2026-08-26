@@ -418,6 +418,118 @@ enough context to pick up cold; prune entries once actually done.
   every query-endpoint fallback lookup since the client was written —
   see `fix(enrichers): stop sending an illegal limit param...`.
 
+- **Cross-border same-name institution collision — known accepted
+  limitation, no fix planned.** Surfaced during the country-hint work
+  (`docs/identifier_resolution_plan.md` P0#1, 2026-08-25): the country hint
+  used to disambiguate ROR `?query=` candidates
+  (`enrichers/fuzzy_matcher.py:match_organization`'s `country_hint`) is
+  computed **once per resource**, from the dataset page's own URL/HTML
+  (`country_extractor.CountryExtractor`), and applied uniformly to every
+  creator/affiliation/publisher/funder in it. A resource genuinely citing a
+  foreign institution that happens to share a name with a domestic one
+  (e.g. a Chilean-hosted dataset naming an Argentine "Instituto Nacional de
+  Estadística," with Chile also having an org by that name) can go either
+  way: if only the correct foreign org is a ROR candidate, the country
+  penalty can drop it below threshold entirely (a match lost that would
+  have succeeded before the country hint existed); if a same-named
+  domestic decoy also exists as a candidate, it can outrank the correct
+  org whenever their raw name-similarity scores are close — which they
+  will be, since the names are identical. The penalty only ever flips an
+  outcome when the two candidates' names are already near-identical (the
+  common-noun-institution-name case this hint was built for, e.g.
+  government ministries) — a weak coincidental match elsewhere never gets
+  promoted over a strong correct one.
+
+  **Real fix would need per-affiliation country detection** — parsed from
+  each affiliation string's own address/context, not the hosting page's
+  URL/HTML — which is a materially bigger task than this plan's scope
+  (identifier *resolution* over already-extracted names, not name/context
+  extraction itself). **Not attempted.** Mitigated in practice, not solved,
+  by two other P0 items in the same plan: the persistent override store
+  (`config/overrides.yaml`, P0#2, done 2026-08-25) lets a human bypass the
+  heuristic entirely for a known cross-border case, and match-provenance
+  logging (P0#4, done 2026-08-25) makes a bad auto-attach auditable instead
+  of silent.
+
+- **ROR/ORCID/ISNI identifier-resolution improvements — done (2026-08-25),
+  full plan and rationale in `docs/identifier_resolution_plan.md`.**
+  Followed a comparison of gema's identifier subsystem against
+  `openalex-guts` (OpenAlex's backend pipeline), reviewed independently by
+  Opus before and during implementation. Summary (see the plan doc for
+  file-level detail, Critical Risks, and verification steps):
+  - **P0#1**: the `detected_country` signal `agents/base.py` already
+    computed for LLM prompts is now also threaded into ROR `?query=` fuzzy
+    matching as a soft re-rank hint (never a hard filter), plus a matching
+    fix to `identifier_resolver.py`'s cache key so the same org name in two
+    countries stops colliding on one cached result.
+  - **P0#2**: `config/overrides.yaml` — a persistent, human-curated
+    ROR/ISNI override store, checked before any network call. Closes the
+    open "human picks or rejects each candidate" step from this section's
+    earlier `curate_ror_isni.py` entry above: that script now has a
+    `--promote-from`/`--promote-to` mode turning reviewed decisions into
+    durable overrides instead of a one-off review file.
+  - **P0#3**: `IdentifierResolver` now trusts ROR's own linked ISNI outright
+    and skips the independent ISNI SRU check whenever ROR already has one —
+    that check could only ever demote a match's confidence, never confirm
+    it, so it was pure noise in that case.
+  - **P0#4**: every attached identifier now carries its match provenance
+    (`matched_via`/`confidence`/`status`) in the output — previously
+    computed and discarded.
+  - **P1**: `fuzzy_matcher.normalize_org_name` gained accent folding (NFKD)
+    and a Spanish institutional-abbreviation dict (`u. de`/`univ.`/`min.`/
+    `inst.`/etc.) — deliberately excludes a bare `u.` form (real false
+    positive against `"U.S.-Chile"`, caught by an existing test) and any
+    hardcoded acronym→name mapping (`UdeC`/`PUC`-style — needs verified
+    ground truth, belongs in the overrides store instead, not guessed).
+  - **P2 (local ROR-dump ingestion) intentionally not implemented** —
+    stays trigger-conditional (real rate-limiting or an offline-run
+    requirement), not default work; doing it anyway would fit OpenAlex's
+    corpus-scale problem, not gema's. Measured real (2026-08-25, current
+    dump, 137,398 orgs) so this isn't guessed: Zenodo source zip 36.2MB,
+    uncompressed JSON 308.8MB, Parquet all-fields zstd 14.7MB, Parquet
+    minimal-fields zstd 6.8MB. Size was never the real blocker (~7-15MB is
+    trivial) — original plan draft's size objection was overstated; the
+    actual blockers (no rate-limit hit yet, no offline-run requirement,
+    refresh-job maintenance cost) still stand independently.
+  - Two golden-fixture re-records required (P0#4's and P1's output-shape
+    changes each broke `creators`/`publishers` similarity against the
+    pinned fixtures) — both reviewed field-by-field before committing, both
+    confirmed additive/quality-improving, not regressions. Also fixed one
+    fixture-dependent assertion outside the regression suite itself
+    (`tests/test_dataverse_export.py::TestAgainstRealGoldenFixture`).
+  - Cross-border same-name collision (P0#1's real, known limitation) logged
+    separately above, not solved by this work — see that entry.
+
+  **Independent code review (2026-08-25) found 10 more issues on the same
+  branch; 9 fixed same-day** (ISNI-skip status check, defensive
+  `_merge_org_matches`, cache-key country normalization, dict-spread-order
+  footgun in `_try_ror_query`, `promote_to_overrides` dedup-key
+  normalization, `AGENTS.md` accuracy, deduped accent-folding into one
+  `fuzzy_matcher.fold_accents()`, line-length cleanup) — **and one fixed as
+  a follow-up**: org identifiers (ROR/ISNI) were attached to
+  `name_identifiers`/`publisher_identifier`/`funder_identifiers` regardless
+  of match status, unlike ORCID's existing `status=="auto"` gate
+  (`_enrich_personal_creator`) — self-contradicting the "wrong PID worse
+  than missing" rationale P0#4's own provenance docstring states. Now
+  gated the same way ORCID already was. See the commit(s) right after this
+  entry for detail.
+
+- **`CountryExtractor` called redundantly, up to 6x per resource — found in
+  the same review, not fixed.** `agents/base.py:_build_resource_dict` calls
+  `CountryExtractor.extract_country()` once per agent (5 agents wired in
+  `config/agents.yaml`), and `pipeline.py`'s identifier-enrichment step
+  (P0#1 above) calls it once more for the same resource — up to 6 redundant
+  regex scans over the same `fetched_content`/`url`, no memoization
+  anywhere. **Not fixed**: the extraction itself is a handful of bounded
+  regex searches (`fetched_content` is capped at 8000 chars by
+  `content_fetcher.py`'s `max_len`), so the real cost is sub-millisecond
+  ×6 — not worth the structural refactor (threading one precomputed value
+  through `agents/base.py`, `orchestrator.py`, and `pipeline.py`) for a
+  currently negligible saving. Documented as a known characteristic in
+  `enrichers/AGENTS.md`'s NOTES section. Revisit only if `fetched_content`
+  size limits change materially or profiling ever shows this mattering in
+  practice.
+
 ## Pipeline / infra
 
 - **`config/providers.yaml` is a visor-only preset pool, not dead** (corrects

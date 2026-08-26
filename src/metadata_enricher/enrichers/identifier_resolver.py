@@ -11,11 +11,13 @@ from typing import Any
 import diskcache
 
 from metadata_enricher.enrichers.fuzzy_matcher import match_organization, normalize_org_name
+from metadata_enricher.enrichers.identifier_overrides import IdentifierOverrides
 from metadata_enricher.enrichers.identifier_types import IdentifierMatch
 from metadata_enricher.enrichers.isni_client import ISNIClient
 from metadata_enricher.enrichers.orcid_client import ORCIDClient
 from metadata_enricher.enrichers.ror_client import (
     RORClient,
+    extract_country,
     extract_isni,
     extract_parent,
     get_display_name,
@@ -30,19 +32,27 @@ DEFAULT_TTL = timedelta(days=30)
 class IdentifierResolver:
     """Resolves organization and person names to ROR/ISNI/ORCID identifiers.
 
-    Organization resolution (``resolve``) always checks BOTH registries —
-    it does not stop at the first hit:
-    1. Check disk cache (key = SHA-256 of normalized name).
+    Organization resolution (``resolve``) checks, in order:
+    0. A human-curated override (``IdentifierOverrides``), if one is
+       configured — wins outright, no network call, not cached (it's
+       already free).
+    1. Check disk cache (key = SHA-256 of normalized name + country).
     2. ROR ?affiliation= endpoint, then ?query= + rapidfuzz fuzzy matching
        (threshold 90) if affiliation found nothing.
-    3. ISNI SRU pica.nw search + fuzzy matching — always attempted, even if
-       ROR already found a match, since ROR and ISNI cover different
-       organizations and either can independently confirm an identifier the
-       other missed.
-    4. If both ROR and ISNI found something, the two matches are merged into
-       one ``IdentifierMatch`` carrying both identifiers. If only one source
-       found something, that match is returned unchanged. If neither did,
-       returns None (cached as a negative result).
+    3. If ROR found a match that already carries its own linked ISNI
+       (``external_ids``), that ISNI is trusted outright and returned as-is
+       — no independent ISNI SRU call is made. ROR's own linked ISNI is
+       verified registry data; an independent ISNI SRU search can only ever
+       demote the combined confidence/status (never raise it — see
+       ``_merge_org_matches``), so it would add noise, not a real signal.
+    4. Otherwise, ISNI SRU pica.nw search + fuzzy matching is attempted —
+       whether or not ROR found a match, since ROR and ISNI cover different
+       organizations and this is the only way to catch an ISNI when ROR's
+       own record doesn't carry one (or ROR found nothing at all).
+    5. If both ROR and ISNI found something at this point, the two matches
+       are merged into one ``IdentifierMatch`` (``_merge_org_matches``). If
+       only one source found something, that match is returned unchanged.
+       If neither did, returns None (cached as a negative result).
 
     Person resolution (``resolve_person``) looks up ORCID by exact
     given-name/family-name (+ optional affiliation) — see its docstring for
@@ -60,33 +70,59 @@ class IdentifierResolver:
         cache_dir: Path | None = None,
         cache_ttl: timedelta = DEFAULT_TTL,
         fuzzy_threshold: float = 90.0,
+        overrides: IdentifierOverrides | None = None,
     ) -> None:
         self._ror = ror_client or RORClient()
         self._isni = isni_client or ISNIClient()
         self._orcid = orcid_client or ORCIDClient()
         self._threshold = fuzzy_threshold
+        self._overrides = overrides
 
         cache_dir = cache_dir or DEFAULT_CACHE_DIR
         cache_dir.mkdir(parents=True, exist_ok=True)
         self._cache: diskcache.Cache = diskcache.Cache(str(cache_dir))
         self._cache_ttl = int(cache_ttl.total_seconds())
 
-    def resolve(self, name: str) -> IdentifierMatch | None:
+    def resolve(self, name: str, country: str | None = None) -> IdentifierMatch | None:
+        """Resolve an organization name, optionally boosted by a country hint.
+
+        *country* (ISO 3166-1 alpha-2, e.g. ``"CL"`` — typically from
+        ``country_extractor.CountryExtractor``) is a HINT for the ROR
+        ``?query=``+fuzzy fallback path only, never a hard filter: a
+        candidate whose own country disagrees is deprioritized, not
+        eliminated (see ``fuzzy_matcher.match_organization``). It does not
+        reach ISNI matching — ISNI SRU results carry no country field.
+
+        A human-curated override (see ``IdentifierOverrides``) is checked
+        first, before the disk cache and before any network call — it
+        always wins over the heuristic chain below.
+        """
         if not name or not name.strip():
             return None
+
+        # Normalized once here so "cl" and "CL" share one cache entry --
+        # match_organization() already normalizes internally for matching
+        # purposes, but the cache key didn't, so two functionally-identical
+        # hints used to cost two ROR/ISNI round-trips instead of one.
+        country = country.strip().upper() if country and country.strip() else None
+
+        if self._overrides is not None:
+            override_match = self._overrides.lookup(name, country)
+            if override_match is not None:
+                return override_match
 
         normalized = normalize_org_name(name)
         if not normalized:
             return None
 
-        cache_key = self._make_key("org", normalized)
+        cache_key = self._make_key("org", normalized, country)
         cached = self._cache.get(cache_key)
         if cached is not None:
             if cached.get("__negative__"):
                 return None
             return IdentifierMatch.model_validate(cached)
 
-        result = self._try_resolve(name, normalized)
+        result = self._try_resolve(name, normalized, country)
         self._store(cache_key, result)
         return result
 
@@ -136,13 +172,32 @@ class IdentifierResolver:
         else:
             self._cache.set(cache_key, {"__negative__": True}, expire=self._cache_ttl)
 
-    def _make_key(self, kind: str, normalized_name: str) -> str:
-        return hashlib.sha256(f"{kind}:{normalized_name}".encode()).hexdigest()
+    def _make_key(self, kind: str, normalized_name: str, country: str | None = None) -> str:
+        # Country folded in so the same org name in two countries never
+        # collides on one cached result. Changing this key format is a
+        # breaking cache change (as it was for temperature/seed in
+        # llm/cache.py) — existing ~/.cache/gema/identifiers entries go
+        # cold on deploy, which is expected, not a bug.
+        return hashlib.sha256(f"{kind}:{normalized_name}:{country or ''}".encode()).hexdigest()
 
-    def _try_resolve(self, original_name: str, normalized_name: str) -> IdentifierMatch | None:
+    def _try_resolve(
+        self, original_name: str, normalized_name: str, country: str | None = None
+    ) -> IdentifierMatch | None:
         ror_match = self._try_ror_affiliation(original_name)
         if ror_match is None:
-            ror_match = self._try_ror_query(original_name, normalized_name)
+            ror_match = self._try_ror_query(original_name, normalized_name, country)
+
+        if ror_match is not None and ror_match.isni_id and ror_match.status == "auto":
+            # ROR's own linked ISNI is verified registry data -- trust it
+            # outright and skip the independent ISNI SRU check entirely.
+            # The check below can only ever DEMOTE a match's confidence/
+            # status (see _merge_org_matches), never confirm it, so skipping
+            # it here removes noise, not a real signal -- but ONLY when
+            # ror_match itself is already unambiguous ("auto"). If ror_match
+            # is itself ambiguous ("review", e.g. two close-scoring ?query=
+            # candidates), it stays ambiguous either way, so there's no
+            # reason to skip the one extra corroborating data point.
+            return ror_match
 
         isni_match = self._try_isni(original_name, normalized_name)
 
@@ -155,11 +210,18 @@ class IdentifierResolver:
     def _merge_org_matches(
         self, ror_match: IdentifierMatch, isni_match: IdentifierMatch
     ) -> IdentifierMatch:
-        """Combine independent ROR and ISNI matches for the same org name.
+        """Combine a ROR match with an independently-found ISNI SRU match.
 
-        ROR's own linked ISNI (if it has one) is preferred over the
-        independently fuzzy-matched ISNI SRU result, since it's verified
-        registry data rather than a name-similarity guess.
+        Normally reached only when *ror_match* has no ISNI of its own or is
+        itself ambiguous (see ``_try_resolve``'s skip condition) — but
+        ``ror_match.isni_id or isni_match.isni_id`` below is a defensive
+        preference, not a caller-enforced invariant: a verified ROR-linked
+        ISNI must never be silently discarded in favor of a lower-confidence
+        independently-fuzzy-matched one, regardless of how this function is
+        reached. The independent ISNI check can only ever demote the
+        combined confidence/status below the ROR match's own, never raise it
+        above — it's a corroborating signal at best, not a second vote of
+        confidence.
         """
         return IdentifierMatch(
             ror_id=ror_match.ror_id,
@@ -182,7 +244,9 @@ class IdentifierResolver:
             return None
         return self._build_match_from_ror(org, "ror_affiliation")
 
-    def _try_ror_query(self, name: str, normalized_name: str) -> IdentifierMatch | None:
+    def _try_ror_query(
+        self, name: str, normalized_name: str, country: str | None = None
+    ) -> IdentifierMatch | None:
         try:
             candidates_raw = self._ror.search_query(name, limit=5)
         except Exception as exc:
@@ -190,9 +254,16 @@ class IdentifierResolver:
             return None
         if not candidates_raw:
             return None
-        candidates = [{"name": get_display_name(o), **o} for o in candidates_raw]
+        candidates = [
+            # Raw record spread FIRST -- the computed name/country_code must
+            # always win if a ROR record ever carries its own top-level
+            # "name"/"country_code" keys (dormant today, since v2 records
+            # nest these under "names"/"locations", but not guaranteed).
+            {**o, "name": get_display_name(o), "country_code": extract_country(o)}
+            for o in candidates_raw
+        ]
         best, score, status = match_organization(
-            name, candidates, name_key="name", threshold=self._threshold
+            name, candidates, name_key="name", threshold=self._threshold, country_hint=country
         )
         if best is None:
             return None

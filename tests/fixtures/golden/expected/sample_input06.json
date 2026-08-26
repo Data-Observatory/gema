@@ -31,7 +31,7 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Laboratorio"
     }
   ],
   "categories": [
@@ -54,7 +54,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+          "affiliation": "GFZ Helmholtz Centre for Geosciences",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -73,7 +73,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+          "affiliation": "GFZ Helmholtz Centre for Geosciences",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -85,7 +85,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación del dataset según los metadatos de GFZ Data Services"
+      "date_information": "Año de publicación oficial del dataset según los metadatos de GFZ Data Services (publicationYear)"
     }
   ],
   "descriptions": [
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Cordillera de la Costa, norte de Chile (19°12’S - 25°12’S)",
+      "geo_location_place": "Northern Chile (Coastal Cordillera)",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura de la Cordillera de la Costa en el norte de Chile, entre 19°12’S y 25°12’S",
+      "geo_description": "Coverage of the Atacama Fault System in the Coastal Cordillera of northern Chile, between 19°12'S and 25°12'S",
       "coverage": "regional"
     }
   ],
@@ -138,13 +138,7 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Active faults",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Atacama Fault System",
+      "subject_name": "Active faults -- Atacama Fault System -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

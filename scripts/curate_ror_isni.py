@@ -13,6 +13,17 @@ Usage:
     uv run python scripts/curate_ror_isni.py \
         --ground-truth-dir tests/fixtures/do_catalog/ground_truth \
         --output reports/do_catalog/ror_isni_review.json
+
+Once a human has reviewed the output above and filled in ``approved_ror_id``/
+``approved_isni_id``/``country`` on the entries they've decided on (both
+start ``null`` — still nothing is auto-applied by the collection step
+itself), promote those decisions into a durable
+``config/overrides.yaml`` (see ``enrichers/identifier_overrides.py``) that
+``IdentifierResolver`` checks before any network call:
+
+    uv run python scripts/curate_ror_isni.py \
+        --promote-from reports/do_catalog/ror_isni_review.json \
+        --promote-to config/overrides.yaml
 """
 
 from __future__ import annotations
@@ -25,7 +36,9 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+import yaml
 
+from metadata_enricher.enrichers.fuzzy_matcher import normalize_org_name
 from metadata_enricher.enrichers.ror_client import RORClient, get_display_name
 
 
@@ -33,7 +46,19 @@ def _add_identifier(
     identifiers_by_name: dict[str, dict[str, Any]], name: str, source_file: str
 ) -> dict[str, Any]:
     entry = identifiers_by_name.setdefault(
-        name, {"org_name": name, "current_identifiers": [], "seen_in_files": []}
+        name,
+        {
+            "org_name": name,
+            "current_identifiers": [],
+            "seen_in_files": [],
+            # Human-filled during review; both start null/unset. See
+            # promote_to_overrides() -- an entry is only promoted once one
+            # of these two is filled in. 'country' is optional, only needed
+            # for a name that's genuinely ambiguous across countries.
+            "approved_ror_id": None,
+            "approved_isni_id": None,
+            "country": None,
+        },
     )
     if source_file not in entry["seen_in_files"]:
         entry["seen_in_files"].append(source_file)
@@ -177,13 +202,99 @@ def run(ground_truth_dir: Path, output_path: Path, limit: int | None = None) -> 
     print(f"\nReview file written to {output_path} -- nothing here is auto-applied.")
 
 
+def _load_overrides_entries(path: Path) -> list[dict[str, Any]]:
+    """Existing entries in an overrides.yaml, or [] if it doesn't exist yet."""
+    if not path.is_file():
+        return []
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    entries = raw.get("overrides", []) if isinstance(raw, dict) else []
+    return [e for e in entries if isinstance(e, dict)]
+
+
+def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
+    """Promote human-approved entries from a review file into overrides.yaml.
+
+    An entry is promoted only when a human has filled in its
+    ``approved_ror_id`` and/or ``approved_isni_id`` (both start ``null`` in
+    a freshly generated review file) -- nothing here decides on its own
+    which candidate is correct. Merges into *overrides_path* by
+    ``(name, country)``, so re-running promotion after further review
+    updates existing entries instead of duplicating them.
+
+    Returns the number of entries promoted.
+    """
+
+    def _dedup_key(name: str, country: str | None) -> tuple[str, str | None]:
+        # Must match IdentifierOverrides._load_entry's own normalization
+        # (normalize_org_name + country.strip().upper()) exactly -- otherwise
+        # two promote runs that differ only in raw casing (e.g. country "cl"
+        # vs "CL") would write two YAML entries that collide silently at
+        # load time instead of merging cleanly here.
+        return (
+            normalize_org_name(name),
+            country.strip().upper() if country and country.strip() else None,
+        )
+
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    by_key = {
+        _dedup_key(e.get("name", ""), e.get("country")): e
+        for e in _load_overrides_entries(overrides_path)
+    }
+
+    promoted = 0
+    for entry in review.get("organizations", []):
+        ror_id = entry.get("approved_ror_id")
+        isni_id = entry.get("approved_isni_id")
+        if not ror_id and not isni_id:
+            continue
+        name = entry["org_name"]
+        country = entry.get("country") or None
+        by_key[_dedup_key(name, country)] = {
+            "name": name,
+            "country": country,
+            "ror_id": ror_id or None,
+            "isni_id": isni_id or None,
+        }
+        promoted += 1
+
+    overrides_path.parent.mkdir(parents=True, exist_ok=True)
+    overrides_path.write_text(
+        yaml.safe_dump(
+            {"overrides": list(by_key.values())}, allow_unicode=True, sort_keys=False
+        ),
+        encoding="utf-8",
+    )
+    return promoted
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ground-truth-dir", required=True, type=Path)
-    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--ground-truth-dir", type=Path)
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int, default=None, help="Cap orgs queried (e.g. smoke test)")
+    parser.add_argument(
+        "--promote-from", type=Path, help="Promote a reviewed review file instead of collecting"
+    )
+    parser.add_argument("--promote-to", type=Path, help="config/overrides.yaml to write/update")
     args = parser.parse_args()
 
+    if args.promote_from is not None:
+        if args.promote_to is None:
+            print("--promote-to is required alongside --promote-from", file=sys.stderr)
+            sys.exit(1)
+        if not args.promote_from.is_file():
+            print(f"Not a file: {args.promote_from}", file=sys.stderr)
+            sys.exit(1)
+        count = promote_to_overrides(args.promote_from, args.promote_to)
+        print(f"Promoted {count} human-approved entries to {args.promote_to}")
+        return
+
+    if args.ground_truth_dir is None or args.output is None:
+        print(
+            "--ground-truth-dir and --output are required (unless using --promote-from)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     if not args.ground_truth_dir.is_dir():
         print(f"Not a directory: {args.ground_truth_dir}", file=sys.stderr)
         sys.exit(1)

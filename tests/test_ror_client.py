@@ -10,6 +10,7 @@ import httpx
 from metadata_enricher.enrichers.ror_client import (
     RORClient,
     escape_query,
+    extract_country,
     extract_isni,
     extract_parent,
     get_display_name,
@@ -274,6 +275,63 @@ class TestExtractParent:
 
     def test_extract_parent_no_relationships(self) -> None:
         assert extract_parent({}) == (None, None)
+
+
+# ---------------------------------------------------------------------------
+# extract_country
+# ---------------------------------------------------------------------------
+
+
+class TestExtractCountry:
+    """extract_country — ISO 3166-1 alpha-2 code from ROR v2 locations."""
+
+    def test_extract_country_found(self) -> None:
+        org = {
+            "locations": [
+                {"geonames_details": {"country_code": "CL", "country_name": "Chile"}},
+            ]
+        }
+        assert extract_country(org) == "CL"
+
+    def test_extract_country_uppercases(self) -> None:
+        org = {"locations": [{"geonames_details": {"country_code": "cl"}}]}
+        assert extract_country(org) == "CL"
+
+    def test_extract_country_uses_first_location(self) -> None:
+        org = {
+            "locations": [
+                {"geonames_details": {"country_code": "CL"}},
+                {"geonames_details": {"country_code": "AR"}},
+            ]
+        }
+        assert extract_country(org) == "CL"
+
+    def test_extract_country_no_locations_key(self) -> None:
+        assert extract_country({}) is None
+
+    def test_extract_country_empty_locations(self) -> None:
+        assert extract_country({"locations": []}) is None
+
+    def test_extract_country_location_not_a_dict(self) -> None:
+        assert extract_country({"locations": ["not-a-dict"]}) is None
+
+    def test_extract_country_missing_geonames_details(self) -> None:
+        assert extract_country({"locations": [{}]}) is None
+
+    def test_extract_country_missing_country_code(self) -> None:
+        org = {"locations": [{"geonames_details": {"country_name": "Chile"}}]}
+        assert extract_country(org) is None
+
+    def test_extract_country_empty_country_code(self) -> None:
+        org = {"locations": [{"geonames_details": {"country_code": ""}}]}
+        assert extract_country(org) is None
+
+    def test_extract_country_v1_style_ignored(self) -> None:
+        """The old v1 ``country.country_code`` shape (still seen in this
+        repo's own conftest.py mock fixture) is not v2 — extract_country
+        must not fall back to it, or a stale fixture would silently pass."""
+        org = {"country": {"country_code": "CL", "country_name": "Chile"}}
+        assert extract_country(org) is None
 
 
 # ---------------------------------------------------------------------------
