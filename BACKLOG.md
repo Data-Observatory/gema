@@ -484,7 +484,13 @@ enough context to pick up cold; prune entries once actually done.
   - **P2 (local ROR-dump ingestion) intentionally not implemented** —
     stays trigger-conditional (real rate-limiting or an offline-run
     requirement), not default work; doing it anyway would fit OpenAlex's
-    corpus-scale problem, not gema's.
+    corpus-scale problem, not gema's. Measured real (2026-08-25, current
+    dump, 137,398 orgs) so this isn't guessed: Zenodo source zip 36.2MB,
+    uncompressed JSON 308.8MB, Parquet all-fields zstd 14.7MB, Parquet
+    minimal-fields zstd 6.8MB. Size was never the real blocker (~7-15MB is
+    trivial) — original plan draft's size objection was overstated; the
+    actual blockers (no rate-limit hit yet, no offline-run requirement,
+    refresh-job maintenance cost) still stand independently.
   - Two golden-fixture re-records required (P0#4's and P1's output-shape
     changes each broke `creators`/`publishers` similarity against the
     pinned fixtures) — both reviewed field-by-field before committing, both
