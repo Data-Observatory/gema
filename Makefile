@@ -1,4 +1,4 @@
-.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval
+.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt
 
 install:
 	uv sync --extra dev
@@ -39,6 +39,9 @@ record-golden:
 
 live-eval:
 	uv run python scripts/run_live_eval.py
+
+validate-gt:
+	uv run python scripts/validate_ground_truth.py tests/fixtures/do_catalog/ground_truth
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache dist build *.egg-info src/*.egg-info
