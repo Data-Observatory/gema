@@ -1,11 +1,11 @@
 {
   "resource": {
-    "identifier": "10.5880/gfz.4.1.2020.012",
+    "identifier": "10.5880/GFZ.4.1.2020.012",
     "identifier_type": "DOI",
     "editor": "GFZ Data Services",
     "maintainer": "",
     "contact": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
-    "producer": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+    "producer": "Mittelstädt, Jana; Victor, Pia (GFZ German Research Centre for Geosciences, Potsdam, Germany)",
     "publication_year": "2020",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -54,7 +54,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "GFZ Helmholtz Centre for Geosciences",
+          "affiliation": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -73,7 +73,7 @@
       "name_identifiers": [],
       "affiliations": [
         {
-          "affiliation": "GFZ Helmholtz Centre for Geosciences",
+          "affiliation": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
           "affiliation_identifier": "",
           "affiliation_identifier_scheme": "",
           "scheme_uri": ""
@@ -85,7 +85,7 @@
     {
       "date": "2020",
       "date_type": "Issued",
-      "date_information": "Año de publicación oficial del dataset según los metadatos de GFZ Data Services (publicationYear)"
+      "date_information": "Año de publicación del dataset según los metadatos de GFZ Data Services (publicationYear)"
     }
   ],
   "descriptions": [
@@ -98,11 +98,11 @@
   "funding_references": [],
   "geo_locations": [
     {
-      "geo_location_place": "Northern Chile (Coastal Cordillera)",
+      "geo_location_place": "Coastal Cordillera, norte de Chile",
       "geo_location_point": "",
       "geo_location_box": "",
       "geo_location_polygon": "",
-      "geo_description": "Coverage of the Atacama Fault System in the Coastal Cordillera of northern Chile, between 19°12'S and 25°12'S",
+      "geo_description": "Cobertura de la Cordillera de la Costa del norte de Chile (19°12'S - 25°12'S), segmento más septentrional del Sistema de Fallas de Atacama",
       "coverage": "regional"
     }
   ],
@@ -144,20 +144,14 @@
       "value_uri": ""
     },
     {
-      "subject_name": "GIS",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "EARTH SCIENCE > SOLID EARTH > GEOMORPHIC LANDFORMS/PROCESSES > TECTONIC LANDFORMS > FAULTS",
-      "subject_scheme": "NASA/GCMD Earth Science Keywords",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
       "subject_name": "EARTH SCIENCE > SOLID EARTH > TECTONICS > NEOTECTONICS",
       "subject_scheme": "NASA/GCMD Earth Science Keywords",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "GIS",
+      "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     }
