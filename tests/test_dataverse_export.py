@@ -439,15 +439,17 @@ class TestAgainstRealGoldenFixture:
         }
         assert fields_by_name["title"]["value"] == "Gastos municipales (presupuesto abierto)"
         assert (
-            fields_by_name["author"]["value"][0]["authorName"]["value"] == "Ministerio de Hacienda"
+            fields_by_name["author"]["value"][0]["authorName"]["value"]
+            == "Ministerio de Hacienda - Gobierno de Chile"
         )
-        # No authorIdentifierScheme here (2026-08-25): this fixture's own
-        # identifier match came back ambiguous (status=="review") and is
-        # correctly withheld by IdentifierEnricher's status=="auto" gate —
-        # so there's nothing to map. Identifier mapping itself is covered
-        # by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
-        # against a synthetic fixture that actually carries one.
-        assert "authorIdentifierScheme" not in fields_by_name["author"]["value"][0]
+        # This re-record's creators_publishers completion resolved an
+        # unambiguous ROR+ISNI match (status=="auto") for this fixture's
+        # author, unlike the previous recording (which withheld an
+        # ambiguous one) — ordinary live-LLM run-to-run variance in the
+        # org name string, not a code change. Identifier mapping itself is
+        # covered by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
+        # against a synthetic fixture regardless of what this real one does.
+        assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ROR"
         assert fields_by_name["subject"]["value"] == ["Other"]
         assert "keyword" in fields_by_name
         # This real fixture has no resource.contact and no creator email —
