@@ -5,7 +5,7 @@
     "editor": "Instituto Nacional de Estadísticas (Chile)",
     "maintainer": "",
     "contact": "",
-    "producer": "Instituto Nacional de Estadísticas (INE) de Chile",
+    "producer": "Instituto Nacional de Estadísticas (Chile)",
     "publication_year": "2021",
     "resource_type": "Dataset",
     "resource_type_general": "Dataset",
@@ -13,7 +13,13 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "EPF",
+      "alternate_identifier": "EPF",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -26,6 +32,12 @@
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Científicos de datos",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Ciudadanos",
@@ -43,7 +55,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Instituto Nacional de Estadísticas (INE) de Chile",
+      "creator_name": "Instituto Nacional de Estadísticas (Chile)",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -69,7 +81,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de levantamiento de la Encuesta de Presupuestos Familiares, según los indicadores del portal (Años 2021-2022)"
+      "date_information": "Período de levantamiento de la Encuesta de Presupuestos Familiares (EPF), evidenciado por los indicadores del portal que declaran 'Años 2021-2022' para el gasto e ingreso de los hogares"
     }
   ],
   "descriptions": [
@@ -86,7 +98,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de los hogares chilenos",
+      "geo_description": "Total de capitales regionales de Chile continental; datos sobre los hogares chilenos",
       "coverage": "nacional"
     }
   ],
@@ -111,13 +123,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Ingresos y gastos de los hogares -- Chile",
+      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
+      "subject_name": "Ingresos y gastos -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

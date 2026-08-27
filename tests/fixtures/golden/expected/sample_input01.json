@@ -28,6 +28,12 @@
       "instructional_method": "Análisis"
     },
     {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    },
+    {
       "audience": "Ciudadanos",
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
@@ -43,7 +49,7 @@
   "citations": [],
   "creators": [
     {
-      "creator_name": "Ministerio de Hacienda",
+      "creator_name": "Ministerio de Hacienda - Gobierno de Chile",
       "creator_name_type": "Organizational",
       "given_name": "",
       "family_name": "",
@@ -51,7 +57,24 @@
       "genre": "",
       "type": "Organization",
       "contributor_type": "",
-      "name_identifiers": [],
+      "name_identifiers": [
+        {
+          "name_identifier": "https://ror.org/02sevrz47",
+          "name_identifier_scheme": "ROR",
+          "scheme_uri": "https://ror.org",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        },
+        {
+          "name_identifier": "000000011234970X",
+          "name_identifier_scheme": "ISNI",
+          "scheme_uri": "https://isni.org",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        }
+      ],
       "affiliations": [
         {
           "affiliation": "Gobierno de Chile",
@@ -97,11 +120,14 @@
   "media_files": [],
   "publishers": [
     {
-      "publisher_name": "Ministerio de Hacienda",
-      "publisher_identifier": "",
-      "publisher_identifier_scheme": "",
-      "publisher_scheme_uri": "",
-      "lang": "es"
+      "publisher_name": "Ministerio de Hacienda - Gobierno de Chile",
+      "publisher_identifier": "https://ror.org/02sevrz47",
+      "publisher_identifier_scheme": "ROR",
+      "publisher_scheme_uri": "https://ror.org",
+      "lang": "es",
+      "publisher_identifier_matched_via": "ror_affiliation",
+      "publisher_identifier_confidence": 1.0,
+      "publisher_identifier_status": "auto"
     }
   ],
   "related_identifiers": [],

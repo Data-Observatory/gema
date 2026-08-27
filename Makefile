@@ -1,4 +1,4 @@
-.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt visor
+.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt visor live-identifier-check
 
 install:
 	uv sync --extra dev
@@ -45,6 +45,13 @@ live-eval:
 
 validate-gt:
 	uv run python scripts/validate_ground_truth.py tests/fixtures/do_catalog/ground_truth
+
+# Real ROR/ISNI/ORCID network calls (ORCID part needs free
+# ORCID_CLIENT_ID/SECRET in .env, else those tests skip). Manual-only, same
+# rationale as live-eval — see CLAUDE.md's live-test rule. Run periodically
+# and before a dev->main PR touching identifier resolution.
+live-identifier-check:
+	uv run pytest tests/test_identifier_resolver_live.py -m live -v
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache dist build *.egg-info src/*.egg-info
