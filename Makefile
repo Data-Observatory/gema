@@ -1,4 +1,4 @@
-.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt
+.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt visor
 
 install:
 	uv sync --extra dev
@@ -33,6 +33,9 @@ run:
 
 build-visor:
 	uv run pyinstaller visor/visor.spec --noconfirm
+
+visor:
+	uv run python -m visor.app
 
 record-golden:
 	uv run python scripts/record_golden.py
