@@ -12,6 +12,7 @@ none is provided here; adding one would be dead code.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import eval_common
@@ -71,6 +72,35 @@ def _norm(s: str) -> str:
     return s.strip().lower()
 
 
+_ISNI_PREFIX_RE = re.compile(r"^https?://isni\.org/isni/")
+_ROR_PREFIX_RE = re.compile(r"^https?://ror\.org/")
+_ORCID_PREFIX_RE = re.compile(r"^https?://orcid\.org/")
+
+
+def _normalize_identifier_value(scheme: str, value: str) -> str:
+    """Normalize an identifier value for scheme-aware set comparison.
+
+    Ground truth and pipeline output disagree on identifier *shape*, not just
+    case/whitespace, for ROR/ISNI/ORCID: truth sometimes wraps a value in its
+    canonical resolver URL (e.g. ISNI as
+    ``https://isni.org/isni/0000000122238173``), while ``IdentifierEnricher``
+    (``src/metadata_enricher/enrichers/identifier_types.py``) emits ISNI as
+    bare digits and ORCID as a bare dash-grouped id — only ROR is
+    URI-wrapped on the pipeline side. Strip each scheme's own URI wrapper
+    before comparing, so a truth URI and a pipeline bare value for the same
+    real-world identifier land on the same normalized form.
+    """
+    value = _norm(value)
+    if scheme == "ISNI":
+        value = _ISNI_PREFIX_RE.sub("", value)
+        return re.sub(r"[^0-9x]", "", value)
+    if scheme == "ROR":
+        return _ROR_PREFIX_RE.sub("", value).rstrip("/")
+    if scheme == "ORCID":
+        return _ORCID_PREFIX_RE.sub("", value)
+    return value
+
+
 def extract_identifiers(attrs: dict[str, Any], schemes: frozenset[str]) -> set[tuple[str, str]]:
     """Scheme-aware identifier set across creators' name_identifiers,
     creators' affiliations, and publishers — (scheme, normalized_value)
@@ -79,17 +109,17 @@ def extract_identifiers(attrs: dict[str, Any], schemes: frozenset[str]) -> set[t
     for c in attrs.get("creators", []):
         for nid in c.get("name_identifiers", []):
             scheme = nid.get("name_identifier_scheme", "")
-            val = _norm(nid.get("name_identifier", ""))
+            val = _normalize_identifier_value(scheme, nid.get("name_identifier", ""))
             if val and scheme in schemes:
                 ids.add((scheme, val))
         for aff in c.get("affiliations", []):
             scheme = aff.get("affiliation_identifier_scheme", "")
-            val = _norm(aff.get("affiliation_identifier", ""))
+            val = _normalize_identifier_value(scheme, aff.get("affiliation_identifier", ""))
             if val and scheme in schemes:
                 ids.add((scheme, val))
     for p in attrs.get("publishers", []):
         scheme = p.get("publisher_identifier_scheme", "")
-        val = _norm(p.get("publisher_identifier", ""))
+        val = _normalize_identifier_value(scheme, p.get("publisher_identifier", ""))
         if val and scheme in schemes:
             ids.add((scheme, val))
     return ids
