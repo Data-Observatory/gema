@@ -188,9 +188,9 @@
             "given_name": "",
             "name_identifiers": [
                 {
-                    "name_identifier": "Superintendencia de Pensiones",
+                    "name_identifier": "0000000404880463",
                     "name_identifier_scheme": "ISNI",
-                    "scheme_uri": "https://isni.org/isni/0000000404880463"
+                    "scheme_uri": "https://isni.org"
                 }
             ],
             "role_name": "Superintendencia de Pensiones",
