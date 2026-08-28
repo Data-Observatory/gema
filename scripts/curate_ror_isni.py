@@ -24,11 +24,24 @@ itself), promote those decisions into a durable
     uv run python scripts/curate_ror_isni.py \
         --promote-from reports/do_catalog/ror_isni_review.json \
         --promote-to config/overrides.yaml
+
+For a reviewer who'd rather work in a spreadsheet than hand-edit nested
+JSON, flatten the review file to CSV, fill in the three decision columns
+there, then promote straight from the CSV:
+
+    uv run python scripts/curate_ror_isni.py \
+        --promote-from reports/do_catalog/ror_isni_review.json \
+        --to-csv reports/do_catalog/ror_isni_review.csv
+
+    uv run python scripts/curate_ror_isni.py \
+        --from-csv reports/do_catalog/ror_isni_review.csv \
+        --promote-to config/overrides.yaml
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import sys
 import time
@@ -211,38 +224,39 @@ def _load_overrides_entries(path: Path) -> list[dict[str, Any]]:
     return [e for e in entries if isinstance(e, dict)]
 
 
-def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
-    """Promote human-approved entries from a review file into overrides.yaml.
+def _dedup_key(name: str, country: str | None) -> tuple[str, str | None]:
+    # Must match IdentifierOverrides._load_entry's own normalization
+    # (normalize_org_name + country.strip().upper()) exactly -- otherwise
+    # two promote runs that differ only in raw casing (e.g. country "cl"
+    # vs "CL") would write two YAML entries that collide silently at
+    # load time instead of merging cleanly here.
+    return (
+        normalize_org_name(name),
+        country.strip().upper() if country and country.strip() else None,
+    )
+
+
+def promote_entries(entries: list[dict[str, Any]], overrides_path: Path) -> int:
+    """Promote human-approved entries (from either a review JSON's
+    ``organizations`` list or a filled-in review CSV, both converge to this
+    same shape) into overrides.yaml.
 
     An entry is promoted only when a human has filled in its
-    ``approved_ror_id`` and/or ``approved_isni_id`` (both start ``null`` in
-    a freshly generated review file) -- nothing here decides on its own
-    which candidate is correct. Merges into *overrides_path* by
+    ``approved_ror_id`` and/or ``approved_isni_id`` (both start ``null``/
+    empty in a freshly generated review file) -- nothing here decides on its
+    own which candidate is correct. Merges into *overrides_path* by
     ``(name, country)``, so re-running promotion after further review
     updates existing entries instead of duplicating them.
 
     Returns the number of entries promoted.
     """
-
-    def _dedup_key(name: str, country: str | None) -> tuple[str, str | None]:
-        # Must match IdentifierOverrides._load_entry's own normalization
-        # (normalize_org_name + country.strip().upper()) exactly -- otherwise
-        # two promote runs that differ only in raw casing (e.g. country "cl"
-        # vs "CL") would write two YAML entries that collide silently at
-        # load time instead of merging cleanly here.
-        return (
-            normalize_org_name(name),
-            country.strip().upper() if country and country.strip() else None,
-        )
-
-    review = json.loads(review_path.read_text(encoding="utf-8"))
     by_key = {
         _dedup_key(e.get("name", ""), e.get("country")): e
         for e in _load_overrides_entries(overrides_path)
     }
 
     promoted = 0
-    for entry in review.get("organizations", []):
+    for entry in entries:
         ror_id = entry.get("approved_ror_id")
         isni_id = entry.get("approved_isni_id")
         if not ror_id and not isni_id:
@@ -267,6 +281,90 @@ def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
     return promoted
 
 
+def _load_review_entries(review_path: Path) -> list[dict[str, Any]]:
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    entries: list[dict[str, Any]] = review.get("organizations", [])
+    return entries
+
+
+def promote_to_overrides(review_path: Path, overrides_path: Path) -> int:
+    """Promote human-approved entries from a review JSON file into
+    overrides.yaml. See promote_entries() for the actual logic."""
+    return promote_entries(_load_review_entries(review_path), overrides_path)
+
+
+# One row per org: identifying/candidate info the reviewer needs to see,
+# followed by the three decision columns they fill in -- same fields
+# _add_identifier() seeds as null/[] in a freshly generated review file.
+_CSV_FIELDS = [
+    "org_name",
+    "current_identifiers",
+    "seen_in_files",
+    "lookup_error",
+    "ror_candidate_id",
+    "ror_candidate_name",
+    "ror_alt1_id",
+    "ror_alt1_name",
+    "ror_alt2_id",
+    "ror_alt2_name",
+    "ror_alt3_id",
+    "ror_alt3_name",
+    "approved_ror_id",
+    "approved_isni_id",
+    "country",
+]
+
+
+def review_to_csv(review_path: Path, csv_path: Path) -> int:
+    """Flatten a review JSON's ``organizations`` list to one CSV row per
+    org, for a reviewer who'd rather work in a spreadsheet than hand-edit
+    nested JSON. Round-trips back via csv_to_review_entries()."""
+    entries = _load_review_entries(review_path)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=_CSV_FIELDS)
+        writer.writeheader()
+        for entry in entries:
+            candidate = entry.get("ror_candidate") or {}
+            alternatives = entry.get("ror_alternatives") or []
+            row = {
+                "org_name": entry.get("org_name", ""),
+                "current_identifiers": "; ".join(
+                    f"{i['scheme']}:{i['value']}" for i in entry.get("current_identifiers", [])
+                ),
+                "seen_in_files": "; ".join(entry.get("seen_in_files", [])),
+                "lookup_error": entry.get("lookup_error") or "",
+                "ror_candidate_id": candidate.get("ror_id", ""),
+                "ror_candidate_name": candidate.get("display_name", ""),
+                "approved_ror_id": entry.get("approved_ror_id") or "",
+                "approved_isni_id": entry.get("approved_isni_id") or "",
+                "country": entry.get("country") or "",
+            }
+            for i in range(3):
+                alt = alternatives[i] if i < len(alternatives) else {}
+                row[f"ror_alt{i + 1}_id"] = alt.get("ror_id", "")
+                row[f"ror_alt{i + 1}_name"] = alt.get("display_name", "")
+            writer.writerow(row)
+    return len(entries)
+
+
+def csv_to_review_entries(csv_path: Path) -> list[dict[str, Any]]:
+    """Read a filled-in review CSV back into the entry shape
+    promote_entries() expects -- only the fields promotion actually reads
+    (org_name, approved_ror_id, approved_isni_id, country) need to survive
+    the round-trip; the rest of the CSV is reviewer-facing context only."""
+    with csv_path.open(newline="", encoding="utf-8") as f:
+        return [
+            {
+                "org_name": row.get("org_name", ""),
+                "approved_ror_id": row.get("approved_ror_id") or None,
+                "approved_isni_id": row.get("approved_isni_id") or None,
+                "country": row.get("country") or None,
+            }
+            for row in csv.DictReader(f)
+        ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ground-truth-dir", type=Path)
@@ -276,7 +374,37 @@ def main() -> None:
         "--promote-from", type=Path, help="Promote a reviewed review file instead of collecting"
     )
     parser.add_argument("--promote-to", type=Path, help="config/overrides.yaml to write/update")
+    parser.add_argument(
+        "--to-csv",
+        type=Path,
+        help="Flatten the --promote-from review JSON to this CSV path for spreadsheet review",
+    )
+    parser.add_argument(
+        "--from-csv", type=Path, help="Promote decisions from a filled-in review CSV instead of JSON"
+    )
     args = parser.parse_args()
+
+    if args.to_csv is not None:
+        if args.promote_from is None:
+            print("--promote-from is required alongside --to-csv", file=sys.stderr)
+            sys.exit(1)
+        if not args.promote_from.is_file():
+            print(f"Not a file: {args.promote_from}", file=sys.stderr)
+            sys.exit(1)
+        count = review_to_csv(args.promote_from, args.to_csv)
+        print(f"Wrote {count} rows to {args.to_csv}")
+        return
+
+    if args.from_csv is not None:
+        if args.promote_to is None:
+            print("--promote-to is required alongside --from-csv", file=sys.stderr)
+            sys.exit(1)
+        if not args.from_csv.is_file():
+            print(f"Not a file: {args.from_csv}", file=sys.stderr)
+            sys.exit(1)
+        count = promote_entries(csv_to_review_entries(args.from_csv), args.promote_to)
+        print(f"Promoted {count} human-approved entries to {args.promote_to}")
+        return
 
     if args.promote_from is not None:
         if args.promote_to is None:

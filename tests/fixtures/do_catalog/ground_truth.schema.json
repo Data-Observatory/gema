@@ -1,0 +1,154 @@
+{
+  "additionalProperties": true,
+  "description": "Validated output model for DataCite 4.6.\n\nAll fields are optional (produced progressively by agents).  Custom\nextension fields (temporal_events, audiences, categories, citations,\nmedia_files) are included alongside standard DataCite properties.",
+  "properties": {
+    "reasoning": {
+      "default": "",
+      "title": "Reasoning",
+      "type": "string"
+    },
+    "resource": {
+      "additionalProperties": true,
+      "title": "Resource",
+      "type": "object"
+    },
+    "alternate_identifiers": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Alternate Identifiers",
+      "type": "array"
+    },
+    "audiences": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Audiences",
+      "type": "array"
+    },
+    "categories": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Categories",
+      "type": "array"
+    },
+    "citations": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Citations",
+      "type": "array"
+    },
+    "creators": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Creators",
+      "type": "array"
+    },
+    "dates": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Dates",
+      "type": "array"
+    },
+    "descriptions": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Descriptions",
+      "type": "array"
+    },
+    "funding_references": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Funding References",
+      "type": "array"
+    },
+    "geo_locations": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Geo Locations",
+      "type": "array"
+    },
+    "languages": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Languages",
+      "type": "array"
+    },
+    "media_files": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Media Files",
+      "type": "array"
+    },
+    "publishers": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Publishers",
+      "type": "array"
+    },
+    "related_identifiers": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Related Identifiers",
+      "type": "array"
+    },
+    "rights": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Rights",
+      "type": "array"
+    },
+    "subjects": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Subjects",
+      "type": "array"
+    },
+    "temporal_events": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Temporal Events",
+      "type": "array"
+    },
+    "titles": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Titles",
+      "type": "array"
+    }
+  },
+  "title": "DataCiteOutputModel",
+  "type": "object"
+}
