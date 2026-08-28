@@ -11,9 +11,21 @@ if _scripts not in sys.path:
     sys.path.insert(0, _scripts)
 
 from generate_ground_truth_schema import OUTPUT_PATH  # noqa: E402
+from metadata_enricher.schemas.datacite import DataCiteOutputModel  # noqa: E402
 
 
 class TestGeneratedSchema:
+    def test_committed_schema_matches_the_live_model(self) -> None:
+        """Nothing previously checked the committed file stays in sync with
+        DataCiteOutputModel -- a schema field change would silently leave
+        the student's editor validating against a stale schema forever.
+        This is the drift alarm: a model change that isn't followed by
+        re-running scripts/generate_ground_truth_schema.py now fails
+        `make test`, the same discipline golden-fixture regression already
+        follows for prompt/model changes."""
+        committed = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+        assert committed == DataCiteOutputModel.model_json_schema()
+
     def test_schema_file_is_committed_and_valid_json(self) -> None:
         assert OUTPUT_PATH.is_file(), "run scripts/generate_ground_truth_schema.py"
         schema = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
