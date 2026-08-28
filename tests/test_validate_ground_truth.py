@@ -104,9 +104,78 @@ class TestSwappedFieldDetection:
         assert not [v for v in violations if not v.warning]
 
     def test_ror_publisher_identifier_shape(self) -> None:
-        record = _base_record(publishers=[{"publisher_identifier": "not-a-ror", "publisher_identifier_scheme": "ROR"}])
+        record = _base_record(
+            publishers=[{"publisher_identifier": "not-a-ror", "publisher_identifier_scheme": "ROR"}]
+        )
         violations = validate_record("bad-ror", record)
         assert any("ROR" in v.message and not v.warning for v in violations)
+
+    def test_bare_ror_id_is_accepted(self) -> None:
+        """IdentifierEnricher itself can emit a bare (non-URI-wrapped) ROR
+        id -- the validator must not be stricter than the pipeline."""
+        record = _base_record(
+            publishers=[{"publisher_identifier": "047gc3g35", "publisher_identifier_scheme": "ROR"}]
+        )
+        violations = validate_record("bare-ror", record)
+        assert not [v for v in violations if not v.warning]
+
+    def test_ror_with_garbage_after_prefix_is_rejected(self) -> None:
+        """A real ROR id is always exactly 9 characters -- anything else
+        after the ror.org/ prefix must fail, not silently pass."""
+        record = _base_record(
+            publishers=[
+                {
+                    "publisher_identifier": "https://ror.org/NOTAROR",
+                    "publisher_identifier_scheme": "ROR",
+                }
+            ]
+        )
+        violations = validate_record("garbage-ror", record)
+        assert any("ROR" in v.message and not v.warning for v in violations)
+
+    def test_isni_spaced_form_is_accepted(self) -> None:
+        """do_catalog_common.py's scorer already treats the space-grouped
+        ISNI display form as equivalent to the compact form -- the validator
+        must not be stricter than what actually gets scored."""
+        record = _base_record(
+            publishers=[
+                {
+                    "publisher_identifier": "0000 0001 2223 8173",
+                    "publisher_identifier_scheme": "ISNI",
+                }
+            ]
+        )
+        violations = validate_record("spaced-isni", record)
+        assert not [v for v in violations if not v.warning]
+
+    def test_isni_bad_checksum_is_rejected(self) -> None:
+        """Right shape, wrong check digit -- the likeliest residual error
+        after a manual repair (a single mistyped digit)."""
+        record = _base_record(
+            publishers=[
+                {"publisher_identifier": "0000000122238174", "publisher_identifier_scheme": "ISNI"}
+            ]
+        )
+        violations = validate_record("bad-checksum", record)
+        failures = [v for v in violations if not v.warning]
+        assert any("check digit" in v.message for v in failures)
+
+    def test_viaf_scheme_uri_corruption_is_still_caught(self) -> None:
+        """VIAF has no value-shape pattern to check against, but the
+        embedded-identifier scheme_uri check must still run for it -- the
+        same swapped-field corruption is possible for any scheme."""
+        record = _base_record(
+            publishers=[
+                {
+                    "publisher_identifier": "154434202",
+                    "publisher_identifier_scheme": "VIAF",
+                    "publisher_scheme_uri": "https://viaf.org/viaf/154434202",
+                }
+            ]
+        )
+        violations = validate_record("viaf-corrupted", record)
+        failures = [v for v in violations if not v.warning]
+        assert any("embedded identifier-like digit run" in v.message for v in failures)
 
 
 class TestSPDXCasingWarning:
@@ -138,6 +207,31 @@ class TestValidateDir:
         assert count == 2
         assert any("bad" in v.path for v in violations)
         assert not any("good" in v.path for v in violations)
+
+    def test_malformed_json_is_reported_not_raised(self, tmp_path: Path) -> None:
+        """A trailing comma or unclosed brace must produce a [FAIL] line, not
+        a traceback -- the exact defect Part A's third fix repaired in
+        metadata_template.json."""
+        broken = tmp_path / "broken.json"
+        broken.write_text('{"titles": [],}', encoding="utf-8")
+
+        violations, count = validate_dir(tmp_path)
+        assert count == 1
+        assert len(violations) == 1
+        assert not violations[0].warning
+        assert "invalid JSON" in violations[0].message
+
+    def test_non_dict_top_level_is_reported_not_raised(self, tmp_path: Path) -> None:
+        import json
+
+        not_a_record = tmp_path / "list.json"
+        not_a_record.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+
+        violations, count = validate_dir(tmp_path)
+        assert count == 1
+        assert len(violations) == 1
+        assert not violations[0].warning
+        assert "must be an object" in violations[0].message
 
 
 if __name__ == "__main__":
