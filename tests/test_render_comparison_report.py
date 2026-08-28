@@ -16,7 +16,7 @@ _scripts = str(Path(__file__).resolve().parent.parent / "scripts")
 if _scripts not in sys.path:
     sys.path.insert(0, _scripts)
 
-from render_comparison_report import build_rows, render_html  # noqa: E402
+from render_comparison_report import _describe_value, build_rows, render_html  # noqa: E402
 
 
 def _write_json(path: Path, data: object) -> None:
@@ -52,7 +52,12 @@ def _setup_fixture(tmp_path: Path) -> tuple[Path, Path]:
     _write_json(
         output_root / "outputs" / "some-model" / "104.json",
         {
-            "creators": [{"creator_name": "Instituto Nacional de Estadísticas (Chile)", "name_identifiers": []}],
+            "creators": [
+                {
+                    "creator_name": "Instituto Nacional de Estadísticas (Chile)",
+                    "name_identifiers": [],
+                }
+            ],
             "publishers": [],
             "subjects": [{"subject": "encuestas de hogares"}],
             "categories": [{"name": "Ciencias Sociales", "sub_category": "Economía"}],
@@ -119,8 +124,23 @@ class TestBuildRows:
 
         assert len(items) == 1
         metrics = {m["metric"]: m for m in items[0]["metrics"]}
-        assert metrics["creators_name"]["truth"] == "(empty)"
-        assert metrics["creators_name"]["actual"] == "(empty)"
+        # Neither side's file exists for "missing.json" -- must read as
+        # "the harness never had this data", not "(empty)" (which reads as
+        # "the model missed it", a genuinely different and misleading claim).
+        assert metrics["creators_name"]["truth"] == "(file not found)"
+        assert metrics["creators_name"]["actual"] == "(file not found)"
+
+    def test_unmeasured_metric_is_none_not_zero(self, tmp_path: Path) -> None:
+        """A comparison_data.json from a plain eval_common-only run has no
+        orcid_match key -- it must render as unmeasured, not as a
+        confidently wrong 0.000."""
+        gt_dir, output_root = _setup_fixture(tmp_path)
+        results = [{"input": "104.json", "scores": {"overall": 0.6, "creators_name": 1.0}}]
+
+        items = build_rows(output_root, gt_dir, "some-model", results)
+
+        metrics = {m["metric"]: m for m in items[0]["metrics"]}
+        assert metrics["orcid_match"]["score"] is None
 
     def test_items_sorted_worst_overall_first(self, tmp_path: Path) -> None:
         gt_dir, output_root = _setup_fixture(tmp_path)
@@ -132,17 +152,57 @@ class TestBuildRows:
         assert [it["input"] for it in items] == ["missing.json", "104.json"]
 
 
+class TestDescribeValue:
+    """_format_value alone can't distinguish a missing source file from a
+    genuinely empty extracted value, or a metric with no registered
+    extractor -- both used to render as the same "(empty)" string."""
+
+    def test_missing_document_reads_as_file_not_found(self) -> None:
+        assert _describe_value(lambda d: {"x"}, None) == "(file not found)"
+
+    def test_metric_with_no_extractor_reads_as_such(self) -> None:
+        assert _describe_value(None, {"anything": True}) == "(no extractor for this metric)"
+
+    def test_present_document_with_empty_value_still_reads_as_empty(self) -> None:
+        assert _describe_value(lambda d: set(), {"anything": True}) == "(empty)"
+
+
+class _TagBalanceChecker(HTMLParser):
+    """A real (if lightweight) well-formedness check: every start tag must
+    be closed, in order -- not just "the parser didn't crash". html.parser
+    is deliberately lenient about unclosed/mis-nested tags, so merely
+    feeding it markup (the prior version of this test) proves nothing about
+    structure; an unescaped value breaking the table would still pass that
+    check silently."""
+
+    _VOID = frozenset({"meta", "link", "br", "img", "hr", "input"})
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stack: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: object) -> None:
+        if tag not in self._VOID:
+            self.stack.append(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        assert self.stack, f"closing tag {tag!r} with nothing open"
+        assert self.stack[-1] == tag, f"expected </{self.stack[-1]}>, got </{tag}>"
+        self.stack.pop()
+
+
 class TestRenderHTML:
-    def test_produces_parseable_html_with_expected_content(self, tmp_path: Path) -> None:
+    def test_produces_well_formed_html_with_expected_content(self, tmp_path: Path) -> None:
         gt_dir, output_root = _setup_fixture(tmp_path)
-        comparison_data = json.loads((output_root / "comparison_data.json").read_text(encoding="utf-8"))
+        comparison_data = json.loads(
+            (output_root / "comparison_data.json").read_text(encoding="utf-8")
+        )
 
         html = render_html(comparison_data, output_root, gt_dir)
 
-        class _Checker(HTMLParser):
-            pass
-
-        _Checker().feed(html)  # raises on structurally broken markup
+        checker = _TagBalanceChecker()
+        checker.feed(html)
+        assert checker.stack == [], f"unclosed tags: {checker.stack}"
         assert "some-model" in html
         assert "es-cl" in html
         assert "cc-by-sa-4.0" in html
@@ -150,3 +210,15 @@ class TestRenderHTML:
     def test_no_models_renders_placeholder(self, tmp_path: Path) -> None:
         html = render_html({"models": {}}, tmp_path, tmp_path)
         assert "No results" in html
+
+    def test_unmeasured_metric_renders_dash_not_red_zero(self, tmp_path: Path) -> None:
+        gt_dir, output_root = _setup_fixture(tmp_path)
+        comparison_data = json.loads(
+            (output_root / "comparison_data.json").read_text(encoding="utf-8")
+        )
+        del comparison_data["models"]["some-model"]["results"][0]["scores"]["orcid_match"]
+
+        html = render_html(comparison_data, output_root, gt_dir)
+
+        assert "&mdash;</td></tr>" in html
+        assert '<tr class="low"><td>orcid_match</td>' not in html
