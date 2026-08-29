@@ -945,3 +945,7 @@ enable_identifier_enrichment: true
 # so a rare page can dilute rather than help (BACKLOG.md's media_formats
 # entry).
 enable_content_fetch: true
+# Human-curated ROR/ISNI overrides (scripts/curate_ror_isni.py --promote-to),
+# checked before any network call. A missing file is not an error -- this
+# stays a no-op until someone actually promotes a curation batch to it.
+identifier_overrides_path: config/overrides.yaml
