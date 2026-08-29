@@ -14,12 +14,16 @@ from pathlib import Path
 
 from metadata_enricher.schemas.datacite import DataCiteOutputModel
 
-OUTPUT_PATH = Path(__file__).resolve().parent.parent / "tests/fixtures/do_catalog/ground_truth.schema.json"
+OUTPUT_PATH = (
+    Path(__file__).resolve().parent.parent / "tests/fixtures/do_catalog/ground_truth.schema.json"
+)
 
 
 def main() -> None:
     schema = DataCiteOutputModel.model_json_schema()
-    OUTPUT_PATH.write_text(json.dumps(schema, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUTPUT_PATH.write_text(
+        json.dumps(schema, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"Wrote {OUTPUT_PATH}")
 
 

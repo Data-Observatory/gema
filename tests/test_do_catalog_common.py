@@ -14,7 +14,11 @@ _scripts = str(Path(__file__).resolve().parent.parent / "scripts")
 if _scripts not in sys.path:
     sys.path.insert(0, _scripts)
 
-from do_catalog_common import extract_identifiers, identifier_match_score  # noqa: E402
+from do_catalog_common import (  # noqa: E402
+    IDENTIFIER_SCHEMES,
+    extract_identifiers,
+    identifier_match_score,
+)
 
 
 class TestExtractIdentifiersISNINormalization:
@@ -152,7 +156,71 @@ class TestIdentifierMatchScore:
     def test_actual_hallucinates_when_truth_empty(self) -> None:
         actual = {
             "publishers": [
-                {"publisher_identifier": "https://ror.org/abc", "publisher_identifier_scheme": "ROR"}
+                {
+                    "publisher_identifier": "https://ror.org/abc",
+                    "publisher_identifier_scheme": "ROR",
+                }
             ]
         }
         assert identifier_match_score({}, actual, frozenset({"ROR"})) == 0.0
+
+
+class TestSchemeCaseInsensitivity:
+    """Ground truth and pipeline output aren't guaranteed to agree on scheme
+    casing -- a mismatch here used to silently drop the pair from both
+    extracted sets instead of matching."""
+
+    def test_lowercase_scheme_matches_uppercase_wanted_set(self) -> None:
+        truth = {
+            "publishers": [
+                {
+                    "publisher_identifier": "https://ror.org/047gc3g35",
+                    "publisher_identifier_scheme": "ror",
+                }
+            ]
+        }
+        actual = {
+            "publishers": [
+                {"publisher_identifier": "047gc3g35", "publisher_identifier_scheme": "ROR"}
+            ]
+        }
+        assert identifier_match_score(truth, actual, frozenset({"ROR"})) == 1.0
+
+
+class TestISNIGarbageValueRejected:
+    """A bare organization name sitting in `name_identifier` (the exact
+    corruption class fixed in 104.json/124.json/87.json) must never survive
+    normalization as a fake identifier -- it must be dropped, not scored."""
+
+    def test_org_name_in_isni_field_is_rejected_not_matched(self) -> None:
+        attrs = {
+            "publishers": [
+                {
+                    "publisher_identifier": "Max Planck Society",
+                    "publisher_identifier_scheme": "ISNI",
+                }
+            ]
+        }
+        assert extract_identifiers(attrs, frozenset({"ISNI"})) == set()
+
+
+class TestIdentifierSchemesExcludesUnmatchableSchemes:
+    """VIAF/Wikidata can never appear in pipeline output (IdentifierMatch
+    only carries ror_id/isni_id/orcid_id) -- scoring the default `ror_match`
+    set against them made the metric unwinnable on any record whose only
+    identifier happens to be VIAF/Wikidata."""
+
+    def test_default_schemes_exclude_viaf_and_wikidata(self) -> None:
+        assert IDENTIFIER_SCHEMES == frozenset({"ROR", "ISNI"})
+
+    def test_viaf_only_truth_scores_perfect_by_default(self) -> None:
+        truth = {
+            "publishers": [
+                {
+                    "publisher_identifier": "http://viaf.org/viaf/154434202",
+                    "publisher_identifier_scheme": "VIAF",
+                }
+            ]
+        }
+        actual: dict[str, object] = {}
+        assert identifier_match_score(truth, actual) == 1.0

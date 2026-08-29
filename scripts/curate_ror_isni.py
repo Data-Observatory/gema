@@ -53,6 +53,7 @@ import yaml
 
 from metadata_enricher.enrichers.fuzzy_matcher import normalize_org_name
 from metadata_enricher.enrichers.ror_client import RORClient, get_display_name
+from validate_ground_truth import _SCHEME_PATTERNS
 
 
 def _add_identifier(
@@ -108,7 +109,9 @@ def collect_org_entries(ground_truth_dir: Path) -> dict[str, dict[str, Any]]:
                     entry = _add_identifier(entries, name, stem)
                     for ni in role.get("name_identifiers", []):
                         _record_identifier(
-                            entry, ni.get("name_identifier_scheme", ""), ni.get("name_identifier", "")
+                            entry,
+                            ni.get("name_identifier_scheme", ""),
+                            ni.get("name_identifier", ""),
                         )
 
             for affil in role.get("affiliations", []):
@@ -128,7 +131,9 @@ def collect_org_entries(ground_truth_dir: Path) -> dict[str, dict[str, Any]]:
                 continue
             entry = _add_identifier(entries, name, stem)
             _record_identifier(
-                entry, pub.get("publisher_identifier_scheme", ""), pub.get("publisher_identifier", "")
+                entry,
+                pub.get("publisher_identifier_scheme", ""),
+                pub.get("publisher_identifier", ""),
             )
 
         for fr in data.get("funding_references", []):
@@ -199,7 +204,9 @@ def run(ground_truth_dir: Path, output_path: Path, limit: int | None = None) -> 
             entry.update(find_ror_candidates(client, entry["org_name"]))
 
     confident = sum(1 for e in to_curate if e.get("ror_candidate"))
-    needs_review = sum(1 for e in to_curate if not e.get("ror_candidate") and e.get("ror_alternatives"))
+    needs_review = sum(
+        1 for e in to_curate if not e.get("ror_candidate") and e.get("ror_alternatives")
+    )
     no_match = sum(
         1 for e in to_curate if not e.get("ror_candidate") and not e.get("ror_alternatives")
     )
@@ -248,28 +255,53 @@ def promote_entries(entries: list[dict[str, Any]], overrides_path: Path) -> int:
     ``(name, country)``, so re-running promotion after further review
     updates existing entries instead of duplicating them.
 
-    Returns the number of entries promoted.
+    A filled-in value that doesn't match its scheme's shape (a display name
+    pasted into the CSV instead of an id, a typo) is skipped rather than
+    written -- ``IdentifierResolver`` trusts an override at
+    ``confidence=1.0, status="auto"`` with no further check, so a malformed
+    value promoted here would silently poison every future match for that
+    organization. Reuses the same shape patterns
+    ``scripts/validate_ground_truth.py`` checks committed ground truth
+    against, so the two stay in agreement about what a valid id looks like.
+
+    Returns the number of *distinct* (name, country) entries actually
+    promoted -- two input rows deduping to the same key count once, not
+    twice, so this always matches how many entries the written YAML
+    actually gained/updated.
     """
     by_key = {
         _dedup_key(e.get("name", ""), e.get("country")): e
         for e in _load_overrides_entries(overrides_path)
     }
 
-    promoted = 0
+    promoted_keys: set[tuple[str, str | None]] = set()
     for entry in entries:
         ror_id = entry.get("approved_ror_id")
         isni_id = entry.get("approved_isni_id")
         if not ror_id and not isni_id:
             continue
-        name = entry["org_name"]
+        name = entry.get("org_name", "")
+        if ror_id and not _SCHEME_PATTERNS["ROR"].match(ror_id):
+            print(
+                f"  SKIPPED {name!r}: approved_ror_id {ror_id!r} doesn't look like a ROR id",
+                file=sys.stderr,
+            )
+            continue
+        if isni_id and not _SCHEME_PATTERNS["ISNI"].match(isni_id):
+            print(
+                f"  SKIPPED {name!r}: approved_isni_id {isni_id!r} doesn't look like an ISNI",
+                file=sys.stderr,
+            )
+            continue
         country = entry.get("country") or None
-        by_key[_dedup_key(name, country)] = {
+        key = _dedup_key(name, country)
+        by_key[key] = {
             "name": name,
             "country": country,
             "ror_id": ror_id or None,
             "isni_id": isni_id or None,
         }
-        promoted += 1
+        promoted_keys.add(key)
 
     overrides_path.parent.mkdir(parents=True, exist_ok=True)
     overrides_path.write_text(
@@ -278,7 +310,7 @@ def promote_entries(entries: list[dict[str, Any]], overrides_path: Path) -> int:
         ),
         encoding="utf-8",
     )
-    return promoted
+    return len(promoted_keys)
 
 
 def _load_review_entries(review_path: Path) -> list[dict[str, Any]]:
@@ -321,7 +353,16 @@ def review_to_csv(review_path: Path, csv_path: Path) -> int:
     nested JSON. Round-trips back via csv_to_review_entries()."""
     entries = _load_review_entries(review_path)
     csv_path.parent.mkdir(parents=True, exist_ok=True)
-    with csv_path.open("w", newline="", encoding="utf-8") as f:
+    # utf-8-sig, not plain utf-8: Excel's default "CSV UTF-8" save/open both
+    # use a BOM. Without it, Excel mis-renders the accented Spanish org
+    # names on open, and reading a BOM'd file back (via csv_to_review_entries)
+    # would silently fold the BOM into the first header ("﻿borg_name"),
+    # making every row's org_name/approved_* lookup return "" -- promotion
+    # would then report "Promoted N entries" while writing empty names that
+    # IdentifierOverrides rejects at load time. utf-8-sig writes a BOM that
+    # Excel expects and also transparently strips a BOM on read, so it's
+    # correct for both directions and for BOM-less input.
+    with csv_path.open("w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=_CSV_FIELDS)
         writer.writeheader()
         for entry in entries:
@@ -353,7 +394,7 @@ def csv_to_review_entries(csv_path: Path) -> list[dict[str, Any]]:
     promote_entries() expects -- only the fields promotion actually reads
     (org_name, approved_ror_id, approved_isni_id, country) need to survive
     the round-trip; the rest of the CSV is reviewer-facing context only."""
-    with csv_path.open(newline="", encoding="utf-8") as f:
+    with csv_path.open(newline="", encoding="utf-8-sig") as f:
         return [
             {
                 "org_name": row.get("org_name", ""),
@@ -369,7 +410,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ground-truth-dir", type=Path)
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--limit", type=int, default=None, help="Cap orgs queried (e.g. smoke test)")
+    parser.add_argument(
+        "--limit", type=int, default=None, help="Cap orgs queried (e.g. smoke test)"
+    )
     parser.add_argument(
         "--promote-from", type=Path, help="Promote a reviewed review file instead of collecting"
     )
@@ -380,9 +423,14 @@ def main() -> None:
         help="Flatten the --promote-from review JSON to this CSV path for spreadsheet review",
     )
     parser.add_argument(
-        "--from-csv", type=Path, help="Promote decisions from a filled-in review CSV instead of JSON"
+        "--from-csv",
+        type=Path,
+        help="Promote decisions from a filled-in review CSV instead of JSON",
     )
     args = parser.parse_args()
+
+    if args.limit is not None and (args.to_csv is not None or args.from_csv is not None):
+        print("--limit only applies to the collection step, ignoring it here", file=sys.stderr)
 
     if args.to_csv is not None:
         if args.promote_from is None:

@@ -781,3 +781,56 @@ enough context to pick up cold; prune entries once actually done.
     re-running the pipeline, falling back to a normal run when no saved
     output exists. Used to get every number above at zero live-API cost —
     worth reusing for any future scoring-function change.
+
+- **Bug-fix + human-review tooling for an incoming library-science student
+  — done (2026-08-27/28), merged to `dev` via PR #37/#38.** A 600-hour
+  student (studying library science, no programming background) is joining
+  to raise catalog accuracy and grow the do_catalog corpus. Scoped from an
+  Opus review of the pilot corpus, split into two branches per this repo's
+  branch-discipline convention:
+  - **Bug fixes** (`fix/do-catalog-eval-bugs`): scheme-aware identifier
+    normalization in `do_catalog_common.py` (ground truth's URI-wrapped
+    ISNI/ROR/ORCID vs. the pipeline's bare-value output weren't comparing
+    equal); repaired a swapped-field corruption in 3 ground-truth files
+    (`104.json`/`124.json`/`87.json` — an org name sitting in
+    `name_identifier` with the real ISNI buried in `scheme_uri`); fixed a
+    long-standing trailing-comma JSON syntax error in
+    `metadata_template.json`.
+  - **Tooling** (`feat/human-review-tooling`): `scripts/validate_ground_truth.py`
+    + `make validate-gt` (structural validator — required DataCite keys,
+    per-scheme identifier shape, SPDX-casing warning); CSV round-trip added
+    to `scripts/curate_ror_isni.py` (`--to-csv`/`--from-csv`, so a
+    non-programmer reviewer can work in a spreadsheet instead of nested
+    JSON); `scripts/render_comparison_report.py` (static, self-contained
+    HTML truth-vs-output diff report, worst-score-first); `make visor` dev
+    launch target; `scripts/generate_ground_truth_schema.py` dumping
+    `DataCiteOutputModel`'s JSON Schema for editor autocomplete.
+  - **Onboarding document**: `ONBOARDING_BIBLIOTECARIA.md`, Spanish,
+    written last per plan so its instructions describe tools that actually
+    exist — deliberately **not committed** (plain local file, `.gitignore`d),
+    handed to the student directly.
+
+- **Post-merge Opus review of the above found real bugs — fixed
+  (2026-08-28) on `fix/eval-tooling-review-findings`, off `dev`, not yet
+  merged/PR'd.** Most severe: `do_catalog_common.py`'s default `ror_match`
+  scoring set included VIAF/Wikidata even though `IdentifierMatch`
+  (`src/metadata_enricher/enrichers/identifier_types.py`) can never emit
+  either, capping that metric at 0.0-0.667 on any record whose only truth
+  identifier is VIAF/Wikidata (3/18 pilot files) regardless of how well
+  ROR/ISNI resolved elsewhere — removed from the default set. Also fixed:
+  case-sensitive scheme matching, an ISNI value-strip that could turn a
+  bare organization name into a fake identifier, `curate_ror_isni.py`'s
+  CSV read/write using plain `utf-8` instead of `utf-8-sig` (an
+  Excel-saved BOM silently emptied `org_name`, so promotion reported
+  success while writing nothing usable), unvalidated approved
+  ROR/ISNI values reaching `config/overrides.yaml` at `confidence=1.0`
+  with no shape check, `validate_ground_truth.py`'s ROR regex rejecting a
+  bare id while accepting garbage after the prefix, an ISNI regex that
+  rejected the space-grouped form the scorer itself accepts, no ISNI
+  checksum validation, an unguarded `json.loads` that tracebacked instead
+  of reporting malformed ground truth as a failure, and
+  `render_comparison_report.py` conflating "file missing" / "genuinely
+  empty" / "metric not measured" into the same "(empty)"/red-`0.000`
+  display. `ONBOARDING_BIBLIOTECARIA.md` updated to match wherever these
+  changed real, student-facing behavior (ISNI format description,
+  malformed-JSON message, override-promotion validation note).

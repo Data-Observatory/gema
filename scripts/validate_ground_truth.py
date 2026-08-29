@@ -39,13 +39,46 @@ REQUIRED_KEYS = frozenset({
 # normalization already bridges them for scoring). What this rejects is free
 # text (an organization name) standing in for the identifier value -- the
 # actual corruption class this validator exists to catch.
+#
+# ISNI also accepts the space-grouped form (ISO 27729 canonical display,
+# e.g. "0000 0001 2223 8173") -- do_catalog_common.py's normalization already
+# treats it as equivalent to the compact form, and this validator must not
+# be stricter than what the scorer actually accepts.
+#
+# ROR ids are always exactly 9 characters (leading "0" + 8 more from ROR's
+# base32-ish alphabet) and the URI prefix is optional, matching every other
+# scheme here -- the prior pattern required the prefix (rejecting a bare id
+# IdentifierEnricher itself can emit) while accepting any length after
+# "ror.org/" (letting garbage through).
 _SCHEME_PATTERNS: dict[str, re.Pattern[str]] = {
-    "ISNI": re.compile(r"^(https?://isni\.org/isni/)?[0-9]{15}[0-9Xx]$"),
-    "ROR": re.compile(r"^https?://ror\.org/[a-z0-9]+/?$", re.IGNORECASE),
+    "ISNI": re.compile(
+        r"^(https?://isni\.org/isni/)?[0-9]{4}\s?[0-9]{4}\s?[0-9]{4}\s?[0-9]{3}[0-9Xx]$"
+    ),
+    "ROR": re.compile(r"^(https?://ror\.org/)?0[a-z0-9]{8}/?$", re.IGNORECASE),
     "ORCID": re.compile(
         r"^(https?://orcid\.org/)?[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$", re.IGNORECASE
     ),
 }
+
+
+_ISNI_URI_RE = re.compile(r"^https?://isni\.org/isni/")
+
+
+def _isni_checksum_valid(value: str) -> bool:
+    """ISO 7064 MOD 11-2 check digit, the same algorithm ISNI (and ISBN-10)
+    use. Only meaningful once *value* has already matched _SCHEME_PATTERNS'
+    ISNI shape -- strips the URI prefix/spaces first to get the bare 16
+    characters."""
+    digits = re.sub(r"[^0-9Xx]", "", _ISNI_URI_RE.sub("", value))
+    if len(digits) != 16:
+        return False
+    total = 0
+    for ch in digits[:15]:
+        total = (total + int(ch)) * 2
+    remainder = total % 11
+    result = (12 - remainder) % 11
+    expected = "X" if result == 10 else str(result)
+    return digits[15].upper() == expected
 
 # A scheme_uri should be a fixed, generic scheme homepage -- never a
 # record-specific URL. A run of 6+ digits is a strong signal an actual
@@ -81,7 +114,20 @@ def _check_identifier(
                 f"{scheme} identifier (swapped-field corruption?)",
             )
         )
-    if scheme_uri and _EMBEDDED_ID_RE.search(scheme_uri) and pattern:
+    elif scheme == "ISNI" and pattern and not _isni_checksum_valid(value):
+        violations.append(
+            Violation(
+                f"{file_stem}:{location}",
+                f"ISNI {value!r} has the right shape but fails its check digit "
+                "(likely a transcription typo)",
+            )
+        )
+    # No `and pattern` gate here: VIAF/Wikidata have no shape pattern to
+    # check against above, but the same swapped-field corruption (an
+    # identifier value buried in scheme_uri) is just as possible for them --
+    # this check must run for every scheme, not only the ones with a known
+    # value shape.
+    if scheme_uri and _EMBEDDED_ID_RE.search(scheme_uri):
         violations.append(
             Violation(
                 f"{file_stem}:{location}",
@@ -156,7 +202,21 @@ def validate_dir(directory: Path) -> tuple[list[Violation], int]:
     count = 0
     for path in sorted(directory.glob("*.json")):
         count += 1
-        data = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            # A traceback here is the worst possible outcome for a
+            # non-programmer running `make validate-gt` -- report the
+            # exact file and reason as an ordinary failure instead
+            # (ironic to skip this: Part A's own third fix was exactly a
+            # trailing-comma JSON syntax error in metadata_template.json).
+            all_violations.append(Violation(path.stem, f"invalid JSON: {exc}"))
+            continue
+        if not isinstance(data, dict):
+            all_violations.append(
+                Violation(path.stem, f"top-level JSON must be an object, got {type(data).__name__}")
+            )
+            continue
         all_violations.extend(validate_record(path.stem, data))
     return all_violations, count
 

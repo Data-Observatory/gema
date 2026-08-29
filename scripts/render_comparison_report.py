@@ -26,7 +26,8 @@ import json
 import sys
 from html import escape
 from pathlib import Path
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import do_catalog_common
 import eval_common
@@ -37,7 +38,9 @@ import eval_common
 # never a re-derivation that could drift from what was actually scored.
 _METRIC_EXTRACTORS: dict[str, Callable[[dict[str, Any]], object]] = {
     "creators_name": eval_common.extract_creator_names,
-    "ror_match": lambda a: do_catalog_common.extract_identifiers(a, do_catalog_common.IDENTIFIER_SCHEMES),
+    "ror_match": lambda a: do_catalog_common.extract_identifiers(
+        a, do_catalog_common.IDENTIFIER_SCHEMES
+    ),
     "orcid_match": lambda a: do_catalog_common.extract_identifiers(a, frozenset({"ORCID"})),
     "subjects": eval_common.extract_subjects,
     "categories": eval_common.extract_categories,
@@ -65,6 +68,23 @@ def _format_value(value: object) -> str:
     if value in ("", None):
         return "(empty)"
     return str(value)
+
+
+def _describe_value(
+    extractor: Callable[[dict[str, Any]], object] | None, doc: dict[str, Any] | None
+) -> str:
+    """Render a metric's truth/actual column -- distinguishing "the source
+    file for this side doesn't exist" and "this metric has no registered
+    extractor" from "the file loaded fine but the value is genuinely empty".
+    All three used to render as the same "(empty)" string, which reads as
+    "the model missed it" even when the real cause was a missing file or an
+    unscored metric -- exactly the wrong signal for a report whose purpose
+    is telling a reviewer why a score is low."""
+    if doc is None:
+        return "(file not found)"
+    if extractor is None:
+        return "(no extractor for this metric)"
+    return _format_value(extractor(doc))
 
 
 def _load_truth(ground_truth_dir: Path, input_name: str) -> dict[str, Any] | None:
@@ -98,13 +118,15 @@ def build_rows(
         metric_rows = []
         for metric in _METRIC_ORDER:
             extractor = _METRIC_EXTRACTORS.get(metric)
-            truth_val = extractor(truth) if extractor and truth is not None else None
-            actual_val = extractor(actual) if extractor and actual is not None else None
+            # None (not 0.0) when the metric wasn't scored at all -- e.g.
+            # orcid_match is absent from a plain eval_common-only run.
+            # Defaulting to 0.0 painted an unmeasured metric the same red as
+            # a genuine failure.
             metric_rows.append({
                 "metric": metric,
-                "truth": _format_value(truth_val),
-                "actual": _format_value(actual_val),
-                "score": scores.get(metric, 0.0),
+                "truth": _describe_value(extractor, truth),
+                "actual": _describe_value(extractor, actual),
+                "score": scores.get(metric),
             })
         items.append({
             "input": input_name,
@@ -128,13 +150,18 @@ def render_html(comparison_data: dict[str, Any], output_root: Path, ground_truth
                 f'&mdash; overall {item["overall"]:.3f}</td></tr>'
             )
             for m in item["metrics"]:
-                low = m["score"] < 0.5
+                score = m["score"]
+                # An unmeasured metric (score is None) is neither low nor
+                # high -- it wasn't scored, so it must not render as a
+                # confident 0.000 painted red (see _describe_value).
+                low = score is not None and score < 0.5
                 cls = ' class="low"' if low else ""
+                score_str = f"{score:.3f}" if score is not None else "&mdash;"
                 rows_html.append(
                     f"<tr{cls}><td>{escape(m['metric'])}</td>"
                     f"<td>{escape(m['truth'])}</td>"
                     f"<td>{escape(m['actual'])}</td>"
-                    f"<td>{m['score']:.3f}</td></tr>"
+                    f"<td>{score_str}</td></tr>"
                 )
         sections.append(f"""
 <h2>{escape(spec)} <small>(avg overall {mdata.get('avg_overall', 0):.3f})</small></h2>
@@ -173,10 +200,14 @@ def render_html(comparison_data: dict[str, Any], output_root: Path, ground_truth
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--ground-truth-dir", type=Path, required=True)
-    parser.add_argument("--report", type=Path, default=None, help="Defaults to <output-root>/comparison_report.html")
+    parser.add_argument(
+        "--report", type=Path, default=None, help="Defaults to <output-root>/comparison_report.html"
+    )
     args = parser.parse_args()
 
     data_path = args.output_root / "comparison_data.json"
