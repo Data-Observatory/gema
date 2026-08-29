@@ -59,7 +59,10 @@
         {
           "name_identifier": "0000000119427969",
           "name_identifier_scheme": "ISNI",
-          "scheme_uri": "https://isni.org"
+          "scheme_uri": "https://isni.org",
+          "matched_via": "isni_sru",
+          "confidence": 1.0,
+          "status": "auto"
         }
       ],
       "affiliations": [
@@ -67,7 +70,10 @@
           "affiliation": "Ministerio de Agricultura",
           "affiliation_identifier": "https://ror.org/05nqvv719",
           "affiliation_identifier_scheme": "ROR",
-          "scheme_uri": ""
+          "scheme_uri": "",
+          "affiliation_identifier_matched_via": "ror_affiliation+isni_sru",
+          "affiliation_identifier_confidence": 0.9,
+          "affiliation_identifier_status": "auto"
         }
       ]
     }
@@ -76,12 +82,12 @@
     {
       "date": "2007",
       "date_type": "Collected",
-      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, fuente de los antecedentes recopilados en la capa"
+      "date_information": "Año en que se realizó el VII Censo Nacional Agropecuario, del cual provienen los antecedentes de la capa"
     },
     {
       "date": "2014",
       "date_type": "Updated",
-      "date_information": "Año de las modificaciones según las cuales se actualizó el trazado de límites de la capa"
+      "date_information": "Año en que se actualizó el trazado de límites de la capa según modificaciones efectuadas"
     }
   ],
   "descriptions": [
@@ -116,7 +122,10 @@
       "publisher_identifier": "0000000119427969",
       "publisher_identifier_scheme": "ISNI",
       "publisher_scheme_uri": "https://isni.org",
-      "lang": "es"
+      "lang": "es",
+      "publisher_identifier_matched_via": "isni_sru",
+      "publisher_identifier_confidence": 1.0,
+      "publisher_identifier_status": "auto"
     }
   ],
   "related_identifiers": [],
@@ -127,19 +136,19 @@
       "rights_identifier": "",
       "rights_identifier_scheme": "",
       "scheme_uri": "",
-      "rights_condition": "Los productos cartográficos elaborados con esta capa de información que involucren la representación de los límites internacionales del país deben obtener una autorización de circulación, mediante resolución de la Difrol.",
+      "rights_condition": "Los productos cartográficos elaborados con esta capa que representen los límites internacionales del país deben obtener autorización de circulación mediante resolución de la Dirección de Fronteras y Límites (Difrol).",
       "rights_holder": "Oficina de Estudios y Políticas Agrarias"
     }
   ],
   "subjects": [
     {
-      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua -- Chile",
+      "subject_name": "Censo Agropecuario -- Ganado bovino -- Isla de Pascua",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Distritos censales -- INE -- Chile",
+      "subject_name": "División administrativa -- Distritos censales INE -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

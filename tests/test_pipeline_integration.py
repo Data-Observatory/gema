@@ -519,9 +519,11 @@ class FakeEnricher:
     def __init__(self, raise_error: bool = False) -> None:
         self.raise_error = raise_error
         self.called_with = None
+        self.called_with_country = "unset"
 
-    def enrich(self, document):
+    def enrich(self, document, country=None):
         self.called_with = document
+        self.called_with_country = country
         if self.raise_error:
             raise RuntimeError("enrichment blew up")
         document.set_field("publishers", [{"publisher_name": "enriched-by-fake"}])
@@ -571,6 +573,61 @@ class TestPipelineIdentifierEnrichmentWiring:
         # The fake raises before mutating — document must be the merger's
         # unmodified output, not None and not crashed.
         assert result.document.get_field("titles") is not None
+
+    def test_country_is_detected_from_resource_url_and_forwarded(self, tmp_path, llm_factory):
+        """pipeline.py must compute the country hint itself (the merged
+        document carries no url/country field to read it back from) and
+        pass it through to the enricher — same ccTLD-based detection
+        agents/base.py already uses for the LLM prompt."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://www.mma.gob.cl/x", "title": "T", "description": "D"},
+        )
+        fake = FakeEnricher()
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory, identifier_enricher=fake)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert results[0].success is True
+        assert fake.called_with_country == "CL"
+
+    def test_no_country_detected_yields_none(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        fake = FakeEnricher()
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory, identifier_enricher=fake)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert results[0].success is True
+        assert fake.called_with_country is None
+
+    def test_overrides_path_reaches_the_real_resolver(self, tmp_path, llm_factory):
+        """No identifier_enricher injected here on purpose -- exercises
+        Pipeline's own construction of IdentifierResolver(overrides=...)
+        from config.identifier_overrides_path, not a fake."""
+        overrides_file = tmp_path / "overrides.yaml"
+        overrides_file.write_text(
+            "overrides:\n  - name: Test Org\n    ror_id: https://ror.org/test123\n",
+            encoding="utf-8",
+        )
+        config = make_test_config()
+        config.enable_identifier_enrichment = True
+        config.identifier_overrides_path = str(overrides_file)
+
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+
+        assert pipeline._enricher is not None
+        match = pipeline._enricher._resolver._overrides.lookup("Test Org")
+        assert match is not None
+        assert match.ror_id == "https://ror.org/test123"
+
+    def test_no_overrides_path_means_no_overrides_configured(self, llm_factory):
+        config = make_test_config()
+        config.enable_identifier_enrichment = True
+
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+
+        assert pipeline._enricher is not None
+        assert pipeline._enricher._resolver._overrides.lookup("Anything") is None
 
 
 class FakeDOIResolver:
@@ -643,7 +700,7 @@ class TestPipelineDOIResolutionWiring:
                 return document
 
         class OrderTrackingIdentifierEnricher:
-            def enrich(self, document):
+            def enrich(self, document, country=None):
                 call_order.append("identifier_enricher")
                 return document
 

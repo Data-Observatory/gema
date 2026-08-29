@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import json
 import logging
-import unicodedata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
+
+from metadata_enricher.enrichers.fuzzy_matcher import fold_accents
 
 if TYPE_CHECKING:
     from metadata_enricher.config.models import ProviderConfig
@@ -199,8 +200,7 @@ def _norm(s: str) -> str:
     nothing on the current do_catalog corpus -- no ground-truth/output name
     pair there differs only by accent -- kept as correctness hardening for
     corpora where that isn't true."""
-    folded = unicodedata.normalize("NFKD", s.strip().lower())
-    return "".join(c for c in folded if not unicodedata.combining(c))
+    return fold_accents(s.strip().lower())
 
 
 def extract_creator_names(attrs: dict[str, Any]) -> set[str]:

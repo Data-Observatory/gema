@@ -89,6 +89,11 @@ class PipelineConfig(BaseModel):
     strategies: dict[str, str] = {}
     max_workers: int = Field(default=4, ge=1)
     enable_identifier_enrichment: bool = False
+    # Path to a human-curated overrides.yaml (see enrichers/identifier_overrides.py),
+    # checked before any ROR/ISNI network call. Resolved relative to the current
+    # working directory, same as --config/--output. None (default) disables it --
+    # a missing/unset path is not an error, matching this feature's fail-soft design.
+    identifier_overrides_path: str | None = None
     enable_content_fetch: bool = False
     enable_doi_resolution: bool = False
     validate_pids: bool = True

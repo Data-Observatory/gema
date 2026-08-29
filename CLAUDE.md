@@ -100,6 +100,17 @@ Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` 
 - Three tiers: unit tests (mocked, every commit), regression tests (`-m regression`, cache-replay against committed golden fixtures in `tests/fixtures/golden/`, no API key, `json-semantic-diff` score >= 0.85), and live eval (`scripts/run_live_eval.py`, real API calls, DeepEval `GEval` + hand-rolled per-field LLM-as-judge, pre-release only).
 - Regenerate golden fixtures after prompt edits, model upgrades, or dependency bumps that change output shape: `make record-golden` then commit `tests/fixtures/golden/`.
 - Mark real-API tests `@pytest.mark.live`; run everything else with `uv run pytest -m "not live"`.
+- Live tests stay manual-only, same as `make live-eval` — never wired into `ci.yml`/`visor-build.yml` on either the branch→dev or dev→main gate (external-registry flake/rate-limit risk would block a merge for reasons unrelated to code correctness). Run them periodically by hand instead, and always before merging a change that touches the thing they cover — e.g. identifier resolution (ROR/ISNI/ORCID matching, ROR client parsing, fuzzy-match thresholds/abbreviations) should get a live run before a dev→main PR when that area was touched, not just the mocked unit suite.
+
+## Documentation hygiene
+
+Keep `docs/` minimal. Do not create a new `.md` file (plan, design doc, comparison
+writeup, survey) unless the user explicitly asks for one — the default channel for
+analysis/planning output is the conversation itself, not a file. When a doc already
+in `docs/` finishes its job — every deliverable it planned now exists in the
+codebase, or its recommendation was superseded by a different actual decision — treat
+it as done and delete it rather than leaving it to rot; git history keeps it
+recoverable if ever needed. This applies until the user says otherwise.
 
 ## Configuration
 

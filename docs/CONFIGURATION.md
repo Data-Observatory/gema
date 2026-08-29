@@ -64,6 +64,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `strategies` | `dict[str, str]` | no | Reserved for future strategy/override configuration |
 | `max_workers` | `int` | no | `4` | Max concurrent agent requests per resource (one wave's `ThreadPoolExecutor` size). Lower if the provider rate-limits (429s); override per-run with `gema process --max-workers N` |
 | `enable_identifier_enrichment` | `bool` | no | `false` | Resolve creator/publisher/funder org names to ROR/ISNI (live API calls), and personal creators with a given/family name split to ORCID |
+| `identifier_overrides_path` | `str` | no | `null` | Path to a human-curated overrides file (see `scripts/curate_ror_isni.py`'s promote mode), checked before any ROR/ISNI network call. Resolved relative to the current working directory, same as `--output`. Only takes effect when `enable_identifier_enrichment` is also `true` |
 | `validate_pids` | `bool` | no | `true` | Check every DOI/ROR/ISNI found in the output for correct format on **every run** — no flag needed. Problems become `PipelineResult.warnings`, never a hard failure |
 | `validate_pids_live` | `bool` | no | `true` | On top of the format check, actually look each PID up against doi.org/ror.org/isni.org to confirm it resolves. Set `false` to keep the format check but skip the live network calls |
 
