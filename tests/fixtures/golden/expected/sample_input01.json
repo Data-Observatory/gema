@@ -28,16 +28,16 @@
       "instructional_method": "Análisis"
     },
     {
+      "audience": "Administradores",
+      "mediator": "Gerente",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    },
+    {
       "audience": "Ciudadanos",
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Administradores",
-      "mediator": "Gerente",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -61,19 +61,25 @@
         {
           "name_identifier": "https://ror.org/02sevrz47",
           "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org"
+          "scheme_uri": "https://ror.org",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
         },
         {
           "name_identifier": "000000011234970X",
           "name_identifier_scheme": "ISNI",
-          "scheme_uri": "https://isni.org"
+          "scheme_uri": "https://isni.org",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
         }
       ],
       "affiliations": [
         {
           "affiliation": "Gobierno de Chile",
-          "affiliation_identifier": "https://ror.org/02sevrz47",
-          "affiliation_identifier_scheme": "ROR",
+          "affiliation_identifier": "",
+          "affiliation_identifier_scheme": "",
           "scheme_uri": ""
         }
       ]
@@ -118,7 +124,10 @@
       "publisher_identifier": "https://ror.org/02sevrz47",
       "publisher_identifier_scheme": "ROR",
       "publisher_scheme_uri": "https://ror.org",
-      "lang": "es"
+      "lang": "es",
+      "publisher_identifier_matched_via": "ror_affiliation",
+      "publisher_identifier_confidence": 1.0,
+      "publisher_identifier_status": "auto"
     }
   ],
   "related_identifiers": [],
@@ -135,19 +144,19 @@
   ],
   "subjects": [
     {
-      "subject_name": "Gastos municipales -- Presupuesto público -- Chile",
+      "subject_name": "Gastos municipales -- Presupuesto abierto -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Corporaciones municipales -- Chile",
+      "subject_name": "Corporaciones municipales",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Sector público local -- Chile",
+      "subject_name": "Egresos ejecutados -- Sector público local",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
@@ -158,7 +167,7 @@
       "start_date": "",
       "frequency_number": "",
       "frequency_type": "monthly",
-      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso (Mensual)"
+      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso"
     }
   ],
   "titles": [

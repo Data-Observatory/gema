@@ -442,6 +442,13 @@ class TestAgainstRealGoldenFixture:
             fields_by_name["author"]["value"][0]["authorName"]["value"]
             == "Ministerio de Hacienda - Gobierno de Chile"
         )
+        # This re-record's creators_publishers completion resolved an
+        # unambiguous ROR+ISNI match (status=="auto") for this fixture's
+        # author, unlike the previous recording (which withheld an
+        # ambiguous one) — ordinary live-LLM run-to-run variance in the
+        # org name string, not a code change. Identifier mapping itself is
+        # covered by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
+        # against a synthetic fixture regardless of what this real one does.
         assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ROR"
         assert fields_by_name["subject"]["value"] == ["Other"]
         assert "keyword" in fields_by_name

@@ -9,14 +9,16 @@ enrichers/
 ├── __init__.py                  # Exports IdentifierEnricher, IdentifierResolver, IdentifierMatch, fetch_page_content
 ├── content_fetcher.py           # Best-effort live URL fetch -> cleaned text for ResourceDescription.fetched_content (pre-orchestration, opt-in)
 ├── iana_normalizer.py           # MIME type normalization against IANA registry (standalone, not wired)
-├── country_extractor.py         # ISO country code extraction from HTML/URL (standalone, not wired)
+├── country_extractor.py         # ISO country code extraction from HTML/URL — wired into both
+│                                 #   agent prompts (agents/base.py) and ROR/ISNI matching (pipeline.py -> IdentifierEnricher)
 ├── identifier_types.py          # IdentifierMatch pydantic model (resolved org/person identifier)
-├── ror_client.py                # ROR API v2 client (affiliation + query endpoints)
+├── identifier_overrides.py      # Human-curated ROR/ISNI override store (config/overrides.yaml), checked before any network call
+├── ror_client.py                # ROR API v2 client (affiliation + query endpoints), extract_country/extract_isni/extract_parent
 ├── isni_client.py                # ISNI SRU client (XML parsing via httpx + ElementTree)
 ├── orcid_client.py               # ORCID Public API v3.0 client (OAuth client_credentials + person search)
-├── fuzzy_matcher.py             # rapidfuzz WRatio org name matching + normalization
+├── fuzzy_matcher.py             # rapidfuzz WRatio org name matching, normalization (accent folding, Spanish abbreviations), country-hint re-rank
 ├── identifier_resolver.py       # resolve() merges ROR+ISNI; resolve_person() for ORCID
-├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding)
+├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding) + match provenance
 ├── crossref_client.py            # Crossref public Works API client (GET /works/{doi})
 ├── doi_resolver.py               # Post-merge DOI backfill (titles, creators, publisher, Issued date)
 └── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI (shared by Pipeline + scripts/validate_real_output.py)
@@ -28,6 +30,7 @@ enrichers/
 |------|----------|
 | Enable auto content-fetch (populate `fetched_content` from `resource.url`) | `PipelineConfig.enable_content_fetch = True` (config/models.py); wired in `pipeline.py:Pipeline._maybe_fetch_content` |
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
+| Add/edit a human-curated ROR/ISNI override | `config/overrides.yaml` — see `identifier_overrides.py`; path set via `PipelineConfig.identifier_overrides_path` |
 | Enable DOI resolution (Crossref backfill) | `PipelineConfig.enable_doi_resolution = True` (config/models.py) |
 | Change what DOI resolution backfills | `DOIResolverEnricher._backfill_*()` (doi_resolver.py) — currently titles, creators, publishers, Issued date |
 | Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
@@ -41,18 +44,29 @@ enrichers/
 ## IDENTIFIER RESOLUTION ARCHITECTURE
 
 ```
-Organization name → IdentifierResolver.resolve(name)
+Organization name → IdentifierResolver.resolve(name, country=None)
                        │
-                       ├── 1. Check diskcache (~/.cache/gema/identifiers/, 30-day TTL)
+                       ├── 0. Check IdentifierOverrides (config/overrides.yaml), if configured
+                       │      Hit? → return immediately, no cache write, no network call
+                       │
+                       ├── 1. Check diskcache (~/.cache/gema/identifiers/, 30-day TTL,
+                       │      key includes normalized name + country)
                        │      Hit? → return cached IdentifierMatch or None (negative cache)
                        │
-                       ├── 2. ROR ?affiliation=, else ?query= + rapidfuzz WRatio (threshold 90)
-                       ├── 3. ISNI SRU pica.nw + rapidfuzz WRatio — ALWAYS attempted too,
-                       │      even if ROR already found something (they cover different orgs)
+                       ├── 2. ROR ?affiliation=, else ?query= + rapidfuzz WRatio (threshold 90).
+                       │      *country* re-ranks ?query= candidates (soft hint, never a hard
+                       │      filter — see fuzzy_matcher.match_organization's country_hint)
+                       ├── 3. ROR match found, has its own linked ISNI, AND status=="auto"?
+                       │      → return it as-is, SKIP the independent ISNI check below —
+                       │      that check can only ever demote confidence/status, never
+                       │      confirm it, so it's pure noise in that case. An ambiguous
+                       │      ("review") ROR match still runs the ISNI check, since it
+                       │      stays "review" either way and the extra data point is free.
+                       ├── 4. Otherwise: ISNI SRU pica.nw + rapidfuzz WRatio
                        │
                        ├── Both found? → merge into ONE IdentifierMatch carrying both
-                       │      ror_id and isni_id (ROR's own linked ISNI wins over an
-                       │      independently fuzzy-matched one)
+                       │      ror_id and isni_id (ROR's own linked ISNI, if present,
+                       │      always wins over an independently fuzzy-matched one)
                        │
                        └── Cache result (positive or negative) → return
 
@@ -69,8 +83,10 @@ Person (given_name, family_name[, affiliation]) → IdentifierResolver.resolve_p
 ### Key Design Decisions
 
 - **ROR `chosen:true` only**: ROR explicitly says do NOT use `score` to select matches.
-- **Check both registries, always**: `resolve()` never short-circuits on the first hit — ROR and ISNI are independent registries and either can know about an org the other doesn't.
-- **Write every identifier found, where the schema allows it**: `name_identifiers` and `funder_identifiers` are lists — a match carrying both ROR and ISNI writes both entries. `affiliation_identifier` and `publisher_identifier` are singular DataCite fields (0..1 cardinality) — ROR is preferred there when both are available.
+- **Override always wins**: a human-curated `config/overrides.yaml` entry (`IdentifierOverrides`) short-circuits everything else — no network call, not even a cache write.
+- **ISNI is checked independently EXCEPT when it would be pure noise**: `resolve()` skips the independent ISNI SRU check only when ROR already returned an unambiguous (`status=="auto"`) match that already carries its own linked ISNI — that check can only ever demote confidence/status (see `_merge_org_matches`), never confirm it. Any other case (ROR found nothing, ROR's match has no ISNI of its own, or ROR's match is itself ambiguous) still checks ISNI independently.
+- **Country is a soft hint, not a filter**: the optional `country` param re-ranks ROR `?query=` fuzzy candidates (`fuzzy_matcher.match_organization`'s `country_hint`) — a mismatched candidate is deprioritized by a fixed penalty, never eliminated outright. Folded into the cache key so the same org name in two countries never collides on one cached result.
+- **Write every identifier found, where the schema allows it**: `name_identifiers` and `funder_identifiers` are lists — a match carrying both ROR and ISNI writes both entries. `affiliation_identifier` and `publisher_identifier` are singular DataCite fields (0..1 cardinality) — ROR is preferred there when both are available. Every attached identifier also carries its match provenance (`matched_via`/`confidence`/`status`, prefixed for the singular fields) as sibling keys — see `identifier_enricher.py`'s `_identifier_entry`/`_provenance`.
 - **ORCID is conservative by design**: a wrong ORCID on a person is worse than a missing one. Ambiguous searches (`status == "review"`) are logged, never auto-attached.
 - **Negative caching**: `None` results are cached (both org and person lookups) to avoid repeated API calls for unknown names.
 - **Graceful degradation**: All API failures are caught — resolvers never raise, return `None`/empty on failure. Missing ORCID credentials → `ORCIDClient.enabled == False` → silent no-op, not an error.
@@ -92,7 +108,14 @@ Pipeline._process_resource():
   4. MetadataMerger.merge() → MetadataDocument
   5. DOIResolverEnricher.enrich(document) → backfilled document ← only if enable_doi_resolution
                                                                      AND resource.identifier_type == "DOI"
-  6. IdentifierEnricher.enrich(document) → enriched document   ← only if enable_identifier_enrichment
+  6. IdentifierEnricher.enrich(document, country=detected_country) → enriched document
+                                                                   ← only if enable_identifier_enrichment.
+                                                                     country computed by pipeline.py itself
+                                                                     from resource.url/fetched_content (same
+                                                                     CountryExtractor call agents/base.py
+                                                                     already makes for the LLM prompt) —
+                                                                     the merged document carries no url/
+                                                                     country field to read it back from.
   7. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
 ```
 
@@ -118,6 +141,7 @@ enable_content_fetch: true          # default false — off by default: no cost/
                                      # change for existing users unless opted in
 enable_doi_resolution: true          # default false — same reasoning
 enable_identifier_enrichment: true
+identifier_overrides_path: config/overrides.yaml   # optional — default null (feature off)
 validate_pids: true       # default — set false to disable entirely
 validate_pids_live: true  # default — set false to keep format checks but skip network
 ```
@@ -127,7 +151,7 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 - `from __future__ import annotations` first import in every module.
 - `model_config = ConfigDict(extra="forbid")` on IdentifierMatch (like all pydantic models except ResourceDescription/MetadataDocument).
 - `httpx.Client` for all HTTP calls (never `requests`).
-- `diskcache` for caching (SHA-256 key, TTL in seconds). Cache keys are prefixed `org:`/`person:` — an org name and a person's name never collide.
+- `diskcache` for caching (SHA-256 key, TTL in seconds). Cache keys are prefixed `org:`/`person:` — an org name and a person's name never collide. Org keys also fold in `country` (normalized: stripped + uppercased before hashing) — same name in two countries never collides either.
 - `rapidfuzz` for fuzzy matching (WRatio scorer, threshold 90, gap 5 for review flagging).
 - ISNI format: 16-digit unspaced string (e.g. "000000040628717X"). ROR external_ids has spaces — normalized on extraction.
 - ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"), always written as `https://orcid.org/<id>` in `name_identifier`.
@@ -142,7 +166,8 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 
 ## NOTES
 
-- IANANormalizer and CountryExtractor exist but are NOT wired into the pipeline. They are standalone library modules.
+- IANANormalizer exists but is NOT wired into the pipeline — a standalone library module.
+- CountryExtractor IS wired (unlike the note above about IANANormalizer) — into both agent prompts (`agents/base.py`) and ROR/ISNI matching (`pipeline.py` → `IdentifierEnricher.enrich(country=...)`), computed independently at each site (no shared/cached computation between them).
 - The ISNI SRU free endpoint has undocumented rate limiting (~300ms between requests recommended).
 - ROR API v1 was sunset December 2025. Only v2 is active (`/v2/organizations`).
 - ROR rate limit: 2000/5min per IP (2000/5min with Client-Id header, dropping to 50/5min unauthenticated in Q3 2026).

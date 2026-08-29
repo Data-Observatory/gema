@@ -182,9 +182,9 @@
             "given_name": "",
             "name_identifiers": [
                 {
-                    "name_identifier": "Dirección de Presupuestos",
+                    "name_identifier": "0000000107233091",
                     "name_identifier_scheme": "ISNI",
-                    "scheme_uri": "https://isni.org/isni/0000000107233091"
+                    "scheme_uri": "https://isni.org"
                 }
             ],
             "role_name": "Dirección de Presupuestos",

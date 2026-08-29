@@ -206,9 +206,9 @@
             "given_name": "",
             "name_identifiers": [
                 {
-                    "name_identifier": "Instituto Nacional de Estadísticas (Chile)",
+                    "name_identifier": "0000000122977777",
                     "name_identifier_scheme": "ISNI",
-                    "scheme_uri": "https://isni.org/isni/0000000122977777"
+                    "scheme_uri": "https://isni.org"
                 }
             ],
             "role_name": "Instituto Nacional de Estadísticas (Chile)",

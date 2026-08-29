@@ -13,7 +13,13 @@
     "thumbnail": "",
     "language": "es"
   },
-  "alternate_identifiers": [],
+  "alternate_identifiers": [
+    {
+      "alternate_name": "EPF",
+      "alternate_identifier": "EPF",
+      "alternate_identifier_type": "Local"
+    }
+  ],
   "audiences": [
     {
       "audience": "Investigadores",
@@ -28,16 +34,16 @@
       "instructional_method": "Consultoría"
     },
     {
+      "audience": "Científicos de datos",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
+    },
+    {
       "audience": "Ciudadanos",
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Periodistas",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
     }
   ],
   "categories": [
@@ -57,19 +63,16 @@
       "genre": "",
       "type": "Organization",
       "contributor_type": "",
-      "name_identifiers": [
-        {
-          "name_identifier": "0000000122317381",
-          "name_identifier_scheme": "ISNI",
-          "scheme_uri": "https://isni.org"
-        }
-      ],
+      "name_identifiers": [],
       "affiliations": [
         {
           "affiliation": "Ministerio de Economía, Fomento y Turismo",
           "affiliation_identifier": "0000000404784842",
           "affiliation_identifier_scheme": "ISNI",
-          "scheme_uri": ""
+          "scheme_uri": "",
+          "affiliation_identifier_matched_via": "isni_sru",
+          "affiliation_identifier_confidence": 1.0,
+          "affiliation_identifier_status": "auto"
         }
       ]
     }
@@ -78,7 +81,7 @@
     {
       "date": "2021/2022",
       "date_type": "Collected",
-      "date_information": "Período de los datos de la Encuesta de Presupuestos Familiares (EPF) según los indicadores del portal (años 2021-2022)"
+      "date_information": "Período de levantamiento de la Encuesta de Presupuestos Familiares (EPF), evidenciado por los indicadores del portal que declaran 'Años 2021-2022' para el gasto e ingreso de los hogares"
     }
   ],
   "descriptions": [
@@ -95,7 +98,7 @@
       "geo_location_point": "",
       "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
       "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional de los hogares chilenos",
+      "geo_description": "Total de capitales regionales de Chile continental; datos sobre los hogares chilenos",
       "coverage": "nacional"
     }
   ],
@@ -110,9 +113,9 @@
   "publishers": [
     {
       "publisher_name": "Instituto Nacional de Estadísticas (Chile)",
-      "publisher_identifier": "0000000122317381",
-      "publisher_identifier_scheme": "ISNI",
-      "publisher_scheme_uri": "https://isni.org",
+      "publisher_identifier": "",
+      "publisher_identifier_scheme": "",
+      "publisher_scheme_uri": "",
       "lang": "es"
     }
   ],
@@ -120,13 +123,13 @@
   "rights": [],
   "subjects": [
     {
-      "subject_name": "Ingresos y gastos -- Hogares -- Chile",
+      "subject_name": "Encuesta de Presupuestos Familiares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""
     },
     {
-      "subject_name": "Presupuestos familiares -- Chile",
+      "subject_name": "Ingresos y gastos -- Hogares -- Chile",
       "subject_scheme": "",
       "scheme_uri": "",
       "value_uri": ""

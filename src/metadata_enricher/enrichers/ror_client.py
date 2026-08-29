@@ -196,6 +196,29 @@ def extract_isni(org: dict[str, Any]) -> str | None:
     return None
 
 
+def extract_country(org: dict[str, Any]) -> str | None:
+    """Extract the ISO 3166-1 alpha-2 country code from a ROR v2 record.
+
+    In v2, ``locations`` is a list of
+    ``{"geonames_details": {"country_code": str, ...}, ...}``. A ROR record
+    normally carries exactly one location — this reads the first.
+
+    Args:
+        org: A ROR v2 organization record dict.
+
+    Returns:
+        The two-letter country code (uppercased), or None if not present.
+    """
+    locations = org.get("locations", [])
+    if not locations or not isinstance(locations[0], dict):
+        return None
+    geonames = locations[0].get("geonames_details")
+    if not isinstance(geonames, dict):
+        return None
+    code = geonames.get("country_code")
+    return code.upper() if isinstance(code, str) and code else None
+
+
 def extract_parent(org: dict[str, Any]) -> tuple[str | None, str | None]:
     """Extract parent organization from a ROR v2 record's relationships.
 

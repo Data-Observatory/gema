@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from metadata_enricher.enrichers.identifier_overrides import IdentifierOverrides
 from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 
 MOCK_ROR_ORG = {
@@ -36,6 +37,17 @@ MOCK_ISNI_RESULT = {
     "org_type": "Government",
 }
 
+MOCK_ROR_QUERY_ORG_AR = {
+    **MOCK_ROR_QUERY_ORG,
+    "id": "https://ror.org/aaaa1111",
+    "locations": [{"geonames_details": {"country_code": "AR"}}],
+}
+MOCK_ROR_QUERY_ORG_CL = {
+    **MOCK_ROR_QUERY_ORG,
+    "id": "https://ror.org/bbbb2222",
+    "locations": [{"geonames_details": {"country_code": "CL"}}],
+}
+
 
 def _make_resolver(
     tmp_path: Path,
@@ -47,6 +59,7 @@ def _make_resolver(
     isni_side_effect: Exception | None = None,
     orcid_result: dict | None = None,
     orcid_side_effect: Exception | None = None,
+    overrides: IdentifierOverrides | None = None,
 ) -> tuple[IdentifierResolver, MagicMock, MagicMock, MagicMock]:
     ror = MagicMock()
     if ror_affil_side_effect:
@@ -72,6 +85,7 @@ def _make_resolver(
         isni_client=isni,
         orcid_client=orcid,
         cache_dir=tmp_path / "test_cache",
+        overrides=overrides,
     )
     return resolver, ror, isni, orcid
 
@@ -133,21 +147,145 @@ class TestResolveRORQuery:
 # --------------------------------------------------------------------------
 
 
-class TestMergeBothSources:
-    """IdentifierResolver: ROR and ISNI are both always checked and merged."""
+class TestCountryHint:
+    """IdentifierResolver: the optional country hint reaches ROR ?query= only."""
 
-    def test_isni_always_checked_even_when_ror_affiliation_succeeds(self, tmp_path: Path) -> None:
+    def test_country_disambiguates_tied_ror_query_candidates(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[MOCK_ROR_QUERY_ORG_AR, MOCK_ROR_QUERY_ORG_CL],
+            isni_results=[],
+        )
+        result = resolver.resolve("Universidad de Chile", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/bbbb2222"
+        assert result.status == "auto"
+
+    def test_no_country_hint_leaves_tie_ambiguous(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[MOCK_ROR_QUERY_ORG_AR, MOCK_ROR_QUERY_ORG_CL],
+            isni_results=[],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert result is not None
+        assert result.status == "review"
+
+    def test_country_does_not_change_isni_call(self, tmp_path: Path) -> None:
+        """ISNI SRU results carry no country field — the hint must not
+        reach or affect the ISNI call at all."""
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path, ror_org=None, ror_query_results=[], isni_results=[MOCK_ISNI_RESULT]
+        )
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        isni.search_organizations.assert_called_once_with("Ministerio de Hacienda", max_records=5)
+
+    def test_cache_key_isolated_by_country(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[])
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert ror.search_affiliation.call_count == 1
+        resolver.resolve("Ministerio de Hacienda", country="AR")
+        assert ror.search_affiliation.call_count == 2, (
+            "a different country must not reuse another country's cached result"
+        )
+        resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert ror.search_affiliation.call_count == 2, "same country should still hit cache"
+
+    def test_no_country_and_explicit_none_share_a_cache_entry(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG)
+        resolver.resolve("Ministerio de Hacienda")
+        resolver.resolve("Ministerio de Hacienda", country=None)
+        assert ror.search_affiliation.call_count == 1
+
+
+# --------------------------------------------------------------------------
+
+
+class TestOverridesPrecedence:
+    """IdentifierResolver: a human-curated override wins outright."""
+
+    def _overrides_from(self, tmp_path: Path, yaml_content: str) -> IdentifierOverrides:
+        path = tmp_path / "overrides.yaml"
+        path.write_text(yaml_content, encoding="utf-8")
+        return IdentifierOverrides(path)
+
+    def test_override_hit_skips_network_entirely(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Ministerio de Hacienda\n    ror_id: https://ror.org/curated\n"
+        )
+        resolver, ror, isni, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/curated"
+        assert result.matched_via == "override"
+        assert not ror.search_affiliation.called
+        assert not ror.search_query.called
+        assert not isni.search_organizations.called
+
+    def test_override_miss_falls_through_to_normal_resolution(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Some Unrelated Org\n    ror_id: https://ror.org/other\n"
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/01h6h5x94"
+        assert result.matched_via == "ror_affiliation"
+        assert ror.search_affiliation.called
+
+    def test_no_overrides_configured_behaves_as_before(self, tmp_path: Path) -> None:
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=None)
+        result = resolver.resolve("Ministerio de Hacienda")
+        assert result is not None
+        assert result.matched_via == "ror_affiliation"
+
+    def test_override_result_is_not_cached(self, tmp_path: Path) -> None:
+        """Overrides are already free -- no need to round-trip through the
+        disk cache, and doing so would need its own cache-key scheme."""
+        overrides = self._overrides_from(
+            tmp_path, "overrides:\n  - name: Ministerio de Hacienda\n    ror_id: https://ror.org/curated\n"
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        resolver.resolve("Ministerio de Hacienda")
+        resolver.resolve("Ministerio de Hacienda")
+        assert not ror.search_affiliation.called
+
+    def test_country_specific_override_takes_precedence(self, tmp_path: Path) -> None:
+        overrides = self._overrides_from(
+            tmp_path,
+            "overrides:\n"
+            "  - name: Ministerio de Hacienda\n"
+            "    country: CL\n"
+            "    ror_id: https://ror.org/cl-specific\n",
+        )
+        resolver, ror, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, overrides=overrides)
+        result = resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/cl-specific"
+        assert not ror.search_affiliation.called
+
+
+# --------------------------------------------------------------------------
+
+
+class TestMergeBothSources:
+    """IdentifierResolver: ISNI is checked only when ROR's own record has none."""
+
+    def test_isni_skipped_when_ror_already_has_its_own_isni(self, tmp_path: Path) -> None:
+        """A ROR record already carrying a linked ISNI is trusted outright —
+        no independent ISNI SRU call at all, since that call could only ever
+        demote (never confirm) a match that's already verified registry data."""
         resolver, ror, isni, _ = _make_resolver(
             tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[MOCK_ISNI_RESULT]
         )
         resolver.resolve("Ministerio de Hacienda")
-        assert isni.search_organizations.called, (
-            "ISNI must be checked even when ROR affiliation already found a match"
-        )
+        assert not isni.search_organizations.called
 
-    def test_rors_own_linked_isni_wins_over_independent_isni_hit(self, tmp_path: Path) -> None:
-        """ROR's own external_ids ISNI is verified registry data — prefer it
-        over a separately fuzzy-matched ISNI SRU result for the same org."""
+    def test_rors_own_linked_isni_returned_as_is(self, tmp_path: Path) -> None:
+        """ROR's own external_ids ISNI is verified registry data — used
+        as-is, with no independent ISNI SRU lookup to disagree with it."""
         resolver, _, _, _ = _make_resolver(
             tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[MOCK_ISNI_RESULT]
         )
@@ -155,7 +293,29 @@ class TestMergeBothSources:
         assert result is not None
         assert result.ror_id == "https://ror.org/01h6h5x94"
         assert result.isni_id == "0000000123456789"  # ROR's own, not MOCK_ISNI_RESULT's
-        assert result.matched_via == "ror_affiliation+isni_sru"
+        assert result.matched_via == "ror_affiliation"
+        assert result.status == "auto"
+        assert result.confidence == 1.0
+
+    def test_isni_skipped_on_ror_query_fuzzy_match_too(self, tmp_path: Path) -> None:
+        """Same skip behavior on the ?query=+fuzzy path, not just ?affiliation=."""
+        org_with_isni = {
+            **MOCK_ROR_QUERY_ORG,
+            "external_ids": [
+                {"type": "isni", "preferred": "0000 0009 9999 9999", "all": []},
+            ],
+        }
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[org_with_isni],
+            isni_results=[MOCK_ISNI_RESULT],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert result is not None
+        assert result.isni_id == "0000000999999999"
+        assert result.matched_via == "ror_query_fuzzy"
+        assert not isni.search_organizations.called
 
     def test_independent_isni_used_when_ror_record_has_none(self, tmp_path: Path) -> None:
         ror_org_no_isni = {**MOCK_ROR_ORG, "external_ids": []}
@@ -200,6 +360,37 @@ class TestMergeBothSources:
         result = resolver.resolve("Universidad de Chile")
         assert result is not None
         assert result.status == "review"
+
+    def test_ambiguous_ror_match_with_own_isni_still_checks_isni_independently(
+        self, tmp_path: Path
+    ) -> None:
+        """The isni-skip optimization only applies when the ROR match is
+        itself unambiguous ('auto') -- an ambiguous ('review') ROR match
+        stays 'review' either way, so there's no reason to skip the one
+        extra corroborating check. ROR's own linked ISNI must still win the
+        merge (never silently replaced by the independently-fuzzy-matched
+        one) -- see _merge_org_matches's defensive `or` preference."""
+        ambiguous_org_a = {
+            **MOCK_ROR_QUERY_ORG,
+            "id": "https://ror.org/01q2pz218",
+            "external_ids": [
+                {"type": "isni", "preferred": "0000 0001 1111 1111", "all": []},
+            ],
+        }
+        ambiguous_org_b = {**MOCK_ROR_QUERY_ORG, "id": "https://ror.org/99999999x"}
+        resolver, _, isni, _ = _make_resolver(
+            tmp_path,
+            ror_org=None,
+            ror_query_results=[ambiguous_org_a, ambiguous_org_b],
+            isni_results=[MOCK_ISNI_RESULT],
+        )
+        result = resolver.resolve("Universidad de Chile")
+        assert isni.search_organizations.called, (
+            "an ambiguous ROR match must not skip the independent ISNI check"
+        )
+        assert result is not None
+        assert result.status == "review"
+        assert result.isni_id == "0000000111111111"  # ROR's own -- not MOCK_ISNI_RESULT's
 
 
 # --------------------------------------------------------------------------

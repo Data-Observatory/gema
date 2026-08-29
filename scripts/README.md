@@ -190,6 +190,44 @@ uv run python scripts/validate_real_output.py --output-dir reports/real_validati
 **Exit codes:** 0 = no FAIL anywhere (WARN still passes), 1 = at least one FAIL,
 2 = environment not configured or no input files found.
 
+## `curate_ror_isni.py`
+
+Two modes, both never auto-applying anything a human hasn't decided on.
+
+**Collect** — queries ROR's public API for candidate matches against every org
+name in a ground-truth directory that doesn't already carry a ROR identifier,
+and writes a review file. Each entry starts with `approved_ror_id`,
+`approved_isni_id`, and `country` set to `null` — a human fills these in by
+hand; nothing is auto-applied.
+
+```bash
+uv run python scripts/curate_ror_isni.py \
+    --ground-truth-dir tests/fixtures/do_catalog/ground_truth \
+    --output reports/do_catalog/ror_isni_review.json
+```
+
+**Promote** — once a human has filled in `approved_ror_id`/`approved_isni_id`
+(and, only for a name that's genuinely ambiguous across countries,
+`country`) on the entries they've reviewed, promotes just those into
+`config/overrides.yaml` (see `enrichers/identifier_overrides.py`) — the
+durable, human-curated store `IdentifierResolver` checks before any ROR/ISNI
+network call. Merges by `(name, country)`, so re-running after further
+review updates existing entries instead of duplicating them.
+
+```bash
+uv run python scripts/curate_ror_isni.py \
+    --promote-from reports/do_catalog/ror_isni_review.json \
+    --promote-to config/overrides.yaml
+```
+
+| Flag | Mode | Description |
+|------|------|--------------|
+| `--ground-truth-dir` | collect | Directory of ground-truth JSON files |
+| `--output` | collect | Where the review file is written |
+| `--limit` | collect | Cap orgs queried (e.g. smoke test) |
+| `--promote-from` | promote | The reviewed review file |
+| `--promote-to` | promote | `config/overrides.yaml` to write/update |
+
 ## `eval_common.py`
 
 Not a standalone script — shared, corpus-agnostic evaluation infrastructure imported

@@ -386,3 +386,266 @@ class TestEnrichEdgeCases:
         })
         enricher.enrich(doc)
         resolver.resolve.assert_not_called()
+
+
+# --------------------------------------------------------------------------
+
+
+class TestCountryPassthrough:
+    """IdentifierEnricher: the optional country hint reaches every resolve() call."""
+
+    def test_country_forwarded_for_organizational_creator(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Ministerio de Hacienda",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [],
+                }
+            ]
+        })
+        enricher.enrich(doc, country="CL")
+        resolver.resolve.assert_called_once_with("Ministerio de Hacienda", "CL")
+
+    def test_country_forwarded_for_affiliation(self) -> None:
+        """Affiliation resolution only runs for Organizational creators —
+        a Personal creator's ``continue`` (see ``_enrich_creators``) skips
+        the affiliations block entirely, so an Organizational creator with
+        an already-set name identifier isolates just the affiliation call."""
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Some Org",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [{"name_identifier": "already-set"}],
+                    "affiliations": [{"affiliation": "Universidad de Chile"}],
+                }
+            ]
+        })
+        enricher.enrich(doc, country="CL")
+        resolver.resolve.assert_called_once_with("Universidad de Chile", "CL")
+
+    def test_country_forwarded_for_publisher(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc, country="AR")
+        resolver.resolve.assert_called_once_with("Some Publisher", "AR")
+
+    def test_country_forwarded_for_funder(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "Some Funder", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc, country="AR")
+        resolver.resolve.assert_called_once_with("Some Funder", "AR")
+
+    def test_no_country_defaults_to_none(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        resolver.resolve.assert_called_once_with("Some Publisher", None)
+
+
+# --------------------------------------------------------------------------
+
+
+class TestProvenance:
+    """IdentifierEnricher: every attached identifier carries match provenance."""
+
+    def test_name_identifiers_carry_provenance(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Ministerio de Hacienda",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [],
+                }
+            ]
+        })
+        enricher.enrich(doc)
+        entry = doc.get_field("creators")[0]["name_identifiers"][0]
+        assert entry["matched_via"] == "ror_affiliation"
+        assert entry["confidence"] == 0.95
+        assert entry["status"] == "auto"
+
+    def test_funder_identifiers_carry_provenance(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "Some Funder", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc)
+        entry = doc.get_field("funding_references")[0]["funder_identifiers"][0]
+        assert entry["matched_via"] == "ror_affiliation"
+        assert entry["confidence"] == 0.95
+        assert entry["status"] == "auto"
+
+    def test_affiliation_identifier_carries_prefixed_provenance(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Some Org",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [{"name_identifier": "already-set"}],
+                    "affiliations": [{"affiliation": "Universidad de Chile"}],
+                }
+            ]
+        })
+        enricher.enrich(doc)
+        affil = doc.get_field("creators")[0]["affiliations"][0]
+        assert affil["affiliation_identifier_matched_via"] == "ror_affiliation"
+        assert affil["affiliation_identifier_confidence"] == 0.95
+        assert affil["affiliation_identifier_status"] == "auto"
+
+    def test_publisher_identifier_carries_prefixed_provenance(self) -> None:
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher["publisher_identifier_matched_via"] == "ror_affiliation"
+        assert publisher["publisher_identifier_confidence"] == 0.95
+        assert publisher["publisher_identifier_status"] == "auto"
+
+    def test_orcid_name_identifier_carries_provenance(self) -> None:
+        resolver = MagicMock()
+        resolver.resolve_person.return_value = IdentifierMatch(
+            orcid_id="0000-0002-1825-0097",
+            org_name="Jane Roe",
+            confidence=1.0,
+            matched_via="orcid_search",
+            status="auto",
+        )
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Roe, Jane",
+                    "creator_name_type": "Personal",
+                    "given_name": "Jane",
+                    "family_name": "Roe",
+                    "name_identifiers": [],
+                }
+            ]
+        })
+        enricher.enrich(doc)
+        entry = doc.get_field("creators")[0]["name_identifiers"][0]
+        assert entry["matched_via"] == "orcid_search"
+        assert entry["confidence"] == 1.0
+        assert entry["status"] == "auto"
+
+    def test_override_provenance_flows_through_unchanged(self) -> None:
+        """Provenance isn't special-cased for overrides -- resolve() already
+        returns matched_via='override' transparently, and it's threaded
+        through exactly like any other match."""
+        resolver = MagicMock()
+        resolver.resolve.return_value = IdentifierMatch(
+            ror_id="https://ror.org/curated",
+            org_name="Some Publisher",
+            confidence=1.0,
+            matched_via="override",
+            status="auto",
+        )
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher["publisher_identifier_matched_via"] == "override"
+
+    def test_review_status_org_match_is_not_auto_attached(self) -> None:
+        """Deliberate behavior change (2026-08-25, code review follow-up):
+        org identifiers (ROR/ISNI) now get the same status=="auto" gate
+        ORCID already had -- a wrong PID is worse than a missing one, so an
+        ambiguous match is logged, not attached, for orgs too."""
+        resolver = MagicMock()
+        resolver.resolve.return_value = IdentifierMatch(
+            ror_id="https://ror.org/ambiguous",
+            org_name="Some Org",
+            confidence=0.5,
+            matched_via="ror_query_fuzzy",
+            status="review",
+        )
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {"creator_name": "Some Org", "creator_name_type": "Organizational", "name_identifiers": []}
+            ]
+        })
+        enricher.enrich(doc)
+        assert doc.get_field("creators")[0]["name_identifiers"] == []
+
+
+# --------------------------------------------------------------------------
+
+
+def _review_resolver(ror_id: str = "https://ror.org/ambiguous") -> MagicMock:
+    resolver = MagicMock()
+    resolver.resolve.return_value = IdentifierMatch(
+        ror_id=ror_id,
+        org_name="Some Org",
+        confidence=0.5,
+        matched_via="ror_query_fuzzy",
+        status="review",
+    )
+    return resolver
+
+
+class TestStatusGatingAllPaths:
+    """IdentifierEnricher: status=="auto" gate applies to every org-identifier path."""
+
+    def test_affiliation_identifier_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "creators": [
+                {
+                    "creator_name": "Some Org",
+                    "creator_name_type": "Organizational",
+                    "name_identifiers": [{"name_identifier": "already-set"}],
+                    "affiliations": [{"affiliation": "Universidad de Chile"}],
+                }
+            ]
+        })
+        enricher.enrich(doc)
+        affil = doc.get_field("creators")[0]["affiliations"][0]
+        assert "affiliation_identifier" not in affil
+        assert "affiliation_identifier_matched_via" not in affil
+
+    def test_publisher_identifier_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher.get("publisher_identifier") is None
+        assert "publisher_identifier_matched_via" not in publisher
+
+    def test_funder_identifiers_not_attached_when_review(self) -> None:
+        resolver = _review_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({
+            "funding_references": [{"funder_name": "Some Funder", "funder_identifiers": []}]
+        })
+        enricher.enrich(doc)
+        assert doc.get_field("funding_references")[0]["funder_identifiers"] == []
+
+    def test_auto_status_still_attaches_normally(self) -> None:
+        """Control: the existing 'auto' fixture (_mock_resolver) still works
+        unchanged -- this gate only rejects 'review'/'nomatch', not 'auto'."""
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"publishers": [{"publisher_name": "Some Publisher"}]})
+        enricher.enrich(doc)
+        publisher = doc.get_field("publishers")[0]
+        assert publisher["publisher_identifier"] == "https://ror.org/01h6h5x94"
