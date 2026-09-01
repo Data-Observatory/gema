@@ -15,6 +15,7 @@ from visor.settings import (
     apply_to_environ,
     load_settings,
     missing_required,
+    missing_required_details,
     optional_env_vars,
     providers_using,
     required_env_vars,
@@ -207,3 +208,43 @@ class TestMissingRequired:
         config = make_pipeline_config(("zai", "ZAI_API_KEY"))
         settings = VisorSettings(env={"ZAI_API_KEY": ""})
         assert missing_required(config, settings) == ["ZAI_API_KEY"]
+
+
+class TestMissingRequiredDetails:
+    def test_all_present_returns_empty(self):
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        settings = VisorSettings(env={"ZAI_API_KEY": "abc"})
+        assert missing_required_details(config, settings) == []
+
+    def test_attributes_missing_key_to_its_provider_and_agents(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        settings = VisorSettings()
+        details = missing_required_details(config, settings)
+        assert len(details) == 1
+        assert details[0].api_key_env == "OPENROUTER_API_KEY"
+        assert details[0].provider == "openrouter"
+        assert details[0].agent_ids == ["a0"]
+
+    def test_mixed_providers_reports_only_the_missing_one(self):
+        """Switching one agent to a new provider (e.g. opencode) while
+        others stay on the default must only call out the provider that's
+        actually short a key -- this is what previously surfaced as a
+        confusing flat env-var list with no indication of *why*."""
+        config = make_pipeline_config(
+            ("openrouter", "OPENROUTER_API_KEY"), ("opencode", "OPENCODE_API_KEY")
+        )
+        settings = VisorSettings(env={"OPENCODE_API_KEY": "sk-test"})
+        details = missing_required_details(config, settings)
+        assert len(details) == 1
+        assert details[0].api_key_env == "OPENROUTER_API_KEY"
+        assert details[0].provider == "openrouter"
+        assert details[0].agent_ids == ["a0"]
+
+    def test_groups_multiple_agents_on_the_same_missing_provider(self):
+        config = make_pipeline_config(
+            ("openrouter", "OPENROUTER_API_KEY"), used_by_agents=("openrouter", "openrouter")
+        )
+        settings = VisorSettings()
+        details = missing_required_details(config, settings)
+        assert len(details) == 1
+        assert details[0].agent_ids == ["a0", "a1"]
