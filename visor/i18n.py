@@ -165,6 +165,25 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Descargar configuración (JSON)",
         "agents.upload": "Subir configuración (JSON)",
+        "agents.bulk_provider.title": "Cambiar proveedor para todos los agentes",
+        "agents.bulk_provider.intro": (
+            "Asigna un proveedor a los 5 agentes del pipeline (y, si lo marcas, "
+            "al clasificador de tema de Dataverse) de una sola vez, e intenta "
+            "elegir automáticamente un modelo para cada uno. Recuerda añadir la "
+            "clave de API de ese proveedor en la pestaña Configuración."
+        ),
+        "agents.bulk_provider.include_dataverse": "Incluir también el clasificador de Dataverse",
+        "agents.bulk_provider.apply": "Aplicar a todos",
+        "agents.bulk_provider.pick_first": "Elige primero un proveedor",
+        "agents.bulk_provider.applied": (
+            "Proveedor '{provider}' aplicado a {count} agentes — añade su clave "
+            "en Configuración si aún no lo has hecho"
+        ),
+        "agents.bulk_provider.applied_no_models": (
+            "Proveedor '{provider}' aplicado a {count} agentes, pero no se pudo "
+            "obtener su lista de modelos — elige un modelo manualmente en cada "
+            "tarjeta, luego pulsa Guardar cambios"
+        ),
         "agents.pipeline_behavior.title": "Comportamiento del pipeline",
         "agents.pipeline_behavior.intro": "Se aplica a todo el pipeline, no a un solo agente.",
         "agents.checkbox.content_fetch": "Obtener el contenido de la página automáticamente",
@@ -339,6 +358,25 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Download configuration (JSON)",
         "agents.upload": "Upload configuration (JSON)",
+        "agents.bulk_provider.title": "Switch provider for all agents",
+        "agents.bulk_provider.intro": (
+            "Assign one provider to all 5 pipeline agents (and, if checked, "
+            "the Dataverse subject classifier) at once, and try to auto-pick "
+            "a model for each. Remember to add that provider's API key in "
+            "the Settings tab."
+        ),
+        "agents.bulk_provider.include_dataverse": "Also include the Dataverse classifier",
+        "agents.bulk_provider.apply": "Apply to all",
+        "agents.bulk_provider.pick_first": "Pick a provider first",
+        "agents.bulk_provider.applied": (
+            "Provider '{provider}' applied to {count} agents — add its key "
+            "in Settings if you haven't already"
+        ),
+        "agents.bulk_provider.applied_no_models": (
+            "Provider '{provider}' applied to {count} agents, but its model "
+            "list couldn't be fetched — pick a model manually on each card, "
+            "then click Save changes"
+        ),
         "agents.pipeline_behavior.title": "Pipeline behavior",
         "agents.pipeline_behavior.intro": "These apply to the whole pipeline, not a single agent.",
         "agents.checkbox.content_fetch": "Fetch page content automatically",
