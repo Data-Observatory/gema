@@ -76,6 +76,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.orcid.title": "Opcional — permite buscar por nombre de autor en ORCID",
         "settings.save": "Guardar y continuar",
         "settings.saved": "Configuración guardada",
+        "settings.unassigned_key_hint": (
+            "Clave guardada para {providers}, pero ningún agente lo usa "
+            "todavía — asígnalo en la pestaña Agentes"
+        ),
         # -- run_page.py --
         "run.title": "Ejecutar un recurso",
         "run.mode.form": "Rellenar un formulario",
@@ -273,6 +277,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.orcid.title": "Optional — lets ORCID be searched by author name",
         "settings.save": "Save & Continue",
         "settings.saved": "Settings saved",
+        "settings.unassigned_key_hint": (
+            "Key saved for {providers}, but no agent uses it yet — assign "
+            "it in the Agents tab"
+        ),
         "run.title": "Run a resource",
         "run.mode.form": "Fill a form",
         "run.mode.paste": "Paste JSON",

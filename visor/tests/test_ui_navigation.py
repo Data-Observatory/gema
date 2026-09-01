@@ -850,6 +850,46 @@ async def test_settings_edit_existing_provider_base_url(user: User, monkeypatch,
     assert rebuilt_url_field.value == "https://opencode.example.com/v1"
 
 
+async def test_settings_save_nudges_towards_unassigned_key(user: User, monkeypatch, tmp_path) -> None:
+    """Closing the loop from the other direction of the Agents tab's own
+    "used by: ..." hint: saving a key for a provider no agent (or the
+    Dataverse classifier) is actually assigned to is a likely papercut
+    -- the user probably meant to also switch an agent to it -- so
+    Settings nudges towards the Agents tab instead of silently accepting
+    a key that will never be read."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    # openai is genuinely unused (see test_settings_remove_unused_provider
+    # for why), making it the key that should trigger the nudge here.
+    await user.should_see(marker="settings-provider-edit-openai")
+    user.find(marker="settings-provider-edit-openai").click()
+    await user.should_see(marker="settings-input-OPENAI_API_KEY")
+    user.find(marker="settings-input-OPENAI_API_KEY").type("sk-unused-key")
+    user.find(marker="settings-save").click()
+
+    await user.should_see("openai")
+    await user.should_see("no agent uses it yet")
+
+
+async def test_settings_save_without_unassigned_keys_skips_the_nudge(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("sk-used-key")
+    user.find(marker="settings-save").click()
+
+    await user.should_see("Settings saved")
+    await user.should_not_see("no agent uses it yet")
+
+
 async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 

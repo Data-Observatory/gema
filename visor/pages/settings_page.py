@@ -290,6 +290,28 @@ def render_settings(
                     .mark(f"settings-input-{env_name}")
                 )
 
+            def _providers_with_unassigned_keys(settings: VisorSettings) -> list[str]:
+                """Providers with a saved, non-empty key that no agent (and
+                not the Dataverse subject classifier) is actually assigned
+                to yet -- closes the loop from the other direction of the
+                Agents tab's own "used by: ..." hint: a key saved here with
+                nothing pointed at it is a likely papercut (the user meant
+                to switch an agent to it and hasn't yet), not a silent
+                no-op like an unused ORCID var."""
+                names = []
+                for provider in pipeline_config.providers:
+                    if not settings.env.get(provider.api_key_env):
+                        continue
+                    if providers_using(pipeline_config, provider.api_key_env):
+                        continue
+                    if (
+                        dataverse_export_config is not None
+                        and dataverse_export_config.agent.provider == provider.name
+                    ):
+                        continue
+                    names.append(provider.name)
+                return names
+
             def _save() -> None:
                 nonlocal current
                 for provider in pipeline_config.providers:
@@ -299,6 +321,7 @@ def render_settings(
                     env={name: field.value for name, field in env_inputs.items() if field.value},
                 )
                 save_session_settings(new_settings)
+                unassigned = _providers_with_unassigned_keys(new_settings)
                 # body.refresh() below re-renders every input's initial value
                 # from `current` -- without reassigning it first, the just-
                 # saved edit (e.g. a corrected API key) would visually revert
@@ -306,6 +329,11 @@ def render_settings(
                 # though the correct value is already on disk.
                 current = new_settings
                 ui.notify(t("settings.saved"), type="positive")
+                if unassigned:
+                    ui.notify(
+                        t("settings.unassigned_key_hint", providers=", ".join(unassigned)),
+                        type="warning",
+                    )
                 body.refresh()
                 on_saved(new_settings)
 
