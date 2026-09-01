@@ -11,6 +11,7 @@ from metadata_enricher.config.models import AgentConfig, PipelineConfig, Provide
 from visor.settings import (
     VisorSettings,
     addable_providers,
+    agents_using_provider,
     all_provider_env_vars,
     apply_to_environ,
     load_settings,
@@ -143,6 +144,29 @@ class TestProvidersUsing:
         assert providers_using(config, "OPENCODE_API_KEY") == []
 
 
+class TestAgentsUsingProvider:
+    """Settings' per-row "used by" hint and its unassigned-key nudge both
+    need this name-scoped answer, never providers_using()'s env-var-wide
+    one -- see agents_using_provider()'s own docstring for the
+    misattribution this guards against when two providers share an
+    api_key_env."""
+
+    def test_scoped_to_the_named_provider_even_when_another_shares_its_env_var(self):
+        config = make_pipeline_config(
+            ("openrouter-paid", "OPENROUTER_API_KEY"),
+            ("openrouter-free", "OPENROUTER_API_KEY"),
+            used_by_agents=("openrouter-free",),
+        )
+        assert agents_using_provider(config, "openrouter-free") == ["a0"]
+        assert agents_using_provider(config, "openrouter-paid") == []
+
+    def test_empty_when_no_agent_uses_it(self):
+        config = make_pipeline_config(
+            ("zai", "ZAI_API_KEY"), ("opencode", "OPENCODE_API_KEY"), used_by_agents=("zai",)
+        )
+        assert agents_using_provider(config, "opencode") == []
+
+
 class TestAddableProviders:
     """Settings' "Add a provider" picker offers exactly this list — see
     settings_page.py. Deliberately unit-tested here rather than via a full
@@ -267,3 +291,20 @@ class TestMissingRequiredDetails:
         assert len(details) == 1
         assert details[0].provider == "openrouter-free"
         assert details[0].agent_ids == ["a0"]
+
+    def test_reports_both_providers_when_both_share_an_env_var_and_are_used(self):
+        """Two distinct providers can legitimately share one api_key_env
+        (e.g. the same account key against two base_urls). If both are
+        actually assigned to different agents, both must surface -- not
+        just one, and not merged into a single misleading entry."""
+        config = make_pipeline_config(
+            ("openrouter-eu", "OPENROUTER_API_KEY"),
+            ("openrouter-us", "OPENROUTER_API_KEY"),
+            used_by_agents=("openrouter-eu", "openrouter-us"),
+        )
+        settings = VisorSettings()
+        details = missing_required_details(config, settings)
+        assert len(details) == 2
+        assert [d.provider for d in details] == ["openrouter-eu", "openrouter-us"]
+        assert [d.agent_ids for d in details] == [["a0"], ["a1"]]
+        assert {d.api_key_env for d in details} == {"OPENROUTER_API_KEY"}

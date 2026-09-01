@@ -135,6 +135,20 @@ def all_provider_env_vars(pipeline_config: PipelineConfig) -> list[str]:
     return sorted({p.api_key_env for p in pipeline_config.providers})
 
 
+def agents_using_provider(pipeline_config: PipelineConfig, provider_name: str) -> list[str]:
+    """Agent IDs assigned to exactly *provider_name* -- unlike
+    providers_using() below, never widened to "every provider sharing this
+    one's api_key_env". Settings' per-row "used by" caption and its
+    unassigned-key nudge both need this narrower, name-scoped answer: two
+    providers can legitimately share one env var (see
+    missing_required_details()'s docstring), and attributing one
+    provider's agents to the other's row -- or suppressing the nudge for
+    a genuinely unused provider just because a same-keyed sibling is
+    used -- would be the same misattribution bug this module already
+    fixed once for the Run gate, resurfacing here."""
+    return sorted(a.id for a in pipeline_config.agents if a.provider == provider_name)
+
+
 def providers_using(pipeline_config: PipelineConfig, api_key_env: str) -> list[str]:
     """Agent IDs currently assigned to whichever provider(s) resolve to
     *api_key_env* — for Settings' "used by: ..." caption.
@@ -220,28 +234,30 @@ def missing_required_details(
     """Same gate as missing_required(), grouped by provider/agent instead
     of a flat env-var list.
 
-    Skips a provider with no agent actually assigned to it even when its
-    api_key_env matches: two distinct ProviderConfig entries (nothing
-    enforces api_key_env uniqueness -- Settings' "Add a provider" lets a
-    user type any env var name, including one already in use) can share
-    one env var while only one of them is actually referenced by an
-    agent. Attributing the gate to whichever happened to be declared
-    first in pipeline_config.providers, regardless of use, would name
-    the wrong provider.
+    Grouped by provider *name*, not by api_key_env: nothing enforces
+    api_key_env uniqueness across providers (Settings' "Add a provider"
+    lets a user type any env var name, including one already in use), and
+    two distinct providers can legitimately share one env var (e.g. the
+    same account key against two base_urls). Grouping by env var would
+    either drop or misattribute one of them whenever both are actually
+    used -- grouping by name keeps every genuinely-used provider on its
+    own line even when two lines end up naming the same env var. A
+    provider with no agent actually assigned to it is skipped entirely,
+    regardless of whether its api_key_env matches another provider's.
     """
     missing_envs = set(missing_required(pipeline_config, settings))
     if not missing_envs:
         return []
-    by_env: dict[str, MissingKeyDetail] = {}
+    by_provider: dict[str, MissingKeyDetail] = {}
     for provider in pipeline_config.providers:
         if provider.api_key_env not in missing_envs:
             continue
         agent_ids = [a.id for a in pipeline_config.agents if a.provider == provider.name]
         if not agent_ids:
             continue
-        detail = by_env.setdefault(
-            provider.api_key_env,
+        detail = by_provider.setdefault(
+            provider.name,
             MissingKeyDetail(api_key_env=provider.api_key_env, provider=provider.name, agent_ids=[]),
         )
         detail.agent_ids.extend(agent_ids)
-    return [by_env[env] for env in sorted(by_env)]
+    return [by_provider[name] for name in sorted(by_provider)]
