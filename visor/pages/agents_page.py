@@ -19,6 +19,13 @@ angles.
 Prompt/fields/depends_on (and tools/extra_body, when an agent sets them)
 are read-only in a collapsed "Advanced" section for transparency.
 
+A "switch provider for all agents" card above everything else sets every
+agent card's provider select (and, if checked, the Dataverse card's) in
+one click and tries to auto-pick a model for each via the same
+model_catalog fetch the per-agent refresh button uses -- switching
+providers one card at a time is what leaves an agent stranded on the old
+provider and produces a confusing multi-provider Run-tab gate.
+
 A "Pipeline behavior" card above the agent cards exposes the
 PipelineConfig-level toggles (enable_content_fetch, enable_doi_resolution,
 enable_identifier_enrichment, validate_pids, validate_pids_live) as plain
@@ -133,6 +140,102 @@ def render_agents(
             model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
             provider_selects: dict[str, ui.select] = {}
+
+            with ui.card().classes("w-full q-mt-md"):
+                ui.label(t("agents.bulk_provider.title")).classes("text-subtitle1 text-bold")
+                ui.label(t("agents.bulk_provider.intro")).classes("text-caption")
+
+                with ui.row().classes("w-full items-end"):
+                    bulk_provider_select = (
+                        ui.select(provider_names, label=t("agents.provider_label"))
+                        .classes("w-48")
+                        .mark("agents-bulk-provider")
+                    )
+                    bulk_include_dataverse = (
+                        ui.checkbox(t("agents.bulk_provider.include_dataverse"), value=True).mark(
+                            "agents-bulk-include-dataverse"
+                        )
+                        if dataverse_export_config is not None
+                        else None
+                    )
+
+                    async def _apply_provider_to_all() -> None:
+                        provider_name = bulk_provider_select.value
+                        if not provider_name:
+                            ui.notify(t("agents.bulk_provider.pick_first"), type="negative")
+                            return
+                        provider = next(
+                            (p for p in pipeline_config.providers if p.name == provider_name), None
+                        )
+                        if provider is None:
+                            return
+
+                        include_dataverse = (
+                            bulk_include_dataverse is not None and bulk_include_dataverse.value
+                        )
+                        # Written straight into pipeline_config (and the
+                        # Dataverse export config), not just the visible
+                        # selects -- Settings' remove-provider check reads
+                        # pipeline_config.agents directly, so leaving this
+                        # queued behind the separate "Save changes" button
+                        # (like every other per-agent field here) meant a
+                        # provider this bulk action just "switched away
+                        # from" still looked in-use there until Save was
+                        # also clicked, wrongly blocking its removal.
+                        for select in provider_selects.values():
+                            select.value = provider_name
+                        for agent in pipeline_config.agents:
+                            agent.provider = provider_name
+                        if include_dataverse and dataverse_provider_select is not None:
+                            dataverse_provider_select.value = provider_name
+                            if dataverse_export_config is not None:
+                                dataverse_export_config.agent.provider = provider_name
+
+                        api_key = _resolve_api_key(provider)
+                        try:
+                            models = await run.io_bound(fetch_provider_models, provider, api_key)
+                        except Exception as exc:  # noqa: BLE001 - surfaced to the user, never fatal
+                            logger.warning(
+                                "Could not fetch models for provider %s: %s", provider.name, exc
+                            )
+                            models = None
+
+                        model_targets = list(model_inputs.values())
+                        if include_dataverse and dataverse_model_input is not None:
+                            model_targets.append(dataverse_model_input)
+
+                        agent_count = len(provider_selects) + (1 if include_dataverse else 0)
+                        if models:
+                            for model_select in model_targets:
+                                model_select.set_options(
+                                    _model_options(models, model_select.value or "")
+                                )
+                                model_select.value = models[0]
+                            for agent in pipeline_config.agents:
+                                agent.model = models[0]
+                            if include_dataverse and dataverse_export_config is not None:
+                                dataverse_export_config.agent.model = models[0]
+                            ui.notify(
+                                t(
+                                    "agents.bulk_provider.applied",
+                                    provider=provider_name,
+                                    count=agent_count,
+                                ),
+                                type="positive",
+                            )
+                        else:
+                            ui.notify(
+                                t(
+                                    "agents.bulk_provider.applied_no_models",
+                                    provider=provider_name,
+                                    count=agent_count,
+                                ),
+                                type="warning",
+                            )
+
+                    ui.button(
+                        t("agents.bulk_provider.apply"), on_click=_apply_provider_to_all
+                    ).mark("agents-bulk-provider-apply")
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.pipeline_behavior.title")).classes("text-subtitle1 text-bold")

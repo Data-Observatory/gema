@@ -153,6 +153,147 @@ async def test_agents_tab_refresh_models_failure_is_non_fatal(user: User, monkey
     assert model_select.value == "typed-model"
 
 
+async def test_agents_tab_bulk_provider_switch_applies_to_every_agent(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The bulk "switch provider for all agents" control exists precisely
+    because switching agents one at a time is how a user ends up with a
+    mix of providers and a confusing Run-tab gate (missing_required only
+    complains about whichever provider still lacks a key, with no
+    indication that a forgotten agent is the reason a second provider is
+    even in play). One click must move every agent card (and the
+    Dataverse card, since its checkbox defaults to checked) to the chosen
+    provider, and auto-pick a fetched model for each."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("applied to")
+
+    for agent_id in ("core_metadata", "creators_publishers", "classification", "rights_funding_citations", "media_files"):
+        provider_select = list(user.find(marker=f"agent-provider-{agent_id}").elements)[0]
+        assert provider_select.value == "opencode"
+        model_select = list(user.find(marker=f"agent-model-{agent_id}").elements)[0]
+        assert model_select.value == "opencode-model-a"
+
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value == "opencode"
+    dataverse_model_select = list(user.find(marker="dataverse-export-model").elements)[0]
+    assert dataverse_model_select.value == "opencode-model-a"
+
+    # Download WITHOUT clicking "Save changes" first -- bulk apply must
+    # commit straight into pipeline_config, not just the visible selects
+    # (see the dedicated Settings-tab regression test below for why this
+    # matters: a stale pipeline_config is what wrongly blocked removing
+    # openrouter after a bulk switch away from it).
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert {a["provider"] for a in payload["agents"]} == {"opencode"}
+    assert {a["model"] for a in payload["agents"]} == {"opencode-model-a"}
+
+
+async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: bulk-switching every agent away from openrouter to
+    opencode, then going straight to the Settings tab (no "Save changes"
+    click in between) must let openrouter be removed -- it's no longer
+    used by anything. Previously, bulk apply only updated the visible
+    selects, leaving pipeline_config.agents (what Settings' remove-check
+    actually reads) still pointing at openrouter until Save was also
+    clicked, so removal was wrongly refused."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+
+async def test_agents_tab_bulk_provider_switch_without_dataverse(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Unchecking "also include the Dataverse classifier" must leave that
+    card's own provider/model untouched."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-include-dataverse")
+
+    dataverse_provider_before = list(user.find(marker="dataverse-export-provider").elements)[0].value
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    include_checkbox = list(user.find(marker="agents-bulk-include-dataverse").elements)[0]
+    include_checkbox.value = False
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("applied to")
+
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value == "opencode"
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value == dataverse_provider_before
+
+
+async def test_agents_tab_bulk_provider_switch_fetch_failure_is_non_fatal(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    def _boom(provider: object, api_key: object) -> list[str]:
+        raise RuntimeError("network is down")
+
+    monkeypatch.setattr(agents_page_module, "fetch_provider_models", _boom)
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("but its model")
+    # Provider switch itself must still have gone through despite the
+    # model fetch failing.
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value == "opencode"
+
+
 async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     user: User, monkeypatch, tmp_path
 ) -> None:
