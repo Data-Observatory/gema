@@ -106,8 +106,58 @@ def render_agents(
     container: ui.element,
     pipeline_config: PipelineConfig,
     dataverse_export_config: DataverseExportConfig | None = None,
-) -> None:
+    on_changed: Callable[[], None] | None = None,
+) -> Callable[[], object]:
+    """Returns a zero-arg refresh function, same contract as
+    render_run_form() and render_settings() -- see app.py's shared
+    broadcast wiring for why every tab needs one, and why it is
+    deliberately NOT this tab's own cards.refresh: a full rebuild would
+    discard any not-yet-saved edit sitting in another agent's
+    model/temperature field for a change (Settings adding or removing a
+    provider) that only ever needs to update *options* lists. See
+    _sync_provider_options() below for the actual returned function.
+
+    *on_changed* fires whenever this tab commits a provider/model/agent
+    change into pipeline_config (Save changes, the bulk provider switch,
+    or a config upload) -- app.py wires it to refresh every other tab
+    too, so e.g. the Run tab's missing-key gate reflects a provider
+    switch made here immediately, without needing its own unrelated
+    trigger (like a Settings save) to force a re-render first.
+    """
     container.clear()
+    # Populated (cleared and refilled) by every cards() run, read by
+    # _sync_provider_options() below -- kept at this outer scope so it
+    # survives cards.refresh() rebuilding the actual ui.select objects
+    # underneath it. Only the provider selects are tracked here (not
+    # model/temperature inputs): the provider *list* is the one thing
+    # this tab needs to react to from elsewhere (Settings adding or
+    # removing a provider) -- see _sync_provider_options()'s docstring.
+    provider_selects: dict[str, ui.select] = {}
+    bulk_provider_select_box: list[ui.select] = []
+    dataverse_provider_select_box: list[ui.select | None] = [None]
+
+    def _sync_provider_options() -> None:
+        """This tab's cross-tab-facing listener (see app.py's broadcast
+        wiring) -- deliberately NOT cards.refresh(): a full rebuild would
+        also blow away any not-yet-saved edit sitting in another agent's
+        model/temperature field, for a change (Settings adding or
+        removing a provider) that only ever needs to update *options*
+        lists, never any select's current value."""
+        provider_names = [p.name for p in pipeline_config.providers]
+
+        def _options_for(current_value: str) -> list[str]:
+            return (
+                provider_names if current_value in provider_names else [*provider_names, current_value]
+            )
+
+        for select in provider_selects.values():
+            select.set_options(_options_for(select.value))
+        if bulk_provider_select_box:
+            bulk_provider_select_box[0].set_options(provider_names)
+        dataverse_provider_select = dataverse_provider_select_box[0]
+        if dataverse_provider_select is not None:
+            dataverse_provider_select.set_options(_options_for(dataverse_provider_select.value))
+
     with container:
         ui.label(t("agents.title")).classes("text-h5")
         ui.label(t("agents.intro")).classes("text-caption")
@@ -119,6 +169,8 @@ def render_agents(
 
             async def _on_upload(e: events.UploadEventArguments) -> None:
                 await _handle_upload(e, pipeline_config, cards.refresh)
+                if on_changed is not None:
+                    on_changed()
 
             # flat + a fixed width keeps this beside Download instead of a
             # tall drop-zone with a big empty file-list area reserved below
@@ -139,7 +191,7 @@ def render_agents(
             provider_names = [p.name for p in pipeline_config.providers]
             model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
-            provider_selects: dict[str, ui.select] = {}
+            provider_selects.clear()
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.bulk_provider.title")).classes("text-subtitle1 text-bold")
@@ -151,6 +203,7 @@ def render_agents(
                         .classes("w-48")
                         .mark("agents-bulk-provider")
                     )
+                    bulk_provider_select_box[:] = [bulk_provider_select]
                     bulk_include_dataverse = (
                         ui.checkbox(t("agents.bulk_provider.include_dataverse"), value=True).mark(
                             "agents-bulk-include-dataverse"
@@ -232,6 +285,8 @@ def render_agents(
                                 ),
                                 type="warning",
                             )
+                        if on_changed is not None:
+                            on_changed()
 
                     ui.button(
                         t("agents.bulk_provider.apply"), on_click=_apply_provider_to_all
@@ -348,6 +403,7 @@ def render_agents(
             dataverse_provider_select = None
             dataverse_model_input = None
             dataverse_temp_input = None
+            dataverse_provider_select_box[0] = None
             if dataverse_export_config is not None:
                 with ui.card().classes("w-full q-mt-md"):
                     ui.label(t("agents.dataverse.title")).classes("text-subtitle1 text-bold")
@@ -367,6 +423,7 @@ def render_agents(
                             .classes("w-48")
                             .mark("dataverse-export-provider")
                         )
+                        dataverse_provider_select_box[0] = dataverse_provider_select
                         dataverse_model_input = (
                             ui.select(
                                 _model_options([], dataverse_export_config.agent.model or ""),
@@ -428,10 +485,14 @@ def render_agents(
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
                 ui.notify(t("agents.save.done"), type="positive")
                 cards.refresh()
+                if on_changed is not None:
+                    on_changed()
 
             ui.button(t("agents.save"), on_click=_save).classes("q-mt-md").mark("agents-save")
 
         cards()
+
+    return _sync_provider_options
 
 
 def _download(pipeline_config: PipelineConfig) -> None:

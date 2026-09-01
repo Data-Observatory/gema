@@ -113,15 +113,31 @@ def render_run_form(
     dataverse_export_config: DataverseExportConfig | None = None,
 ) -> Callable[[], object]:
     """Renders the Run tab and returns a zero-arg refresh function — call it
-    after Settings are saved so a just-unblocked Run tab updates without
-    needing a tab switch (tab_panels keep this tab mounted even while
-    another tab is active, so it won't re-render on its own)."""
+    whenever pipeline_config (or the saved settings) may have changed
+    elsewhere, e.g. via app.py's cross-tab broadcast, so a just-unblocked
+    (or just-blocked) Run tab updates without needing a tab switch
+    (tab_panels keep this tab mounted even while another tab is active,
+    so it won't re-render on its own).
+
+    The returned function only actually rebuilds the DOM when the gate's
+    shape (which keys/providers/agents are missing) has changed since the
+    last check -- phase == "form" renders plain, unbound ui.input widgets
+    (see _render_form_phase), so an unconditional rebuild here would
+    silently wipe whatever the user is mid-typing on every unrelated
+    Settings/Agents edit, not just the ones that actually affect whether
+    a key is missing.
+    """
     container.clear()
     state = _RunViewState()
+    last_gate_signature: list[tuple[str, str, tuple[str, ...]]] = []
+
+    def _gate_signature(missing: list[MissingKeyDetail]) -> list[tuple[str, str, tuple[str, ...]]]:
+        return [(d.api_key_env, d.provider, tuple(d.agent_ids)) for d in missing]
 
     @ui.refreshable
     def body() -> None:
         missing = missing_required_details(pipeline_config, current_settings())
+        last_gate_signature[:] = _gate_signature(missing)
         if missing and state.phase == "form":
             _render_settings_gate(missing, on_go_to_settings)
             return
@@ -133,10 +149,15 @@ def render_run_form(
         else:
             _render_result_phase(schema, state, body.refresh, pipeline_config, dataverse_export_config)
 
+    def refresh_if_gate_changed() -> None:
+        missing = missing_required_details(pipeline_config, current_settings())
+        if _gate_signature(missing) != last_gate_signature:
+            body.refresh()
+
     with container:
         body()
 
-    return body.refresh
+    return refresh_if_gate_changed
 
 
 def _render_settings_gate(

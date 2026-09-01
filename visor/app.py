@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Callable
 
 from nicegui import events, ui
 
@@ -97,6 +98,33 @@ def main_page() -> None:
     def _go_to_settings() -> None:
         tabs.set_value(settings_tab)
 
+    # tab_panels mount every tab's content once and keep it alive even
+    # while another tab is showing -- switching tabs never re-renders
+    # anything on its own. Each render_*() below returns a zero-arg
+    # refresh function for its own tab; every one is collected here so
+    # any tab that mutates pipeline_config (or dataverse_export_config)
+    # can force every *other* tab to recompute from the current state,
+    # instead of each mutation site having to know which specific other
+    # tab happens to depend on it. This is the single source of truth
+    # for "something in the shared config changed" -- new call sites
+    # (a future tab, a future mutation) just call this, not a bespoke
+    # refresh wired by hand.
+    #
+    # Each returned function is deliberately a narrow, targeted sync
+    # (recompute the Run gate and rebuild only if its shape actually
+    # changed; update Settings' "used by" captions in place; refresh
+    # Agents' provider dropdown *options*) rather than each tab's own
+    # full-rebuild refresh -- every tab holds not-yet-saved local widget
+    # state (an in-progress Run form, an open Settings key/URL edit, an
+    # unsaved per-agent temperature tweak) that a blind full rebuild
+    # triggered by an unrelated tab's edit would silently discard. See
+    # each render_*()'s own docstring for the specifics.
+    refresh_callbacks: list[Callable[[], object]] = []
+
+    def _broadcast_config_changed() -> None:
+        for refresh in refresh_callbacks:
+            refresh()
+
     refresh_run_tab = render_run_form(
         run_panel,
         pipeline_config,
@@ -105,6 +133,7 @@ def main_page() -> None:
         on_go_to_settings=_go_to_settings,
         dataverse_export_config=dataverse_export_config,
     )
+    refresh_callbacks.append(refresh_run_tab)
 
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
@@ -114,18 +143,27 @@ def main_page() -> None:
         # set when it was first created. Without this, changing a key here
         # has no effect until the whole visor process restarts.
         reset_client_cache()
-        refresh_run_tab()
+        _broadcast_config_changed()
         tabs.set_value(run_tab)
 
-    render_settings(
+    refresh_settings_tab = render_settings(
         settings_panel,
         pipeline_config,
         load_session_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
         dataverse_export_config=dataverse_export_config,
+        on_changed=_broadcast_config_changed,
     )
-    render_agents(agents_panel, pipeline_config, dataverse_export_config)
+    refresh_callbacks.append(refresh_settings_tab)
+
+    refresh_agents_tab = render_agents(
+        agents_panel,
+        pipeline_config,
+        dataverse_export_config,
+        on_changed=_broadcast_config_changed,
+    )
+    refresh_callbacks.append(refresh_agents_tab)
 
 
 def run() -> None:

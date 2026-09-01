@@ -236,6 +236,101 @@ async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
     await user.should_see("Removed provider 'openrouter'")
 
 
+async def test_run_form_typing_survives_unrelated_agents_tab_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression guard for the cross-tab broadcast wiring itself: an
+    Agents-tab Save that doesn't touch any provider assignment must not
+    blow away in-progress typing on the Run form. _render_form_phase
+    builds plain, unbound ui.input widgets, so a naive "refresh the Run
+    tab on every broadcast" would silently discard this -- the gate is
+    only supposed to rebuild when its own missing-key shape changes."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/still-here")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="pipeline-enable-content-fetch")
+    checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    checkbox.value = not checkbox.value
+    user.find(marker="agents-save").click()
+    await user.should_see("updated for this session")
+
+    user.find(marker="tab-run").click()
+    url_input = list(user.find(marker="run-input-url").elements)[0]
+    assert url_input.value == "https://example.org/still-here"
+
+
+async def test_settings_unsaved_key_survives_unrelated_agents_tab_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The other half of the cross-tab broadcast safety guarantee: a
+    Settings edit panel can be open with a typed-but-unsaved API key, and
+    an Agents-tab Save (which broadcasts too) must not collapse it back
+    to empty. This is why Settings' broadcast listener only patches each
+    provider's "used by" caption text in place instead of rebuilding the
+    whole body."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("not-yet-saved-key")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+    user.find(marker="agents-save").click()
+    await user.should_see("updated for this session")
+
+    user.find(marker="tab-settings").click()
+    key_input = list(user.find(marker="settings-input-OPENROUTER_API_KEY").elements)[0]
+    assert key_input.value == "not-yet-saved-key"
+
+
+async def test_run_tab_gate_reflects_bulk_provider_switch_without_visiting_settings(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: the Run tab's gate is rendered once at page load
+    (tab_panels mount every tab up front and never re-render it on a
+    plain tab switch) and previously only ever got refreshed after a
+    Settings save. Bulk-switching every agent to opencode (no
+    OPENCODE_API_KEY set) must update the gate to ask for opencode's key,
+    not keep showing the original openrouter one -- broadcasting from the
+    Agents tab, not just Settings, is what this test guards."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    await user.should_see(marker="run-settings-gate")
+    await user.should_see("openrouter")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-run").click()
+    await user.should_see(marker="run-settings-gate")
+    await user.should_see("OPENCODE_API_KEY")
+
+
 async def test_agents_tab_bulk_provider_switch_without_dataverse(
     user: User, monkeypatch, tmp_path
 ) -> None:
