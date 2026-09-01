@@ -24,7 +24,7 @@ from typing import Any
 
 from platformdirs import user_config_dir
 
-from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
@@ -137,9 +137,26 @@ def all_provider_env_vars(pipeline_config: PipelineConfig) -> list[str]:
 
 def providers_using(pipeline_config: PipelineConfig, api_key_env: str) -> list[str]:
     """Agent IDs currently assigned to whichever provider(s) resolve to
-    *api_key_env* — for Settings' "used by: ..." caption."""
+    *api_key_env* — for Settings' "used by: ..." caption.
+
+    Deliberately walks pipeline_config.agents only, never the Dataverse
+    export's Subject Classifier (a separate, optional LLM step outside
+    pipeline_config.agents — see exporters/dataverse.py). A caller that
+    also needs to know about that one extra consumer (Settings' caption,
+    the remove-provider block) checks dataverse_uses_provider() alongside
+    this.
+    """
     provider_names = {p.name for p in pipeline_config.providers if p.api_key_env == api_key_env}
     return sorted(a.id for a in pipeline_config.agents if a.provider in provider_names)
+
+
+def dataverse_uses_provider(
+    dataverse_export_config: DataverseExportConfig | None, provider_name: str
+) -> bool:
+    """Whether the Dataverse export's Subject Classifier is assigned to
+    *provider_name* — see providers_using()'s docstring for why this is
+    a separate check."""
+    return dataverse_export_config is not None and dataverse_export_config.agent.provider == provider_name
 
 
 def addable_providers(
@@ -201,7 +218,17 @@ def missing_required_details(
     pipeline_config: PipelineConfig, settings: VisorSettings
 ) -> list[MissingKeyDetail]:
     """Same gate as missing_required(), grouped by provider/agent instead
-    of a flat env-var list."""
+    of a flat env-var list.
+
+    Skips a provider with no agent actually assigned to it even when its
+    api_key_env matches: two distinct ProviderConfig entries (nothing
+    enforces api_key_env uniqueness -- Settings' "Add a provider" lets a
+    user type any env var name, including one already in use) can share
+    one env var while only one of them is actually referenced by an
+    agent. Attributing the gate to whichever happened to be declared
+    first in pipeline_config.providers, regardless of use, would name
+    the wrong provider.
+    """
     missing_envs = set(missing_required(pipeline_config, settings))
     if not missing_envs:
         return []
@@ -210,6 +237,8 @@ def missing_required_details(
         if provider.api_key_env not in missing_envs:
             continue
         agent_ids = [a.id for a in pipeline_config.agents if a.provider == provider.name]
+        if not agent_ids:
+            continue
         detail = by_env.setdefault(
             provider.api_key_env,
             MissingKeyDetail(api_key_env=provider.api_key_env, provider=provider.name, agent_ids=[]),

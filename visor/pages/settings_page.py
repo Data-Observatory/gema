@@ -35,6 +35,7 @@ from visor.session_settings import save_session_settings
 from visor.settings import (
     VisorSettings,
     addable_providers,
+    dataverse_uses_provider,
     optional_env_vars,
     providers_using,
 )
@@ -85,17 +86,35 @@ def render_settings(
     # the actual ui.label objects underneath it.
     hint_labels: dict[str, ui.label] = {}
 
+    def _used_by_hint(provider: ProviderConfig) -> str:
+        used_by = list(providers_using(pipeline_config, provider.api_key_env))
+        if dataverse_uses_provider(dataverse_export_config, provider.name):
+            used_by.append(t("settings.providers.dataverse_subject_classifier"))
+        return (
+            t("settings.providers.used_by", agents=", ".join(used_by))
+            if used_by
+            else t("settings.providers.not_used")
+        )
+
     def _sync_used_by_hints() -> None:
+        if {p.name for p in pipeline_config.providers} != set(hint_labels):
+            # The provider list itself changed shape (e.g. an Agents-tab
+            # config upload replaced pipeline_config.providers wholesale)
+            # -- patching label text in place can't add or remove rows,
+            # and _save() below indexes url_inputs/env_inputs by every
+            # *current* provider name, so a stale set left over from the
+            # last body() render would raise KeyError the next time
+            # Save & Continue is clicked. A full rebuild is the only
+            # correct response here; it only fires on this rare, explicit
+            # bulk replace, never on the routine "an agent's provider
+            # changed" path this listener otherwise handles without
+            # disturbing an open edit panel.
+            body.refresh()
+            return
         for provider in pipeline_config.providers:
             label = hint_labels.get(provider.name)
-            if label is None:
-                continue
-            used_by = providers_using(pipeline_config, provider.api_key_env)
-            label.text = (
-                t("settings.providers.used_by", agents=", ".join(used_by))
-                if used_by
-                else t("settings.providers.not_used")
-            )
+            if label is not None:
+                label.text = _used_by_hint(provider)
 
     with container:
         ui.label(t("settings.title")).classes("text-h5")
@@ -113,12 +132,7 @@ def render_settings(
                 ui.label(t("settings.providers.intro")).classes("text-caption")
 
                 for provider in pipeline_config.providers:
-                    used_by = providers_using(pipeline_config, provider.api_key_env)
-                    hint = (
-                        t("settings.providers.used_by", agents=", ".join(used_by))
-                        if used_by
-                        else t("settings.providers.not_used")
-                    )
+                    hint = _used_by_hint(provider)
 
                     edit_panel_ref: list[ui.column] = []
 
@@ -127,7 +141,7 @@ def render_settings(
 
                     def _remove(name: str = provider.name) -> None:
                         users = [a.id for a in pipeline_config.agents if a.provider == name]
-                        if dataverse_export_config is not None and dataverse_export_config.agent.provider == name:
+                        if dataverse_uses_provider(dataverse_export_config, name):
                             users.append(t("settings.providers.dataverse_subject_classifier"))
                         if users:
                             ui.notify(
@@ -138,6 +152,18 @@ def render_settings(
                         pipeline_config.providers[:] = [
                             p for p in pipeline_config.providers if p.name != name
                         ]
+                        if pipeline_config.default_provider == name:
+                            # PipelineConfig.default_provider is never read
+                            # for routing (see this module's own docstring)
+                            # but IS cross-validated against providers on
+                            # reconstruction (PipelineConfig._validate_
+                            # references) -- left dangling here, a later
+                            # download-then-reupload of this exact,
+                            # currently-valid config (the app's own
+                            # documented backup path) would reject it.
+                            pipeline_config.default_provider = (
+                                pipeline_config.providers[0].name if pipeline_config.providers else None
+                            )
                         ui.notify(t("settings.providers.removed", name=name), type="positive")
                         body.refresh()
                         if on_changed is not None:
@@ -304,10 +330,7 @@ def render_settings(
                         continue
                     if providers_using(pipeline_config, provider.api_key_env):
                         continue
-                    if (
-                        dataverse_export_config is not None
-                        and dataverse_export_config.agent.provider == provider.name
-                    ):
+                    if dataverse_uses_provider(dataverse_export_config, provider.name):
                         continue
                     names.append(provider.name)
                 return names
@@ -316,9 +339,25 @@ def render_settings(
                 nonlocal current
                 for provider in pipeline_config.providers:
                     provider.base_url = url_inputs[provider.name].value.strip() or None
+                # Starts from the previously-saved env, not a blank dict:
+                # env_inputs only has a field for a provider currently in
+                # pipeline_config.providers (plus the fixed ORCID vars), so
+                # rebuilding from scratch would silently drop a saved key
+                # for any provider removed from the list earlier in this
+                # same session (e.g. right after the Agents tab's bulk
+                # switch makes it unused) the moment Save is next clicked
+                # for an unrelated reason -- switching an agent back to
+                # that provider later would then re-gate the Run tab for
+                # no reason the user could see coming.
+                merged_env = dict(current.env)
+                for name, field in env_inputs.items():
+                    if field.value:
+                        merged_env[name] = field.value
+                    else:
+                        merged_env.pop(name, None)
                 new_settings = VisorSettings(
                     default_provider=current.default_provider,
-                    env={name: field.value for name, field in env_inputs.items() if field.value},
+                    env=merged_env,
                 )
                 save_session_settings(new_settings)
                 unassigned = _providers_with_unassigned_keys(new_settings)

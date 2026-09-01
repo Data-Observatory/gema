@@ -236,6 +236,148 @@ async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
     await user.should_see("Removed provider 'openrouter'")
 
 
+async def test_removing_the_default_provider_keeps_config_re_uploadable(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: PipelineConfig.default_provider is cross-validated
+    against providers on reconstruction (PipelineConfig._validate_
+    references) even though it's never read for routing -- removing a
+    provider that also happens to be default_provider (exactly what the
+    previous test's own flow sets up: bulk-switch away from openrouter,
+    then remove it) must not leave that field dangling, or the app's own
+    documented backup workflow (Download configuration -> hand-edit ->
+    Upload) would reject the user's own, currently-valid config."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+    from metadata_enricher.config.models import PipelineConfig
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+    user.find(marker="tab-agents").click()
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert payload["default_provider"] != "openrouter"
+
+    # The exact reconstruction _handle_upload() runs on a re-upload
+    # (PipelineConfig's own cross-field validator, which is what raised
+    # on a dangling default_provider before the fix) -- proves the
+    # downloaded config is genuinely re-uploadable, not just that the
+    # field's value looks different above.
+    PipelineConfig(**payload)
+
+
+async def test_removing_a_now_unused_provider_preserves_its_saved_key(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: _save()'s env dict used to be rebuilt from only
+    the currently-rendered key inputs, so removing a provider (which
+    re-renders Settings without that provider's input field) and then
+    clicking Save & Continue for any unrelated reason silently deleted
+    its previously-saved key from settings.json -- reachable in far fewer
+    steps now that the Agents tab's bulk switch makes a provider unused
+    in one click. The key must survive on disk even after its provider
+    is removed, so switching an agent back to it later doesn't
+    unnecessarily re-gate the Run tab."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+    from visor.settings import load_settings
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("keep-me-please")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+    # Save & Continue for an unrelated reason (e.g. the OPENCODE_API_KEY
+    # this bulk switch now requires) -- must not touch the already-saved,
+    # now-unrendered OPENROUTER_API_KEY entry.
+    user.find(marker="settings-provider-edit-opencode").click()
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+    user.find(marker="settings-input-OPENCODE_API_KEY").type("opencode-key")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    saved = load_settings()
+    assert saved.env.get("OPENROUTER_API_KEY") == "keep-me-please"
+    assert saved.env.get("OPENCODE_API_KEY") == "opencode-key"
+
+
+async def test_agents_upload_changing_providers_keeps_settings_savable(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: Settings' cross-tab broadcast listener only
+    patches existing rows' caption text -- it can't add or remove a row.
+    An Agents-tab config upload that changes the provider list must
+    therefore fall back to a full Settings rebuild, or Save & Continue
+    (which indexes its inputs by every *current* provider name) would
+    raise KeyError the moment it's clicked with Settings still showing
+    the stale, pre-upload row set."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from nicegui.elements.upload_files import SmallFileUpload
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-download")
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    payload["providers"].append(
+        {"name": "groq", "api_key_env": "GROQ_API_KEY", "base_url": "https://api.groq.com/openai/v1"}
+    )
+
+    upload_element = list(user.find(marker="agents-upload").elements)[0]
+    await upload_element.handle_uploads(
+        [
+            SmallFileUpload(
+                name="roundtrip.json",
+                content_type="application/json",
+                _data=json.dumps(payload).encode("utf-8"),
+            )
+        ]
+    )
+    await user.should_see("Applied uploaded configuration")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-groq")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+
 async def test_run_form_typing_survives_unrelated_agents_tab_save(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -450,6 +592,51 @@ async def test_agents_tab_bulk_provider_switch_fetch_failure_is_non_fatal(
     # model fetch failing.
     provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
     assert provider_select.value == "opencode"
+
+
+async def test_agents_tab_bulk_provider_switch_model_survives_concurrent_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test for the race render_agents()'s outer-scope
+    provider_selects/model_inputs hoisting exists to close: "Apply to
+    all" is async and only writes the fetched model into widgets *after*
+    the /models call returns. If "Save changes" is clicked while that
+    call is still in flight, its own cards.refresh() tears down and
+    rebuilds every widget -- the fetched model must still land on the
+    resulting, now-current widgets (and in pipeline_config) instead of
+    silently applying to orphaned, pre-refresh ones."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import threading
+
+    import visor.pages.agents_page as agents_page_module
+
+    release = threading.Event()
+
+    def _slow_fetch(provider: object, api_key: object) -> list[str]:
+        release.wait(timeout=5)
+        return ["opencode-model-a"]
+
+    monkeypatch.setattr(agents_page_module, "fetch_provider_models", _slow_fetch)
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await asyncio.sleep(0.1)  # let the click's coroutine reach the in-flight fetch
+
+    # "Save changes" while the fetch is still pending -- rebuilds every
+    # card via cards.refresh(), exactly what used to orphan model_inputs.
+    user.find(marker="agents-save").click()
+    await asyncio.sleep(0.1)
+
+    release.set()
+    await user.should_see("applied to")
+
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    assert model_select.value == "opencode-model-a"
 
 
 async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
