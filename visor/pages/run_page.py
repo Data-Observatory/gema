@@ -150,6 +150,16 @@ def render_run_form(
             _render_result_phase(schema, state, body.refresh, pipeline_config, dataverse_export_config)
 
     def refresh_if_gate_changed() -> None:
+        # The gate only ever renders during phase == "form" (see body()
+        # above); "running"/"result" always reach phase == "form" again
+        # through their own direct refresh() call (_reset(), and the run
+        # completion handler), which recomputes the gate fresh at that
+        # point regardless of what this last saw -- so skipping here
+        # while a run is in flight or its result is showing only avoids
+        # an unrelated-tab broadcast cosmetically tearing down and
+        # rebuilding the live log or result view, never a stale gate.
+        if state.phase != "form":
+            return
         missing = missing_required_details(pipeline_config, current_settings())
         if _gate_signature(missing) != last_gate_signature:
             body.refresh()
