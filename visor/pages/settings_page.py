@@ -53,7 +53,25 @@ def render_settings(
     on_saved: Callable[[VisorSettings], None],
     known_providers: list[ProviderConfig] | None = None,
     dataverse_export_config: DataverseExportConfig | None = None,
-) -> None:
+    on_changed: Callable[[], None] | None = None,
+) -> Callable[[], object]:
+    """Returns a zero-arg refresh function, same contract as
+    render_run_form() and render_agents() -- see app.py's shared
+    broadcast wiring for why every tab needs one, and why it is
+    deliberately NOT this tab's own `body.refresh`: a Settings edit panel
+    can be sitting open with a typed-but-unsaved API key or Base URL, and
+    a full body rebuild triggered by an unrelated Agents-tab edit would
+    silently collapse it back to the last-saved value. The only thing
+    Settings actually needs to reflect from elsewhere is each provider's
+    "used by" caption (an agent's provider reassignment), so the returned
+    function updates just that label's text in place instead.
+
+    *on_changed* fires whenever this tab mutates pipeline_config.providers
+    outside of the Save & Continue button (adding or removing a provider)
+    -- app.py wires it to refresh every other tab too, so e.g. the Agents
+    tab's provider dropdown picks up a just-added provider without
+    needing its own unrelated action to force a re-render first.
+    """
     container.clear()
     known_providers = known_providers or []
     # Name of a provider just added via the mini-form, so its row opens
@@ -61,6 +79,23 @@ def render_settings(
     # find and click its own edit icon right after adding it. Consumed
     # (popped) on read so it only auto-expands once.
     just_added: list[str] = []
+    # Populated fresh by every body() run, read by _sync_used_by_hints()
+    # (this tab's cross-tab-facing listener, see the docstring above) --
+    # kept at this outer scope so it survives body.refresh() rebuilding
+    # the actual ui.label objects underneath it.
+    hint_labels: dict[str, ui.label] = {}
+
+    def _sync_used_by_hints() -> None:
+        for provider in pipeline_config.providers:
+            label = hint_labels.get(provider.name)
+            if label is None:
+                continue
+            used_by = providers_using(pipeline_config, provider.api_key_env)
+            label.text = (
+                t("settings.providers.used_by", agents=", ".join(used_by))
+                if used_by
+                else t("settings.providers.not_used")
+            )
 
     with container:
         ui.label(t("settings.title")).classes("text-h5")
@@ -71,6 +106,7 @@ def render_settings(
             env_inputs: dict[str, ui.input] = {}
             url_inputs: dict[str, ui.input] = {}
             auto_expand = just_added.pop() if just_added else None
+            hint_labels.clear()
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("settings.providers.title")).classes("text-subtitle1 text-bold")
@@ -104,10 +140,14 @@ def render_settings(
                         ]
                         ui.notify(t("settings.providers.removed", name=name), type="positive")
                         body.refresh()
+                        if on_changed is not None:
+                            on_changed()
 
                     with ui.row().classes("w-full items-center q-mt-sm no-wrap"):
                         ui.label(provider.name).classes("text-bold")
-                        ui.label(hint).classes("text-caption flex-grow ellipsis")
+                        hint_labels[provider.name] = ui.label(hint).classes(
+                            "text-caption flex-grow ellipsis"
+                        )
                         ui.button(icon="edit", on_click=_toggle_edit).props(
                             "flat round dense"
                         ).mark(f"settings-provider-edit-{provider.name}")
@@ -230,6 +270,8 @@ def render_settings(
                         just_added[:] = [name]
                         ui.notify(t("settings.add_provider.added", name=name), type="positive")
                         body.refresh()
+                        if on_changed is not None:
+                            on_changed()
 
                     ui.button(t("settings.add_provider.submit"), on_click=_add_provider).classes(
                         "q-mt-sm"
@@ -270,3 +312,5 @@ def render_settings(
             ui.button(t("settings.save"), on_click=_save).classes("q-mt-md").mark("settings-save")
 
         body()
+
+    return _sync_used_by_hints
