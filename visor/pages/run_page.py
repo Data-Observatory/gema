@@ -30,7 +30,7 @@ from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_
 from visor.i18n import t
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.session_settings import build_llm_factory
-from visor.settings import VisorSettings, apply_to_environ, missing_required
+from visor.settings import MissingKeyDetail, VisorSettings, apply_to_environ, missing_required_details
 
 
 def _format_duration(seconds: float) -> str:
@@ -121,7 +121,7 @@ def render_run_form(
 
     @ui.refreshable
     def body() -> None:
-        missing = missing_required(pipeline_config, current_settings())
+        missing = missing_required_details(pipeline_config, current_settings())
         if missing and state.phase == "form":
             _render_settings_gate(missing, on_go_to_settings)
             return
@@ -139,10 +139,20 @@ def render_run_form(
     return body.refresh
 
 
-def _render_settings_gate(missing: list[str], on_go_to_settings: Callable[[], None]) -> None:
+def _render_settings_gate(
+    missing: list[MissingKeyDetail], on_go_to_settings: Callable[[], None]
+) -> None:
     with ui.card().classes("w-full bg-warning").mark("run-settings-gate"):
         ui.label(t("run.gate.title")).classes("text-h6")
-        ui.label(t("run.gate.missing", fields=", ".join(missing))).classes("text-caption")
+        for detail in missing:
+            ui.label(
+                t(
+                    "run.gate.missing_detail",
+                    agents=", ".join(detail.agent_ids),
+                    provider=detail.provider,
+                    env=detail.api_key_env,
+                )
+            ).classes("text-caption")
         ui.button(t("run.gate.button"), on_click=on_go_to_settings).classes("q-mt-sm")
 
 

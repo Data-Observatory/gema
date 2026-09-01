@@ -182,3 +182,37 @@ def missing_required(pipeline_config: PipelineConfig, settings: VisorSettings) -
     gate the run form behind Settings on first use, instead of letting
     factory.py's raw ValueError surface."""
     return [env for env in required_env_vars(pipeline_config) if not settings.env.get(env)]
+
+
+@dataclass
+class MissingKeyDetail:
+    """One missing key, attributed to the provider and agent(s) that
+    actually need it — what the Run tab's gate shows instead of a bare
+    env var name, so switching an agent to a new provider (e.g. opencode)
+    tells you exactly which key that switch now requires, rather than an
+    unexplained env var appearing in a flat list."""
+
+    api_key_env: str
+    provider: str
+    agent_ids: list[str]
+
+
+def missing_required_details(
+    pipeline_config: PipelineConfig, settings: VisorSettings
+) -> list[MissingKeyDetail]:
+    """Same gate as missing_required(), grouped by provider/agent instead
+    of a flat env-var list."""
+    missing_envs = set(missing_required(pipeline_config, settings))
+    if not missing_envs:
+        return []
+    by_env: dict[str, MissingKeyDetail] = {}
+    for provider in pipeline_config.providers:
+        if provider.api_key_env not in missing_envs:
+            continue
+        agent_ids = [a.id for a in pipeline_config.agents if a.provider == provider.name]
+        detail = by_env.setdefault(
+            provider.api_key_env,
+            MissingKeyDetail(api_key_env=provider.api_key_env, provider=provider.name, agent_ids=[]),
+        )
+        detail.agent_ids.extend(agent_ids)
+    return [by_env[env] for env in sorted(by_env)]
