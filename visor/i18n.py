@@ -58,6 +58,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.providers.dataverse_subject_classifier": "Clasificador de tema de exportación a Dataverse",
         "settings.base_url.label": "URL base",
         "settings.key.label": "Clave de {env}",
+        "settings.key.shared": "Usa la misma clave que '{provider}' — edítala en esa fila",
+        "settings.key.shared_env": "Ya está configurada arriba (misma variable: {env})",
         "settings.add_provider.title": "Añadir un proveedor",
         "settings.add_provider.help": (
             "Elige uno de la lista para autocompletar sus datos de conexión, "
@@ -259,6 +261,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.providers.dataverse_subject_classifier": "dataverse export's Subject Classifier",
         "settings.base_url.label": "Base URL",
         "settings.key.label": "{env} key",
+        "settings.key.shared": "Uses the same key as '{provider}' — edit it in that row",
+        "settings.key.shared_env": "Already set above (same variable: {env})",
         "settings.add_provider.title": "Add a provider",
         "settings.add_provider.help": (
             "Pick one from the list to autofill its connection details, "

@@ -35,9 +35,9 @@ from visor.session_settings import save_session_settings
 from visor.settings import (
     VisorSettings,
     addable_providers,
+    agents_using_provider,
     dataverse_uses_provider,
     optional_env_vars,
-    providers_using,
 )
 
 # Internal, language-independent sentinel for the add-provider picker's
@@ -87,7 +87,7 @@ def render_settings(
     hint_labels: dict[str, ui.label] = {}
 
     def _used_by_hint(provider: ProviderConfig) -> str:
-        used_by = list(providers_using(pipeline_config, provider.api_key_env))
+        used_by = list(agents_using_provider(pipeline_config, provider.name))
         if dataverse_uses_provider(dataverse_export_config, provider.name):
             used_by.append(t("settings.providers.dataverse_subject_classifier"))
         return (
@@ -101,9 +101,9 @@ def render_settings(
             # The provider list itself changed shape (e.g. an Agents-tab
             # config upload replaced pipeline_config.providers wholesale)
             # -- patching label text in place can't add or remove rows,
-            # and _save() below indexes url_inputs/env_inputs by every
-            # *current* provider name, so a stale set left over from the
-            # last body() render would raise KeyError the next time
+            # and _save() below indexes url_inputs by every *current*
+            # provider name, so a stale set left over from the last
+            # body() render would raise KeyError the next time
             # Save & Continue is clicked. A full rebuild is the only
             # correct response here; it only fires on this rare, explicit
             # bulk replace, never on the routine "an agent's provider
@@ -124,6 +124,15 @@ def render_settings(
         def body() -> None:
             env_inputs: dict[str, ui.input] = {}
             url_inputs: dict[str, ui.input] = {}
+            # First provider (in list order) to render a given api_key_env
+            # -- every later provider sharing that same env var edits the
+            # exact same secret slot in os.environ, so it must not get its
+            # own independent password field: two separate widgets both
+            # claiming to be "the" value of e.g. OPENROUTER_API_KEY would
+            # silently collide in env_inputs (last one rendered wins the
+            # dict slot), discarding whatever was typed into the other one
+            # the moment Save & Continue is clicked.
+            env_var_owner: dict[str, str] = {}
             auto_expand = just_added.pop() if just_added else None
             hint_labels.clear()
 
@@ -190,18 +199,23 @@ def render_settings(
                             .classes("w-full")
                             .mark(f"settings-provider-url-{provider.name}")
                         )
-                        key_input = (
-                            ui.input(
-                                t("settings.key.label", env=provider.api_key_env),
-                                password=True,
-                                password_toggle_button=True,
-                                value=current.env.get(provider.api_key_env, ""),
+                        owner = env_var_owner.get(provider.api_key_env)
+                        if owner is None:
+                            env_var_owner[provider.api_key_env] = provider.name
+                            key_input = (
+                                ui.input(
+                                    t("settings.key.label", env=provider.api_key_env),
+                                    password=True,
+                                    password_toggle_button=True,
+                                    value=current.env.get(provider.api_key_env, ""),
+                                )
+                                .classes("w-full")
+                                .mark(f"settings-input-{provider.api_key_env}")
                             )
-                            .classes("w-full")
-                            .mark(f"settings-input-{provider.api_key_env}")
-                        )
+                            env_inputs[provider.api_key_env] = key_input
+                        else:
+                            ui.label(t("settings.key.shared", provider=owner)).classes("text-caption")
                     url_inputs[provider.name] = url_input
-                    env_inputs[provider.api_key_env] = key_input
 
                 ui.separator().classes("q-my-md")
 
@@ -305,6 +319,16 @@ def render_settings(
 
             ui.label(t("settings.orcid.title")).classes("text-subtitle2 q-mt-md")
             for env_name in optional_env_vars():
+                # A provider's api_key_env is free text (the add-provider
+                # form, or an uploaded agents.yaml) -- if it happens to
+                # collide with a fixed ORCID var name, the provider loop
+                # above already claimed this env_inputs slot and rendered
+                # the real input; rendering a second one here would hit
+                # the exact same collision this module fixed for providers
+                # sharing an api_key_env with each other.
+                if env_name in env_inputs:
+                    ui.label(t("settings.key.shared_env", env=env_name)).classes("text-caption")
+                    continue
                 env_inputs[env_name] = (
                     ui.input(
                         env_name,
@@ -328,7 +352,7 @@ def render_settings(
                 for provider in pipeline_config.providers:
                     if not settings.env.get(provider.api_key_env):
                         continue
-                    if providers_using(pipeline_config, provider.api_key_env):
+                    if agents_using_provider(pipeline_config, provider.name):
                         continue
                     if dataverse_uses_provider(dataverse_export_config, provider.name):
                         continue
