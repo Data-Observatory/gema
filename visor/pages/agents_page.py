@@ -125,16 +125,31 @@ def render_agents(
     trigger (like a Settings save) to force a re-render first.
     """
     container.clear()
-    # Populated (cleared and refilled) by every cards() run, read by
-    # _sync_provider_options() below -- kept at this outer scope so it
-    # survives cards.refresh() rebuilding the actual ui.select objects
-    # underneath it. Only the provider selects are tracked here (not
-    # model/temperature inputs): the provider *list* is the one thing
-    # this tab needs to react to from elsewhere (Settings adding or
-    # removing a provider) -- see _sync_provider_options()'s docstring.
+    # Populated (cleared and refilled) by every cards() run -- kept at
+    # this outer scope, rather than as cards()-local variables, for two
+    # separate reasons:
+    #
+    # 1. _sync_provider_options() below (this tab's cross-tab-facing
+    #    listener) needs to reach the *current* selects after a Settings
+    #    add/remove-provider broadcast, however many cards() renders
+    #    have happened since it was defined.
+    # 2. _apply_provider_to_all() is async and reads model_inputs /
+    #    dataverse_model_input again *after* an `await` (the /models
+    #    fetch) -- if those were still cards()-local, a cards.refresh()
+    #    firing during that await (the user clicking "Save changes" or
+    #    finishing an Upload while the fetch is in flight) would leave
+    #    it holding orphaned, pre-refresh widgets: pipeline_config would
+    #    get the new model, but the now-detached dropdowns would keep
+    #    showing the old one, and the very next "Save changes" click
+    #    would read those stale visible values straight back over the
+    #    just-applied ones. Reading through these same outer containers
+    #    after the await instead always sees whatever cards() most
+    #    recently populated them with.
     provider_selects: dict[str, ui.select] = {}
+    model_inputs: dict[str, ui.select] = {}
     bulk_provider_select_box: list[ui.select] = []
     dataverse_provider_select_box: list[ui.select | None] = [None]
+    dataverse_model_input_box: list[ui.select | None] = [None]
 
     def _sync_provider_options() -> None:
         """This tab's cross-tab-facing listener (see app.py's broadcast
@@ -145,18 +160,15 @@ def render_agents(
         lists, never any select's current value."""
         provider_names = [p.name for p in pipeline_config.providers]
 
-        def _options_for(current_value: str) -> list[str]:
-            return (
-                provider_names if current_value in provider_names else [*provider_names, current_value]
-            )
-
         for select in provider_selects.values():
-            select.set_options(_options_for(select.value))
+            select.set_options(_model_options(provider_names, select.value or ""))
         if bulk_provider_select_box:
             bulk_provider_select_box[0].set_options(provider_names)
         dataverse_provider_select = dataverse_provider_select_box[0]
         if dataverse_provider_select is not None:
-            dataverse_provider_select.set_options(_options_for(dataverse_provider_select.value))
+            dataverse_provider_select.set_options(
+                _model_options(provider_names, dataverse_provider_select.value or "")
+            )
 
     with container:
         ui.label(t("agents.title")).classes("text-h5")
@@ -189,9 +201,9 @@ def render_agents(
             # refreshable — Upload can replace pipeline_config.providers
             # entirely, and this must reflect that on the next render.
             provider_names = [p.name for p in pipeline_config.providers]
-            model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
             provider_selects.clear()
+            model_inputs.clear()
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.bulk_provider.title")).classes("text-subtitle1 text-bold")
@@ -214,13 +226,16 @@ def render_agents(
 
                     async def _apply_provider_to_all() -> None:
                         provider_name = bulk_provider_select.value
-                        if not provider_name:
-                            ui.notify(t("agents.bulk_provider.pick_first"), type="negative")
-                            return
                         provider = next(
                             (p for p in pipeline_config.providers if p.name == provider_name), None
                         )
-                        if provider is None:
+                        if not provider_name or provider is None:
+                            # The second condition covers a select still
+                            # holding a stale value for a provider removed
+                            # (in Settings) after this control was rendered
+                            # -- without this, the button would otherwise
+                            # silently do nothing at all.
+                            ui.notify(t("agents.bulk_provider.pick_first"), type="negative")
                             return
 
                         include_dataverse = (
@@ -253,9 +268,18 @@ def render_agents(
                             )
                             models = None
 
+                        # Re-read through the hoisted containers rather
+                        # than the plain local `model_inputs`/
+                        # `dataverse_model_input` names this closure
+                        # captured at click time -- see this function's
+                        # own outer-scope comment for why: a cards.refresh()
+                        # during the await above (Save changes / Upload
+                        # finishing) would otherwise leave these pointing
+                        # at now-orphaned widgets.
                         model_targets = list(model_inputs.values())
-                        if include_dataverse and dataverse_model_input is not None:
-                            model_targets.append(dataverse_model_input)
+                        current_dataverse_model_input = dataverse_model_input_box[0]
+                        if include_dataverse and current_dataverse_model_input is not None:
+                            model_targets.append(current_dataverse_model_input)
 
                         agent_count = len(provider_selects) + (1 if include_dataverse else 0)
                         if models:
@@ -277,6 +301,24 @@ def render_agents(
                                 type="positive",
                             )
                         else:
+                            # Blank rather than leaving the OLD provider's
+                            # model id in place: a model id is rarely
+                            # portable across providers (e.g. OpenRouter's
+                            # "~deepseek/..." alias shape doesn't exist on
+                            # opencode), so keeping it would silently point
+                            # the just-switched agents at a model that
+                            # doesn't exist on their new provider instead
+                            # of falling back to that provider's own
+                            # default -- same "blank means use the
+                            # provider's default" contract as leaving the
+                            # per-agent Model field empty by hand.
+                            for model_select in model_targets:
+                                model_select.set_options(_model_options([], ""))
+                                model_select.value = ""
+                            for agent in pipeline_config.agents:
+                                agent.model = None
+                            if include_dataverse and dataverse_export_config is not None:
+                                dataverse_export_config.agent.model = None
                             ui.notify(
                                 t(
                                     "agents.bulk_provider.applied_no_models",
@@ -404,6 +446,7 @@ def render_agents(
             dataverse_model_input = None
             dataverse_temp_input = None
             dataverse_provider_select_box[0] = None
+            dataverse_model_input_box[0] = None
             if dataverse_export_config is not None:
                 with ui.card().classes("w-full q-mt-md"):
                     ui.label(t("agents.dataverse.title")).classes("text-subtitle1 text-bold")
@@ -436,6 +479,7 @@ def render_agents(
                             .mark("dataverse-export-model")
                         )
                         _dataverse_model_select = dataverse_model_input
+                        dataverse_model_input_box[0] = dataverse_model_input
 
                         def _refresh_dataverse_models() -> object:
                             provider = next(

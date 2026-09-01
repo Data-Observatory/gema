@@ -171,8 +171,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.upload": "Subir configuración (JSON)",
         "agents.bulk_provider.title": "Cambiar proveedor para todos los agentes",
         "agents.bulk_provider.intro": (
-            "Asigna un proveedor a los 5 agentes del pipeline (y, si lo marcas, "
-            "al clasificador de tema de Dataverse) de una sola vez, e intenta "
+            "Asigna un proveedor a todos los agentes del pipeline (y, si lo "
+            "marcas, al clasificador de tema de Dataverse) de una sola vez, e intenta "
             "elegir automáticamente un modelo para cada uno. Recuerda añadir la "
             "clave de API de ese proveedor en la pestaña Configuración."
         ),
@@ -368,7 +368,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.upload": "Upload configuration (JSON)",
         "agents.bulk_provider.title": "Switch provider for all agents",
         "agents.bulk_provider.intro": (
-            "Assign one provider to all 5 pipeline agents (and, if checked, "
+            "Assign one provider to every pipeline agent (and, if checked, "
             "the Dataverse subject classifier) at once, and try to auto-pick "
             "a model for each. Remember to add that provider's API key in "
             "the Settings tab."
