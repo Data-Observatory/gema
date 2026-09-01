@@ -337,6 +337,76 @@ async def test_removing_a_now_unused_provider_preserves_its_saved_key(
     assert saved.env.get("OPENCODE_API_KEY") == "opencode-key"
 
 
+async def test_settings_dedupes_key_input_for_providers_sharing_an_env_var(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: nothing enforces api_key_env uniqueness across
+    providers, and the "Add a provider" custom form lets a user type any
+    env var name -- including one already used by another provider (e.g.
+    the same account key against two base_urls). Before the fix, each
+    provider row rendered its own independent password field keyed by
+    api_key_env in a shared dict, so the second row rendered silently
+    won env_inputs' dict slot and Save & Continue could discard whatever
+    was typed into the first row. There must be exactly one key input for
+    a shared env var, and editing it must be what actually gets saved."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from visor.settings import load_settings
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("openrouter-eu")
+    user.find(marker="settings-add-provider-env-name").type("OPENROUTER_API_KEY")
+    user.find(marker="settings-add-provider-submit").click()
+    # Wait for the post-refresh render itself (not just the notify toast,
+    # which fires before body.refresh()'s "fire and forget" rebuild has
+    # actually applied) -- a marker unique to the newly added row.
+    await user.should_see(marker="settings-provider-edit-openrouter-eu")
+
+    # openrouter-eu's own panel auto-expands (just added) and must show a
+    # "shares this key" note, never its own input. Expand openrouter's
+    # panel too -- it's the declared owner -- and confirm there's still
+    # exactly one widget for the shared env var across both open panels.
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    assert len(list(user.find(marker="settings-input-OPENROUTER_API_KEY").elements)) == 1
+
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("shared-secret-value")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    assert load_settings().env.get("OPENROUTER_API_KEY") == "shared-secret-value"
+
+
+async def test_settings_dedupes_key_input_shared_with_an_orcid_var(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: optional_env_vars() (the fixed ORCID_CLIENT_ID/
+    ORCID_CLIENT_SECRET rows) rendered its own input unconditionally, even
+    when a provider's api_key_env (free text, from the add-provider form
+    or an uploaded agents.yaml) happens to collide with one of them --
+    the exact same last-one-rendered-wins collision the provider loop was
+    already fixed for, just between a provider row and the ORCID section
+    instead of between two provider rows."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("orcid-provider")
+    user.find(marker="settings-add-provider-env-name").type("ORCID_CLIENT_ID")
+    user.find(marker="settings-add-provider-submit").click()
+    await user.should_see(marker="settings-provider-edit-orcid-provider")
+
+    assert len(list(user.find(marker="settings-input-ORCID_CLIENT_ID").elements)) == 1
+
+
 async def test_agents_upload_changing_providers_keeps_settings_savable(
     user: User, monkeypatch, tmp_path
 ) -> None:
