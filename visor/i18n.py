@@ -74,6 +74,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.add_provider.name_required": "El nombre del proveedor es obligatorio",
         "settings.add_provider.duplicate": "El proveedor '{name}' ya existe",
         "settings.add_provider.added": "Proveedor '{name}' añadido — define su clave abajo y guarda",
+        "settings.add_provider.key_overwrite_warning": (
+            "La variable {env} ya estaba en uso — su clave anterior fue reemplazada por la que "
+            "acabas de escribir"
+        ),
         "settings.add_provider.submit": "Añadir proveedor",
         "settings.orcid.title": "Opcional — permite buscar por nombre de autor en ORCID",
         "settings.save": "Guardar y continuar",
@@ -277,6 +281,9 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.add_provider.name_required": "Provider name is required",
         "settings.add_provider.duplicate": "Provider '{name}' already exists",
         "settings.add_provider.added": "Added provider '{name}' — set its key below and Save",
+        "settings.add_provider.key_overwrite_warning": (
+            "{env} was already in use — its previous key was replaced by the one you just typed"
+        ),
         "settings.add_provider.submit": "Add provider",
         "settings.orcid.title": "Optional — lets ORCID be searched by author name",
         "settings.save": "Save & Continue",

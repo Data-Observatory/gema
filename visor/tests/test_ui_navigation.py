@@ -407,6 +407,35 @@ async def test_settings_dedupes_key_input_shared_with_an_orcid_var(
     assert len(list(user.find(marker="settings-input-ORCID_CLIENT_ID").elements)) == 1
 
 
+async def test_settings_add_provider_warns_before_overwriting_a_shared_key(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: typing a key into the add-provider form for an
+    env var an existing provider already has a saved key under used to
+    silently replace that provider's key -- there is only one real secret
+    slot per env var name (os.environ has no per-provider concept), so
+    this can't be prevented, but it must not happen silently."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("original-key")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+    user.find(marker="settings-add-provider-name").type("openrouter-eu")
+    user.find(marker="settings-add-provider-env-name").type("OPENROUTER_API_KEY")
+    user.find(marker="settings-add-provider-key").type("overwritten-key")
+    user.find(marker="settings-add-provider-submit").click()
+
+    await user.should_see("was already in use")
+
+
 async def test_agents_upload_changing_providers_keeps_settings_savable(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -1193,6 +1222,46 @@ async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypa
     user.find(marker="settings-add-provider-submit").click()
 
     await user.should_see("already exists")
+
+
+async def test_settings_add_provider_double_click_does_not_duplicate(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: the duplicate-name check used to compare against
+    existing_names, a set captured once when the add-provider panel was
+    rendered -- body.refresh() is fire-and-forget, so clicking Submit
+    twice before that refresh lands let both clicks pass the (still
+    stale) check and append the same name twice -- something
+    PipelineConfig now hard-rejects on any later reload (duplicate
+    provider names). The check must instead read pipeline_config.
+    providers live, so the second click sees the first click's already-
+    committed append."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-download")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("dupe-me")
+    submit = user.find(marker="settings-add-provider-submit")
+    submit.click()
+    submit.click()
+
+    await user.should_see("already exists")
+
+    user.find(marker="tab-agents").click()
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    provider_names = [p["name"] for p in payload["providers"]]
+    assert provider_names.count("dupe-me") == 1
+    from metadata_enricher.config.models import PipelineConfig
+
+    PipelineConfig(**payload)
 
 
 async def test_settings_save_shows_edited_key_not_stale_value(

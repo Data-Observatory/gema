@@ -236,7 +236,6 @@ def render_settings(
                 with add_panel:
                     ui.label(t("settings.add_provider.help")).classes("text-caption")
 
-                    existing_names = {p.name for p in pipeline_config.providers}
                     pool = addable_providers(known_providers, pipeline_config)
                     pool_by_name = {p.name: p for p in pool}
                     choice_options = {p.name: p.name for p in pool}
@@ -287,12 +286,24 @@ def render_settings(
                         if not name:
                             ui.notify(t("settings.add_provider.name_required"), type="negative")
                             return
-                        if name in existing_names:
+                        # Checked live against pipeline_config.providers, not
+                        # a snapshot taken when this panel was rendered:
+                        # body.refresh() is fire-and-forget (see this
+                        # module's own docstring), so a double-click on
+                        # Submit before the rebuild lands would otherwise
+                        # still see a stale, pre-add name set and let a
+                        # second provider through under the same name --
+                        # exactly what PipelineConfig's duplicate-provider-
+                        # name validator now rejects on next reload.
+                        if any(p.name == name for p in pipeline_config.providers):
                             ui.notify(t("settings.add_provider.duplicate", name=name), type="negative")
                             return
                         env_name_value = (
                             env_name_input.value.strip()
                             or f"{name.upper().replace('-', '_').replace(' ', '_')}_API_KEY"
+                        )
+                        shares_env_with_existing = any(
+                            p.api_key_env == env_name_value for p in pipeline_config.providers
                         )
                         pipeline_config.providers.append(
                             ProviderConfig(
@@ -305,7 +316,17 @@ def render_settings(
                             # Pre-fill so the user doesn't have to type the
                             # key twice — it still isn't saved to disk until
                             # Save & Continue is clicked, same as every
-                            # other key here.
+                            # other key here. One real secret slot exists
+                            # per env var name (os.environ has no concept
+                            # of "per provider"), so typing a key here for
+                            # an env var an existing provider already uses
+                            # replaces that provider's key too -- warn
+                            # rather than silently overwrite it.
+                            if shares_env_with_existing and current.env.get(env_name_value):
+                                ui.notify(
+                                    t("settings.add_provider.key_overwrite_warning", env=env_name_value),
+                                    type="warning",
+                                )
                             current.env[env_name_value] = key_new_input.value
                         just_added[:] = [name]
                         ui.notify(t("settings.add_provider.added", name=name), type="positive")
