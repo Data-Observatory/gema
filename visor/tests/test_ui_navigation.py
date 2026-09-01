@@ -270,6 +270,69 @@ async def test_run_form_typing_survives_unrelated_agents_tab_save(
     assert url_input.value == "https://example.org/still-here"
 
 
+async def test_agents_tab_unsaved_temperature_survives_bulk_provider_switch(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The bulk provider switch commits provider/model straight into
+    pipeline_config (see the earlier fix for why) and then broadcasts to
+    every tab, including this one -- Agents' own broadcast listener
+    (_sync_provider_options) must not be a full cards.refresh(), or that
+    broadcast would immediately erase a not-yet-saved edit sitting on a
+    completely unrelated agent card, the moment "Apply to all" is
+    clicked for a different agent's provider."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-temperature-core_metadata")
+
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.5
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    temp_input_after = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert temp_input_after.value == 1.5
+
+
+async def test_agents_tab_unsaved_temperature_survives_settings_add_provider(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Same guarantee from the other direction: adding a provider in
+    Settings broadcasts to Agents too, and must only refresh provider
+    *options* (a newly-added provider becomes selectable) without
+    touching any agent's current model/temperature field."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-temperature-core_metadata")
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.5
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-choice")
+    user.find(marker="settings-add-provider-name").type("groq")
+    user.find(marker="settings-add-provider-submit").click()
+    await user.should_see("Added provider 'groq'")
+
+    user.find(marker="tab-agents").click()
+    temp_input_after = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert temp_input_after.value == 1.5
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert "groq" in provider_select.options
+
+
 async def test_settings_unsaved_key_survives_unrelated_agents_tab_save(
     user: User, monkeypatch, tmp_path
 ) -> None:
