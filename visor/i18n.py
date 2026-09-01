@@ -77,8 +77,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.save": "Guardar y continuar",
         "settings.saved": "Configuración guardada",
         "settings.unassigned_key_hint": (
-            "Clave guardada para {providers}, pero ningún agente lo usa "
-            "todavía — asígnalo en la pestaña Agentes"
+            "Guardaste una clave para {providers}, pero ningún agente usa "
+            "ese proveedor todavía — asígnalo en la pestaña Agentes"
         ),
         # -- run_page.py --
         "run.title": "Ejecutar un recurso",

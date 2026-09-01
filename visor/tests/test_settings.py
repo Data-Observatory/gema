@@ -248,3 +248,22 @@ class TestMissingRequiredDetails:
         details = missing_required_details(config, settings)
         assert len(details) == 1
         assert details[0].agent_ids == ["a0", "a1"]
+
+    def test_ignores_a_same_env_provider_no_agent_actually_uses(self):
+        """Nothing enforces api_key_env uniqueness across providers --
+        Settings' "Add a provider" form lets a user type any env var
+        name, including one already in use by another provider. If a
+        second, genuinely unused provider happens to declare the same
+        env var and is merely declared earlier in the list, it must
+        never be the one named as needing the key -- only the provider
+        an agent is actually assigned to."""
+        config = make_pipeline_config(
+            ("openrouter-paid", "OPENROUTER_API_KEY"),
+            ("openrouter-free", "OPENROUTER_API_KEY"),
+            used_by_agents=("openrouter-free",),
+        )
+        settings = VisorSettings()
+        details = missing_required_details(config, settings)
+        assert len(details) == 1
+        assert details[0].provider == "openrouter-free"
+        assert details[0].agent_ids == ["a0"]

@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Callable
 
 from nicegui import events, ui
 
@@ -100,15 +99,25 @@ def main_page() -> None:
 
     # tab_panels mount every tab's content once and keep it alive even
     # while another tab is showing -- switching tabs never re-renders
-    # anything on its own. Each render_*() below returns a zero-arg
-    # refresh function for its own tab; every one is collected here so
-    # any tab that mutates pipeline_config (or dataverse_export_config)
-    # can force every *other* tab to recompute from the current state,
-    # instead of each mutation site having to know which specific other
-    # tab happens to depend on it. This is the single source of truth
-    # for "something in the shared config changed" -- new call sites
-    # (a future tab, a future mutation) just call this, not a bespoke
-    # refresh wired by hand.
+    # anything on its own. Each mutating render_*() below returns a
+    # zero-arg refresh function for its own tab; every mutation site
+    # calls a shared "notify the others" callback instead of having to
+    # know which specific other tab happens to depend on it.
+    #
+    # Deliberately "the others", never a flat broadcast-to-everyone: a
+    # tab's own action (Settings add/remove a provider, Agents' bulk
+    # switch) already refreshes itself directly, and NiceGUI's
+    # ui.refreshable.refresh() is fire-and-forget -- it schedules the
+    # rebuild rather than running it inline. Also calling that same
+    # tab's OWN broadcast listener in the same synchronous handler races
+    # that still-pending rebuild: e.g. Settings' _add_provider() calls
+    # body.refresh() (scheduled, not yet applied) then, if it were also
+    # in its own broadcast's path, _sync_used_by_hints() would see the
+    # new provider missing from the not-yet-rebuilt `hint_labels` and
+    # "helpfully" schedule a SECOND body.refresh() -- which then wins
+    # the race and collapses the row this action just asked to open. So
+    # each render_*() below only ever hears about changes made
+    # elsewhere, never its own.
     #
     # Each returned function is deliberately a narrow, targeted sync
     # (recompute the Run gate and rebuild only if its shape actually
@@ -119,12 +128,6 @@ def main_page() -> None:
     # unsaved per-agent temperature tweak) that a blind full rebuild
     # triggered by an unrelated tab's edit would silently discard. See
     # each render_*()'s own docstring for the specifics.
-    refresh_callbacks: list[Callable[[], object]] = []
-
-    def _broadcast_config_changed() -> None:
-        for refresh in refresh_callbacks:
-            refresh()
-
     refresh_run_tab = render_run_form(
         run_panel,
         pipeline_config,
@@ -133,7 +136,10 @@ def main_page() -> None:
         on_go_to_settings=_go_to_settings,
         dataverse_export_config=dataverse_export_config,
     )
-    refresh_callbacks.append(refresh_run_tab)
+
+    def _notify_settings_changed() -> None:
+        refresh_run_tab()
+        refresh_agents_tab()
 
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
@@ -143,7 +149,7 @@ def main_page() -> None:
         # set when it was first created. Without this, changing a key here
         # has no effect until the whole visor process restarts.
         reset_client_cache()
-        _broadcast_config_changed()
+        _notify_settings_changed()
         tabs.set_value(run_tab)
 
     refresh_settings_tab = render_settings(
@@ -153,17 +159,19 @@ def main_page() -> None:
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
         dataverse_export_config=dataverse_export_config,
-        on_changed=_broadcast_config_changed,
+        on_changed=_notify_settings_changed,
     )
-    refresh_callbacks.append(refresh_settings_tab)
+
+    def _notify_agents_changed() -> None:
+        refresh_run_tab()
+        refresh_settings_tab()
 
     refresh_agents_tab = render_agents(
         agents_panel,
         pipeline_config,
         dataverse_export_config,
-        on_changed=_broadcast_config_changed,
+        on_changed=_notify_agents_changed,
     )
-    refresh_callbacks.append(refresh_agents_tab)
 
 
 def run() -> None:
