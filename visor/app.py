@@ -27,7 +27,7 @@ from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
 from visor.session_settings import load_session_settings
-from visor.settings import VisorSettings, apply_to_environ, storage_secret
+from visor.settings import VisorSettings, apply_agent_overrides, apply_to_environ, storage_secret
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,9 @@ def main_page() -> None:
     )
     schema = _schema
 
-    apply_to_environ(load_session_settings())
+    session_settings = load_session_settings()
+    apply_to_environ(session_settings)
+    apply_agent_overrides(pipeline_config, dataverse_export_config, session_settings)
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
 

@@ -403,6 +403,9 @@ def render_settings(
                 new_settings = VisorSettings(
                     default_provider=current.default_provider,
                     env=merged_env,
+                    agent_overrides=current.agent_overrides,
+                    dataverse_agent_override=current.dataverse_agent_override,
+                    pipeline_behavior=current.pipeline_behavior,
                 )
                 save_session_settings(new_settings)
                 unassigned = _providers_with_unassigned_keys(new_settings)

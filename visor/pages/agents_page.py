@@ -58,14 +58,15 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Callable
+from typing import Any, Callable
 
 from nicegui import events, run, ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
-from visor.session_settings import load_session_settings
+from visor.session_settings import load_session_settings, save_session_settings
+from visor.settings import VisorSettings
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,53 @@ async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> 
         models = []
     model_select.set_options(_model_options(models, model_select.value or ""))
     ui.notify(t("agents.models.loaded", provider=provider.name, count=len(models)), type="positive")
+
+
+def _persist_overrides(
+    pipeline_config: PipelineConfig, dataverse_export_config: DataverseExportConfig | None
+) -> None:
+    """Snapshot the current in-memory provider/model/temperature/toggle
+    state into settings.json (native) or this session's storage (hosted) --
+    see visor/settings.py's apply_agent_overrides() for the read side.
+
+    Always a full rewrite of agent_overrides from pipeline_config.agents,
+    never a merge into whatever was previously saved -- so an agent
+    removed by a config upload (or a repo agents.yaml change on next
+    launch) never leaves a stale, unreachable entry behind. Preserves the
+    current default_provider/env untouched, same as Settings' own _save()
+    does for the fields it doesn't own.
+    """
+    current = load_session_settings()
+    dataverse_override: dict[str, Any] | None = None
+    if dataverse_export_config is not None:
+        dataverse_override = {
+            "enabled": dataverse_export_config.enabled,
+            "provider": dataverse_export_config.agent.provider,
+            "model": dataverse_export_config.agent.model,
+            "temperature": dataverse_export_config.agent.temperature,
+        }
+    save_session_settings(
+        VisorSettings(
+            default_provider=current.default_provider,
+            env=current.env,
+            agent_overrides={
+                agent.id: {
+                    "provider": agent.provider,
+                    "model": agent.model,
+                    "temperature": agent.temperature,
+                }
+                for agent in pipeline_config.agents
+            },
+            dataverse_agent_override=dataverse_override,
+            pipeline_behavior={
+                "enable_content_fetch": pipeline_config.enable_content_fetch,
+                "enable_doi_resolution": pipeline_config.enable_doi_resolution,
+                "enable_identifier_enrichment": pipeline_config.enable_identifier_enrichment,
+                "validate_pids": pipeline_config.validate_pids,
+                "validate_pids_live": pipeline_config.validate_pids_live,
+            },
+        )
+    )
 
 
 def render_agents(
@@ -181,6 +229,14 @@ def render_agents(
 
             async def _on_upload(e: events.UploadEventArguments) -> None:
                 await _handle_upload(e, pipeline_config, cards.refresh)
+                # Harmless no-op snapshot when the upload was rejected
+                # (pipeline_config is untouched in that case) -- otherwise
+                # persists the newly uploaded provider/model/temperature
+                # assignments the same way Save changes does. Dataverse
+                # export config is never part of the uploaded JSON (see
+                # _download()'s own docstring), so its saved override is
+                # left exactly as it was.
+                _persist_overrides(pipeline_config, dataverse_export_config)
                 if on_changed is not None:
                     on_changed()
 
@@ -327,6 +383,7 @@ def render_agents(
                                 ),
                                 type="warning",
                             )
+                        _persist_overrides(pipeline_config, dataverse_export_config)
                         if on_changed is not None:
                             on_changed()
 
@@ -527,6 +584,7 @@ def render_agents(
                     dataverse_export_config.agent.provider = dataverse_provider_select.value
                     dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
+                _persist_overrides(pipeline_config, dataverse_export_config)
                 ui.notify(t("agents.save.done"), type="positive")
                 cards.refresh()
                 if on_changed is not None:
