@@ -7,12 +7,18 @@ import stat
 
 import pytest
 
-from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import (
+    AgentConfig,
+    DataverseExportConfig,
+    PipelineConfig,
+    ProviderConfig,
+)
 from visor.settings import (
     VisorSettings,
     addable_providers,
     agents_using_provider,
     all_provider_env_vars,
+    apply_agent_overrides,
     apply_to_environ,
     load_settings,
     missing_required,
@@ -86,6 +92,42 @@ class TestVisorSettingsRoundtrip:
         save_settings(VisorSettings(env={"K": "v"}), path=path)
         mode = stat.S_IMODE(path.stat().st_mode)
         assert mode == stat.S_IRUSR | stat.S_IWUSR
+
+    def test_roundtrips_agent_overrides_and_pipeline_behavior(self, tmp_path):
+        path = tmp_path / "settings.json"
+        original = VisorSettings(
+            default_provider="zai",
+            env={"ZAI_API_KEY": "secret-123"},
+            agent_overrides={
+                "core_metadata": {"provider": "opencode", "model": "deepseek-v4-flash", "temperature": 0.2}
+            },
+            dataverse_agent_override={
+                "enabled": False,
+                "provider": "opencode",
+                "model": None,
+                "temperature": 0.0,
+            },
+            pipeline_behavior={"enable_content_fetch": True, "validate_pids": False},
+        )
+        save_settings(original, path=path)
+        loaded = load_settings(path=path)
+        assert loaded == original
+
+    def test_from_dict_ignores_malformed_override_sections(self):
+        loaded = VisorSettings.from_dict(
+            {
+                "agent_overrides": "not-a-dict",
+                "dataverse_agent_override": ["not", "a", "dict"],
+                "pipeline_behavior": 42,
+            }
+        )
+        assert loaded == VisorSettings()
+
+    def test_from_dict_drops_non_dict_agent_override_entries(self):
+        loaded = VisorSettings.from_dict(
+            {"agent_overrides": {"ok": {"provider": "opencode"}, "bad": "not-a-dict"}}
+        )
+        assert loaded.agent_overrides == {"ok": {"provider": "opencode"}}
 
 
 class TestRequiredEnvVars:
@@ -308,3 +350,102 @@ class TestMissingRequiredDetails:
         assert [d.provider for d in details] == ["openrouter-eu", "openrouter-us"]
         assert [d.agent_ids for d in details] == [["a0"], ["a1"]]
         assert {d.api_key_env for d in details} == {"OPENROUTER_API_KEY"}
+
+
+def make_dataverse_export_config(provider_name: str) -> DataverseExportConfig:
+    return DataverseExportConfig(
+        enabled=True,
+        agent=AgentConfig(
+            id="dataverse_subject",
+            name="Subject Classifier",
+            fields=["subjects"],
+            prompt="x",
+            provider=provider_name,
+            model="old-model",
+            temperature=0.5,
+        ),
+    )
+
+
+class TestApplyAgentOverrides:
+    def test_applies_provider_model_and_temperature_to_matching_agent(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"), ("opencode", "OPENCODE_API_KEY"))
+        settings = VisorSettings(
+            agent_overrides={"a0": {"provider": "opencode", "model": "new-model", "temperature": 0.7}}
+        )
+        apply_agent_overrides(config, None, settings)
+        agent = next(a for a in config.agents if a.id == "a0")
+        assert agent.provider == "opencode"
+        assert agent.model == "new-model"
+        assert agent.temperature == 0.7
+
+    def test_ignores_override_for_unknown_agent_id(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        settings = VisorSettings(agent_overrides={"does-not-exist": {"provider": "openrouter"}})
+        apply_agent_overrides(config, None, settings)  # must not raise
+        assert config.agents[0].provider == "openrouter"
+
+    def test_skips_a_saved_provider_no_longer_declared_but_still_applies_model(self):
+        """A provider removed in Settings since the override was saved must
+        never make this raise or leave the agent referencing a provider
+        PipelineConfig's own validators would reject -- but the rest of
+        the same saved entry is still meaningful and should still apply."""
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        settings = VisorSettings(
+            agent_overrides={
+                "a0": {"provider": "removed-provider", "model": "still-applies", "temperature": 0.9}
+            }
+        )
+        apply_agent_overrides(config, None, settings)
+        agent = config.agents[0]
+        assert agent.provider == "openrouter"
+        assert agent.model == "still-applies"
+        assert agent.temperature == 0.9
+
+    def test_empty_model_override_clears_to_none(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        config.agents[0].model = "old-model"
+        settings = VisorSettings(agent_overrides={"a0": {"model": ""}})
+        apply_agent_overrides(config, None, settings)
+        assert config.agents[0].model is None
+
+    def test_applies_dataverse_override(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"), ("opencode", "OPENCODE_API_KEY"))
+        dataverse = make_dataverse_export_config("openrouter")
+        settings = VisorSettings(
+            dataverse_agent_override={
+                "enabled": False,
+                "provider": "opencode",
+                "model": "new-dataverse-model",
+                "temperature": 1.1,
+            }
+        )
+        apply_agent_overrides(config, dataverse, settings)
+        assert dataverse.enabled is False
+        assert dataverse.agent.provider == "opencode"
+        assert dataverse.agent.model == "new-dataverse-model"
+        assert dataverse.agent.temperature == 1.1
+
+    def test_dataverse_override_ignored_when_dataverse_export_config_is_none(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        settings = VisorSettings(dataverse_agent_override={"enabled": False, "provider": "openrouter"})
+        apply_agent_overrides(config, None, settings)  # must not raise
+
+    def test_applies_pipeline_behavior_flags(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        assert config.enable_content_fetch is False
+        assert config.validate_pids is True
+        settings = VisorSettings(
+            pipeline_behavior={"enable_content_fetch": True, "validate_pids": False}
+        )
+        apply_agent_overrides(config, None, settings)
+        assert config.enable_content_fetch is True
+        assert config.validate_pids is False
+        # Untouched flag keeps the loaded config's own value.
+        assert config.enable_doi_resolution is False
+
+    def test_no_overrides_leaves_config_untouched(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        original_provider = config.agents[0].provider
+        apply_agent_overrides(config, None, VisorSettings())
+        assert config.agents[0].provider == original_provider
