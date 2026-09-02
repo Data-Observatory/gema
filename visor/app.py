@@ -27,7 +27,7 @@ from visor.pages.agents_page import render_agents
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
 from visor.session_settings import load_session_settings
-from visor.settings import VisorSettings, apply_to_environ, storage_secret
+from visor.settings import VisorSettings, apply_agent_overrides, apply_to_environ, storage_secret
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,9 @@ def main_page() -> None:
     )
     schema = _schema
 
-    apply_to_environ(load_session_settings())
+    session_settings = load_session_settings()
+    apply_to_environ(session_settings)
+    apply_agent_overrides(pipeline_config, dataverse_export_config, session_settings)
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
 
@@ -97,6 +99,37 @@ def main_page() -> None:
     def _go_to_settings() -> None:
         tabs.set_value(settings_tab)
 
+    # tab_panels mount every tab's content once and keep it alive even
+    # while another tab is showing -- switching tabs never re-renders
+    # anything on its own. Each mutating render_*() below returns a
+    # zero-arg refresh function for its own tab; every mutation site
+    # calls a shared "notify the others" callback instead of having to
+    # know which specific other tab happens to depend on it.
+    #
+    # Deliberately "the others", never a flat broadcast-to-everyone: a
+    # tab's own action (Settings add/remove a provider, Agents' bulk
+    # switch) already refreshes itself directly, and NiceGUI's
+    # ui.refreshable.refresh() is fire-and-forget -- it schedules the
+    # rebuild rather than running it inline. Also calling that same
+    # tab's OWN broadcast listener in the same synchronous handler races
+    # that still-pending rebuild: e.g. Settings' _add_provider() calls
+    # body.refresh() (scheduled, not yet applied) then, if it were also
+    # in its own broadcast's path, _sync_used_by_hints() would see the
+    # new provider missing from the not-yet-rebuilt `hint_labels` and
+    # "helpfully" schedule a SECOND body.refresh() -- which then wins
+    # the race and collapses the row this action just asked to open. So
+    # each render_*() below only ever hears about changes made
+    # elsewhere, never its own.
+    #
+    # Each returned function is deliberately a narrow, targeted sync
+    # (recompute the Run gate and rebuild only if its shape actually
+    # changed; update Settings' "used by" captions in place; refresh
+    # Agents' provider dropdown *options*) rather than each tab's own
+    # full-rebuild refresh -- every tab holds not-yet-saved local widget
+    # state (an in-progress Run form, an open Settings key/URL edit, an
+    # unsaved per-agent temperature tweak) that a blind full rebuild
+    # triggered by an unrelated tab's edit would silently discard. See
+    # each render_*()'s own docstring for the specifics.
     refresh_run_tab = render_run_form(
         run_panel,
         pipeline_config,
@@ -106,6 +139,10 @@ def main_page() -> None:
         dataverse_export_config=dataverse_export_config,
     )
 
+    def _notify_settings_changed() -> None:
+        refresh_run_tab()
+        refresh_agents_tab()
+
     def _after_settings_saved(settings: VisorSettings) -> None:
         apply_to_environ(settings)
         # create_llm_client()'s cache key is provider+model+temperature+...
@@ -114,18 +151,29 @@ def main_page() -> None:
         # set when it was first created. Without this, changing a key here
         # has no effect until the whole visor process restarts.
         reset_client_cache()
-        refresh_run_tab()
+        _notify_settings_changed()
         tabs.set_value(run_tab)
 
-    render_settings(
+    refresh_settings_tab = render_settings(
         settings_panel,
         pipeline_config,
         load_session_settings(),
         on_saved=_after_settings_saved,
         known_providers=_known_providers,
         dataverse_export_config=dataverse_export_config,
+        on_changed=_notify_settings_changed,
     )
-    render_agents(agents_panel, pipeline_config, dataverse_export_config)
+
+    def _notify_agents_changed() -> None:
+        refresh_run_tab()
+        refresh_settings_tab()
+
+    refresh_agents_tab = render_agents(
+        agents_panel,
+        pipeline_config,
+        dataverse_export_config,
+        on_changed=_notify_agents_changed,
+    )
 
 
 def run() -> None:
