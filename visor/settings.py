@@ -41,16 +41,58 @@ ORCID_ENV_VARS = ("ORCID_CLIENT_ID", "ORCID_CLIENT_SECRET")
 class VisorSettings:
     default_provider: str | None = None
     env: dict[str, str] = field(default_factory=dict)
+    # Agents-tab overrides, persisted locally so they survive a relaunch --
+    # see apply_agent_overrides() below. Keyed by agent ID; each value is a
+    # snapshot ({"provider": str, "model": str | None, "temperature": float}),
+    # always rewritten in full from the current in-memory PipelineConfig on
+    # every save (never merged), so an agent removed by a later config
+    # upload never leaves a stale, unreachable entry behind.
+    agent_overrides: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Same snapshot shape as one agent_overrides entry, plus "enabled" --
+    # the Dataverse export's Subject Classifier lives outside
+    # pipeline_config.agents (see exporters/dataverse.py), so it needs its
+    # own slot rather than a spot in agent_overrides.
+    dataverse_agent_override: dict[str, Any] | None = None
+    # The Agents tab's "Pipeline behavior" checkboxes (enable_content_fetch,
+    # enable_doi_resolution, enable_identifier_enrichment, validate_pids,
+    # validate_pids_live) -- PipelineConfig-level, not per-agent.
+    pipeline_behavior: dict[str, bool] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"default_provider": self.default_provider, "env": dict(self.env)}
+        return {
+            "default_provider": self.default_provider,
+            "env": dict(self.env),
+            "agent_overrides": {k: dict(v) for k, v in self.agent_overrides.items()},
+            "dataverse_agent_override": (
+                dict(self.dataverse_agent_override)
+                if self.dataverse_agent_override is not None
+                else None
+            ),
+            "pipeline_behavior": dict(self.pipeline_behavior),
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> VisorSettings:
         env = data.get("env")
+        agent_overrides = data.get("agent_overrides")
+        dataverse_agent_override = data.get("dataverse_agent_override")
+        pipeline_behavior = data.get("pipeline_behavior")
         return cls(
             default_provider=data.get("default_provider"),
             env=dict(env) if isinstance(env, dict) else {},
+            agent_overrides=(
+                {k: dict(v) for k, v in agent_overrides.items() if isinstance(v, dict)}
+                if isinstance(agent_overrides, dict)
+                else {}
+            ),
+            dataverse_agent_override=(
+                dict(dataverse_agent_override)
+                if isinstance(dataverse_agent_override, dict)
+                else None
+            ),
+            pipeline_behavior=(
+                dict(pipeline_behavior) if isinstance(pipeline_behavior, dict) else {}
+            ),
         )
 
 
@@ -206,6 +248,76 @@ def apply_to_environ(settings: VisorSettings) -> None:
     for key, value in settings.env.items():
         if value:
             os.environ[key] = value
+
+
+PIPELINE_BEHAVIOR_FLAGS = (
+    "enable_content_fetch",
+    "enable_doi_resolution",
+    "enable_identifier_enrichment",
+    "validate_pids",
+    "validate_pids_live",
+)
+
+
+def apply_agent_overrides(
+    pipeline_config: PipelineConfig,
+    dataverse_export_config: DataverseExportConfig | None,
+    settings: VisorSettings,
+) -> None:
+    """Layer a user's saved Agents-tab choices on top of the freshly loaded
+    PipelineConfig -- the third and final layer after config/agents.yaml
+    (canonical, shared, opencode-pinned) and
+    bootstrap.apply_external_user_provider_overrides() (visor's openrouter
+    swap). config/agents.yaml itself is never written to (see this module's
+    docstring); this only mutates the in-memory copy each browser session
+    already gets from app.py's model_copy(deep=True).
+
+    Every override is applied defensively, field by field, so a stale or
+    hand-edited settings.json can never make this raise or leave
+    pipeline_config in a state PipelineConfig's own validators would have
+    rejected:
+    - an agent_overrides entry for an agent ID no longer in
+      pipeline_config.agents (e.g. after a repo agents.yaml change) is
+      simply unreachable and ignored;
+    - a saved provider name no longer in pipeline_config.providers is
+      skipped (leaving that agent's provider as the loaded config's own),
+      while model/temperature from the same entry still apply.
+    """
+    provider_names = {p.name for p in pipeline_config.providers}
+
+    for agent in pipeline_config.agents:
+        override = settings.agent_overrides.get(agent.id)
+        if not override:
+            continue
+        provider = override.get("provider")
+        if isinstance(provider, str) and provider in provider_names:
+            agent.provider = provider
+        if "model" in override:
+            model = override["model"]
+            agent.model = model if isinstance(model, str) and model else None
+        temperature = override.get("temperature")
+        if isinstance(temperature, int | float):
+            agent.temperature = float(temperature)
+
+    dataverse_override = settings.dataverse_agent_override
+    if dataverse_export_config is not None and dataverse_override:
+        enabled = dataverse_override.get("enabled")
+        if isinstance(enabled, bool):
+            dataverse_export_config.enabled = enabled
+        provider = dataverse_override.get("provider")
+        if isinstance(provider, str) and provider in provider_names:
+            dataverse_export_config.agent.provider = provider
+        if "model" in dataverse_override:
+            model = dataverse_override["model"]
+            dataverse_export_config.agent.model = model if isinstance(model, str) and model else None
+        temperature = dataverse_override.get("temperature")
+        if isinstance(temperature, int | float):
+            dataverse_export_config.agent.temperature = float(temperature)
+
+    for flag in PIPELINE_BEHAVIOR_FLAGS:
+        value = settings.pipeline_behavior.get(flag)
+        if isinstance(value, bool):
+            setattr(pipeline_config, flag, value)
 
 
 def missing_required(pipeline_config: PipelineConfig, settings: VisorSettings) -> list[str]:
