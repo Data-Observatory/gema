@@ -153,6 +153,591 @@ async def test_agents_tab_refresh_models_failure_is_non_fatal(user: User, monkey
     assert model_select.value == "typed-model"
 
 
+async def test_agents_tab_bulk_provider_switch_applies_to_every_agent(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The bulk "switch provider for all agents" control exists precisely
+    because switching agents one at a time is how a user ends up with a
+    mix of providers and a confusing Run-tab gate (missing_required only
+    complains about whichever provider still lacks a key, with no
+    indication that a forgotten agent is the reason a second provider is
+    even in play). One click must move every agent card (and the
+    Dataverse card, since its checkbox defaults to checked) to the chosen
+    provider, and auto-pick a fetched model for each."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("applied to")
+
+    for agent_id in ("core_metadata", "creators_publishers", "classification", "rights_funding_citations", "media_files"):
+        provider_select = list(user.find(marker=f"agent-provider-{agent_id}").elements)[0]
+        assert provider_select.value == "opencode"
+        model_select = list(user.find(marker=f"agent-model-{agent_id}").elements)[0]
+        assert model_select.value == "opencode-model-a"
+
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value == "opencode"
+    dataverse_model_select = list(user.find(marker="dataverse-export-model").elements)[0]
+    assert dataverse_model_select.value == "opencode-model-a"
+
+    # Download WITHOUT clicking "Save changes" first -- bulk apply must
+    # commit straight into pipeline_config, not just the visible selects
+    # (see the dedicated Settings-tab regression test below for why this
+    # matters: a stale pipeline_config is what wrongly blocked removing
+    # openrouter after a bulk switch away from it).
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert {a["provider"] for a in payload["agents"]} == {"opencode"}
+    assert {a["model"] for a in payload["agents"]} == {"opencode-model-a"}
+
+
+async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: bulk-switching every agent away from openrouter to
+    opencode, then going straight to the Settings tab (no "Save changes"
+    click in between) must let openrouter be removed -- it's no longer
+    used by anything. Previously, bulk apply only updated the visible
+    selects, leaving pipeline_config.agents (what Settings' remove-check
+    actually reads) still pointing at openrouter until Save was also
+    clicked, so removal was wrongly refused."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+
+async def test_removing_the_default_provider_keeps_config_re_uploadable(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: PipelineConfig.default_provider is cross-validated
+    against providers on reconstruction (PipelineConfig._validate_
+    references) even though it's never read for routing -- removing a
+    provider that also happens to be default_provider (exactly what the
+    previous test's own flow sets up: bulk-switch away from openrouter,
+    then remove it) must not leave that field dangling, or the app's own
+    documented backup workflow (Download configuration -> hand-edit ->
+    Upload) would reject the user's own, currently-valid config."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+    from metadata_enricher.config.models import PipelineConfig
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+    user.find(marker="tab-agents").click()
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert payload["default_provider"] != "openrouter"
+
+    # The exact reconstruction _handle_upload() runs on a re-upload
+    # (PipelineConfig's own cross-field validator, which is what raised
+    # on a dangling default_provider before the fix) -- proves the
+    # downloaded config is genuinely re-uploadable, not just that the
+    # field's value looks different above.
+    PipelineConfig(**payload)
+
+
+async def test_removing_a_now_unused_provider_preserves_its_saved_key(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: _save()'s env dict used to be rebuilt from only
+    the currently-rendered key inputs, so removing a provider (which
+    re-renders Settings without that provider's input field) and then
+    clicking Save & Continue for any unrelated reason silently deleted
+    its previously-saved key from settings.json -- reachable in far fewer
+    steps now that the Agents tab's bulk switch makes a provider unused
+    in one click. The key must survive on disk even after its provider
+    is removed, so switching an agent back to it later doesn't
+    unnecessarily re-gate the Run tab."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+    from visor.settings import load_settings
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("keep-me-please")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-remove-openrouter")
+    user.find(marker="settings-provider-remove-openrouter").click()
+    await user.should_see("Removed provider 'openrouter'")
+
+    # Save & Continue for an unrelated reason (e.g. the OPENCODE_API_KEY
+    # this bulk switch now requires) -- must not touch the already-saved,
+    # now-unrendered OPENROUTER_API_KEY entry.
+    user.find(marker="settings-provider-edit-opencode").click()
+    await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+    user.find(marker="settings-input-OPENCODE_API_KEY").type("opencode-key")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    saved = load_settings()
+    assert saved.env.get("OPENROUTER_API_KEY") == "keep-me-please"
+    assert saved.env.get("OPENCODE_API_KEY") == "opencode-key"
+
+
+async def test_settings_dedupes_key_input_for_providers_sharing_an_env_var(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: nothing enforces api_key_env uniqueness across
+    providers, and the "Add a provider" custom form lets a user type any
+    env var name -- including one already used by another provider (e.g.
+    the same account key against two base_urls). Before the fix, each
+    provider row rendered its own independent password field keyed by
+    api_key_env in a shared dict, so the second row rendered silently
+    won env_inputs' dict slot and Save & Continue could discard whatever
+    was typed into the first row. There must be exactly one key input for
+    a shared env var, and editing it must be what actually gets saved."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from visor.settings import load_settings
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("openrouter-eu")
+    user.find(marker="settings-add-provider-env-name").type("OPENROUTER_API_KEY")
+    user.find(marker="settings-add-provider-submit").click()
+    # Wait for the post-refresh render itself (not just the notify toast,
+    # which fires before body.refresh()'s "fire and forget" rebuild has
+    # actually applied) -- a marker unique to the newly added row.
+    await user.should_see(marker="settings-provider-edit-openrouter-eu")
+
+    # openrouter-eu's own panel auto-expands (just added) and must show a
+    # "shares this key" note, never its own input. Expand openrouter's
+    # panel too -- it's the declared owner -- and confirm there's still
+    # exactly one widget for the shared env var across both open panels.
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    assert len(list(user.find(marker="settings-input-OPENROUTER_API_KEY").elements)) == 1
+
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("shared-secret-value")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    assert load_settings().env.get("OPENROUTER_API_KEY") == "shared-secret-value"
+
+
+async def test_settings_dedupes_key_input_shared_with_an_orcid_var(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: optional_env_vars() (the fixed ORCID_CLIENT_ID/
+    ORCID_CLIENT_SECRET rows) rendered its own input unconditionally, even
+    when a provider's api_key_env (free text, from the add-provider form
+    or an uploaded agents.yaml) happens to collide with one of them --
+    the exact same last-one-rendered-wins collision the provider loop was
+    already fixed for, just between a provider row and the ORCID section
+    instead of between two provider rows."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("orcid-provider")
+    user.find(marker="settings-add-provider-env-name").type("ORCID_CLIENT_ID")
+    user.find(marker="settings-add-provider-submit").click()
+    await user.should_see(marker="settings-provider-edit-orcid-provider")
+
+    assert len(list(user.find(marker="settings-input-ORCID_CLIENT_ID").elements)) == 1
+
+
+async def test_settings_add_provider_warns_before_overwriting_a_shared_key(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: typing a key into the add-provider form for an
+    env var an existing provider already has a saved key under used to
+    silently replace that provider's key -- there is only one real secret
+    slot per env var name (os.environ has no per-provider concept), so
+    this can't be prevented, but it must not happen silently."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("original-key")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+    user.find(marker="settings-add-provider-name").type("openrouter-eu")
+    user.find(marker="settings-add-provider-env-name").type("OPENROUTER_API_KEY")
+    user.find(marker="settings-add-provider-key").type("overwritten-key")
+    user.find(marker="settings-add-provider-submit").click()
+
+    await user.should_see("was already in use")
+
+
+async def test_agents_upload_changing_providers_keeps_settings_savable(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: Settings' cross-tab broadcast listener only
+    patches existing rows' caption text -- it can't add or remove a row.
+    An Agents-tab config upload that changes the provider list must
+    therefore fall back to a full Settings rebuild, or Save & Continue
+    (which indexes its inputs by every *current* provider name) would
+    raise KeyError the moment it's clicked with Settings still showing
+    the stale, pre-upload row set."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from nicegui.elements.upload_files import SmallFileUpload
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-download")
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    payload["providers"].append(
+        {"name": "groq", "api_key_env": "GROQ_API_KEY", "base_url": "https://api.groq.com/openai/v1"}
+    )
+
+    upload_element = list(user.find(marker="agents-upload").elements)[0]
+    await upload_element.handle_uploads(
+        [
+            SmallFileUpload(
+                name="roundtrip.json",
+                content_type="application/json",
+                _data=json.dumps(payload).encode("utf-8"),
+            )
+        ]
+    )
+    await user.should_see("Applied uploaded configuration")
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-groq")
+    user.find(marker="settings-save").click()
+    await user.should_see("Settings saved")
+
+
+async def test_run_form_typing_survives_unrelated_agents_tab_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression guard for the cross-tab broadcast wiring itself: an
+    Agents-tab Save that doesn't touch any provider assignment must not
+    blow away in-progress typing on the Run form. _render_form_phase
+    builds plain, unbound ui.input widgets, so a naive "refresh the Run
+    tab on every broadcast" would silently discard this -- the gate is
+    only supposed to rebuild when its own missing-key shape changes."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/still-here")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="pipeline-enable-content-fetch")
+    checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    checkbox.value = not checkbox.value
+    user.find(marker="agents-save").click()
+    await user.should_see("updated for this session")
+
+    user.find(marker="tab-run").click()
+    url_input = list(user.find(marker="run-input-url").elements)[0]
+    assert url_input.value == "https://example.org/still-here"
+
+
+async def test_agents_tab_unsaved_temperature_survives_bulk_provider_switch(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The bulk provider switch commits provider/model straight into
+    pipeline_config (see the earlier fix for why) and then broadcasts to
+    every tab, including this one -- Agents' own broadcast listener
+    (_sync_provider_options) must not be a full cards.refresh(), or that
+    broadcast would immediately erase a not-yet-saved edit sitting on a
+    completely unrelated agent card, the moment "Apply to all" is
+    clicked for a different agent's provider."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-temperature-core_metadata")
+
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.5
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    temp_input_after = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert temp_input_after.value == 1.5
+
+
+async def test_agents_tab_unsaved_temperature_survives_settings_add_provider(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Same guarantee from the other direction: adding a provider in
+    Settings broadcasts to Agents too, and must only refresh provider
+    *options* (a newly-added provider becomes selectable) without
+    touching any agent's current model/temperature field."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-temperature-core_metadata")
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.5
+
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-choice")
+    user.find(marker="settings-add-provider-name").type("groq")
+    user.find(marker="settings-add-provider-submit").click()
+    await user.should_see("Added provider 'groq'")
+
+    user.find(marker="tab-agents").click()
+    temp_input_after = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert temp_input_after.value == 1.5
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert "groq" in provider_select.options
+
+
+async def test_settings_unsaved_key_survives_unrelated_agents_tab_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The other half of the cross-tab broadcast safety guarantee: a
+    Settings edit panel can be open with a typed-but-unsaved API key, and
+    an Agents-tab Save (which broadcasts too) must not collapse it back
+    to empty. This is why Settings' broadcast listener only patches each
+    provider's "used by" caption text in place instead of rebuilding the
+    whole body."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("not-yet-saved-key")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+    user.find(marker="agents-save").click()
+    await user.should_see("updated for this session")
+
+    user.find(marker="tab-settings").click()
+    key_input = list(user.find(marker="settings-input-OPENROUTER_API_KEY").elements)[0]
+    assert key_input.value == "not-yet-saved-key"
+
+
+async def test_run_tab_gate_reflects_bulk_provider_switch_without_visiting_settings(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: the Run tab's gate is rendered once at page load
+    (tab_panels mount every tab up front and never re-render it on a
+    plain tab switch) and previously only ever got refreshed after a
+    Settings save. Bulk-switching every agent to opencode (no
+    OPENCODE_API_KEY set) must update the gate to ask for opencode's key,
+    not keep showing the original openrouter one -- broadcasting from the
+    Agents tab, not just Settings, is what this test guards."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    await user.should_see(marker="run-settings-gate")
+    await user.should_see("openrouter")
+
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="tab-run").click()
+    await user.should_see(marker="run-settings-gate")
+    await user.should_see("OPENCODE_API_KEY")
+
+
+async def test_agents_tab_bulk_provider_switch_without_dataverse(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Unchecking "also include the Dataverse classifier" must leave that
+    card's own provider/model untouched."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-include-dataverse")
+
+    dataverse_provider_before = list(user.find(marker="dataverse-export-provider").elements)[0].value
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    include_checkbox = list(user.find(marker="agents-bulk-include-dataverse").elements)[0]
+    include_checkbox.value = False
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("applied to")
+
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value == "opencode"
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value == dataverse_provider_before
+
+
+async def test_agents_tab_bulk_provider_switch_fetch_failure_is_non_fatal(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    def _boom(provider: object, api_key: object) -> list[str]:
+        raise RuntimeError("network is down")
+
+    monkeypatch.setattr(agents_page_module, "fetch_provider_models", _boom)
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+
+    await user.should_see("but its model")
+    # Provider switch itself must still have gone through despite the
+    # model fetch failing.
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value == "opencode"
+
+
+async def test_agents_tab_bulk_provider_switch_model_survives_concurrent_save(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test for the race render_agents()'s outer-scope
+    provider_selects/model_inputs hoisting exists to close: "Apply to
+    all" is async and only writes the fetched model into widgets *after*
+    the /models call returns. If "Save changes" is clicked while that
+    call is still in flight, its own cards.refresh() tears down and
+    rebuilds every widget -- the fetched model must still land on the
+    resulting, now-current widgets (and in pipeline_config) instead of
+    silently applying to orphaned, pre-refresh ones."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import threading
+
+    import visor.pages.agents_page as agents_page_module
+
+    release = threading.Event()
+
+    def _slow_fetch(provider: object, api_key: object) -> list[str]:
+        release.wait(timeout=5)
+        return ["opencode-model-a"]
+
+    monkeypatch.setattr(agents_page_module, "fetch_provider_models", _slow_fetch)
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    user.find(marker="agents-bulk-provider-apply").click()
+    await asyncio.sleep(0.1)  # let the click's coroutine reach the in-flight fetch
+
+    # "Save changes" while the fetch is still pending -- rebuilds every
+    # card via cards.refresh(), exactly what used to orphan model_inputs.
+    user.find(marker="agents-save").click()
+    await asyncio.sleep(0.1)
+
+    release.set()
+    await user.should_see("applied to")
+
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    assert model_select.value == "opencode-model-a"
+
+
 async def test_agents_tab_dataverse_export_card_saves_toggle_and_model(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -551,6 +1136,46 @@ async def test_settings_edit_existing_provider_base_url(user: User, monkeypatch,
     assert rebuilt_url_field.value == "https://opencode.example.com/v1"
 
 
+async def test_settings_save_nudges_towards_unassigned_key(user: User, monkeypatch, tmp_path) -> None:
+    """Closing the loop from the other direction of the Agents tab's own
+    "used by: ..." hint: saving a key for a provider no agent (or the
+    Dataverse classifier) is actually assigned to is a likely papercut
+    -- the user probably meant to also switch an agent to it -- so
+    Settings nudges towards the Agents tab instead of silently accepting
+    a key that will never be read."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    # openai is genuinely unused (see test_settings_remove_unused_provider
+    # for why), making it the key that should trigger the nudge here.
+    await user.should_see(marker="settings-provider-edit-openai")
+    user.find(marker="settings-provider-edit-openai").click()
+    await user.should_see(marker="settings-input-OPENAI_API_KEY")
+    user.find(marker="settings-input-OPENAI_API_KEY").type("sk-unused-key")
+    user.find(marker="settings-save").click()
+
+    await user.should_see("openai")
+    await user.should_see("no agent uses it yet")
+
+
+async def test_settings_save_without_unassigned_keys_skips_the_nudge(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-provider-edit-openrouter")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("sk-used-key")
+    user.find(marker="settings-save").click()
+
+    await user.should_see("Settings saved")
+    await user.should_not_see("no agent uses it yet")
+
+
 async def test_settings_remove_unused_provider(user: User, monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
 
@@ -597,6 +1222,46 @@ async def test_settings_add_provider_rejects_duplicate_name(user: User, monkeypa
     user.find(marker="settings-add-provider-submit").click()
 
     await user.should_see("already exists")
+
+
+async def test_settings_add_provider_double_click_does_not_duplicate(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Regression test: the duplicate-name check used to compare against
+    existing_names, a set captured once when the add-provider panel was
+    rendered -- body.refresh() is fire-and-forget, so clicking Submit
+    twice before that refresh lands let both clicks pass the (still
+    stale) check and append the same name twice -- something
+    PipelineConfig now hard-rejects on any later reload (duplicate
+    provider names). The check must instead read pipeline_config.
+    providers live, so the second click sees the first click's already-
+    committed append."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-download")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-add-provider-toggle")
+    user.find(marker="settings-add-provider-toggle").click()
+    await user.should_see(marker="settings-add-provider-submit")
+
+    user.find(marker="settings-add-provider-name").type("dupe-me")
+    submit = user.find(marker="settings-add-provider-submit")
+    submit.click()
+    submit.click()
+
+    await user.should_see("already exists")
+
+    user.find(marker="tab-agents").click()
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    provider_names = [p["name"] for p in payload["providers"]]
+    assert provider_names.count("dupe-me") == 1
+    from metadata_enricher.config.models import PipelineConfig
+
+    PipelineConfig(**payload)
 
 
 async def test_settings_save_shows_edited_key_not_stale_value(
@@ -646,3 +1311,82 @@ async def test_settings_tab_lists_key_input_for_every_declared_provider(
     await user.should_see(marker="settings-provider-edit-opencode")
     user.find(marker="settings-provider-edit-opencode").click()  # reveal its row
     await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+
+
+async def test_agents_tab_save_persists_provider_model_temperature_dataverse_and_toggles(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Everything the Agents tab exposes as editable — per-agent
+    provider/model/temperature, the Dataverse export card, and the
+    pipeline-behavior checkboxes — must survive an app relaunch, not just
+    the current session. See visor/settings.py's agent_overrides /
+    apply_agent_overrides() and agents_page.py's _persist_overrides()."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from visor.settings import load_settings
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value != "opencode"
+    provider_select.value = "opencode"
+
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    model_select.set_options([*model_select.options, "persisted-model-xyz"], value="persisted-model-xyz")
+
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.7
+
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    original_content_fetch = content_fetch_checkbox.value
+    content_fetch_checkbox.value = not original_content_fetch
+
+    dataverse_enabled_checkbox = list(user.find(marker="dataverse-export-enabled").elements)[0]
+    original_dataverse_enabled = dataverse_enabled_checkbox.value
+    dataverse_enabled_checkbox.value = not original_dataverse_enabled
+
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value != "opencode"
+    dataverse_provider_select.value = "opencode"
+
+    dataverse_temp_input = list(user.find(marker="dataverse-export-temperature").elements)[0]
+    dataverse_temp_input.value = 1.9
+    dataverse_model_select = list(user.find(marker="dataverse-export-model").elements)[0]
+    unsaved_dataverse_model = dataverse_model_select.value
+
+    user.find(marker="agents-save").click()
+
+    saved = load_settings()
+    assert saved.agent_overrides["core_metadata"] == {
+        "provider": "opencode",
+        "model": "persisted-model-xyz",
+        "temperature": 1.7,
+    }
+    assert saved.pipeline_behavior["enable_content_fetch"] == (not original_content_fetch)
+    assert saved.dataverse_agent_override == {
+        "enabled": not original_dataverse_enabled,
+        "provider": "opencode",
+        "model": unsaved_dataverse_model or None,
+        "temperature": 1.9,
+    }
+
+    # A fresh page load (same running process, native mode -- what
+    # relaunching the app for real amounts to here) must reflect all of
+    # the above, not just settings.json's raw contents.
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    reloaded_provider = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert reloaded_provider.value == "opencode"
+    reloaded_temp = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert reloaded_temp.value == 1.7
+    reloaded_content_fetch = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    assert reloaded_content_fetch.value == (not original_content_fetch)
+    reloaded_dataverse_enabled = list(user.find(marker="dataverse-export-enabled").elements)[0]
+    assert reloaded_dataverse_enabled.value == (not original_dataverse_enabled)
+    reloaded_dataverse_provider = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert reloaded_dataverse_provider.value == "opencode"
+    reloaded_dataverse_temp = list(user.find(marker="dataverse-export-temperature").elements)[0]
+    assert reloaded_dataverse_temp.value == 1.9

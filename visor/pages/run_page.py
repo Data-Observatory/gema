@@ -30,7 +30,7 @@ from visor.glue import run_single, write_temp_input_from_dict, write_temp_input_
 from visor.i18n import t
 from visor.log_stream import LogCapture, drain, start_capturing, stop_capturing
 from visor.session_settings import build_llm_factory
-from visor.settings import VisorSettings, apply_to_environ, missing_required
+from visor.settings import MissingKeyDetail, VisorSettings, apply_to_environ, missing_required_details
 
 
 def _format_duration(seconds: float) -> str:
@@ -113,15 +113,31 @@ def render_run_form(
     dataverse_export_config: DataverseExportConfig | None = None,
 ) -> Callable[[], object]:
     """Renders the Run tab and returns a zero-arg refresh function — call it
-    after Settings are saved so a just-unblocked Run tab updates without
-    needing a tab switch (tab_panels keep this tab mounted even while
-    another tab is active, so it won't re-render on its own)."""
+    whenever pipeline_config (or the saved settings) may have changed
+    elsewhere, e.g. via app.py's cross-tab broadcast, so a just-unblocked
+    (or just-blocked) Run tab updates without needing a tab switch
+    (tab_panels keep this tab mounted even while another tab is active,
+    so it won't re-render on its own).
+
+    The returned function only actually rebuilds the DOM when the gate's
+    shape (which keys/providers/agents are missing) has changed since the
+    last check -- phase == "form" renders plain, unbound ui.input widgets
+    (see _render_form_phase), so an unconditional rebuild here would
+    silently wipe whatever the user is mid-typing on every unrelated
+    Settings/Agents edit, not just the ones that actually affect whether
+    a key is missing.
+    """
     container.clear()
     state = _RunViewState()
+    last_gate_signature: list[tuple[str, str, tuple[str, ...]]] = []
+
+    def _gate_signature(missing: list[MissingKeyDetail]) -> list[tuple[str, str, tuple[str, ...]]]:
+        return [(d.api_key_env, d.provider, tuple(d.agent_ids)) for d in missing]
 
     @ui.refreshable
     def body() -> None:
-        missing = missing_required(pipeline_config, current_settings())
+        missing = missing_required_details(pipeline_config, current_settings())
+        last_gate_signature[:] = _gate_signature(missing)
         if missing and state.phase == "form":
             _render_settings_gate(missing, on_go_to_settings)
             return
@@ -133,16 +149,41 @@ def render_run_form(
         else:
             _render_result_phase(schema, state, body.refresh, pipeline_config, dataverse_export_config)
 
+    def refresh_if_gate_changed() -> None:
+        # The gate only ever renders during phase == "form" (see body()
+        # above); "running"/"result" always reach phase == "form" again
+        # through their own direct refresh() call (_reset(), and the run
+        # completion handler), which recomputes the gate fresh at that
+        # point regardless of what this last saw -- so skipping here
+        # while a run is in flight or its result is showing only avoids
+        # an unrelated-tab broadcast cosmetically tearing down and
+        # rebuilding the live log or result view, never a stale gate.
+        if state.phase != "form":
+            return
+        missing = missing_required_details(pipeline_config, current_settings())
+        if _gate_signature(missing) != last_gate_signature:
+            body.refresh()
+
     with container:
         body()
 
-    return body.refresh
+    return refresh_if_gate_changed
 
 
-def _render_settings_gate(missing: list[str], on_go_to_settings: Callable[[], None]) -> None:
+def _render_settings_gate(
+    missing: list[MissingKeyDetail], on_go_to_settings: Callable[[], None]
+) -> None:
     with ui.card().classes("w-full bg-warning").mark("run-settings-gate"):
         ui.label(t("run.gate.title")).classes("text-h6")
-        ui.label(t("run.gate.missing", fields=", ".join(missing))).classes("text-caption")
+        for detail in missing:
+            ui.label(
+                t(
+                    "run.gate.missing_detail",
+                    agents=", ".join(detail.agent_ids),
+                    provider=detail.provider,
+                    env=detail.api_key_env,
+                )
+            ).classes("text-caption")
         ui.button(t("run.gate.button"), on_click=on_go_to_settings).classes("q-mt-sm")
 
 
