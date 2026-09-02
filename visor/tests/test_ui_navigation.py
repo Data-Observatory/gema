@@ -1311,3 +1311,82 @@ async def test_settings_tab_lists_key_input_for_every_declared_provider(
     await user.should_see(marker="settings-provider-edit-opencode")
     user.find(marker="settings-provider-edit-opencode").click()  # reveal its row
     await user.should_see(marker="settings-input-OPENCODE_API_KEY")
+
+
+async def test_agents_tab_save_persists_provider_model_temperature_dataverse_and_toggles(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Everything the Agents tab exposes as editable — per-agent
+    provider/model/temperature, the Dataverse export card, and the
+    pipeline-behavior checkboxes — must survive an app relaunch, not just
+    the current session. See visor/settings.py's agent_overrides /
+    apply_agent_overrides() and agents_page.py's _persist_overrides()."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    from visor.settings import load_settings
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value != "opencode"
+    provider_select.value = "opencode"
+
+    model_select = list(user.find(marker="agent-model-core_metadata").elements)[0]
+    model_select.set_options([*model_select.options, "persisted-model-xyz"], value="persisted-model-xyz")
+
+    temp_input = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    temp_input.value = 1.7
+
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    original_content_fetch = content_fetch_checkbox.value
+    content_fetch_checkbox.value = not original_content_fetch
+
+    dataverse_enabled_checkbox = list(user.find(marker="dataverse-export-enabled").elements)[0]
+    original_dataverse_enabled = dataverse_enabled_checkbox.value
+    dataverse_enabled_checkbox.value = not original_dataverse_enabled
+
+    dataverse_provider_select = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert dataverse_provider_select.value != "opencode"
+    dataverse_provider_select.value = "opencode"
+
+    dataverse_temp_input = list(user.find(marker="dataverse-export-temperature").elements)[0]
+    dataverse_temp_input.value = 1.9
+    dataverse_model_select = list(user.find(marker="dataverse-export-model").elements)[0]
+    unsaved_dataverse_model = dataverse_model_select.value
+
+    user.find(marker="agents-save").click()
+
+    saved = load_settings()
+    assert saved.agent_overrides["core_metadata"] == {
+        "provider": "opencode",
+        "model": "persisted-model-xyz",
+        "temperature": 1.7,
+    }
+    assert saved.pipeline_behavior["enable_content_fetch"] == (not original_content_fetch)
+    assert saved.dataverse_agent_override == {
+        "enabled": not original_dataverse_enabled,
+        "provider": "opencode",
+        "model": unsaved_dataverse_model or None,
+        "temperature": 1.9,
+    }
+
+    # A fresh page load (same running process, native mode -- what
+    # relaunching the app for real amounts to here) must reflect all of
+    # the above, not just settings.json's raw contents.
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    reloaded_provider = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert reloaded_provider.value == "opencode"
+    reloaded_temp = list(user.find(marker="agent-temperature-core_metadata").elements)[0]
+    assert reloaded_temp.value == 1.7
+    reloaded_content_fetch = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    assert reloaded_content_fetch.value == (not original_content_fetch)
+    reloaded_dataverse_enabled = list(user.find(marker="dataverse-export-enabled").elements)[0]
+    assert reloaded_dataverse_enabled.value == (not original_dataverse_enabled)
+    reloaded_dataverse_provider = list(user.find(marker="dataverse-export-provider").elements)[0]
+    assert reloaded_dataverse_provider.value == "opencode"
+    reloaded_dataverse_temp = list(user.find(marker="dataverse-export-temperature").elements)[0]
+    assert reloaded_dataverse_temp.value == 1.9
