@@ -58,6 +58,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.providers.dataverse_subject_classifier": "Clasificador de tema de exportación a Dataverse",
         "settings.base_url.label": "URL base",
         "settings.key.label": "Clave de {env}",
+        "settings.key.shared": "Usa la misma clave que '{provider}' — edítala en esa fila",
+        "settings.key.shared_env": "Ya está configurada arriba (misma variable: {env})",
         "settings.add_provider.title": "Añadir un proveedor",
         "settings.add_provider.help": (
             "Elige uno de la lista para autocompletar sus datos de conexión, "
@@ -72,10 +74,18 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.add_provider.name_required": "El nombre del proveedor es obligatorio",
         "settings.add_provider.duplicate": "El proveedor '{name}' ya existe",
         "settings.add_provider.added": "Proveedor '{name}' añadido — define su clave abajo y guarda",
+        "settings.add_provider.key_overwrite_warning": (
+            "La variable {env} ya estaba en uso — su clave anterior fue reemplazada por la que "
+            "acabas de escribir"
+        ),
         "settings.add_provider.submit": "Añadir proveedor",
         "settings.orcid.title": "Opcional — permite buscar por nombre de autor en ORCID",
         "settings.save": "Guardar y continuar",
         "settings.saved": "Configuración guardada",
+        "settings.unassigned_key_hint": (
+            "Guardaste una clave para {providers}, pero ningún agente usa "
+            "ese proveedor todavía — asígnalo en la pestaña Agentes"
+        ),
         # -- run_page.py --
         "run.title": "Ejecutar un recurso",
         "run.mode.form": "Rellenar un formulario",
@@ -128,7 +138,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.error.upload_first": "Sube primero un archivo.",
         "run.error.read_input": "No se pudo leer la entrada: {error}",
         "run.gate.title": "Añade primero una clave de API",
-        "run.gate.missing": "Falta: {fields}",
+        "run.gate.missing_detail": "{agents} → proveedor '{provider}' (necesita {env})",
         "run.gate.button": "Ir a Configuración",
         "run.running.title": "Ejecutando…",
         "run.running.hint": "Esto puede tardar un minuto o más — una llamada al LLM por cada paso del pipeline.",
@@ -165,6 +175,25 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Descargar configuración (JSON)",
         "agents.upload": "Subir configuración (JSON)",
+        "agents.bulk_provider.title": "Cambiar proveedor para todos los agentes",
+        "agents.bulk_provider.intro": (
+            "Asigna un proveedor a todos los agentes del pipeline (y, si lo "
+            "marcas, al clasificador de tema de Dataverse) de una sola vez, e intenta "
+            "elegir automáticamente un modelo para cada uno. Recuerda añadir la "
+            "clave de API de ese proveedor en la pestaña Configuración."
+        ),
+        "agents.bulk_provider.include_dataverse": "Incluir también el clasificador de Dataverse",
+        "agents.bulk_provider.apply": "Aplicar a todos",
+        "agents.bulk_provider.pick_first": "Elige primero un proveedor",
+        "agents.bulk_provider.applied": (
+            "Proveedor '{provider}' aplicado a {count} agentes — añade su clave "
+            "en Configuración si aún no lo has hecho"
+        ),
+        "agents.bulk_provider.applied_no_models": (
+            "Proveedor '{provider}' aplicado a {count} agentes, pero no se pudo "
+            "obtener su lista de modelos — elige un modelo manualmente en cada "
+            "tarjeta, luego pulsa Guardar cambios"
+        ),
         "agents.pipeline_behavior.title": "Comportamiento del pipeline",
         "agents.pipeline_behavior.intro": "Se aplica a todo el pipeline, no a un solo agente.",
         "agents.checkbox.content_fetch": "Obtener el contenido de la página automáticamente",
@@ -236,6 +265,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.providers.dataverse_subject_classifier": "dataverse export's Subject Classifier",
         "settings.base_url.label": "Base URL",
         "settings.key.label": "{env} key",
+        "settings.key.shared": "Uses the same key as '{provider}' — edit it in that row",
+        "settings.key.shared_env": "Already set above (same variable: {env})",
         "settings.add_provider.title": "Add a provider",
         "settings.add_provider.help": (
             "Pick one from the list to autofill its connection details, "
@@ -250,10 +281,17 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.add_provider.name_required": "Provider name is required",
         "settings.add_provider.duplicate": "Provider '{name}' already exists",
         "settings.add_provider.added": "Added provider '{name}' — set its key below and Save",
+        "settings.add_provider.key_overwrite_warning": (
+            "{env} was already in use — its previous key was replaced by the one you just typed"
+        ),
         "settings.add_provider.submit": "Add provider",
         "settings.orcid.title": "Optional — lets ORCID be searched by author name",
         "settings.save": "Save & Continue",
         "settings.saved": "Settings saved",
+        "settings.unassigned_key_hint": (
+            "Key saved for {providers}, but no agent uses it yet — assign "
+            "it in the Agents tab"
+        ),
         "run.title": "Run a resource",
         "run.mode.form": "Fill a form",
         "run.mode.paste": "Paste JSON",
@@ -303,7 +341,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.error.upload_first": "Upload a file first.",
         "run.error.read_input": "Could not read input: {error}",
         "run.gate.title": "Add an API key first",
-        "run.gate.missing": "Missing: {fields}",
+        "run.gate.missing_detail": "{agents} → provider '{provider}' (needs {env})",
         "run.gate.button": "Go to Settings",
         "run.running.title": "Running…",
         "run.running.hint": "This can take a minute or more — one LLM call per pipeline step.",
@@ -339,6 +377,25 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Download configuration (JSON)",
         "agents.upload": "Upload configuration (JSON)",
+        "agents.bulk_provider.title": "Switch provider for all agents",
+        "agents.bulk_provider.intro": (
+            "Assign one provider to every pipeline agent (and, if checked, "
+            "the Dataverse subject classifier) at once, and try to auto-pick "
+            "a model for each. Remember to add that provider's API key in "
+            "the Settings tab."
+        ),
+        "agents.bulk_provider.include_dataverse": "Also include the Dataverse classifier",
+        "agents.bulk_provider.apply": "Apply to all",
+        "agents.bulk_provider.pick_first": "Pick a provider first",
+        "agents.bulk_provider.applied": (
+            "Provider '{provider}' applied to {count} agents — add its key "
+            "in Settings if you haven't already"
+        ),
+        "agents.bulk_provider.applied_no_models": (
+            "Provider '{provider}' applied to {count} agents, but its model "
+            "list couldn't be fetched — pick a model manually on each card, "
+            "then click Save changes"
+        ),
         "agents.pipeline_behavior.title": "Pipeline behavior",
         "agents.pipeline_behavior.intro": "These apply to the whole pipeline, not a single agent.",
         "agents.checkbox.content_fetch": "Fetch page content automatically",

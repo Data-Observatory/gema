@@ -19,6 +19,13 @@ angles.
 Prompt/fields/depends_on (and tools/extra_body, when an agent sets them)
 are read-only in a collapsed "Advanced" section for transparency.
 
+A "switch provider for all agents" card above everything else sets every
+agent card's provider select (and, if checked, the Dataverse card's) in
+one click and tries to auto-pick a model for each via the same
+model_catalog fetch the per-agent refresh button uses -- switching
+providers one card at a time is what leaves an agent stranded on the old
+provider and produces a confusing multi-provider Run-tab gate.
+
 A "Pipeline behavior" card above the agent cards exposes the
 PipelineConfig-level toggles (enable_content_fetch, enable_doi_resolution,
 enable_identifier_enrichment, validate_pids, validate_pids_live) as plain
@@ -51,14 +58,15 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Callable
+from typing import Any, Callable
 
 from nicegui import events, run, ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
-from visor.session_settings import load_session_settings
+from visor.session_settings import load_session_settings, save_session_settings
+from visor.settings import VisorSettings
 
 logger = logging.getLogger(__name__)
 
@@ -95,12 +103,121 @@ async def _refresh_models(provider: ProviderConfig, model_select: ui.select) -> 
     ui.notify(t("agents.models.loaded", provider=provider.name, count=len(models)), type="positive")
 
 
+def _persist_overrides(
+    pipeline_config: PipelineConfig, dataverse_export_config: DataverseExportConfig | None
+) -> None:
+    """Snapshot the current in-memory provider/model/temperature/toggle
+    state into settings.json (native) or this session's storage (hosted) --
+    see visor/settings.py's apply_agent_overrides() for the read side.
+
+    Always a full rewrite of agent_overrides from pipeline_config.agents,
+    never a merge into whatever was previously saved -- so an agent
+    removed by a config upload (or a repo agents.yaml change on next
+    launch) never leaves a stale, unreachable entry behind. Preserves the
+    current default_provider/env untouched, same as Settings' own _save()
+    does for the fields it doesn't own.
+    """
+    current = load_session_settings()
+    dataverse_override: dict[str, Any] | None = None
+    if dataverse_export_config is not None:
+        dataverse_override = {
+            "enabled": dataverse_export_config.enabled,
+            "provider": dataverse_export_config.agent.provider,
+            "model": dataverse_export_config.agent.model,
+            "temperature": dataverse_export_config.agent.temperature,
+        }
+    save_session_settings(
+        VisorSettings(
+            default_provider=current.default_provider,
+            env=current.env,
+            agent_overrides={
+                agent.id: {
+                    "provider": agent.provider,
+                    "model": agent.model,
+                    "temperature": agent.temperature,
+                }
+                for agent in pipeline_config.agents
+            },
+            dataverse_agent_override=dataverse_override,
+            pipeline_behavior={
+                "enable_content_fetch": pipeline_config.enable_content_fetch,
+                "enable_doi_resolution": pipeline_config.enable_doi_resolution,
+                "enable_identifier_enrichment": pipeline_config.enable_identifier_enrichment,
+                "validate_pids": pipeline_config.validate_pids,
+                "validate_pids_live": pipeline_config.validate_pids_live,
+            },
+        )
+    )
+
+
 def render_agents(
     container: ui.element,
     pipeline_config: PipelineConfig,
     dataverse_export_config: DataverseExportConfig | None = None,
-) -> None:
+    on_changed: Callable[[], None] | None = None,
+) -> Callable[[], object]:
+    """Returns a zero-arg refresh function, same contract as
+    render_run_form() and render_settings() -- see app.py's shared
+    broadcast wiring for why every tab needs one, and why it is
+    deliberately NOT this tab's own cards.refresh: a full rebuild would
+    discard any not-yet-saved edit sitting in another agent's
+    model/temperature field for a change (Settings adding or removing a
+    provider) that only ever needs to update *options* lists. See
+    _sync_provider_options() below for the actual returned function.
+
+    *on_changed* fires whenever this tab commits a provider/model/agent
+    change into pipeline_config (Save changes, the bulk provider switch,
+    or a config upload) -- app.py wires it to refresh every other tab
+    too, so e.g. the Run tab's missing-key gate reflects a provider
+    switch made here immediately, without needing its own unrelated
+    trigger (like a Settings save) to force a re-render first.
+    """
     container.clear()
+    # Populated (cleared and refilled) by every cards() run -- kept at
+    # this outer scope, rather than as cards()-local variables, for two
+    # separate reasons:
+    #
+    # 1. _sync_provider_options() below (this tab's cross-tab-facing
+    #    listener) needs to reach the *current* selects after a Settings
+    #    add/remove-provider broadcast, however many cards() renders
+    #    have happened since it was defined.
+    # 2. _apply_provider_to_all() is async and reads model_inputs /
+    #    dataverse_model_input again *after* an `await` (the /models
+    #    fetch) -- if those were still cards()-local, a cards.refresh()
+    #    firing during that await (the user clicking "Save changes" or
+    #    finishing an Upload while the fetch is in flight) would leave
+    #    it holding orphaned, pre-refresh widgets: pipeline_config would
+    #    get the new model, but the now-detached dropdowns would keep
+    #    showing the old one, and the very next "Save changes" click
+    #    would read those stale visible values straight back over the
+    #    just-applied ones. Reading through these same outer containers
+    #    after the await instead always sees whatever cards() most
+    #    recently populated them with.
+    provider_selects: dict[str, ui.select] = {}
+    model_inputs: dict[str, ui.select] = {}
+    bulk_provider_select_box: list[ui.select] = []
+    dataverse_provider_select_box: list[ui.select | None] = [None]
+    dataverse_model_input_box: list[ui.select | None] = [None]
+
+    def _sync_provider_options() -> None:
+        """This tab's cross-tab-facing listener (see app.py's broadcast
+        wiring) -- deliberately NOT cards.refresh(): a full rebuild would
+        also blow away any not-yet-saved edit sitting in another agent's
+        model/temperature field, for a change (Settings adding or
+        removing a provider) that only ever needs to update *options*
+        lists, never any select's current value."""
+        provider_names = [p.name for p in pipeline_config.providers]
+
+        for select in provider_selects.values():
+            select.set_options(_model_options(provider_names, select.value or ""))
+        if bulk_provider_select_box:
+            bulk_provider_select_box[0].set_options(provider_names)
+        dataverse_provider_select = dataverse_provider_select_box[0]
+        if dataverse_provider_select is not None:
+            dataverse_provider_select.set_options(
+                _model_options(provider_names, dataverse_provider_select.value or "")
+            )
+
     with container:
         ui.label(t("agents.title")).classes("text-h5")
         ui.label(t("agents.intro")).classes("text-caption")
@@ -112,6 +229,16 @@ def render_agents(
 
             async def _on_upload(e: events.UploadEventArguments) -> None:
                 await _handle_upload(e, pipeline_config, cards.refresh)
+                # Harmless no-op snapshot when the upload was rejected
+                # (pipeline_config is untouched in that case) -- otherwise
+                # persists the newly uploaded provider/model/temperature
+                # assignments the same way Save changes does. Dataverse
+                # export config is never part of the uploaded JSON (see
+                # _download()'s own docstring), so its saved override is
+                # left exactly as it was.
+                _persist_overrides(pipeline_config, dataverse_export_config)
+                if on_changed is not None:
+                    on_changed()
 
             # flat + a fixed width keeps this beside Download instead of a
             # tall drop-zone with a big empty file-list area reserved below
@@ -130,9 +257,139 @@ def render_agents(
             # refreshable — Upload can replace pipeline_config.providers
             # entirely, and this must reflect that on the next render.
             provider_names = [p.name for p in pipeline_config.providers]
-            model_inputs: dict[str, ui.select] = {}
             temp_inputs: dict[str, ui.number] = {}
-            provider_selects: dict[str, ui.select] = {}
+            provider_selects.clear()
+            model_inputs.clear()
+
+            with ui.card().classes("w-full q-mt-md"):
+                ui.label(t("agents.bulk_provider.title")).classes("text-subtitle1 text-bold")
+                ui.label(t("agents.bulk_provider.intro")).classes("text-caption")
+
+                with ui.row().classes("w-full items-end"):
+                    bulk_provider_select = (
+                        ui.select(provider_names, label=t("agents.provider_label"))
+                        .classes("w-48")
+                        .mark("agents-bulk-provider")
+                    )
+                    bulk_provider_select_box[:] = [bulk_provider_select]
+                    bulk_include_dataverse = (
+                        ui.checkbox(t("agents.bulk_provider.include_dataverse"), value=True).mark(
+                            "agents-bulk-include-dataverse"
+                        )
+                        if dataverse_export_config is not None
+                        else None
+                    )
+
+                    async def _apply_provider_to_all() -> None:
+                        provider_name = bulk_provider_select.value
+                        provider = next(
+                            (p for p in pipeline_config.providers if p.name == provider_name), None
+                        )
+                        if not provider_name or provider is None:
+                            # The second condition covers a select still
+                            # holding a stale value for a provider removed
+                            # (in Settings) after this control was rendered
+                            # -- without this, the button would otherwise
+                            # silently do nothing at all.
+                            ui.notify(t("agents.bulk_provider.pick_first"), type="negative")
+                            return
+
+                        include_dataverse = (
+                            bulk_include_dataverse is not None and bulk_include_dataverse.value
+                        )
+                        # Written straight into pipeline_config (and the
+                        # Dataverse export config), not just the visible
+                        # selects -- Settings' remove-provider check reads
+                        # pipeline_config.agents directly, so leaving this
+                        # queued behind the separate "Save changes" button
+                        # (like every other per-agent field here) meant a
+                        # provider this bulk action just "switched away
+                        # from" still looked in-use there until Save was
+                        # also clicked, wrongly blocking its removal.
+                        for select in provider_selects.values():
+                            select.value = provider_name
+                        for agent in pipeline_config.agents:
+                            agent.provider = provider_name
+                        if include_dataverse and dataverse_provider_select is not None:
+                            dataverse_provider_select.value = provider_name
+                            if dataverse_export_config is not None:
+                                dataverse_export_config.agent.provider = provider_name
+
+                        api_key = _resolve_api_key(provider)
+                        try:
+                            models = await run.io_bound(fetch_provider_models, provider, api_key)
+                        except Exception as exc:  # noqa: BLE001 - surfaced to the user, never fatal
+                            logger.warning(
+                                "Could not fetch models for provider %s: %s", provider.name, exc
+                            )
+                            models = None
+
+                        # Re-read through the hoisted containers rather
+                        # than the plain local `model_inputs`/
+                        # `dataverse_model_input` names this closure
+                        # captured at click time -- see this function's
+                        # own outer-scope comment for why: a cards.refresh()
+                        # during the await above (Save changes / Upload
+                        # finishing) would otherwise leave these pointing
+                        # at now-orphaned widgets.
+                        model_targets = list(model_inputs.values())
+                        current_dataverse_model_input = dataverse_model_input_box[0]
+                        if include_dataverse and current_dataverse_model_input is not None:
+                            model_targets.append(current_dataverse_model_input)
+
+                        agent_count = len(provider_selects) + (1 if include_dataverse else 0)
+                        if models:
+                            for model_select in model_targets:
+                                model_select.set_options(
+                                    _model_options(models, model_select.value or "")
+                                )
+                                model_select.value = models[0]
+                            for agent in pipeline_config.agents:
+                                agent.model = models[0]
+                            if include_dataverse and dataverse_export_config is not None:
+                                dataverse_export_config.agent.model = models[0]
+                            ui.notify(
+                                t(
+                                    "agents.bulk_provider.applied",
+                                    provider=provider_name,
+                                    count=agent_count,
+                                ),
+                                type="positive",
+                            )
+                        else:
+                            # Blank rather than leaving the OLD provider's
+                            # model id in place: a model id is rarely
+                            # portable across providers (e.g. OpenRouter's
+                            # "~deepseek/..." alias shape doesn't exist on
+                            # opencode), so keeping it would silently point
+                            # the just-switched agents at a model that
+                            # doesn't exist on their new provider instead
+                            # of falling back to that provider's own
+                            # default -- same "blank means use the
+                            # provider's default" contract as leaving the
+                            # per-agent Model field empty by hand.
+                            for model_select in model_targets:
+                                model_select.set_options(_model_options([], ""))
+                                model_select.value = ""
+                            for agent in pipeline_config.agents:
+                                agent.model = None
+                            if include_dataverse and dataverse_export_config is not None:
+                                dataverse_export_config.agent.model = None
+                            ui.notify(
+                                t(
+                                    "agents.bulk_provider.applied_no_models",
+                                    provider=provider_name,
+                                    count=agent_count,
+                                ),
+                                type="warning",
+                            )
+                        _persist_overrides(pipeline_config, dataverse_export_config)
+                        if on_changed is not None:
+                            on_changed()
+
+                    ui.button(
+                        t("agents.bulk_provider.apply"), on_click=_apply_provider_to_all
+                    ).mark("agents-bulk-provider-apply")
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.pipeline_behavior.title")).classes("text-subtitle1 text-bold")
@@ -245,6 +502,8 @@ def render_agents(
             dataverse_provider_select = None
             dataverse_model_input = None
             dataverse_temp_input = None
+            dataverse_provider_select_box[0] = None
+            dataverse_model_input_box[0] = None
             if dataverse_export_config is not None:
                 with ui.card().classes("w-full q-mt-md"):
                     ui.label(t("agents.dataverse.title")).classes("text-subtitle1 text-bold")
@@ -264,6 +523,7 @@ def render_agents(
                             .classes("w-48")
                             .mark("dataverse-export-provider")
                         )
+                        dataverse_provider_select_box[0] = dataverse_provider_select
                         dataverse_model_input = (
                             ui.select(
                                 _model_options([], dataverse_export_config.agent.model or ""),
@@ -276,6 +536,7 @@ def render_agents(
                             .mark("dataverse-export-model")
                         )
                         _dataverse_model_select = dataverse_model_input
+                        dataverse_model_input_box[0] = dataverse_model_input
 
                         def _refresh_dataverse_models() -> object:
                             provider = next(
@@ -323,12 +584,17 @@ def render_agents(
                     dataverse_export_config.agent.provider = dataverse_provider_select.value
                     dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
+                _persist_overrides(pipeline_config, dataverse_export_config)
                 ui.notify(t("agents.save.done"), type="positive")
                 cards.refresh()
+                if on_changed is not None:
+                    on_changed()
 
             ui.button(t("agents.save"), on_click=_save).classes("q-mt-md").mark("agents-save")
 
         cards()
+
+    return _sync_provider_options
 
 
 def _download(pipeline_config: PipelineConfig) -> None:

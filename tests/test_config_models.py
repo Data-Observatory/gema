@@ -627,6 +627,42 @@ class TestPipelineConfig:
                 providers=[ProviderConfig(name="p1", api_key_env="K")],
             )
 
+    # -- duplicate provider names --------------------------------
+
+    def test_duplicate_provider_name_raises(self):
+        """Two providers with the same name — raises ValueError. Unlike two
+        providers sharing one api_key_env (legitimate: same account key,
+        different base_urls), a duplicate *name* is never valid since
+        agents and default_provider both reference a provider by name
+        alone."""
+        with pytest.raises(ValueError, match="duplicate provider names"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="dup"),
+                ],
+                providers=[
+                    ProviderConfig(name="dup", api_key_env="K1"),
+                    ProviderConfig(name="dup", api_key_env="K2"),
+                ],
+            )
+
+    def test_shared_api_key_env_across_distinct_providers_is_allowed(self):
+        """Two distinct providers sharing one api_key_env — not rejected,
+        unlike a duplicate name above."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+                AgentConfig(id="a2", name="A2", fields=["f2"], prompt="p", provider="p2"),
+            ],
+            providers=[
+                ProviderConfig(name="p1", api_key_env="SHARED_KEY"),
+                ProviderConfig(name="p2", api_key_env="SHARED_KEY"),
+            ],
+        )
+        assert [p_.name for p_ in p.providers] == ["p1", "p2"]
+
     # -- min_length constraints ---------------------------------
 
     def test_empty_agents_raises(self):

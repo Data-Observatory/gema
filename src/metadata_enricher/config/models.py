@@ -212,6 +212,19 @@ class PipelineConfig(BaseModel):
             msg = f"duplicate agent IDs found: {sorted(duplicates)}"
             raise ValueError(msg)
 
+        if len(provider_names) != len(self.providers):
+            # Unlike two providers sharing one api_key_env (legitimate --
+            # e.g. the same account key against two base_urls), two
+            # providers sharing a *name* is never valid: agents and
+            # default_provider both reference a provider by name alone,
+            # so a duplicate makes that reference ambiguous and silently
+            # degrades to "whichever one a name-keyed lookup happens to
+            # find" wherever providers are looked up by name.
+            provider_counter = Counter(p.name for p in self.providers)
+            provider_duplicates = {name for name, count in provider_counter.items() if count > 1}
+            msg = f"duplicate provider names found: {sorted(provider_duplicates)}"
+            raise ValueError(msg)
+
         return self
 
 
