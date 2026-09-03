@@ -39,6 +39,15 @@ class ProviderConfig(BaseModel):
     seed: int | None = None
     max_workers: int | None = Field(default=None, ge=1)
     model_overrides: list[ModelOverride] = Field(default_factory=list)
+    # Header name to stamp with a fresh random ID once per LLM "conversation"
+    # (one complete()/complete_with_usage()/complete_with_tools()/complete_raw()
+    # call -- reused across that call's own retries/tool-loop rounds, never
+    # across separate calls). OpenCode requires this ("x-opencode-session")
+    # to tell concurrent conversations apart for its own routing/optimization
+    # -- see llm/instructor_client.py's _build_extra_headers. Never enters the
+    # disk cache key (cache.py): it's random by design, so putting it there
+    # would break every cache hit.
+    session_header: str | None = None
 
 
 class AgentConfig(BaseModel):
