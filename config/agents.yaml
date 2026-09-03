@@ -1415,6 +1415,12 @@ providers:
   # zero 429s). zai-coding-plan has no override -- it inherits the global
   # max_workers default below, tuned down for its tighter limit.
   max_workers: 5
+  # OpenCode notice (2026-09-03): requests missing this header may start
+  # erroring on 09/06. Must be a fresh, stable-per-conversation ID (their
+  # words) -- a static value defeats their per-conversation optimization,
+  # so this names the header only; the value is generated fresh per LLM
+  # call in llm/instructor_client.py's _build_extra_headers.
+  session_header: x-opencode-session
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
 - name: zai-coding-plan
