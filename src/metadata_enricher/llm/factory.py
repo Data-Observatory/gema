@@ -124,6 +124,7 @@ def create_llm_client(
         seed=resolved_seed,
         max_tokens=max_tokens,
         extra_body=extra_body,
+        session_header=provider.session_header,
     )
 
     client: LLMClient = InstructorLLMClient(config=config, max_retries=max_retries)
