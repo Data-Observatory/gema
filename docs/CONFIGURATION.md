@@ -97,6 +97,7 @@ Each entry in the `providers` list supports:
 | `base_url` | `str` | no | `null` | API base URL (e.g. `https://opencode.ai/zen/go/v1`) |
 | `api_key_env` | `str` | yes | — | Environment variable name holding the API key |
 | `default` | `bool` | no | `false` | Whether this is the default provider |
+| `session_header` | `str` | no | `null` | Header name stamped with a fresh random ID once per LLM call (e.g. OpenCode's required `x-opencode-session`) |
 
 ## Provider Config (`providers.yaml`)
 
