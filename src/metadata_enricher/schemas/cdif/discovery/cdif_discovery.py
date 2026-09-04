@@ -28,11 +28,43 @@ string-list / single-dict) cover every field; no per-field alias-key
 handling is needed.  This can grow bespoke per-field normalizers later if
 real LLM output turns out messier than assumed, the same way DataCite's
 did over time.
+
+SHACL conformance (``check_shacl_conformance``) and JSON-LD framing
+(``frame_output``) -- wiring decision (docs/cdif_pivot_implementation_plan.md
+"Step 6"): ``check_shacl_conformance`` **is** wired into ``pipeline.py`` as
+a new, non-blocking post-merge step mirroring the existing PID-validation
+step, gated behind ``PipelineConfig.validate_shacl_conformance`` (default
+``False`` -- see that field's own docstring for why: every real recorded
+golden fixture fails this check today, mostly for reasons outside gema's
+control -- see below -- so defaulting it on would flood every existing
+user with warnings before there's a way to act on most of them).
+``frame_output`` stays an available-but-uncalled utility method, the same
+status ``validate_output`` itself already has: nothing in gema consumes
+CDIF's canonical framed shape yet (no output writer, no exporter reads
+it), so wiring it into the pipeline would produce a value nobody uses.
+Both methods are exercised directly against real golden fixtures in
+``tests/test_shacl_and_framing.py``, which also records what was found:
+every fixture produces *real*, sensible violations (not JSON-LD-conversion
+noise -- that class of false positive was the Step 5.5 bug, already
+fixed) -- most commonly (a) ``dcterms:conformsTo`` only ever names
+``https://w3id.org/cdif/discovery/1.0``, never the ``.../cdif/core/1.0``
+URI the shapes also require (CDIFDiscoveryProfile emits only the one URI
+today, see ``_inject_envelope`` below), (b) nested ``schema:identifier``/
+``schema:license`` entries carry no ``@type``, so SHACL's ``sh:class``
+checks can't recognize them as ``schema:PropertyValue``/typed nodes, and
+(c) at least one fixture (``sample_input06.json``) is missing real content
+for both required OR-groups (no ``schema:license``/``conditionsOfAccess``,
+no ``schema:url``/``distribution``) -- a genuine gap in that recording,
+not a framework bug. None of this is "fixed" here -- see the module-level
+docstring note in ``docs/cdif_pivot_implementation_plan.md``'s Step 6
+writeup; fixing the fixtures/generation to force conformance was
+explicitly out of scope for this pass.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import uuid
 from copy import deepcopy
@@ -326,6 +358,107 @@ class CDIFDiscoveryProfile:
         (tests, a future CLI `validate` step, or the SHACL/framing helpers
         below)."""
         return CDIFDiscoveryOutputModel(**raw)
+
+    # ------------------------------------------------------------------
+    # SHACL conformance + JSON-LD framing (see module docstring for the
+    # wiring decision -- check_shacl_conformance is called from
+    # pipeline.py when opted in; frame_output stays available-but-uncalled)
+    # ------------------------------------------------------------------
+
+    def check_shacl_conformance(self, doc: MetadataDocument) -> list[str]:
+        """Non-blocking SHACL conformance check against the vendored
+        ``shacl.ttl`` shapes (CDIF's own ``discoveryRules.shacl`` --
+        see ``VENDORED_SHA.txt``).
+
+        Converts *doc.fields* to a real RDF graph by round-tripping it
+        through JSON and rdflib's ``json-ld`` parser, which resolves
+        property names strictly via the document's own ``@context`` --
+        this is exactly the mechanism Step 5.5
+        (docs/cdif_pivot_implementation_plan.md) had to fix a bug in
+        (bare, non-CURIE nested keys silently vanishing during
+        expansion instead of erroring). ``advanced=True`` is required
+        because several of the vendored shapes use ``sh:SPARQLTarget``,
+        an advanced-features SHACL construct pyshacl only evaluates
+        with that flag set.
+
+        Never raises: this is a diagnostic aid, not a generation gate
+        (see module docstring). Any infrastructure failure -- a
+        malformed document, an internal rdflib/pyshacl error -- is
+        logged as a warning and degrades to an empty list, indistinguishable
+        from "conformant" to a caller that only checks truthiness. Callers
+        that need to tell "conformant" apart from "check didn't run" should
+        watch the log instead.
+
+        Returns one human-readable string per ``sh:ValidationResult`` in
+        the returned report graph (never the raw Turtle report) -- each
+        including the violation message, the SHACL shape responsible, and
+        the offending focus node when pyshacl reports one.
+        """
+        try:
+            import pyshacl
+            from rdflib import RDF, Graph
+            from rdflib.namespace import SH
+
+            data_graph = Graph()
+            data_graph.parse(data=json.dumps(doc.fields), format="json-ld")
+
+            shacl_text = (resources.files(_PACKAGE) / "shacl.ttl").read_text(encoding="utf-8")
+            shacl_graph = Graph()
+            shacl_graph.parse(data=shacl_text, format="turtle")
+
+            conforms, results_graph, _results_text = pyshacl.validate(
+                data_graph,
+                shacl_graph=shacl_graph,
+                data_graph_format="json-ld",
+                shacl_graph_format="turtle",
+                advanced=True,
+            )
+            if conforms:
+                return []
+
+            violations: list[str] = []
+            for result in results_graph.subjects(RDF.type, SH.ValidationResult):
+                messages = [str(m) for m in results_graph.objects(result, SH.resultMessage)]
+                message = "; ".join(messages) if messages else "SHACL constraint violated"
+                shapes = [str(s) for s in results_graph.objects(result, SH.sourceShape)]
+                focus_nodes = [str(f) for f in results_graph.objects(result, SH.focusNode)]
+                parts = [message]
+                if shapes:
+                    parts.append(f"shape={shapes[0]}")
+                if focus_nodes:
+                    parts.append(f"focus_node={focus_nodes[0]}")
+                violations.append(" | ".join(parts))
+            return violations
+        except Exception as exc:  # noqa: BLE001 - diagnostic-only, must never fail a pipeline run
+            logger.warning("SHACL conformance check failed to run: %s", exc)
+            return []
+
+    def frame_output(self, doc: MetadataDocument) -> dict[str, Any]:
+        """JSON-LD framing via the vendored ``frame.jsonld`` (CDIF's own
+        ``CDIFDiscovery-frame.jsonld`` -- see ``VENDORED_SHA.txt``).
+
+        Produces CDIF's own canonical, node-shaped rendering of
+        *doc.fields* (typically a ``{"@context", "@graph": [...]}``
+        envelope -- the vendored frame matches more than one node per
+        document, e.g. the Dataset and its ``schema:subjectOf``
+        CatalogRecord, so results normally carry more than one ``@graph``
+        entry). Available-but-uncalled utility method -- see module
+        docstring for why nothing wires this in yet.
+
+        Never raises: on any failure (malformed input, a pyld/rdflib
+        internal error) logs a warning and returns a plain deep copy of
+        *doc.fields* unchanged, so callers always get some usable dict
+        back, never an exception or ``None``.
+        """
+        try:
+            from pyld import jsonld
+
+            frame = json.loads((resources.files(_PACKAGE) / "frame.jsonld").read_text(encoding="utf-8"))
+            framed: dict[str, Any] = jsonld.frame(doc.fields, frame)
+            return framed
+        except Exception as exc:  # noqa: BLE001 - never raise, degrade to the unchanged input
+            logger.warning("JSON-LD framing failed: %s", exc)
+            return deepcopy(doc.fields)
 
     # ------------------------------------------------------------------
     # Normalize field (dispatch)

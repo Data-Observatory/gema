@@ -69,6 +69,10 @@ strict = true
 module = "diskcache.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "pyld.*"
+ignore_missing_imports = true
+
 [dependency-groups]
 dev = [
     "deepeval>=4.0.7",

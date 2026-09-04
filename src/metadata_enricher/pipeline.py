@@ -360,6 +360,20 @@ class Pipeline:
             except Exception as exc:
                 logger.warning("PID validation failed: %s", exc)
 
+        # 8. SHACL conformance check — opt-in, non-blocking, mirrors the
+        # PID-validation step above. Duck-typed rather than importing
+        # CDIFDiscoveryProfile directly: only the registered schema knows
+        # whether it has a meaningful conformance check at all (see
+        # PipelineConfig.validate_shacl_conformance's own docstring for why
+        # this defaults off).
+        if self._config.validate_shacl_conformance:
+            shacl_check = getattr(self._schema, "check_shacl_conformance", None)
+            if callable(shacl_check):
+                try:
+                    warnings += shacl_check(document)
+                except Exception as exc:
+                    logger.warning("SHACL conformance check failed: %s", exc)
+
         return PipelineResult(
             resource=resource,
             document=document,

@@ -507,6 +507,73 @@ class TestPipelinePidValidation:
         assert result.document.get_field("schema:name") is not None
 
 
+class TestPipelineShaclValidation:
+    """Pipeline: SHACL conformance check is opt-in and non-blocking.
+
+    Unlike PID validation (defaults True, mature/tuned), this defaults
+    False -- see PipelineConfig.validate_shacl_conformance's own
+    docstring. make_test_config()'s single agent only ever produces
+    schema:name, so the merged document is always missing several of the
+    vendored shapes' required properties (schema:license/conditionsOfAccess,
+    schema:url/distribution both absent since only schema_name is
+    populated) -- real, expected SHACL violations once the check is
+    switched on.
+    """
+
+    def test_disabled_by_default_no_shacl_warnings(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False  # isolate: only interested in SHACL here
+        results = Pipeline(config=config, llm_factory=llm_factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        assert results[0].success is True
+        assert results[0].warnings == []
+
+    def test_enabled_surfaces_real_shacl_violations_as_warnings(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False  # isolate: only interested in SHACL here
+        config.validate_shacl_conformance = True
+        results = Pipeline(config=config, llm_factory=llm_factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        result = results[0]
+        assert result.success is True  # non-blocking -- still succeeds
+        assert len(result.warnings) > 0
+        assert any("shape=" in w for w in result.warnings)
+
+    def test_shacl_check_exception_is_caught_not_propagated(self, tmp_path, llm_factory, monkeypatch):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False
+        config.validate_shacl_conformance = True
+
+        def _boom(self, doc):  # noqa: ARG001
+            raise RuntimeError("shacl blew up")
+
+        monkeypatch.setattr(
+            "metadata_enricher.schemas.cdif.discovery.cdif_discovery.CDIFDiscoveryProfile."
+            "check_shacl_conformance",
+            _boom,
+        )
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.error is None
+
+
 class FakeEnricher:
     """Stand-in for IdentifierEnricher — marks the document, no network."""
 

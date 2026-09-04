@@ -107,6 +107,21 @@ class PipelineConfig(BaseModel):
     enable_doi_resolution: bool = False
     validate_pids: bool = True
     validate_pids_live: bool = True
+    # Non-blocking SHACL conformance check (schemas/cdif/discovery/shacl.ttl)
+    # run as a post-merge pipeline step, warnings only -- see
+    # CDIFDiscoveryProfile.check_shacl_conformance's own docstring for the
+    # mechanics. Defaults to False, unlike validate_pids above: PID
+    # validation is a mature, already-tuned check every user benefits from;
+    # this one is new and, as of this writing, every real recorded golden
+    # fixture fails it (mostly for reasons outside gema's direct control --
+    # see docs/cdif_pivot_implementation_plan.md's "Step 6" notes) -- so
+    # defaulting it on today would flood every existing user with warnings
+    # they have no way to act on yet. Opt in once you want visibility into
+    # CDIF conformance gaps for your own generated documents. Only takes
+    # effect when the registered schema actually implements
+    # check_shacl_conformance (CDIFDiscoveryProfile does; a hypothetical
+    # future schema that doesn't is silently skipped, not an error).
+    validate_shacl_conformance: bool = False
 
     def effective_max_workers(
         self, provider_name: str | None = None, model_name: str | None = None
