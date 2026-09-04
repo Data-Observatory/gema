@@ -90,7 +90,21 @@ def migrate_json_to_yaml(json_path: Path) -> Path:
     -----
     - The original JSON file is **never** modified.
     - A sibling ``providers.json`` file is loaded automatically if present.
-    - ``schema_name`` is hard-coded to ``"datacite-4.6"``.
+    - ``schema_name`` is hard-coded to ``"datacite-4.6"`` -- deliberately,
+      not an oversight left over from the CDIF pivot (see
+      docs/cdif_pivot_implementation_plan.md Step 2d). Legacy JSON configs
+      (``config/legacy/andrea_v3.json``, ``agents_v2.json``) declare
+      DataCite field names in their agents' ``output_fields`` -- emitting
+      ``cdif-discovery`` here would produce a config whose agents request
+      fields that don't exist in ``CDIFDiscoveryOutputModel``, silently
+      broken. **However**, as of the pivot, ``"datacite-4.6"`` is no longer
+      registered in ``schemas/__init__.py``'s ``SchemaRegistry`` (it is
+      exporter-only now) -- so the YAML this function emits, while
+      internally consistent with itself, will fail at
+      ``Pipeline.__init__`` (``SchemaRegistry.get`` raises ``KeyError``)
+      until whoever migrates an old config also manually retargets its
+      field names to CDIF vocabulary and updates ``schema_name`` by hand.
+      A ``logger.warning`` below says this explicitly at migration time.
     - ``default_provider`` is set to the first provider name referenced by
       the agents (alphabetically for determinism).
     """
@@ -123,5 +137,12 @@ def migrate_json_to_yaml(json_path: Path) -> Path:
         yaml.safe_dump(pipeline, f, allow_unicode=True, sort_keys=False)
 
     logger.info("migrated %s → %s", json_path, yaml_path)
+    logger.warning(
+        "Migrated config uses schema_name='datacite-4.6', which is no longer "
+        "registered (CDIFDiscoveryProfile is the sole generation-target schema "
+        "as of the CDIF pivot). This YAML will fail at Pipeline construction "
+        "until its agents' field names are manually retargeted to CDIF "
+        "vocabulary and schema_name is updated to 'cdif-discovery'."
+    )
 
     return yaml_path

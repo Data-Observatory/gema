@@ -296,6 +296,24 @@ class TestMigrateJsonToYaml:
         assert any("unknown_field_xyz" in m for m in warning_messages), warning_messages
         assert any("another_bad_field" in m for m in warning_messages), warning_messages
 
+    def test_logs_warning_that_migrated_schema_is_no_longer_registered(
+        self,
+        tmp_path: Path,
+        andrea_v3_dict: dict,
+        caplog: pytest.LogCaptureFixture,
+    ):
+        """As of the CDIF pivot, datacite-4.6 is no longer registered in
+        schemas/__init__.py -- a migrated config will fail at Pipeline
+        construction until manually retargeted. This must not be a silent
+        surprise (docs/cdif_pivot_implementation_plan.md Step 2d)."""
+        json_path = self._write_json(tmp_path / "andrea_v3.json", andrea_v3_dict)
+
+        with caplog.at_level(logging.WARNING):
+            migrate_json_to_yaml(json_path)
+
+        warning_messages = [rec.message for rec in caplog.records if rec.levelno == logging.WARNING]
+        assert any("no longer registered" in m for m in warning_messages), warning_messages
+
     def test_yaml_allow_unicode(self, tmp_path: Path):
         """Non-ASCII characters in prompts are preserved in YAML output."""
         agents = {
