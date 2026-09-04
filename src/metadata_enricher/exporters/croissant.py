@@ -47,8 +47,10 @@ it either).
 
 ``recordSet`` -- Croissant's per-column/field structure description --
 is deliberately absent from the output entirely (not an empty list),
-never synthesized. This is a placeholder gap, not a design choice: it is
-blocked on a structure-fetcher enricher that does not exist yet (see
+never synthesized. Its absence is fully spec-conformant (``recordSet`` is
+optional in Croissant 1.1, not required) -- this is not a gap being
+carried, just nothing to fill it with yet: it is blocked on a
+structure-fetcher enricher that does not exist yet (see
 docs/cdif_pivot_implementation_plan.md's Backlog section, Open Questions
 #10-12). Nothing in a CDIF-generated MetadataDocument describes a
 dataset's column/field structure, so fabricating a recordSet from title/
