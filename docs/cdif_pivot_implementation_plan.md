@@ -108,7 +108,7 @@ Two open judgment calls the mapping surfaces (not yet decided): **`categories` �
 - [x] JSON-LD envelope (`@context`/`@id`/`@type`/`dcterms:conformsTo`/`schema:dateModified`/`schema:subjectOf`) injected inside `merge_agent_results` — DONE; dead-link comment above `conformsTo` emission present (spec §8)
 - [x] Resolve Open Question #5: yes, execute SHACL + JSON-LD framing in v1
 - [x] Added `pyshacl`, `rdflib`, `pyld` to `pyproject.toml` — DONE, commit `8621580`
-- [ ] **Not yet done**: `validate_output` doesn't actually run SHACL/framing yet — only the Pydantic required-floor check. SHACL (`shacl.ttl`) as a non-blocking conformance check and JSON-LD framing (`frame.jsonld`) via `pyld` are still TODO — the deps are installed but unused so far.
+- [x] SHACL (`shacl.ttl`) as a non-blocking conformance check and JSON-LD framing (`frame.jsonld`) via `pyld` — DONE, see Step 6 below. `validate_output` itself still only runs the Pydantic required-floor check (unchanged, by design) — SHACL runs as a separate method (`check_shacl_conformance`), wired into `pipeline.py` as its own opt-in step, not folded into `validate_output`.
 - [x] `schemas/__init__.py`: **`CDIFDiscoveryProfile` is now the SOLE registered schema** — DONE, commit `f3bdf26`. `DataCiteSchema46` deregistered (still importable from `schemas.datacite` for exporter/migrate.py use).
 - [ ] `DataCiteSchema46` singleton pattern decided for post-deregistration reuse (avoid re-parsing 505KB IANA JSON per use) — still open, relevant once `exporters/datacite.py` (Step 3) instantiates it repeatedly
 - [x] Blast-radius retarget (option A, locked): `identifier_enricher.py`, `doi_resolver.py`, `pid_validator.py`, `output.py`, `exporters/dataverse.py` → CDIF field names — DONE, commit `e59ed53`
@@ -122,7 +122,7 @@ Two open judgment calls the mapping surfaces (not yet decided): **`categories` �
 - [x] `make record-golden` — DONE, real API calls (opencode/deepseek-v4-flash + real ROR/ISNI/DOI/Crossref calls), all 6 inputs succeeded, output quality verified by hand (correct envelope, real institutional actor extraction, correctly-gated identifier enrichment, rich measurementTechnique/variableMeasured/dqv/prov extraction from prose). `test_regression.py`'s 6 checks now pass via cache-replay.
 - [x] End-to-end test: confirmed via the real recording run's logs — CDIF-generated documents did receive real ROR/ISNI resolution attempts (correctly withheld when ambiguous, per `identifier_enricher.py`'s gate), DOI resolution ran, and `TestAgainstRealGoldenFixture` (re-enabled, real assertions) confirms a non-degenerate Dataverse export from the real recorded output.
 - [x] New `tests/test_cdif_discovery_schema.py` — DONE in the earlier schema commit (`9bb0aff`), 54 tests. Registry-contents meta-test included (`TestExporterOnlyNoLongerRegistered` in `test_datacite_schema.py` + `TestRegistryIntegration` in `test_cdif_discovery_schema.py`).
-- [ ] `validate_output` still doesn't run SHACL/framing — only the Pydantic required-floor check. Deps installed, unused. **Blocked on a real prerequisite, not just unscheduled** — see the Backlog's "SHACL/JSON-LD framing" entry.
+- [x] SHACL conformance check + JSON-LD framing — DONE, see Step 6 below.
 - [x] Docs: root `AGENTS.md`, `CLAUDE.md`, `schemas/AGENTS.md` (+ new `cdif/` subtree entry, fix stale line refs), `docs/CONFIGURATION.md` (`schema_name` example + dead-URI caveat), `README.md`, `scripts/README.md`, `src/metadata_enricher/AGENTS.md`, `src/metadata_enricher/config/AGENTS.md` — DONE (2026-09-03). `ONBOARDING_BIBLIOTECARIA.md` explicitly excluded (out of scope, see the user's own instruction — file no longer exists as of 2026-09-04, cause unclear, not investigated further since the outcome matches what was asked).
 - [x] Resolve Open Question #14 (`visor/session_settings.py` persisted-override migration/reset) — checked, **not actually a gap**: `visor/settings.py::apply_agent_overrides` already skips (never raises on) an override whose agent ID or provider name no longer exists in the loaded config, by design (see that function's own docstring). Agent IDs and provider names didn't change in the pivot, so a pre-pivot persisted override keeps working unchanged. No migration/reset path needed.
 - [x] Verify: `make lint && make typecheck && make test`, `ruff check visor/`, `mypy visor --exclude visor/tests`, `make test-visor`, `make test-regression` — all done, all green (mypy visor's 37 errors are pre-existing/unrelated, see above).
@@ -172,6 +172,158 @@ New coverage: `types.first_type_label()` gets exercised transitively through eve
 - **Nested `schema:identifier` cardinality (Q16).** The vendored schema models `Person.schema:identifier`, `Organization.schema:identifier`, and `MonetaryGrant.schema:identifier` as *singular* (one `Identifier` object or a string) — not an array. gema's own convention, and `enrichers/identifier_enricher.py`'s actual behavior, always builds this as a *list* at every nesting level, so a resolved organization can carry both a ROR and an ISNI at once without one silently overwriting the other (a deliberate "never drop a resolved identifier" decision made earlier this session). This is the same shape of deviation as the already-resolved top-level C3 constraint (`schema:publisher` singular + `schema:provider[]` array overflow) but one level deeper, and the vendored `Person`/`Organization` defs even define a `schema:sameAs` array right next to the singular `schema:identifier`, described as "other identifiers" — suggesting CDIF's own intended resolution for multi-identifier cases is that same singular-plus-overflow pattern, not a plain array. Not changed by this pass — cardinality is out of scope for a key rename, and gema's list-based behavior is deliberate, not accidental.
 - **`schema:contributor`'s Role wrapper (Q17).** Q2's mapping table (row: `creators[].contributor_type`) already said `schema:contributor` → `Role{roleName}`, and the vendored `schema.json` confirms it: a contributor entry that carries a role is modeled as `{"@type": ["schema:Role"], "schema:roleName": ..., "schema:contributor": <Person|Organization>}` — the actor being described is nested *inside* the Role wrapper's own `schema:contributor` property, not a flat sibling key. gema's actual contributor entries (`config/agents.yaml`'s `creators_publishers`/`media_files` prompts, `enrichers/identifier_enricher.py`, `exporters/dataverse.py`, `exporters/datacite.py`) instead read/write a flat `{"schema:name": ..., "role": ..., "schema:email": ...}` shape — a real structural mismatch, not just a missing CURIE prefix (the vendored schema's `anyOf` for `schema:contributor` does allow a bare Person/Organization/`{@id}` with **no** role at all, but has no bare-string-role alternative once a role is being expressed — only the full Role wrapper). Deliberately not restructured by this pass, the same way C3/C4 were flagged-not-fixed before eventually being resolved in a later, dedicated pass: doing so is a shape change (nesting, not renaming) that touches every reader (`_build_dataset_contact`, `_build_resource`'s `_RESOURCE_ROLE_MAP` loop, `_build_creators`'s leftover-contributor loop) and deserves its own review, not a side effect of a key-rename pass. `role` is therefore still read/written bare everywhere in this codebase, flagged inline at each site touched this session.
 
+## Step 6 — SHACL conformance check + JSON-LD framing (2026-09-04, post-Step-5.5)
+
+Built `CDIFDiscoveryProfile.check_shacl_conformance(doc) -> list[str]` and
+`.frame_output(doc) -> dict[str, Any]` (`schemas/cdif/discovery/cdif_discovery.py`).
+Both were genuinely blocked until Step 5.5 landed (see that section) — before
+the CURIE-key fix, converting a real document to RDF silently dropped data,
+which would have made this check's results meaningless (false negatives
+read as "conformant" only because the graph was empty of the properties
+that mattered). Re-verified after Step 5.5: converting `sample_input06.json`
+to RDF went from 50 triples (both creators' names missing, a real DOI read
+as "no identifier") to 95 triples with both names present, using rdflib +
+pyld directly against the document's own emitted `@context` — no extra
+mapping needed.
+
+**`check_shacl_conformance`**: serializes `doc.fields` to JSON, parses via
+`rdflib.Graph(...).parse(format="json-ld")`, then
+`pyshacl.validate(..., shacl_graph=<vendored shacl.ttl, loaded via
+importlib.resources>, advanced=True)` — `advanced=True` is required because
+several vendored shapes use `sh:SPARQLTarget`. Never raises (wrapped in a
+broad `except Exception`, logs a warning, returns `[]` on any
+infrastructure failure). On a real conformance failure, returns one
+human-readable string per `sh:ValidationResult` (message + shape + focus
+node), never the raw Turtle report.
+
+**`frame_output`**: `pyld.jsonld.frame(doc.fields, <vendored frame.jsonld>)`.
+Never raises — degrades to a `deepcopy` of `doc.fields` on any failure.
+
+**Wiring decision**: `check_shacl_conformance` **is** wired into
+`pipeline.py` as a new, non-blocking post-merge step mirroring the
+existing PID-validation step, gated behind a new
+`PipelineConfig.validate_shacl_conformance` flag, **default `False`**.
+Rationale: every real recorded golden fixture fails this check today (see
+findings below), mostly for reasons outside gema's direct control —
+defaulting it on would flood every existing user with warnings they have
+no way to act on yet. `frame_output` stays an **available-but-uncalled
+utility method**, the same status `validate_output()` itself already has
+— nothing in gema consumes CDIF's canonical framed shape yet (no output
+writer, no exporter reads it).
+
+**Findings from running against all 6 real golden fixtures**
+(`tests/fixtures/golden/expected/sample_input0{1..6}.json`): all 6 are
+non-conformant, and every violation found is real and explicable — not
+JSON-LD-conversion noise (that class of false positive was exactly Step
+5.5's bug, already fixed):
+
+- **Every fixture** is missing `dcterms:conformsTo`'s
+  `https://w3id.org/cdif/core/1.0` value on its `schema:subjectOf` node —
+  the vendored shapes require *both* the core and discovery conformance
+  URIs (`cdifd:metadataProfileProperty`), but `CDIFDiscoveryProfile`
+  only ever emits the discovery one (`_inject_envelope`, §8's dead-link
+  decision covers the discovery URI only). Worth a follow-up: either emit
+  both URIs, or accept this as a known, permanent gap and document it
+  alongside the existing dead-link note.
+- Nested `schema:identifier`/`schema:license` entries carry no `@type`,
+  so SHACL's `sh:class schema:PropertyValue` (etc.) checks can't recognize
+  them as typed nodes — a real, gema-controlled gap (these entries are
+  built without an explicit `@type` key anywhere in `identifier_enricher.py`/
+  `config/agents.yaml`'s prompts), not attempted to be fixed here (out of
+  scope — this pass built the check, not a campaign to make fixtures pass
+  it).
+- `sample_input06.json` genuinely fails **both** required OR-groups (no
+  `schema:license`/`conditionsOfAccess`, no `schema:url`/`distribution`)
+  — meaning it would also fail `CDIFDiscoveryOutputModel`'s own
+  `model_validator` required-floor check were that ever run against it.
+  A real gap in that recording, not a framework bug.
+
+None of the above was "fixed" here — per this session's scope, finding and
+reporting these is the deliverable; forcing the fixtures/generation to
+conform is a separate, future decision.
+
+New tests: `tests/test_shacl_and_framing.py` (22 tests) — a hand-built,
+real-shapes-verified conformant fixture (iteratively checked against the
+actual vendored `shacl.ttl`, not asserted on faith), a real violation from
+stripping one required field, malformed/garbage input never raising for
+both methods, JSON-LD framing round-tripping every real golden fixture
+without losing data, and framing degrading to an unchanged copy on
+failure. Plus `tests/test_pipeline_integration.py::TestPipelineShaclValidation`
+(3 tests) covering the opt-in pipeline wiring: disabled by default,
+surfaces real violations as warnings when enabled, and an exception from
+the check itself is caught, not propagated.
+
+Also added `pyld` to `pyproject.toml`'s `[[tool.mypy.overrides]]`
+(`ignore_missing_imports`, mirroring the existing `diskcache.*` entry) —
+`pyld` ships no type stubs; `rdflib`/`pyshacl` both ship `py.typed` and
+needed no override.
+
+`make lint && uv run python -m mypy src/ scripts/ && uv run python -m pytest -m "not live" -q` —
+all green (1191 passed, 1 skipped, 17 deselected). Note: in at least one
+local environment this session ran in, the bare `uv run mypy ...` console
+script resolved to an unrelated global `mypy` installation instead of the
+project's own venv (a broken `.venv/bin/mypy` shebang / `PATH` quirk, not
+a project issue) — `uv run python -m mypy ...` is the reliable invocation
+if that's ever seen again; it reports mypy strict-mode clean (0 errors)
+against everything this step touched.
+
+### Backlog cleanup (2026-09-04, same session as Step 6)
+
+Four smaller, concrete backlog items fixed alongside Step 6 (each its own
+commit):
+
+- **`exporters/datacite.py` test coverage**: added real tests for the 5
+  previously-untested mapped fields (`schema:spatialCoverage`→`geo_locations`,
+  `schema:keywords`→`subjects`, `schema:about`→`categories`,
+  `schema:audience`→`audiences`, `schema:citation`→`citations`) —
+  `temporal_events` already had coverage from an earlier commit this
+  session. Also tightened `TestAgainstRealGoldenFixture` to assert real
+  mapped values for `keywords`/`about`/`audience`/`spatialCoverage` from
+  `sample_input01.json` (confirmed populated first), not just
+  titles/creators/publishers/language/identifier/rights.
+- **`test_croissant_export.py`**: converted the single-for-loop
+  real-golden-fixture test to `@pytest.mark.parametrize` over all 6 files
+  with real per-fixture expected values (name, creator names, license) —
+  including `sample_input02.json`, a genuinely degenerate recording (no
+  name/creator/license/identifier at all) whose expectations assert the
+  documented fallback behavior rather than a fabricated value. Added
+  `TestMalformedInputNeverRaises`, mirroring
+  `test_datacite_export.py::test_malformed_types_never_raise`, which
+  croissant had no equivalent of. **Finding, not fixed** (out of scope for
+  this change): `sample_input04.json`/`sample_input05.json`'s
+  `schema:creator` identifier entries carry a double-prefixed ROR URL
+  (`"https://ror.org/https://ror.org/..."`) in the committed fixture data
+  itself — a pre-existing `enrichers/identifier_enricher.py` data-quality
+  issue, unrelated to `croissant.py`. New tests assert creator names only,
+  not this URL.
+- **`schema:measurementTechnique` double-mapping**: was written to both
+  `descriptions[Methods]` and every `media_files[].measurement_technique`
+  on the reverse mapping, duplicating the same fact on round-trip.
+  Decision: `media_files[].measurement_technique` (Q2: "Verified") wins
+  whenever `schema:distribution` is non-empty; `descriptions[Methods]` is
+  now a fallback, not a duplicate — it only fires when there's no
+  distribution to attach the technique to, preserving real data for
+  documents shaped like the real recorded `sample_input06.json`
+  (measurementTechnique populated, no distribution) instead of losing it.
+- **Warning-discipline inconsistency**: `_build_publishers` now warns
+  when both `schema:publisher` and `schema:provider` are empty (DataCite's
+  own spec makes publisher mandatory, matching how `_build_creators`/
+  `_build_titles` already warn on their own required-field misses).
+  `_build_subjects`/`_build_categories`/`_build_audiences`/`_build_citations`
+  stay silent on a deliberate judgment call — all four map optional
+  DataCite fields, and an empty result is a normal outcome, not dropped
+  data. Documented inline at each site.
+- **DOI double-prefix risk in `exporters/croissant.py`'s `_build_url`**:
+  added a guard (skip the `https://doi.org/` prefix if the DOI value
+  already starts with `http://`/`https://`) and reordered to prefer the
+  identifier entry's own `schema:url` before falling back to constructing
+  one from the bare DOI value.
+
+Full verification suite green after all of the above (see the Docs
+section's own instructions and this doc's own "must pass" checks):
+`ruff check`, `mypy` (via `python -m mypy`, see the note above), the
+full `-m "not live"` suite, `-m regression`, and the visor suite.
+
 ## Step 5 — Structure fetcher: SKIPPED for v1 (see Backlog)
 
 Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (`ResourceDescription` has no structure field, `agents/base.py::_build_resource_dict` hardcodes a strict 5-key dict, CDIF DataDescription itself is deferred per spec §2) — building it now would be dead code. Tracked in Backlog below so this doesn't get lost.
@@ -181,14 +333,7 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 - **Structure fetcher (`enrichers/structure_fetcher.py`).** Explicitly deferred, not dropped. Build this when CDIF DataDescription work actually starts (spec §2/§7/§9). At that point also needs: `ResourceDescription` gaining a structure field, `agents/base.py::_build_resource_dict`'s strict 5-key `dict[str, str]` return type changed to carry it, `PipelineConfig.enable_structure_fetch`, a `Pipeline._maybe_fetch_structure()` step mirroring `_maybe_fetch_content()`, and — the part easy to get wrong — the "measured, never generated" invariant test must target LLM *output* (generated fields ⊆ measured columns) once there's a real prompt path, not just the fetcher's own input handling. Open Questions #10 (format list/sample strategy) and #11 (ordering vs. content-fetch) stay open until this is picked back up.
 - **Croissant `recordSet` / CDIF DataStructure profile.** Blocked on the structure fetcher above (spec §3.4, §7). Correction (2026-09-04): earlier notes in this doc and `exporters/croissant.py`'s docstring called its absence "a gap" — per the real Croissant 1.1 spec, `recordSet` is simply optional; its absence is fully conformant, not a defect. Framing corrected here; still worth building once there's real column data to put in it, just not because leaving it out is wrong today.
 
-- **SHACL (`shacl.ttl`) conformance check + JSON-LD framing (`frame.jsonld`) — real prerequisite found, not just unscheduled.** Attempting to wire this in (2026-09-04) surfaced that gema's own generated documents weren't real JSON-LD at the nested level yet — see Step 5.5 above, which fixed that. With Step 5.5 landed, re-verified this now produces meaningful (not false-positive) results: converting `sample_input06.json` to RDF went from 50 triples (both creators' names missing, a real DOI read as "no identifier") to 95 triples with both names present, using rdflib + pyld directly against the document's own emitted `@context` — no extra mapping needed. Still not built: a `check_shacl_conformance(doc) -> list[str]` (non-blocking, `pyshacl.validate(..., advanced=True)` for the shapes' SPARQL-based targets, never raises) and a `frame_output(doc) -> dict` (via `pyld.jsonld.frame()` against the vendored `frame.jsonld`) on `CDIFDiscoveryProfile`, plus a decision on whether/how to surface SHACL warnings in `pipeline.py` (mirroring the existing PID-validation step) versus leaving both as available-but-uncalled utility methods the way `validate_output()` itself already is.
 - **Two real, additional shape mismatches surfaced by Step 5.5, deliberately not fixed — Open Questions #16 and #17.** Nested `schema:identifier` cardinality (Person/Organization/MonetaryGrant want singular, gema always builds a list) and `schema:contributor`'s Role-wrapper shape (spec wants the actor nested inside `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}`). See Step 5.5's own writeup for the full detail — not repeated here.
-- **6 of `exporters/datacite.py`'s 18 mapped fields have zero test coverage** (found by Opus review, 2026-09-04): `schema:spatialCoverage`, `schema:keywords`→`subjects`, `schema:about`→`categories`, `schema:audience`, `schema:citation`, and `dcterms:accrualPeriodicity`→`temporal_events` (the last one got a regression test as part of fixing its dead-code bug, commit `07b417b`/`c3b8bbd` — the other 5 are still genuinely untested). A broken mapping in any of these would currently pass the test suite silently; `tests/fixtures/golden/expected/sample_input01.json` (used by `TestAgainstRealGoldenFixture`) actually carries populated `keywords`/`about`/`audience`/`spatialCoverage` data today, so the fixture-based test could be tightened to assert those mapped values too, not just titles/creators/publishers/language/identifier/rights.
-- **`test_croissant_export.py`'s real-golden-fixture test asserts too little to catch a broken mapping** (Opus review, 2026-09-04): across all 6 real fixtures it only checks `@type`/`conformsTo`/`name`-truthy/`description`-truthy/`recordSet`-absent/`warnings`-is-a-list — every actual field mapping could be broken and this would still pass. It's also one `for` loop over all 6 fixtures, so a failure on fixture 4 hides whether 5 and 6 would also fail. Should assert real mapped values per fixture (`@pytest.mark.parametrize` over the 6 files, matching `test_datacite_export.py`'s style) and there's no malformed-input test for croissant at all (`test_datacite_export.py::test_malformed_types_never_raise` has no croissant equivalent — this is exactly the kind of test that would have caught the `contentSize`-as-dict crash before Opus found it by inspection).
-- **Design inconsistencies between `datacite.py` and `croissant.py`, not bugs, worth a decision:**
-  - `schema:measurementTechnique` gets written to **two** different DataCite fields on the reverse mapping (`descriptions[Methods]` and every `media_files[].measurement_technique`) — both are legitimate Q2 rows read in reverse independently, but round-tripping a document duplicates the same fact. Pick one, or accept the duplication as intentional and document why.
-  - `datacite.py`'s `_build_publishers` never warns even though DataCite requires a publisher (every other required-field builder in both exporters does warn on a miss) — same for `_build_subjects`/`_build_categories`/`_build_audiences`/`_build_citations`. Inconsistent with `exporters/AGENTS.md`'s own stated rule ("NEVER silently drop data with no home in the target schema — warn instead").
-  - `croissant.py:_build_url`'s DOI branch (`f"https://doi.org/{value}"`) doesn't check whether *value* is already a full URL before prefixing — no real fixture currently stores a DOI as a full URL so this hasn't bitten yet, but the same identifier entry already carries a `schema:url` field that would be the safer source to check first.
 - **Neither `exporters/datacite.py` nor `exporters/croissant.py` is wired into anything yet** — both are reachable only from their own test files, not from `cli.py`, `pipeline.py`, or `visor/`. Not a bug (the deliverable was the exporter module + tests, matching Steps 3/4's own scope), but worth deciding when/how these become reachable from `gema process` or Visor's UI before they're considered "shipped" in the product sense, not just "implemented."
 
 ## A/B diagnostic (spec §9, manual, not CI-gating)
@@ -217,6 +362,7 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 | 15 | `config/migrate.py` hardcoded schema name | **resolved**: keep, add warning |
 | 16 | Nested `schema:identifier` cardinality: vendored schema wants singular on Person/Organization/MonetaryGrant, gema always builds a list | open — see Step 5.5, deliberate deviation, not fixed |
 | 17 | `schema:contributor`'s Role wrapper: vendored schema wants `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}` | open — see Step 5.5, real structural mismatch, not fixed |
+| 18 | `dcterms:conformsTo` on `schema:subjectOf`: the vendored shapes' `cdifd:metadataProfileProperty` requires *both* `https://w3id.org/cdif/core/1.0` and `.../cdif/discovery/1.0`, but `CDIFDiscoveryProfile._inject_envelope` only emits the discovery URI — every real golden fixture fails this SHACL check for exactly this reason | open — surfaced by Step 6's SHACL conformance check, not fixed (out of scope for that pass) |
 
 ## Standing rules
 
