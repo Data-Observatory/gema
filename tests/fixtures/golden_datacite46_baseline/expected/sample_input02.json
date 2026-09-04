@@ -1,0 +1,121 @@
+{
+  "resource": {
+    "identifier": "https://www.rasgos.cl/",
+    "identifier_type": "URL",
+    "editor": "Data Observatory",
+    "maintainer": "",
+    "contact": "",
+    "producer": "",
+    "publication_year": "",
+    "resource_type": "Dataset",
+    "resource_type_general": "Dataset",
+    "version": "",
+    "thumbnail": "https://rasgos.cl/images/og-home.webp",
+    "language": "es"
+  },
+  "alternate_identifiers": [],
+  "audiences": [
+    {
+      "audience": "Investigadores",
+      "mediator": "Autodirigido",
+      "education_level": "Postgrado",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Científicos de datos",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Profesionales",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Autoaprendizaje"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ciencias Naturales y Exactas",
+      "sub_category": "Ciencias biológicas"
+    }
+  ],
+  "citations": [],
+  "creators": [],
+  "dates": [],
+  "descriptions": [
+    {
+      "description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
+      "description_type": "Abstract",
+      "language": "es"
+    }
+  ],
+  "funding_references": [],
+  "geo_locations": [
+    {
+      "geo_location_place": "Chile",
+      "geo_location_point": "",
+      "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
+      "geo_location_polygon": "",
+      "geo_description": "Cobertura nacional de la biodiversidad de plantas en Chile, a escala regional y nacional",
+      "coverage": "nacional"
+    }
+  ],
+  "languages": [
+    {
+      "lang_code": "es",
+      "language": "Spanish",
+      "description": "El recurso está disponible únicamente en español"
+    }
+  ],
+  "media_files": [],
+  "publishers": [
+    {
+      "publisher_name": "Data Observatory",
+      "publisher_identifier": "https://ror.org/027nn6b17",
+      "publisher_identifier_scheme": "ROR",
+      "publisher_scheme_uri": "https://ror.org",
+      "lang": "es",
+      "publisher_identifier_matched_via": "ror_affiliation+isni_sru",
+      "publisher_identifier_confidence": 1.0,
+      "publisher_identifier_status": "auto"
+    }
+  ],
+  "related_identifiers": [],
+  "rights": [],
+  "subjects": [
+    {
+      "subject_name": "Rasgos funcionales -- Plantas -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Biodiversidad de plantas -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    },
+    {
+      "subject_name": "Características ecológicas -- Especies -- Chile",
+      "subject_scheme": "",
+      "scheme_uri": "",
+      "value_uri": ""
+    }
+  ],
+  "temporal_events": [
+    {
+      "start_date": "",
+      "frequency_number": "",
+      "frequency_type": "yearly",
+      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso"
+    }
+  ],
+  "titles": [
+    {
+      "name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
+      "title_type": "MainTitle",
+      "language": "es"
+    }
+  ]
+}
