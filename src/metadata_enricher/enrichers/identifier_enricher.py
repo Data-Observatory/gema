@@ -100,6 +100,17 @@ def _preferred_identifier(match: IdentifierMatch | None) -> tuple[str, str] | No
     return identifiers[0] if identifiers else None
 
 
+def _scheme_url(scheme: str, id_value: str) -> str:
+    """Resolvable URL for *id_value* under *scheme*. ROR's own API returns
+    ``id`` as an already-full URI (``https://ror.org/027nn6b17``, not a
+    bare ``027nn6b17``) -- unconditionally prefixing it produced doubled
+    URLs (``https://ror.org/https://ror.org/...``) in real recorded
+    output. ISNI/ORCID values are bare, so this is a no-op for them."""
+    if id_value.startswith(("http://", "https://")):
+        return id_value
+    return f"{_SCHEME_URI[scheme]}/{id_value}"
+
+
 def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
     """``schema:identifier``-shaped PropertyValue list, one entry per scheme
     the match found, carrying provenance (why this identifier was attached)
@@ -111,7 +122,7 @@ def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
         {
             "schema:propertyID": scheme,
             "schema:value": id_value,
-            "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}" if scheme != "ORCID" else id_value,
+            "schema:url": id_value if scheme == "ORCID" else _scheme_url(scheme, id_value),
             "matched_via": match.matched_via,
             "confidence": match.confidence,
             "status": match.status,
@@ -223,7 +234,7 @@ class IdentifierEnricher:
                     {
                         "schema:propertyID": scheme,
                         "schema:value": id_value,
-                        "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                        "schema:url": _scheme_url(scheme, id_value),
                         "matched_via": affil_match.matched_via,
                         "confidence": affil_match.confidence,
                         "status": affil_match.status,

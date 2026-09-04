@@ -97,7 +97,7 @@
       {
         "schema:propertyID": "ROR",
         "schema:value": "https://ror.org/027nn6b17",
-        "schema:url": "https://ror.org/https://ror.org/027nn6b17",
+        "schema:url": "https://ror.org/027nn6b17",
         "matched_via": "ror_affiliation",
         "confidence": 1.0,
         "status": "auto"
