@@ -242,10 +242,24 @@ def _build_url(document: MetadataDocument, warnings: list[str]) -> str | None:
     for entry in _as_list(document.get_field("schema:identifier")):
         if not isinstance(entry, dict):
             continue
+        # Prefer a URL already recorded on the identifier entry itself --
+        # safer than constructing one from a bare value, and checked
+        # before the DOI-specific branch below regardless of propertyID
+        # (docs/cdif_pivot_implementation_plan.md Backlog: "prefer
+        # schema:url on the identifier entry ... before falling back to
+        # constructing one").
+        entry_url = entry.get("schema:url")
+        if entry_url:
+            return str(entry_url)
         if str(entry.get("schema:propertyID", "")).upper() == "DOI" and entry.get("schema:value"):
-            return f"https://doi.org/{entry['schema:value']}"
-        if entry.get("schema:url"):
-            return str(entry["schema:url"])
+            value = str(entry["schema:value"])
+            # Guard against double-prefixing: entry["schema:value"] is
+            # normally a bare DOI ("10.5880/..."), but nothing enforces
+            # that upstream -- if it's already a full URL, use it as-is
+            # rather than producing "https://doi.org/https://doi.org/...".
+            if value.startswith(("http://", "https://")):
+                return value
+            return f"https://doi.org/{value}"
     warnings.append(
         "no schema:url or resolvable schema:identifier found — Croissant requires url; "
         "omitting the field"

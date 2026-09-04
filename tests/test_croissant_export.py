@@ -196,6 +196,42 @@ class TestUrl:
         assert "url" not in result.croissant_json
         assert any("no schema:url" in w for w in result.warnings)
 
+    def test_doi_entry_url_preferred_over_constructing_one(self):
+        """docs/cdif_pivot_implementation_plan.md Backlog: prefer
+        schema:url on the identifier entry itself before falling back to
+        constructing a doi.org URL from the bare value."""
+        doc = make_document(
+            **{
+                "schema:identifier": [
+                    {
+                        "schema:propertyID": "DOI",
+                        "schema:value": "10.5880/GFZ.2.4.2021.001",
+                        "schema:url": "https://doi.org/10.5880/GFZ.2.4.2021.001",
+                    }
+                ]
+            }
+        )
+        result = to_croissant_json(doc)
+        assert result.croissant_json["url"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
+
+    def test_doi_value_already_a_full_url_is_not_double_prefixed(self):
+        """DOI double-prefix guard (docs/cdif_pivot_implementation_plan.md
+        Backlog): if schema:value is already a full URL (no schema:url on
+        the entry to prefer instead), _build_url must not prepend
+        https://doi.org/ a second time."""
+        doc = make_document(
+            **{
+                "schema:identifier": [
+                    {
+                        "schema:propertyID": "DOI",
+                        "schema:value": "https://doi.org/10.5880/GFZ.2.4.2021.001",
+                    }
+                ]
+            }
+        )
+        result = to_croissant_json(doc)
+        assert result.croissant_json["url"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
+
 
 class TestCreators:
     def test_maps_organization_and_person_types(self):
