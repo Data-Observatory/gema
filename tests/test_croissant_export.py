@@ -414,33 +414,87 @@ class TestRecommendedFields:
 
 
 GOLDEN_FIXTURES_DIR = Path(__file__).parent / "fixtures" / "golden" / "expected"
+GOLDEN_FIXTURE_PATHS = sorted(GOLDEN_FIXTURES_DIR.glob("sample_input0*.json"))
+
+# Real, per-fixture expected values -- confirmed by reading each fixture's
+# actual schema:name/schema:creator/schema:license before writing these
+# (not guessed), so a broken mapping on any one fixture can't pass
+# silently. sample_input02.json is a real, fully-degenerate recording (no
+# schema:name/creator/license/identifier at all) -- its expectations
+# assert the documented fallback behavior, not a mapped value, since
+# there's nothing real to map.
+GOLDEN_EXPECTATIONS: dict[str, dict] = {
+    "sample_input01": {
+        "name": "Gastos municipales (presupuesto abierto)",
+        "creator_names": ["Ministerio de Hacienda"],
+        "license": ["Datos Abiertos del Estado de Chile"],
+    },
+    "sample_input02": {
+        "name": "Untitled resource",
+        "creator_names": [],
+        "license": None,
+    },
+    "sample_input03": {
+        "name": "Zonas climaticas de Chile segun Köppen-Geiger escala 1:1.500.000",
+        "creator_names": ["Sarricolea, P.", "Herrera, MJ.", "Meseguer-Ruiz, O."],
+        "license": None,
+    },
+    "sample_input04": {
+        "name": "Encuesta de Presupuestos Familiares",
+        "creator_names": ["Instituto Nacional de Estadísticas"],
+        "license": None,
+    },
+    "sample_input05": {
+        "name": "Censo Agropecuario 2007 Ganado bovino Isla de Pascua",
+        "creator_names": ["Instituto de Políticas y Bienes Públicos"],
+        "license": None,
+    },
+    "sample_input06": {
+        "name": (
+            "Active fault database for the Atacama Fault System (N-Chile) as "
+            "basis for tracking forearc segmentation"
+        ),
+        "creator_names": ["Mittelstädt, Jana", "Victor, Pia"],
+        "license": None,
+    },
+}
 
 
 class TestAgainstRealGoldenFixtures:
     """Not synthetic -- the actual committed golden fixture outputs from a
     real CDIF-generating pipeline run, same fixtures test_dataverse_export.py
-    exercises."""
+    exercises.
 
-    def test_produces_a_valid_shape_from_every_real_fixture(self):
-        fixture_paths = sorted(GOLDEN_FIXTURES_DIR.glob("*.json"))
-        if not fixture_paths:
+    Parametrized (not a single for-loop) so a failure on one fixture
+    doesn't hide failures on the others (Opus review, 2026-09-04) -- and
+    each case asserts real mapped values (name, creator names, license),
+    not just shape/truthiness checks that a broken mapping could still
+    satisfy."""
+
+    @pytest.mark.parametrize("fixture_path", GOLDEN_FIXTURE_PATHS, ids=lambda p: p.stem)
+    def test_real_fixture_maps_expected_values(self, fixture_path: Path):
+        if not GOLDEN_FIXTURE_PATHS:
             pytest.skip("no golden fixtures present in this checkout")
+        data = json.loads(fixture_path.read_text(encoding="utf-8"))
+        doc = MetadataDocument()
+        for key, value in data.items():
+            doc.set_field(key, value)
 
-        for fixture_path in fixture_paths:
-            data = json.loads(fixture_path.read_text(encoding="utf-8"))
-            doc = MetadataDocument()
-            for key, value in data.items():
-                doc.set_field(key, value)
+        result = to_croissant_json(doc)
+        expected = GOLDEN_EXPECTATIONS[fixture_path.stem]
 
-            result = to_croissant_json(doc)
+        assert result.croissant_json["@type"] == "sc:Dataset"
+        assert result.croissant_json["conformsTo"] == CROISSANT_CONFORMS_TO
+        assert result.croissant_json["name"] == expected["name"]
+        assert result.croissant_json["description"]
+        assert "recordSet" not in result.croissant_json
+        assert isinstance(result.warnings, list)
+        assert result.token_usage == TokenUsage()
 
-            assert result.croissant_json["@type"] == "sc:Dataset"
-            assert result.croissant_json["conformsTo"] == CROISSANT_CONFORMS_TO
-            assert result.croissant_json["name"]
-            assert result.croissant_json["description"]
-            assert "recordSet" not in result.croissant_json
-            assert isinstance(result.warnings, list)
-            assert result.token_usage == TokenUsage()
+        creator_names = [c["name"] for c in result.croissant_json.get("creator", [])]
+        assert creator_names == expected["creator_names"]
+
+        assert result.croissant_json.get("license") == expected["license"]
 
     def test_sample_input01_maps_creator_and_distribution_omitted(self):
         fixture_path = GOLDEN_FIXTURES_DIR / "sample_input01.json"
@@ -464,3 +518,49 @@ class TestAgainstRealGoldenFixtures:
             "https://datos.gob.cl/dataset/"
             "gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
         )
+
+
+class TestMalformedInputNeverRaises:
+    """Mirrors test_datacite_export.py::test_malformed_types_never_raise --
+    croissant.py had no equivalent (Opus review, 2026-09-04). This is
+    exactly the kind of test that would have caught the
+    schema:contentSize-as-dict crash before it was found by inspection
+    (see TestDistribution.test_maps_content_size_when_shaped_as_a_dict)."""
+
+    def test_malformed_types_never_raise(self):
+        doc = make_document(
+            **{
+                "schema:name": 12345,
+                "schema:description": ["a", "list", "not", "a", "string"],
+                "schema:creator": "not a list",
+                "schema:license": 42,
+                "schema:distribution": "not a list",
+                "schema:keywords": {"not": "a list of dicts"},
+                "schema:identifier": "not a list",
+                "schema:sameAs": 7,
+                "schema:publisher": "not a dict",
+            }
+        )
+        result = to_croissant_json(doc)
+        assert isinstance(result, CroissantExportResult)
+        assert isinstance(result.croissant_json, dict)
+        assert "creator" not in result.croissant_json
+        assert "distribution" not in result.croissant_json
+        assert "recordSet" not in result.croissant_json
+
+    def test_distribution_entries_that_are_not_dicts_are_skipped(self):
+        doc = make_document(**{"schema:distribution": ["not a dict", 42, None, {}]})
+        result = to_croissant_json(doc)
+        assert "distribution" not in result.croissant_json
+
+    def test_none_document_fields_never_raise(self):
+        doc = make_document(
+            **{
+                "schema:name": None,
+                "schema:creator": None,
+                "schema:distribution": None,
+                "schema:license": None,
+            }
+        )
+        result = to_croissant_json(doc)
+        assert isinstance(result, CroissantExportResult)
