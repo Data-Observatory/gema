@@ -7,23 +7,29 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 - **Enrichment architecture fork: option (A).** `enrichers/identifier_enricher.py`, `enrichers/doi_resolver.py`, `enrichers/pid_validator.py`, `output.py`, `exporters/dataverse.py` get retargeted to read CDIF field names directly off the CDIF-generated `MetadataDocument`. No DataCite-shaped intermediate representation reintroduced.
 - Spec file lives at `docs/codata_mcp_croissant_cdifspecs.md` (renamed from root `specs.md`, commit on `feat/cdif-croissant-pivot-spec`).
 
-## Branch sequence
+## Branch
 
-- [ ] **`feat/cdif-vendor-artifacts`** (off `feat/cdif-croissant-pivot-spec`) — vendor real CDIF Discovery artifacts at a chosen commit SHA. No Python logic. Blocked on Open Question #1.
-- [ ] **`feat/cdif-pivot-core`** (stacked on vendor-artifacts) — the atomic flip: `CDIFDiscoveryProfile`, registry swap, blast-radius retarget (option A) of the 5 call sites above, `config/agents.yaml` rewrite (schema_name + all 5 prompts + context_fields), `config/migrate.py` comment + warning, `record_golden.py` fix, golden fixture re-record + pre-flip baseline snapshot, all affected test files (`tests/` + `visor/tests/`), `visor/` lint+typecheck+`make test-visor` green. One PR, multiple commits — provably atomic, cannot be split and stay green.
-- [ ] **`feat/datacite-exporter`** (off `dev`, after pivot-core merges) — `exporters/datacite.py`: real CDIF→DataCite field mapping (not a normalizer-delegation shortcut), reusing `DataCiteSchema46`'s 18 `_normalize_*` methods / `get_field_order` / `get_required_fields` / `"Collections"` capitalization as the last step only.
-- [ ] **`feat/croissant-exporter`** (off `dev`, after pivot-core merges, independent of datacite-exporter) — `exporters/croissant.py`, top-level Dataset fields only, `recordSet` empty until structure fetcher exists.
-- [ ] **`feat/structure-fetcher`** (off `dev`, after pivot-core merges, independent of the other two) — scope decision needed first (ship "fetch and store, surface nowhere" vs. skip v1 entirely — Open Question #12).
+All of it lands on **`feat/cdif-croissant-pivot-spec`** (current branch) as progressive commits — no further branch stack. Steps below are work-order within this one branch, not separate PRs. Rename the branch before opening a PR if a more accurate name is wanted once scope is final (e.g. `feat/cdif-croissant-pivot`).
 
-## Step 1 — `feat/cdif-vendor-artifacts`
+## Research findings (resolves/narrows several open questions)
 
-- [ ] Resolve Open Question #1 (CDIF repo + commit SHA)
-- [ ] Vendor `context.jsonld`, `frame.jsonld`, `schema.json`, `shacl.ttl` verbatim under `src/metadata_enricher/schemas/cdif/discovery/`
-- [ ] `VENDORED_SHA.txt` (SHA + repo URL + fetch date)
-- [ ] `tests/test_cdif_vendored_artifacts.py`: existence, JSON parses, shacl non-empty, SHA pattern, **open-world shape assertion** (`properties: []`/no root `additionalProperties`/no root `required`)
+**Q1 — CDIF vendoring source, resolved to a concrete candidate.** The real target is **`Cross-Domain-Interoperability-Framework/doc-corediscovery`** at commit `81c28260778426cc61302105fc7191b4db360bc9` (2026-05-16) — this is the *composite application profile* ("full discovery... human-facing content requirements"), not `profile-discovery` (a narrower module that only composes `cdifCore` and adds a handful of discovery-specific extension properties — measurementTechnique, variableMeasured, spatialCoverage, temporalCoverage, dqv:hasQualityMeasurement). Files to vendor from `doc-corediscovery`: `CDIFDiscoveryProfileStructuredSchema.json` (76KB, 27 top-level properties), `CDIFDiscovery-frame.jsonld`, `discoveryRules.shacl`. **There is no standalone `context.jsonld` file** — the original plan's assumption of 4 separate files was wrong; `@context` is embedded directly in the schema and frame files (same `{schema, dcterms, dcat, prov, ...}` prefix map in both). Vendoring plan updated: 3 files, not 4, plus `VENDORED_SHA.txt`.
+
+Confirmed via the real schema: required floor is exactly `@id, @type, @context, schema:name, schema:identifier, schema:dateModified, schema:subjectOf` (matches spec §3.2/§5 verbatim) via `allOf[0].required`, **plus two conditional requirements** not previously called out: `allOf[1]` requires `schema:license` OR `schema:conditionsOfAccess` (anyOf), and `allOf[2]` requires `schema:url` OR `schema:distribution` (anyOf). This means `CDIFDiscoveryProfile.output_model`/`validate_output` needs conditional validation logic (a Pydantic `model_validator`), not just a flat required-fields list — flag this in Step 2's implementation, it changes the shape of `get_required_fields()`'s contract slightly (an OR-group can't be expressed as a flat list the way `DataCiteSchema46._REQUIRED_FIELDS` is).
+
+Full top-level property list (27): `@context, @id, @type, schema:name, schema:description, schema:identifier, schema:additionalType, schema:sameAs, schema:version, schema:inLanguage, schema:dateModified, schema:datePublished, schema:conditionsOfAccess, schema:license, schema:url, schema:distribution, schema:relatedLink, schema:publishingPrinciples, schema:keywords, schema:creator, schema:contributor, schema:publisher, schema:provider, schema:funding, prov:wasGeneratedBy, prov:wasDerivedFrom, schema:subjectOf`. This is the real candidate list for Open Question #2 — narrows "TBD" to "pick a subset of these 27" rather than starting from nothing.
+
+**Q9 — Croissant top-level fields, drafted.** Required: `@context, @type ("sc:Dataset"), dct:conformsTo, description, license, name, url, creator, datePublished`. Recommended: `keywords, publisher, version, dateCreated, dateModified, sameAs, sdLicense, inLanguage`. Croissant-specific: `citeAs, isLiveDataset, distribution`. Good enough to draft `exporters/croissant.py`'s top-level mapping against; still worth a spot-check against the pinned Croissant spec version when writing the actual mapping.
+
+## Step 1 — Vendor CDIF artifacts
+
+- [x] Resolve Open Question #1 — see Research findings above; **pending: user confirms `doc-corediscovery`@`81c28260` is the right pin** before committing vendored files
+- [ ] Vendor `schema.json` (from `CDIFDiscoveryProfileStructuredSchema.json`), `frame.jsonld` (from `CDIFDiscovery-frame.jsonld`), `shacl.ttl` (from `discoveryRules.shacl`) verbatim under `src/metadata_enricher/schemas/cdif/discovery/` — no separate context.jsonld (see above)
+- [ ] `VENDORED_SHA.txt` (SHA `81c28260778426cc61302105fc7191b4db360bc9` + repo URL + fetch date)
+- [ ] `tests/test_cdif_vendored_artifacts.py`: existence, JSON parses, shacl non-empty, SHA pattern, **open-world shape assertion** (no top-level `additionalProperties: false`, no flat top-level `required` — note the real schema uses `allOf`+`anyOf` conditional requirements instead of a flat list, adjust the assertion to check for absence of a *closed* top-level shape rather than absence of any required-ness at all)
 - [ ] `make lint && make typecheck && make test`
 
-## Step 2 — `feat/cdif-pivot-core`
+## Step 2 — CDIF schema + pivot core
 
 - [ ] Resolve Open Question #2 (CDIF field coverage beyond the 7-field floor)
 - [ ] Resolve Open Question #3 (`extra="forbid"` vs `"allow"` on `CDIFDiscoveryProfile.output_model`, incl. `allow_partial` interaction)
@@ -47,7 +53,7 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 - [ ] Verify: `make lint && make typecheck && make test` + `ruff check visor/` + `mypy visor --exclude visor/tests` + `make test-visor` + `make test-regression` + fixture diff review + manual smoke run against real provider
 - [ ] Manual live identifier-resolution check + `make live-eval` before any `dev`→`main` PR
 
-## Step 3 — `feat/datacite-exporter`
+## Step 3 — DataCite exporter
 
 - [ ] `exporters/datacite.py`: real CDIF→DataCite mapping table, `DataCiteExportResult{datacite_json, warnings, token_usage}`, delegates to `DataCiteSchema46` normalizers only as the last step
 - [ ] Confirm Open Question #8 (LLM call scope — default: none, pure crosswalk)
@@ -56,7 +62,7 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 - [ ] New `exporters/AGENTS.md`
 - [ ] `make lint && make typecheck && make test`
 
-## Step 4 — `feat/croissant-exporter`
+## Step 4 — Croissant exporter
 
 - [ ] Resolve Open Question #9 (Croissant top-level field mapping — direct spec check)
 - [ ] `exporters/croissant.py`: top-level Dataset fields, `recordSet` empty/documented placeholder
@@ -64,7 +70,7 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 - [ ] `tests/test_croissant_export.py` from CDIF-shaped synthetic fixtures
 - [ ] `make lint && make typecheck && make test`
 
-## Step 5 — `feat/structure-fetcher`
+## Step 5 — Structure fetcher
 
 - [ ] Resolve Open Question #12 (ship in v1 at all, given no consumer until DataDescription)
 - [ ] Resolve Open Question #10 (format list, sample strategy, Parquet-as-new-dependency)
@@ -87,15 +93,15 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 
 | # | Question | Status |
 |---|----------|--------|
-| 1 | CDIF vendored artifact repo + commit SHA | open |
-| 2 | CDIF Discovery field coverage beyond required floor | open |
+| 1 | CDIF vendored artifact repo + commit SHA | **narrowed**: `doc-corediscovery`@`81c28260`, pending user confirm |
+| 2 | CDIF Discovery field coverage beyond required floor | **narrowed**: pick from the real 27-property list above |
 | 3 | `extra="forbid"` vs `"allow"` on output_model | open |
 | 4 | JSON-LD envelope emission site | **resolved**: inside `merge_agent_results` |
 | 5 | SHACL/JSON-LD framing execute in v1? | open |
 | 6 | Enrichment architecture fork | **resolved: option (A)** |
 | 7 | Golden fixture strategy | **resolved**: full replace + baseline snapshot |
 | 8 | DataCite export LLM-call scope | open (default: none) |
-| 9 | Croissant top-level field mapping | open |
+| 9 | Croissant top-level field mapping | **drafted**, see Research findings |
 | 10 | Structure fetcher format list / sample strategy | open |
 | 11 | Content-fetch vs. structure-fetch ordering | open |
 | 12 | Does structure-fetcher ship in v1 at all | open |
@@ -106,4 +112,4 @@ Tracks execution of `docs/codata_mcp_croissant_cdifspecs.md`'s decision record. 
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.
-- Each branch lands lint+typecheck+test green (plus `visor/` coverage and fixture re-record for Step 2) before the next opens.
+- Everything lands on `feat/cdif-croissant-pivot-spec` as progressive commits. Run `make lint && make typecheck && make test` (plus `visor/` coverage and fixture re-record once Step 2 lands) before moving to the next step, even without a branch boundary forcing it.
