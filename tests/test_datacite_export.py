@@ -83,7 +83,12 @@ class TestTitlesAndDescriptions:
         result = to_datacite_json(doc)
         assert any("no schema:description found" in w for w in result.warnings)
 
-    def test_measurement_technique_becomes_methods_description(self):
+    def test_measurement_technique_becomes_methods_description_when_no_distribution(self):
+        """measurementTechnique double-mapping decision (docs/cdif_pivot_
+        implementation_plan.md Backlog): with no schema:distribution to
+        attach it to instead, this fallback preserves real technique data
+        (a real recorded shape -- see sample_input06.json) rather than
+        losing it entirely."""
         doc = make_document(**{
             "schema:name": "T",
             "schema:description": "D.",
@@ -95,6 +100,26 @@ class TestTitlesAndDescriptions:
             d["description"] for d in data["descriptions"] if d["description_type"] == "Methods"
         ]
         assert method_descriptions == ["Remote sensing", "Field survey"]
+
+    def test_measurement_technique_not_duplicated_into_descriptions_when_distribution_present(self):
+        """The higher-confidence media_files[].measurement_technique
+        mapping (see TestMediaFilesAndCollectionsCapitalization) wins when
+        there's a distribution to attach it to -- this branch must not
+        also duplicate the same fact into descriptions[Methods]."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:description": "D.",
+            "schema:measurementTechnique": ["Remote sensing"],
+            "schema:distribution": [{"schema:contentUrl": "https://example.org/a.csv"}],
+        })
+        result = to_datacite_json(doc)
+        data = _fields(result)
+        method_descriptions = [
+            d["description"] for d in data["descriptions"] if d["description_type"] == "Methods"
+        ]
+        assert method_descriptions == []
+        # Still present, once, on the media_files entry.
+        assert data["media_files"][0]["measurement_technique"] == ["Remote sensing"]
 
 
 class TestCreatorsC4Reversal:

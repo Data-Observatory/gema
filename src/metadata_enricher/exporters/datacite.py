@@ -304,11 +304,30 @@ def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list
     else:
         warnings.append("no schema:description found")
 
-    for technique in _as_list(document.get_field("schema:measurementTechnique")):
-        if technique:
-            descriptions.append(
-                {"description": str(technique), "description_type": "Methods", "language": language}
-            )
+    # measurementTechnique double-mapping decision (docs/cdif_pivot_
+    # implementation_plan.md Backlog, "Design inconsistencies"): Q2's
+    # mapping table has two independently legitimate reverse routes for
+    # schema:measurementTechnique -- descriptions[Methods] ("Inference,
+    # good fit") and media_files[].measurement_technique ("Verified").
+    # Emitting both unconditionally duplicated the same fact whenever a
+    # document round-trips. media_files[].measurement_technique is the
+    # higher-confidence, per-file-scoped mapping (see _build_media_files
+    # below) and wins whenever there's a distribution to attach it to.
+    # This branch is a fallback, not a duplicate: it only fires when
+    # schema:distribution is empty, so a document with real technique
+    # data but no distribution entries (a real recorded shape -- see
+    # tests/fixtures/golden/expected/sample_input06.json) doesn't lose
+    # that data entirely.
+    if not _as_list(document.get_field("schema:distribution")):
+        for technique in _as_list(document.get_field("schema:measurementTechnique")):
+            if technique:
+                descriptions.append(
+                    {
+                        "description": str(technique),
+                        "description_type": "Methods",
+                        "language": language,
+                    }
+                )
 
     return descriptions
 
