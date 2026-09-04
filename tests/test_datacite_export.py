@@ -285,7 +285,31 @@ class TestEnvelopeFields:
     def test_missing_identifier_entirely_warns(self):
         doc = make_document(**{"schema:name": "T"})
         result = to_datacite_json(doc)
-        assert any("no schema:identifier or @id found" in w for w in result.warnings)
+        assert any("no schema:identifier, schema:url, or @id found" in w for w in result.warnings)
+
+    def test_falls_back_to_schema_url_when_no_identifier_or_resolvable_id(self):
+        """schema:url is a first-class generated field (half of the
+        required floor's url|distribution OR-group) but used to never be
+        read here -- a document carrying only it produced an empty
+        resource.identifier despite the URL being right there."""
+        doc = make_document(**{"schema:name": "T", "schema:url": "https://example.org/dataset"})
+        result = to_datacite_json(doc)
+        resource = _fields(result)["resource"]
+        assert resource["identifier"] == "https://example.org/dataset"
+        assert resource["identifier_type"] == "URL"
+        assert not any("resource.identifier will be empty" in w for w in result.warnings)
+
+    def test_schema_url_preferred_over_a_synthetic_generated_at_id(self):
+        """A generated urn:gema:generated:... @id (CDIFDiscoveryProfile's
+        own fallback when nothing resolvable was extracted) is worse than
+        a real schema:url sitting right next to it -- must not win."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "@id": "urn:gema:generated:deadbeef",
+            "schema:url": "https://example.org/dataset",
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["resource"]["identifier"] == "https://example.org/dataset"
 
     def test_date_modified_maps_to_updated_date(self):
         doc = make_document(**{"schema:name": "T", "schema:dateModified": "2026-09-04"})
@@ -334,6 +358,27 @@ class TestContributorRoles:
         contributor_types = [c["contributor_type"] for c in data["creators"]]
         assert "DataCurator" in contributor_types
         assert any("unmapped role" in w for w in result.warnings)
+
+
+class TestTemporalEvents:
+    def test_frequency_survives_datacite_normalization(self):
+        """DataCiteSchema46._normalize_temporal_events only keeps dicts
+        carrying a "start_date" or "description" *key* -- a bare
+        {"frequency_type": ...} used to be silently dropped by that
+        normalization step regardless of whether a frequency was found."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "dcterms:accrualPeriodicity": "monthly",
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["temporal_events"] == [
+            {"start_date": "", "frequency_number": "", "frequency_type": "monthly", "description": ""}
+        ]
+
+    def test_empty_when_no_frequency_found(self):
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["temporal_events"] == []
 
 
 class TestRightsAndFunding:

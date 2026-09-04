@@ -151,6 +151,20 @@ class TestLicense:
         assert "license" not in result.croissant_json
         assert any("no schema:license found" in w for w in result.warnings)
 
+    def test_accepts_a_bare_string_license(self):
+        """The vendored schema allows schema:license as a bare string or
+        {"@id": ...}, not just the dict shape gema's own generation always
+        produces -- iterating an un-guarded string used to silently walk
+        its characters instead of being read as a single value."""
+        doc = make_document(**{"schema:license": "CC-BY-4.0"})
+        result = to_croissant_json(doc)
+        assert result.croissant_json["license"] == ["CC-BY-4.0"]
+
+    def test_accepts_a_bare_id_reference_license(self):
+        doc = make_document(**{"schema:license": {"@id": "https://creativecommons.org/licenses/by/4.0/"}})
+        result = to_croissant_json(doc)
+        assert result.croissant_json["license"] == ["https://creativecommons.org/licenses/by/4.0/"]
+
 
 class TestUrl:
     def test_maps_schema_url(self):
@@ -264,6 +278,23 @@ class TestDistribution:
                     {
                         "schema:contentUrl": "https://example.org/data.zip",
                         "schema:contentSize": [{"size": 2.5, "unit": "MB"}],
+                    }
+                ]
+            }
+        )
+        result = to_croissant_json(doc)
+        assert result.croissant_json["distribution"][0]["contentSize"] == "2.5 MB"
+
+    def test_maps_content_size_when_shaped_as_a_dict(self):
+        """config/agents.yaml's media_files prompt actually emits
+        schema:contentSize as a single dict, not a list -- indexing a dict
+        by 0 used to raise KeyError, a real crash this regression guards."""
+        doc = make_document(
+            **{
+                "schema:distribution": [
+                    {
+                        "schema:contentUrl": "https://example.org/data.zip",
+                        "schema:contentSize": {"size": 2.5, "unit": "MB"},
                     }
                 ]
             }
