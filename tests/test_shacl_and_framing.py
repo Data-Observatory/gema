@@ -26,6 +26,7 @@ import json
 from pathlib import Path
 
 import pytest
+from pyld import jsonld
 
 from metadata_enricher.schemas.cdif.discovery.cdif_discovery import CDIFDiscoveryProfile
 from metadata_enricher.types import MetadataDocument
@@ -235,6 +236,39 @@ class TestFrameOutput:
         assert len(graph) >= 1
         ids = {node.get("@id") for node in graph if isinstance(node, dict)}
         assert raw["@id"] in ids
+
+        # Real no-data-loss check, not just "has a @graph and the right
+        # @id" (the previous version of this test asserted only that,
+        # which is what its name claimed to check but didn't). Expand both
+        # sides through pyld -- expansion resolves every CURIE back to its
+        # full IRI, so a real absence would show up as a literal value or
+        # a real node present in the source but missing after framing;
+        # re-compacting an absolute type IRI to a CURIE (framing's only
+        # actual effect here) round-trips to the same expanded form and
+        # isn't a loss.
+        def leaf_values(expanded: object) -> set[str]:
+            values: set[str] = set()
+
+            def walk(node: object) -> None:
+                if isinstance(node, list):
+                    for item in node:
+                        walk(item)
+                elif isinstance(node, dict):
+                    if "@value" in node:
+                        values.add(str(node["@value"]))
+                    elif set(node.keys()) == {"@id"}:
+                        values.add(str(node["@id"]))
+                    else:
+                        for v in node.values():
+                            walk(v)
+
+            walk(expanded)
+            return values
+
+        raw_leaves = leaf_values(jsonld.expand(raw))
+        framed_leaves = leaf_values(jsonld.expand(framed))
+        missing = raw_leaves - framed_leaves
+        assert not missing, f"framing dropped real data: {missing}"
 
     def test_conformant_fixture_frames_with_expected_top_level_name(
         self, schema: CDIFDiscoveryProfile

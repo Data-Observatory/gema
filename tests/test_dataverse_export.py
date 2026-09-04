@@ -338,6 +338,38 @@ class TestAlternativeURL:
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         assert not any(f["typeName"] == "alternativeURL" for f in fields)
 
+    def test_prefers_the_identifier_entrys_own_url_over_constructing_one(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:identifier": [
+                {
+                    "schema:propertyID": "DOI",
+                    "schema:value": "10.5880/GFZ.2.4.2021.001",
+                    "schema:url": "https://doi.org/10.5880/GFZ.2.4.2021.001",
+                }
+            ],
+        })
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
+        assert url_field["value"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
+
+    def test_does_not_double_prefix_a_doi_value_thats_already_a_url(self):
+        """Regression: constructing f"https://doi.org/{value}" with no
+        guard would double-prefix a schema:value that's already a full
+        URL -- same class of bug fixed in exporters/croissant.py's
+        _build_url."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:identifier": [
+                {"schema:propertyID": "DOI", "schema:value": "https://doi.org/10.5880/GFZ.2.4.2021.001"}
+            ],
+        })
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
+        assert url_field["value"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
+
 
 class TestSubjectClassification:
     def test_disabled_defaults_to_other_with_no_warning(self):

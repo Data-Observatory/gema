@@ -122,6 +122,28 @@ class TestTitlesAndDescriptions:
         # Still present, once, on the media_files entry.
         assert data["media_files"][0]["measurement_technique"] == ["Remote sensing"]
 
+    def test_measurement_technique_not_dropped_when_distribution_has_no_content_url(self):
+        """Regression: the fallback used to gate on raw truthiness of
+        schema:distribution, not whether it actually produces a
+        media_files entry. A distribution list present but missing
+        schema:contentUrl on every entry (e.g. from a bare-string
+        distribution CDIFDiscoveryProfile's own normalizer can produce)
+        used to silently drop the technique from BOTH branches at once."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:description": "D.",
+            "schema:measurementTechnique": ["Remote sensing"],
+            "schema:distribution": [{"schema:name": "a distribution with no URL"}],
+        })
+        result = to_datacite_json(doc)
+        data = _fields(result)
+        assert data["media_files"] == []
+        method_descriptions = [
+            d["description"] for d in data["descriptions"] if d["description_type"] == "Methods"
+        ]
+        assert method_descriptions == ["Remote sensing"]
+        assert any("nothing to attach it to" in w for w in result.warnings)
+
 
 class TestCreatorsC4Reversal:
     def test_bare_list_creator_maps_to_creators(self):
@@ -648,9 +670,29 @@ class TestMediaFilesAndCollectionsCapitalization:
         assert media["file_uri"] == "https://example.org/data.csv"
         assert media["checksum"] == "abc123"
         assert media["temporal_resolution"] == "daily"
+        assert media["sizes"] == ["2.5 MB"]
         # physical_carrier is always the literal "digital" -- enforced by
         # DataCiteSchema46's own normalizer, not this exporter's mapping.
         assert media["physical_carrier"] == "digital"
+
+    def test_content_size_as_a_single_dict_is_normalized_to_a_size_string(self):
+        """config/agents.yaml's media_files prompt actually emits
+        schema:contentSize as a single dict, not a list -- DataCite's own
+        `sizes` field expects a list of formatted strings, so passing the
+        dict straight through used to produce the wrong shape (a dict
+        where DataCite expects `list[str]`), same class of bug fixed in
+        exporters/croissant.py's _build_distribution."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:distribution": [
+                {
+                    "schema:contentUrl": "https://example.org/data.zip",
+                    "schema:contentSize": {"size": 2.5, "unit": "MB"},
+                }
+            ],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["media_files"][0]["sizes"] == ["2.5 MB"]
 
     def test_collections_capitalization_survives_end_to_end(self):
         """Regression: DataCiteSchema46._normalize_media_files uses

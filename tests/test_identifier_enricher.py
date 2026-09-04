@@ -84,8 +84,16 @@ class TestEnrichCreators:
         assert len(identifiers) == 2
         assert identifiers[0]["schema:value"] == "https://ror.org/01h6h5x94"
         assert identifiers[0]["schema:propertyID"] == "ROR"
+        # Regression: ROR's own API returns "id" as an already-full URI --
+        # unconditionally prefixing it produced doubled URLs
+        # ("https://ror.org/https://ror.org/...") in real recorded output
+        # (8 occurrences across 4 committed golden fixtures, found by
+        # review). schema:value and schema:url must match exactly here,
+        # not accumulate a second prefix.
+        assert identifiers[0]["schema:url"] == "https://ror.org/01h6h5x94"
         assert identifiers[1]["schema:value"] == "000000040628717X"
         assert identifiers[1]["schema:propertyID"] == "ISNI"
+        assert identifiers[1]["schema:url"] == "https://isni.org/000000040628717X"
 
     def test_wrapped_jsonld_list_creator_is_enriched_in_place(self) -> None:
         """schema:creator arrives as {"@list": [...]} once a real pipeline

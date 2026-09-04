@@ -80,6 +80,25 @@ class TestHandleUpload:
         assert pipeline_config.enable_doi_resolution is True
         assert refreshed == [True]
 
+    async def test_carries_validate_shacl_conformance(self) -> None:
+        """Same class of regression as above, found on review: _download()
+        serializes the whole model (model_dump), so a downloaded config
+        always carries validate_shacl_conformance -- but _handle_upload's
+        manual field-by-field copy stopped at validate_pids_live and never
+        picked this one up, silently reverting it to the default (False)
+        on every download/edit/upload round-trip."""
+        pipeline_config = PipelineConfig(**_minimal_config_dict())
+        assert pipeline_config.validate_shacl_conformance is False
+
+        uploaded = _minimal_config_dict(validate_shacl_conformance=True)
+        event = _FakeUploadEvent(json.dumps(uploaded))
+        refreshed: list[bool] = []
+
+        await _handle_upload(event, pipeline_config, lambda: refreshed.append(True))
+
+        assert pipeline_config.validate_shacl_conformance is True
+        assert refreshed == [True]
+
     async def test_rejects_invalid_upload_without_mutating_config(self) -> None:
         pipeline_config = PipelineConfig(**_minimal_config_dict())
         event = _FakeUploadEvent("not json")
