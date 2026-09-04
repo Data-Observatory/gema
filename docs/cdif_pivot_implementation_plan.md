@@ -13,13 +13,83 @@ All of it lands on **`feat/cdif-croissant-pivot-spec`** (current branch) as prog
 
 ## Research findings (resolves/narrows several open questions)
 
-**Q1 — CDIF vendoring source, resolved to a concrete candidate.** The real target is **`Cross-Domain-Interoperability-Framework/doc-corediscovery`** at commit `81c28260778426cc61302105fc7191b4db360bc9` (2026-05-16) — this is the *composite application profile* ("full discovery... human-facing content requirements"), not `profile-discovery` (a narrower module that only composes `cdifCore` and adds a handful of discovery-specific extension properties — measurementTechnique, variableMeasured, spatialCoverage, temporalCoverage, dqv:hasQualityMeasurement). Files to vendor from `doc-corediscovery`: `CDIFDiscoveryProfileStructuredSchema.json` (76KB, 27 top-level properties), `CDIFDiscovery-frame.jsonld`, `discoveryRules.shacl`. **There is no standalone `context.jsonld` file** — the original plan's assumption of 4 separate files was wrong; `@context` is embedded directly in the schema and frame files (same `{schema, dcterms, dcat, prov, ...}` prefix map in both). Vendoring plan updated: 3 files, not 4, plus `VENDORED_SHA.txt`.
+**Q1 — CDIF vendoring source, resolved to a concrete candidate.** The real target is **`Cross-Domain-Interoperability-Framework/doc-corediscovery`** at commit `81c28260778426cc61302105fc7191b4db360bc9` (2026-05-16) — this is the *composite application profile* ("full discovery... human-facing content requirements"), not `profile-discovery` (a narrower module that only composes `cdifCore`). Files vendored: `schema.json`, `frame.jsonld`, `shacl.ttl`. **There is no standalone `context.jsonld` file** — `@context` is embedded directly in the schema and frame files. **Add a 4th vendored artifact**: `documents/CDIF-metadata-crosswalks-merged.xlsx` from the same commit — CDIF's own maintained DataCite↔schema.org crosswalk (150 rows), the strongest available source for the field mapping below, better than any third-party literature. Not yet copied into the repo; do this before or alongside Step 2's schema implementation.
 
-Confirmed via the real schema: required floor is exactly `@id, @type, @context, schema:name, schema:identifier, schema:dateModified, schema:subjectOf` (matches spec §3.2/§5 verbatim) via `allOf[0].required`, **plus two conditional requirements** not previously called out: `allOf[1]` requires `schema:license` OR `schema:conditionsOfAccess` (anyOf), and `allOf[2]` requires `schema:url` OR `schema:distribution` (anyOf). This means `CDIFDiscoveryProfile.output_model`/`validate_output` needs conditional validation logic (a Pydantic `model_validator`), not just a flat required-fields list — flag this in Step 2's implementation, it changes the shape of `get_required_fields()`'s contract slightly (an OR-group can't be expressed as a flat list the way `DataCiteSchema46._REQUIRED_FIELDS` is).
+Confirmed via the real schema: required floor is exactly `@id, @type, @context, schema:name, schema:identifier, schema:dateModified, schema:subjectOf` (matches spec §3.2/§5 verbatim) via `allOf[0].required`, **plus two conditional requirements**: `allOf[1]` requires `schema:license` OR `schema:conditionsOfAccess` (anyOf), and `allOf[2]` requires `schema:url` OR `schema:distribution` (anyOf). `CDIFDiscoveryProfile.output_model`/`validate_output` needs a Pydantic `model_validator` for this, not just a flat required-fields list.
 
-Full top-level property list (27): `@context, @id, @type, schema:name, schema:description, schema:identifier, schema:additionalType, schema:sameAs, schema:version, schema:inLanguage, schema:dateModified, schema:datePublished, schema:conditionsOfAccess, schema:license, schema:url, schema:distribution, schema:relatedLink, schema:publishingPrinciples, schema:keywords, schema:creator, schema:contributor, schema:publisher, schema:provider, schema:funding, prov:wasGeneratedBy, prov:wasDerivedFrom, schema:subjectOf`. This is the real candidate list for Open Question #2 — narrows "TBD" to "pick a subset of these 27" rather than starting from nothing.
+**Correction (caught by a second research pass, Opus + web/primary-source verification): the schema declares 32 top-level properties, not 27.** The first pass read only `.properties` and missed 5 more declared inside `.allOf[3].properties`: `schema:measurementTechnique, schema:variableMeasured, schema:spatialCoverage, schema:temporalCoverage, dqv:hasQualityMeasurement`. These are genuine first-class CDIF Discovery properties (the vendored implementation guide titles that block "Properties added in Discovery Profile"), **not** an out-of-scope `profile-discovery`-only extension as the first pass wrongly claimed. Full corrected list (32): the 26 non-envelope properties from the original list (`@context, @id, @type, schema:name, schema:description, schema:identifier, schema:additionalType, schema:sameAs, schema:version, schema:inLanguage, schema:dateModified, schema:datePublished, schema:conditionsOfAccess, schema:license, schema:url, schema:distribution, schema:relatedLink, schema:publishingPrinciples, schema:keywords, schema:creator, schema:contributor, schema:publisher, schema:provider, schema:funding, prov:wasGeneratedBy, prov:wasDerivedFrom, schema:subjectOf`) plus the 5 just found (`schema:measurementTechnique, schema:variableMeasured, schema:spatialCoverage, schema:temporalCoverage, dqv:hasQualityMeasurement`).
 
 **Q9 — Croissant top-level fields, drafted.** Required: `@context, @type ("sc:Dataset"), dct:conformsTo, description, license, name, url, creator, datePublished`. Recommended: `keywords, publisher, version, dateCreated, dateModified, sameAs, sdLicense, inLanguage`. Croissant-specific: `citeAs, isLiveDataset, distribution`. Good enough to draft `exporters/croissant.py`'s top-level mapping against; still worth a spot-check against the pinned Croissant spec version when writing the actual mapping.
+
+## Q2 — Verified DataCite → CDIF field mapping (resolved, research-backed)
+
+Full per-field mapping, verified against the real vendored schema, CDIF's own `CDIF-metadata-crosswalks-merged.xlsx` (150-row DataCite↔schema.org crosswalk in the same vendored commit — the authoritative source, used wherever it has an answer), the CDIF Implementation Guide, the real schema.org machine-readable vocabulary (not recalled), and DCMI Terms. One row per current DataCite field (`src/metadata_enricher/schemas/datacite.py`'s shapes), not per agent — assign to agents/waves when writing `config/agents.yaml` in Step 2.
+
+| DataCite field | CDIF/JSON-LD target | Confidence |
+|---|---|---|
+| `resource.identifier`/`identifier_type` | `@id` (if resolvable URI) else `schema:identifier` (PropertyValue: `propertyID`←type, `value`, `url`) | Verified |
+| `resource.resource_type_general` | `@type` (array incl. `schema:Dataset`) | Verified |
+| `resource.resource_type` | `schema:additionalType` | Verified |
+| `resource.version` | `schema:version` | Verified |
+| `resource.language` | `schema:inLanguage` | Verified |
+| `resource.publication_year` | `schema:datePublished` | Verified |
+| `resource.editor` | `schema:contributor` → `Role{roleName:"Editor"}` | Verified |
+| `resource.maintainer` | `schema:maintainer` (Person/Org) — distinct from `subjectOf.maintainer` (metadata-record contact, don't conflate) | Verified term, inferred node |
+| `resource.contact` | `schema:contributor` → `Role{roleName:"ContactPerson"}` | Verified |
+| `resource.producer` | `schema:producer` | Verified |
+| `resource.thumbnail` | `schema:relatedLink` → `LinkRole{linkRelationship:"thumbnail"}` | Verified |
+| `titles` (main) | `schema:name` — **single-valued, see Constraint C1** | Verified |
+| `titles` (Alternative/Subtitle/Translated/Other) | `schema:alternateName` | Verified |
+| `descriptions` (Abstract) | `schema:description` — **single-valued, see C1** | Verified |
+| `descriptions` (Methods) | `schema:measurementTechnique` | Inference (good fit) |
+| `descriptions` (other types) | fold into `schema:description` or `dcterms:tableOfContents`/`schema:isPartOf` | Inference |
+| `languages` | `schema:inLanguage` (first) + `dcterms:language` (overflow) — see C2 | Verified constraint |
+| `dates[Created]` | `schema:dateCreated` | Verified |
+| `dates[Updated]` | `schema:dateModified` (required floor) | Verified |
+| `dates[Issued]` | `schema:datePublished` | Verified |
+| `dates[Copyrighted]` | `schema:copyrightYear` | Verified |
+| `dates[Available]` (embargo) | `schema:conditionsOfAccess` | Verified |
+| `dates[Collected]` | `schema:temporalCoverage` | Verified |
+| `dates[Accepted/Submitted/Valid/Withdrawn]` | `dcterms:dateAccepted`/`dateSubmitted`/`valid`/`schema:expires` | Inference per-term |
+| `alternate_identifiers` | `schema:sameAs` — **identity assertions, minItems 1, see C6** | Verified |
+| `related_identifiers` | `schema:relatedLink` → `LinkRole{linkRelationship←relation_type, target: EntryPoint}` — **typed relations, do not merge with sameAs** | Verified |
+| `related_identifiers[IsDerivedFrom]` | `prov:wasDerivedFrom` (CDIF explicitly says use this, not `schema:isBasedOn`) | Verified |
+| `related_identifiers[HasPart/IsPartOf]` | `schema:hasPart`/`schema:isPartOf` | Verified/flagged |
+| `geo_locations` | `schema:spatialCoverage[]` → `Place{name, identifier, geo: GeoCoordinates\|GeoShape}` | Verified |
+| `temporal_events` (frequency) | `dcterms:accrualPeriodicity` (not `schema:repeatFrequency` — that property's domain is `Schedule` only, out of domain here) | Inference on exact term, flagged |
+| `subjects` | `schema:keywords[]` as `DefinedTerm{name, inDefinedTermSet, identifier, termCode}` | Verified |
+| `categories` | `schema:about[]` (DefinedTerm) recommended over folding into keywords — CDIF's own crosswalk says `keywords`; `about` is semantically cleaner. **Judgment call, flagged for review.** | Flagged |
+| `audiences` | `schema:audience`→`Audience{audienceType}` + `schema:educationalLevel` + `dcterms:mediator` + `dcterms:instructionalMethod` — all four are a verbatim DCMI-Terms lift, `dcterms` is already a required CDIF prefix. **Supersedes the earlier "fold into keywords" decision** — this preserves all 4 sub-fields instead of losing 3 of them. | Verified |
+| `creators` | `schema:creator` → `{"@list":[Person\|Organization]}` — **object wrapping `@list`, not a bare array, see C4** | Verified |
+| `creators[].contributor_type` | `schema:contributor` → `Role{roleName}` | Verified |
+| `publishers` | `schema:publisher` (single) + overflow → `schema:provider[]` — **single-valued, not an array, see C3** | Verified constraint |
+| `rights.rights`/`rights_uri`/`rights_identifier` | `schema:license[]` (string\|`{@id}`\|`LabeledLink`) | Verified |
+| `rights.rights_condition` | `schema:conditionsOfAccess` | Verified |
+| `rights.rights_holder` | `schema:copyrightHolder` | Verified |
+| `funding_references` | `schema:funding[]` → `MonetaryGrant{name, identifier, funder: Organization}` — **funder nests inside the grant, no top-level `schema:funder`** | Verified |
+| `citations` | `schema:citation[]` → `ScholarlyArticle{pageStart, pageEnd, isPartOf: PublicationIssue → PublicationVolume}` — **not `prov:wasDerivedFrom`** (that's input-data lineage, a different concept; citations are bibliographic) | Verified |
+| `media_files` (file access) | `schema:distribution[]` → `DataDownload{contentUrl, encodingFormat, contentSize, spdx:checksum}` | Verified |
+| `media_files[].variable_measured` | `schema:variableMeasured[]` → `PropertyValue` | Verified |
+| `media_files[].measurement_technique` | `schema:measurementTechnique` | Verified |
+| `media_files[].data_quality` | `dqv:hasQualityMeasurement` (needs `dqv` prefix) | Verified |
+| `media_files[].provenance` | `prov:wasGeneratedBy` → `Activity{used:[...]}` | Verified |
+| `media_files[].temporal_resolution` | `dcat:temporalResolution` | Verified |
+| `media_files[].Collections` | `schema:includedInDataCatalog` → `DataCatalog` | Verified |
+| `media_files[].physical_carrier` | drop (always literal `"digital"`, carries no info) | Verified |
+
+### Hard JSON-Schema constraints the Pydantic model must respect
+
+Found by directly parsing the vendored schema's actual types — missing these produces invalid documents silently:
+
+- **C1** — `schema:name`/`schema:description` are `type: "string"`, single-valued. Multi-title/multi-description DataCite output needs a primary-value-wins strategy; route the rest elsewhere (`alternateName`, folded description). No language-tagged `{"@value","@language"}` objects — legal RDF, fails this JSON Schema.
+- **C2** — `schema:inLanguage` is single-valued `string`. Overflow → `dcterms:language`.
+- **C3** — `schema:publisher` is a single object (`anyOf`), not an array. gema's `publishers` is a list — only one survives as `publisher`, rest → `schema:provider` (which is an array).
+- **C4** — `schema:creator` is an object wrapping `@list` (order-preserving), not a bare array — unlike `contributor`, which is a bare array. Easy to mix up.
+- **C5** — `@context` requires `schema, dcterms, dcat, prov`. Richer forms need more: `spdx` (checksums), `geosparql`+`sf` (geometry), `time` (intervals), `dqv` (quality) — some with `const`-pinned URIs in `allOf[3]`, must be emitted verbatim.
+- **C6** — `schema:sameAs` has `minItems: 1` — omit the key entirely when empty, don't emit `[]`.
+- **C7** — nested `@type` values are arrays with a `contains` const (e.g. `["schema:Place"]`), not bare strings.
+
+Two open judgment calls the mapping surfaces (not yet decided): **`categories` → `schema:about` vs. CDIF's own `keywords` suggestion** (about is cleaner but diverges from CDIF's crosswalk), and **`temporal_events` frequency → `dcterms:accrualPeriodicity`** (CDIF's crosswalk suggests `schema:repeatFrequency`, but that property is out-of-domain for a Dataset). Both are low-stakes and reversible later; default to the recommended (non-CDIF-crosswalk) choice unless told otherwise.
 
 ## Step 1 — Vendor CDIF artifacts — DONE (commit `78f0729`)
 
@@ -31,7 +101,8 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 
 ## Step 2 — CDIF schema + pivot core
 
-- [ ] Resolve Open Question #2 (CDIF field coverage beyond the 7-field floor — pick from the real 27-property list)
+- [x] Resolve Open Question #2 — full verified field mapping in the "Q2" section above (research-backed via CDIF's own crosswalk spreadsheet + schema.org vocab + DCMI terms); two low-stakes judgment calls flagged but defaulted
+- [ ] Vendor `documents/CDIF-metadata-crosswalks-merged.xlsx` (4th artifact, found during Q2 research, not yet copied into repo)
 - [x] Resolve Open Question #3: `extra="allow"` on `output_model`, plus a `model_validator(mode="after")` hard-enforcing the required floor (`@id, @type, @context, schema:name, schema:identifier, schema:dateModified, schema:subjectOf`) and the two conditional groups (`schema:license` OR `schema:conditionsOfAccess`; `schema:url` OR `schema:distribution`) — raises if the floor/groups aren't satisfied, allows anything else through
 - [ ] `CDIFDiscoveryProfile` (`cdif_discovery.py`): name/version/output_model/`build_output_model` (cache+digest pattern)/`_NORMALIZER_DISPATCH`/the required-floor `model_validator`
 - [ ] JSON-LD envelope (`@context`/`@id`/`@type`/`dcterms:conformsTo`/`schema:dateModified`) injected inside `merge_agent_results`; dead-link comment above `conformsTo` emission (spec §8)
@@ -90,7 +161,7 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 | # | Question | Status |
 |---|----------|--------|
 | 1 | CDIF vendored artifact repo + commit SHA | **resolved**: `doc-corediscovery`@`81c28260778426cc61302105fc7191b4db360bc9` |
-| 2 | CDIF Discovery field coverage beyond required floor | open — pick from the real 27-property list in Research findings |
+| 2 | CDIF Discovery field coverage beyond required floor | **resolved**: full verified per-field mapping (32 properties), see "Q2" section |
 | 3 | `extra="forbid"` vs `"allow"` on output_model | **resolved**: `extra="allow"` + a `model_validator` hard-enforcing the required floor and the two conditional (anyOf) groups (license/conditionsOfAccess, url/distribution) |
 | 4 | JSON-LD envelope emission site | **resolved**: inside `merge_agent_results` |
 | 5 | SHACL/JSON-LD framing execute in v1? | **resolved**: yes — `pyshacl`, `rdflib`, `pyld` added as new runtime deps |

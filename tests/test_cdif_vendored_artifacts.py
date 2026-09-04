@@ -19,6 +19,10 @@ def _read(name: str) -> str:
     return (resources.files(_PACKAGE) / name).read_text(encoding="utf-8")
 
 
+def _read_bytes(name: str) -> bytes:
+    return (resources.files(_PACKAGE) / name).read_bytes()
+
+
 class TestFilesExist:
     def test_schema_json_exists(self) -> None:
         assert _read("schema.json")
@@ -31,6 +35,13 @@ class TestFilesExist:
 
     def test_vendored_sha_txt_exists(self) -> None:
         assert _read("VENDORED_SHA.txt")
+
+    def test_crosswalk_xlsx_exists_and_is_a_real_xlsx(self) -> None:
+        """crosswalk.xlsx is reference material (CDIF's own DataCite<->schema.org
+        crosswalk) consumed by humans writing docs/cdif_pivot_implementation_plan.md,
+        not by any code -- just check it's really an xlsx (zip magic bytes), no
+        openpyxl dependency needed for that."""
+        assert _read_bytes("crosswalk.xlsx").startswith(b"PK\x03\x04")
 
 
 class TestParsing:
