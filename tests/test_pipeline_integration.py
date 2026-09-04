@@ -53,12 +53,12 @@ class AlwaysFailingLLMClient:
 def make_test_config() -> PipelineConfig:
     """Create minimal PipelineConfig for testing."""
     return PipelineConfig(
-        schema_name="datacite-4.6",
+        schema_name="cdif-discovery",
         agents=[
             AgentConfig(
                 id="titles-agent",
                 name="Titles Agent",
-                fields=["titles"],
+                fields=["schema_name"],
                 prompt="Extract titles from {url} {title} {description}",
                 provider="mock",
                 model="mock-model",
@@ -72,14 +72,14 @@ def make_test_config() -> PipelineConfig:
 
 
 def make_publisher_config() -> PipelineConfig:
-    """Config whose one agent produces the 'publishers' field, for PID-validation tests."""
+    """Config whose one agent produces schema_publisher, for PID-validation tests."""
     return PipelineConfig(
-        schema_name="datacite-4.6",
+        schema_name="cdif-discovery",
         agents=[
             AgentConfig(
-                id="publishers-agent",
-                name="Publishers Agent",
-                fields=["publishers"],
+                id="publisher-agent",
+                name="Publisher Agent",
+                fields=["schema_publisher"],
                 prompt="Extract publisher from {url} {title} {description}",
                 provider="mock",
                 model="mock-model",
@@ -139,7 +139,7 @@ class TestPipelineIntegration:
         assert result.success is True
         assert result.error is None
         assert result.document is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_pipeline_invalid_resource(self, tmp_path, llm_factory):
         """Input with no url/title/description -> validation fails."""
@@ -230,12 +230,12 @@ class TestPipelineIntegration:
         (provider 'mock-ok'), the other always fails (provider 'mock-fail').
         """
         return PipelineConfig(
-            schema_name="datacite-4.6",
+            schema_name="cdif-discovery",
             agents=[
                 AgentConfig(
                     id="titles-agent",
                     name="Titles Agent",
-                    fields=["titles"],
+                    fields=["schema_name"],
                     prompt="Extract titles from {url} {title} {description}",
                     provider="mock-ok",
                     model="mock-model",
@@ -243,7 +243,7 @@ class TestPipelineIntegration:
                 AgentConfig(
                     id="descriptions-agent",
                     name="Descriptions Agent",
-                    fields=["descriptions"],
+                    fields=["schema_description"],
                     prompt="Extract descriptions from {url} {title} {description}",
                     provider="mock-fail",
                     model="mock-model",
@@ -285,7 +285,7 @@ class TestPipelineIntegration:
         assert result.success is False
         assert result.document is None
         assert result.error is not None
-        assert "descriptions" in result.error
+        assert "schema_description" in result.error
         assert "401" in result.error
 
     def test_pipeline_partial_agent_failure_allow_partial_reports_warnings(self, tmp_path):
@@ -312,9 +312,9 @@ class TestPipelineIntegration:
 
         assert result.success is True
         assert result.document is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
         assert len(result.warnings) == 1
-        assert "descriptions" in result.warnings[0]
+        assert "schema_description" in result.warnings[0]
         assert "401" in result.warnings[0]
 
 
@@ -423,13 +423,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/BADID",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": "schema:Organization",
+                        "name": "Test Publisher",
+                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/BADID"}],
+                    }
                 }
             }
         )
@@ -451,13 +449,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/02sevrz47",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": "schema:Organization",
+                        "name": "Test Publisher",
+                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/02sevrz47"}],
+                    }
                 }
             }
         )
@@ -476,13 +472,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/BADID",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": "schema:Organization",
+                        "name": "Test Publisher",
+                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/BADID"}],
+                    }
                 }
             }
         )
@@ -510,7 +504,7 @@ class TestPipelinePidValidation:
         result = results[0]
         assert result.success is True
         assert result.error is None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
 
 class FakeEnricher:
@@ -572,7 +566,7 @@ class TestPipelineIdentifierEnrichmentWiring:
         assert fake.called_with is not None
         # The fake raises before mutating — document must be the merger's
         # unmodified output, not None and not crashed.
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_country_is_detected_from_resource_url_and_forwarded(self, tmp_path, llm_factory):
         """pipeline.py must compute the country hint itself (the merged
@@ -682,7 +676,7 @@ class TestPipelineDOIResolutionWiring:
         assert result.success is True
         assert result.error is None
         assert fake.called_with is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_runs_before_identifier_enrichment(self, tmp_path, llm_factory):
         """DOI resolution must run BEFORE identifier enrichment — a
@@ -907,7 +901,7 @@ class TestPipelineResultTokenUsage:
             {"url": "https://example.com/x", "title": "T", "description": "D"},
         )
         factory = lambda provider, **kw: FakeLLMClientWithUsage(  # noqa: E731
-            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+            {"fields": {"schema_name": "T"}}
         )
         pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
         results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
@@ -947,7 +941,7 @@ class TestPipelineResultModelsUsed:
             {"url": "https://example.com/x", "title": "T", "description": "D"},
         )
         factory = lambda provider, **kw: FakeLLMClientWithModel(  # noqa: E731
-            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+            {"fields": {"schema_name": "T"}}
         )
         pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
         results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))

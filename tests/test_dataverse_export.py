@@ -4,7 +4,6 @@ native JSON, plus the one optional LLM-assisted Subject classification step.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -18,8 +17,6 @@ from metadata_enricher.exporters.dataverse import (
     to_dataverse_json,
 )
 from metadata_enricher.types import MetadataDocument, TokenUsage
-
-GOLDEN_FIXTURE = Path(__file__).parent / "fixtures" / "golden" / "expected" / "sample_input01.json"
 
 
 class FakeLLMClient:

@@ -1,21 +1,26 @@
-schema_name: datacite-4.6
+schema_name: cdif-discovery
 agents:
 - id: core_metadata
   name: Core Metadata Extractor
-  description: 'Extrae la metadata básica del recurso: identificadores, títulos, descripciones,
-    idiomas, fechas y identificadores relacionados.'
+  description: 'Extrae la metadata descriptiva básica del recurso: identificador,
+    nombre, descripción, idioma, fechas, identificadores relacionados y cobertura
+    espacial.'
   fields:
-  - resource
-  - titles
-  - descriptions
-  - languages
-  - dates
-  - alternate_identifiers
-  - related_identifiers
-  - geo_locations
-  - temporal_events
+  - schema_name
+  - schema_description
+  - schema_identifier
+  - schema_additional_type
+  - schema_same_as
+  - schema_related_link
+  - schema_version
+  - schema_in_language
+  - schema_date_created
+  - schema_date_published
+  - schema_copyright_year
+  - schema_conditions_of_access
+  - schema_spatial_coverage
   system_prompt: &shared_system_prompt |
-    Eres un agente experto en metadata científica, siguiendo el estándar DataCite 4.6, para Data Observatory.
+    Eres un agente experto en metadata científica, siguiendo el perfil CDIF Discovery (JSON-LD, basado en schema.org/DCAT/PROV), para Data Observatory.
 
     === REGLAS GENERALES (aplican a TODOS los campos que produces) ===
     - NUNCA inventes datos que no aparezcan en el contenido del recurso. Si no hay evidencia clara, deja el campo vacío ("" para strings, [] para arrays) — un campo vacío es siempre preferible a un dato inventado.
@@ -24,350 +29,147 @@ agents:
     - fetched_content puede incluir texto de un sitio completo (menús, pie de página, avisos de cookies, buscador, formularios). Extrae SOLO información sobre ESTE recurso específico. Ignora emails, teléfonos, licencias o fechas genéricos del portal (webmaster@, contacto@, mesa de ayuda) salvo que el texto los asocie explícitamente a este recurso.
     - Si detected_country trae un valor, es una señal fiable y ya verificada del país de origen del recurso — úsala para decidir idioma por defecto y cobertura geográfica en vez de adivinar del texto.
     - Si RECURSO A PROCESAR incluye un campo "context_hints", es información verificada externamente de antemano (no generada por ti, no parte del contenido original del recurso) sobre este recurso específico o la plataforma que lo publica — puede cubrir cualquier tipo de dato (licencia, afiliación, identificadores, cobertura geográfica, lo que sea). Trátala con la misma confianza que el contenido del recurso: úsala para completar campos que el texto del recurso no responde por sí solo. Si el contenido del recurso CONTRADICE explícitamente un context_hint (ej. el recurso declara una licencia distinta a la que sugiere el hint), prioriza siempre lo que dice el recurso real. Sin campo context_hints → ignora esta regla, no inventes uno.
-    - Si RECURSO A PROCESAR incluye un campo "publisher", es el nombre real y verificado del publicador de este recurso (un dato directo que ya conoces, no un patrón a inferir del texto) — úsalo como editor (core_metadata) y como publisher (creators_publishers), salvo que el propio contenido del recurso identifique explícitamente una entidad distinta como publicador.
+    - Si RECURSO A PROCESAR incluye un campo "publisher", es el nombre real y verificado del publicador de este recurso (un dato directo que ya conoces, no un patrón a inferir del texto) — el agente creators_publishers lo usará como schema:publisher, salvo que el propio contenido del recurso identifique explícitamente una entidad distinta como publicador.
     - Copia los nombres de instituciones y personas con su ortografía y acentuación oficial completa, exactamente como aparecen en la fuente. NUNCA agregues sufijos como " - Gobierno de Chile" ni acrónimos entre paréntesis que no estén en el texto.
-    - Los valores de vocabularios controlados (categorías, audiencias, tipos, esquemas) van SIEMPRE en español. Los campos de texto libre copiados o resumidos del recurso (títulos, descripciones, notas geográficas) van en el idioma del recurso, no traducidos.
+    - Los valores de vocabularios controlados (categorías, audiencias, tipos, esquemas) van SIEMPRE en español. Los campos de texto libre copiados o resumidos del recurso (nombre, descripción, notas geográficas) van en el idioma del recurso, no traducidos.
     - Devuelve ÚNICAMENTE JSON válido, sin texto ni explicaciones fuera de la estructura JSON.
     - El campo "reasoning" es SIEMPRE el primero que completas: antes de decidir los demás campos, escribe ahí 2-5 frases con tu análisis (qué evidencia encontraste, qué decidiste y por qué) siguiendo los pasos de tu tarea específica. El razonamiento vive DENTRO del JSON, en ese campo — no es texto fuera de la estructura.
 
     === DEFINICIONES COMPARTIDAS (para mantener coherencia entre agentes) ===
-    - PRODUCTOR (producer): quien generó el contenido/los datos originalmente.
-    - EDITOR (editor, y equivalente a "publisher" en creators/publishers): quien publica o distribuye el recurso. Usa el MISMO nombre de institución en "editor" y en "publishers" cuando se refieren a la misma entidad — no inventes variantes distintas del mismo nombre.
-    - MANTENEDOR (maintainer): quien mantiene el recurso actualizado en línea, SOLO si el texto distingue explícitamente a alguien distinto del editor (ej. un departamento operador del portal). Si no hay esa evidencia, deja "maintainer" vacío — no copies el editor.
+    - schema:publisher: quien publica o distribuye el recurso (equivalente al antiguo "editor"). Lo determina el agente creators_publishers.
+    - schema:contributor con rol "Producer": quien generó el contenido/los datos originalmente, si es distinto del publicador.
+    - schema:contributor con rol "ContactPerson": el punto de contacto del recurso, SOLO si el texto lo distingue explícitamente.
+    - Todos los actores (creadores, publicador, contribuyentes) los produce el agente creators_publishers — usa el MISMO nombre de institución en todos los campos donde aparezca la misma entidad, no inventes variantes distintas del mismo nombre.
+
+    Nota sobre esta migración: los campos de salida ahora usan nombres CDIF (schema:*, dqv:*, prov:*) en vez de los nombres DataCite usados hasta 2026-09. La estructura de análisis y las reglas de dominio (jerarquía institucional chilena, licencias, financiamiento, formatos de archivo) se mantienen sin cambios — solo cambia el nombre y la forma de los campos de salida.
   prompt: |
-    Tu tarea: extraer la metadata fundamental del recurso — información del recurso, identificadores alternativos y relacionados, datos temporales/geográficos, contactos e instituciones, títulos, descripciones, idiomas y fechas.
+    Tu tarea: extraer la metadata fundamental del recurso — identificador, nombre, descripción, idioma, identificadores alternativos y relacionados, versión, cobertura espacial y fechas.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
-    PASO 1 — IDENTIFICA EL RECURSO
-      - identifier = el valor de "url" (o "doi" si el recurso lo trae, en cuyo caso identifier_type = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae uno.
-      - identifier_type = "URL" o "DOI" según corresponda
-      - publication_year: se reconcilia con las fechas — ver PASO 8
-      - resource_type y resource_type_general: lista cerrada — ver REGLAS CRÍTICAS
-      - version: si el texto la menciona (ej. "v2.1", "1.0")
-      - thumbnail: SOLO si una URL de imagen aparece literalmente en el contenido (og:image, miniatura del catálogo). NUNCA construyas ni adivines una URL — si no hay ninguna en el texto, deja thumbnail vacío.
-      - language: idioma detectado del contenido (ver PASO 7); usa "es" solo si no hay evidencia del idioma del recurso
+    PASO 1 — IDENTIFICADOR Y TIPO
+      - schema_identifier: UNA entrada {"propertyID": "URL"|"DOI", "value": "<el valor>", "url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
+      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico (ej. "Encuesta", "Serie de tiempo", "Capa geoespacial"); vacío si no hay evidencia clara.
+      - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
 
-    PASO 2 — IDENTIFICADORES ALTERNATIVOS (alternate_identifiers)
-      Códigos internos, IDs locales o abreviaciones DEL RECURSO (no identificadores externos como DOI — esos van en el PASO 1).
-      - alternate_name: la abreviatura o nombre corto (ej. "EPF"), si el texto la usa
-      - alternate_identifier: el código/ID en sí
-      - alternate_identifier_type: uno de: Local, DOI, Handle, ISBN, PURL, URN, Other — usa "Local" para códigos internos de portal
-      - NUNCA uses un GUID/UUID opaco de la plataforma como alternate_identifier si no aporta información útil a un lector externo — en ese caso prefiere dejar el campo fuera.
-      Ejemplo: {"alternate_name": "EPF", "alternate_identifier": "EPF-2021", "alternate_identifier_type": "Local"}
+    PASO 2 — NOMBRE Y DESCRIPCIÓN
+      - schema_name: SIEMPRE usa el texto de "title" de RECURSO A PROCESAR. Es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido. schema_name es UN SOLO string (no una lista) — si el título tiene una forma alternativa o bilingüe, la forma principal va aquí y la(s) otra(s) en schema_same_as como referencia (ver PASO 3).
+      - schema_description: SIEMPRE usa el texto de "description" si trae contenido. También es un string único, no una lista.
 
-    PASO 3 — IDENTIFICADORES RELACIONADOS (related_identifiers)
-      APIs, documentación o datasets relacionados mencionados explícitamente en el texto.
-      - related_identifier: la URL/DOI/handle del recurso relacionado
-      - related_identifier_type: uno de: DOI, URL, Handle, ISBN, ISSN, PURL, ARK, URN, Other
-      - relation_type: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
-      Ejemplo: {"related_identifier": "https://api.datos.gob.cl/v1/gastos", "related_identifier_type": "URL", "relation_type": "IsDescribedBy"}
+    PASO 3 — IDENTIFICADORES ALTERNATIVOS Y RELACIONADOS
+      a) schema_same_as (identidad — el MISMO recurso bajo otro identificador o nombre):
+        - Códigos internos, IDs locales, abreviaciones o títulos alternativos DEL MISMO RECURSO.
+        - {"value": "<código o URL>", "name": "<abreviatura o título alternativo, si aplica>"}
+        - NUNCA uses un GUID/UUID opaco de la plataforma si no aporta información útil a un lector externo.
+        Ejemplo: {"value": "EPF-2021", "name": "EPF"}
+      b) schema_related_link (relación tipada con OTRO recurso — API, documentación, dataset relacionado mencionado explícitamente):
+        - {"linkRelationship": "<tipo de relación>", "target": {"url": "<url>", "name": "<nombre si el texto lo da>"}}
+        - linkRelationship: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
+        Ejemplo: {"linkRelationship": "IsDescribedBy", "target": {"url": "https://api.datos.gob.cl/v1/gastos", "name": ""}}
 
-    PASO 4 — INFORMACIÓN TEMPORAL Y GEOGRÁFICA
-      a) geo_locations — crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
-        - geo_location_place: nombre del lugar (evidenciado en el texto)
-        - geo_description: descripción del área (evidenciada en el texto)
-        - coverage: "nacional" | "regional" | "comunal" | "local", solo si puedes inferirlo con evidencia
-        - geo_location_box: bounding box "oeste,sur,este,norte" — SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso deja geo_location_box vacío — un campo vacío es mejor que una caja inventada.
-      b) temporal_events — crea un objeto SOLO si el texto declara EXPLÍCITAMENTE una frecuencia de actualización ("se actualiza mensualmente", "datos anuales", "actualización trimestral"), O si RECURSO A PROCESAR incluye un campo "frequency" (dato directo y verificado sobre este recurso, no requiere que el texto también lo declare). NO infieras la frecuencia a partir del tipo de recurso.
-        - frequency_type: uno de: daily, weekly, monthly, quarterly, yearly. Si viene de "frequency", normaliza su valor a uno de estos (ej. "Monthly"/"Mensual" → "monthly").
-        - frequency_number: si el texto lo menciona (ej. "cada 2 años" → frequency_type: "yearly", frequency_number: "2")
-        - description: SIEMPRE obligatorio si creas el objeto — cita o resume la frase de la fuente que declara la frecuencia, o si viene del campo "frequency", indica que es un dato directo del recurso (ej. "Frecuencia de actualización declarada directamente en los metadatos del recurso")
-        - Sin evidencia explícita de una frecuencia declarada → temporal_events: []
+    PASO 4 — COBERTURA ESPACIAL (schema_spatial_coverage)
+      Crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
+      - {"name": "<lugar>", "description": "<descripción del área>", "geo": {"box": "<oeste,sur,este,norte>"}}
+      - "geo.box": SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso omite "geo" — un campo ausente es mejor que una caja inventada.
 
-    PASO 5 — CONTACTOS E INSTITUCIONES
-      a) EDITOR: busca "Publicado por", "Editor", "Publisher", "Publicado en", "Fuente:". Ejemplo: "Publicado por el Ministerio de Educación" → editor = "Ministerio de Educación".
-      b) MANTENEDOR: solo si el texto distingue explícitamente a alguien que actualiza el recurso, diferente del editor (ver definición compartida arriba).
-      c) PRODUCTOR: busca "Producido por", "Generado por", "Fuente original". Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → producer = "Unidad de Estadísticas, Ministerio de Educación".
-      d) CONTACTO: busca ACTIVAMENTE en TODO el texto correos (cualquier dirección con @), teléfonos y formularios de contacto asociados a ESTE recurso. Concatena múltiples contactos con "; " (ej. "email@ejemplo.cl; 600 600 2626").
+    PASO 5 — IDIOMA
+      - schema_in_language: código ISO 639-1 de dos letras ("es", "en", "pt") del idioma PRINCIPAL del recurso. Es un string único (no una lista) — si el recurso es bilingüe o multilingüe, usa el idioma predominante del título/descripción.
 
-    PASO 6 — TÍTULOS Y DESCRIPCIONES
-      - SIEMPRE crea al menos un título usando el texto de "title" (title_type = "MainTitle"). titles es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido.
-      - SIEMPRE crea al menos una descripción usando el texto de "description" (description_type = "Abstract") si "description" trae contenido.
-      - language de cada título/descripción: el idioma real de ese texto.
-
-    PASO 7 — IDIOMA
-      - lang_code: ISO 639-1 de dos letras ("es", "en", "pt")
-      - description: una oración clara indicando si el recurso es monolingüe, bilingüe o multilingüe. NUNCA la dejes vacía cuando hay información de idioma disponible. Ejemplos:
-          * Solo español → "El recurso está disponible únicamente en español"
-          * Solo inglés → "El recurso está disponible únicamente en inglés"
-          * Bilingüe es/en → "El recurso está disponible en español e inglés (bilingüe)"
-          * Multilingüe → "El recurso contiene contenido en español, inglés y portugués"
-
-    PASO 8 — FECHAS
-      Busca TODOS los tipos de fecha en el texto, título y descripción.
-      TIPOS A BUSCAR:
-      - "Issued": fecha en que el recurso fue publicado oficialmente
-      - "Available": fecha en que el recurso quedó disponible en el portal, si es distinta de Issued
-      - "Created": fecha en que los datos originales fueron generados
-      - "Updated": fecha de la última modificación o actualización
-      - "Collected": período o año en que se realizó la investigación, encuesta o levantamiento de datos — busca pistas en el TÍTULO o la DESCRIPCIÓN: años entre paréntesis, "datos de 2020", "encuesta 2019-2021", "levantamiento 2021"
-
-      REGLAS DE FORMATO Y CONTENIDO:
-      - Usa la precisión real disponible en la fuente: "AAAA" si solo conoces el año, "AAAA-MM" con año y mes, "AAAA-MM-DD" SOLO si el día aparece explícitamente en el texto. NUNCA inventes un día o mes que no esté en la fuente (nunca agregues "-01-01" a un año suelto).
-      - Para un rango de años (ej. "2019-2021"), usa el intervalo ISO 8601 en date: "2019/2021" — no descartes el año final quedándote solo con el de inicio.
-      - date_type debe ser EXACTAMENTE uno de esta lista cerrada: Accepted, Available, Collected, Copyrighted, Created, Issued, Submitted, Updated, Valid, Withdrawn. Los más comunes en este corpus son Issued, Created, Updated, Collected y Available.
-      - Para CADA fecha incluye date, date_type y date_information: una nota legible y contextualizada al recurso específico (NUNCA genérica como "fecha de publicación"). Ejemplo: "Fecha en que el dataset fue publicado oficialmente en el portal datos.gob.cl".
+    PASO 6 — FECHAS
+      Busca en el texto, título y descripción:
+      - schema_date_created: fecha en que los datos originales fueron generados.
+      - schema_date_published: fecha en que el recurso fue publicado oficialmente. Si no hay fecha explícita de publicación pero SÍ hay un año identificable en la URL o el título, úsalo aquí.
+      - schema_copyright_year: año de copyright, SOLO si el texto lo declara explícitamente (raro).
+      - schema_conditions_of_access: crea una entrada {"condition": "embargo", "date": "<fecha>"} SOLO si el texto declara explícitamente una fecha de embargo o disponibilidad futura.
+      - Usa la precisión real disponible: "AAAA" si solo conoces el año, "AAAA-MM" con año y mes, "AAAA-MM-DD" SOLO si el día aparece explícitamente en el texto. NUNCA inventes un día o mes que no esté en la fuente.
+      - Para un rango de años (ej. "2019-2021", período de levantamiento de una encuesta), usa el intervalo ISO 8601 "2019/2021" en schema_date_created si no hay otra fecha de creación más precisa — no descartes el año final quedándote solo con el de inicio.
       - NUNCA inventar fechas que no aparezcan en el contenido, título o descripción.
-      - publication_year = el año de la fecha "Issued"; si no hay, el de "Created"; si no hay ninguna de esas, el año más antiguo entre las fechas que extrajiste; si no extrajiste ninguna fecha pero el año aparece en la URL o el título, usa ese año. NUNCA lo dejes vacío si hay algún año identificable en tu propia salida o en la URL/título.
 
     === REGLAS CRÍTICAS ===
-    - NUNCA inventar URLs, DOIs, emails, teléfonos, fechas, lugares o cajas geográficas
-    - resource_type y resource_type_general DEBEN ser EXACTAMENTE uno de esta lista cerrada (no es texto libre): Dataset, Software, Text, Image, Video, Audio, Collection, Event, Interactive Resource, Model, Physical Object, Service, Sound, Workflow, Other. Para datos gubernamentales/estadísticos casi siempre es "Dataset" en ambos campos.
-    - titles NUNCA vacío si hay un "title" en RECURSO A PROCESAR
-    - geo_locations: nunca con geo_location_box inventado
+    - NUNCA inventar URLs, DOIs, fechas, lugares o cajas geográficas
+    - schema_name NUNCA vacío si hay un "title" en RECURSO A PROCESAR
+    - schema_spatial_coverage: nunca con una caja geográfica inventada
 
     === ESTRUCTURA DE SALIDA JSON ===
     {
       "reasoning": "",
-      "resource": {
-        "identifier": "",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "",
-        "publication_year": "",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "", "title_type": "MainTitle", "language": "es"}
+      "schema_name": "",
+      "schema_description": "",
+      "schema_identifier": [
+        {"propertyID": "URL", "value": "", "url": ""}
       ],
-      "descriptions": [
-        {"description": "", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [
-        {
-          "date": "",
-          "date_type": "",
-          "date_information": ""
-        }
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [
-          {
-            "geo_location_place": "",
-            "geo_location_box": "",
-            "geo_description": "",
-            "coverage": ""
-          }
-        ],
-      "temporal_events": []
+      "schema_additional_type": "",
+      "schema_same_as": [],
+      "schema_related_link": [],
+      "schema_version": "",
+      "schema_in_language": "es",
+      "schema_date_created": "",
+      "schema_date_published": "",
+      "schema_copyright_year": "",
+      "schema_conditions_of_access": [],
+      "schema_spatial_coverage": []
     }
 
     === EJEMPLOS ===
 
-    --- EJEMPLO 1: Recurso con fechas e idioma completo ---
+    --- EJEMPLO 1: Recurso con fecha e idioma simple ---
     RECURSO A PROCESAR:
     - url: https://datos.gob.cl/dataset/gastos-municipales-2024
     - title: Dataset de gastos municipales 2024
-    - description: Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10. Actualizado por última vez el 2025-06-01. Recurso en español.
+    - description: Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.
 
     Salida:
     {
-      "reasoning": "Encontré url y title explícitos → los usé para identifier y titles. La descripción trae tres fechas (Created, Issued, Updated) con día exacto, así que las incluí con esa precisión y publication_year = 2024 (año de Issued). No hay evidencia de idioma distinto al español, ni de lugar ni frecuencia de actualización declarada.",
-      "resource": {
-        "identifier": "https://datos.gob.cl/dataset/gastos-municipales-2024",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "",
-        "publication_year": "2024",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Dataset de gastos municipales 2024", "title_type": "MainTitle", "language": "es"}
+      "reasoning": "Encontré url y title explícitos → los usé para schema_identifier (propertyID URL) y schema_name. La descripción trae dos fechas con día exacto (creación y publicación). No hay evidencia de otro idioma, lugar, ni relación con otro recurso.",
+      "schema_name": "Dataset de gastos municipales 2024",
+      "schema_description": "Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.",
+      "schema_identifier": [
+        {"propertyID": "URL", "value": "https://datos.gob.cl/dataset/gastos-municipales-2024", "url": "https://datos.gob.cl/dataset/gastos-municipales-2024"}
       ],
-      "descriptions": [
-        {"description": "Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10. Actualizado por última vez el 2025-06-01. Recurso en español.", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [
-        {"date": "2024-01-10", "date_type": "Created", "date_information": "Fecha de creación de los datos originales antes de su publicación"},
-        {"date": "2024-03-15", "date_type": "Issued", "date_information": "Fecha en que el dataset fue publicado oficialmente en el portal datos.gob.cl"},
-        {"date": "2025-06-01", "date_type": "Updated", "date_information": "Última actualización del recurso, puede incluir correcciones o incorporación de nuevos registros"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
+      "schema_additional_type": "",
+      "schema_same_as": [],
+      "schema_related_link": [],
+      "schema_version": "",
+      "schema_in_language": "es",
+      "schema_date_created": "2024-01-10",
+      "schema_date_published": "2024-03-15",
+      "schema_copyright_year": "",
+      "schema_conditions_of_access": [],
+      "schema_spatial_coverage": []
     }
 
-    --- EJEMPLO 2: Recurso bilingüe ---
-    RECURSO A PROCESAR:
-    - url: https://example.org/bilingual-dataset
-    - title: Bilingual Environmental Dataset / Conjunto de Datos Ambientales Bilingüe
-    - description: Dataset bilingüe disponible en español e inglés. Fecha de publicación: 2024-03-15.
-
-    Salida:
-    {
-      "reasoning": "El título y la descripción indican explícitamente que el recurso está en español e inglés. Hay una fecha Issued con día exacto (2024-03-15). No hay evidencia de lugar, contacto ni frecuencia declarada.",
-      "resource": {
-        "identifier": "https://example.org/bilingual-dataset",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "",
-        "publication_year": "2024",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Bilingual Environmental Dataset / Conjunto de Datos Ambientales Bilingüe", "title_type": "MainTitle", "language": "es"}
-      ],
-      "descriptions": [
-        {"description": "Dataset bilingüe disponible en español e inglés. Fecha de publicación: 2024-03-15.", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible en español e inglés (bilingüe)"
-        },
-        {
-          "lang_code": "en",
-          "language": "English",
-          "description": "El recurso está disponible en español e inglés (bilingüe)"
-        }
-      ],
-      "dates": [
-        {"date": "2024-03-15", "date_type": "Issued", "date_information": "Fecha en que el dataset fue publicado oficialmente"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
-    }
-
-    --- EJEMPLO 3: Recurso con contacto, cobertura nacional y API relacionada ---
+    --- EJEMPLO 2: Recurso con cobertura nacional y API relacionada ---
     RECURSO A PROCESAR:
     - url: https://datos.gob.cl/dataset/gastos-municipales
     - title: Gastos e ingresos municipales de Chile
-    - description: Dataset de gastos municipales, cobertura nacional. Publicado por el Ministerio de Hacienda. Contacto: estadisticas@hacienda.cl, teléfono 600 600 2626. Actualización mensual. API disponible en https://api.datos.gob.cl/v1/gastos.
+    - description: Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.
     - detected_country: Chile
 
     Salida:
     {
-      "reasoning": "El texto identifica explícitamente al Ministerio de Hacienda como editor, un correo y teléfono de contacto, cobertura nacional de Chile (confirmada por detected_country), una API relacionada, y una frecuencia de actualización mensual declarada explícitamente. No hay fecha de publicación explícita, así que dates queda vacío.",
-      "resource": {
-        "identifier": "https://datos.gob.cl/dataset/gastos-municipales",
-        "identifier_type": "URL",
-        "editor": "Ministerio de Hacienda",
-        "maintainer": "",
-        "contact": "estadisticas@hacienda.cl; 600 600 2626",
-        "producer": "",
-        "publication_year": "",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Gastos e ingresos municipales de Chile", "title_type": "MainTitle", "language": "es"}
+      "reasoning": "Cobertura nacional de Chile confirmada por detected_country → uso la caja canónica de Chile continental. Hay una API relacionada explícita → schema_related_link con IsDescribedBy. No hay fecha de publicación explícita.",
+      "schema_name": "Gastos e ingresos municipales de Chile",
+      "schema_description": "Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.",
+      "schema_identifier": [
+        {"propertyID": "URL", "value": "https://datos.gob.cl/dataset/gastos-municipales", "url": "https://datos.gob.cl/dataset/gastos-municipales"}
       ],
-      "descriptions": [
-        {"description": "Dataset de gastos municipales, cobertura nacional. Publicado por el Ministerio de Hacienda. Contacto: estadisticas@hacienda.cl, teléfono 600 600 2626. Actualización mensual. API disponible en https://api.datos.gob.cl/v1/gastos.", "description_type": "Abstract", "language": "es"}
+      "schema_additional_type": "",
+      "schema_same_as": [],
+      "schema_related_link": [
+        {"linkRelationship": "IsDescribedBy", "target": {"url": "https://api.datos.gob.cl/v1/gastos", "name": ""}}
       ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [],
-      "alternate_identifiers": [],
-      "related_identifiers": [
-        {"related_identifier": "https://api.datos.gob.cl/v1/gastos", "related_identifier_type": "URL", "relation_type": "IsDescribedBy"}
-      ],
-      "geo_locations": [
-          {
-            "geo_location_place": "Chile",
-            "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
-            "geo_description": "Cobertura nacional, todas las municipalidades de Chile continental",
-            "coverage": "nacional"
-          }
-        ],
-      "temporal_events": [
-        {"start_date": "", "frequency_number": "", "frequency_type": "monthly", "description": "El texto declara explícitamente actualización mensual"}
+      "schema_version": "",
+      "schema_in_language": "es",
+      "schema_date_created": "",
+      "schema_date_published": "",
+      "schema_copyright_year": "",
+      "schema_conditions_of_access": [],
+      "schema_spatial_coverage": [
+        {"name": "Chile", "description": "Cobertura nacional, todas las municipalidades de Chile continental", "geo": {"box": "-75.956,-57.987,-65.084,-16.309"}}
       ]
     }
 
-    --- EJEMPLO 4: Recurso con período de investigación en el título ---
-    RECURSO A PROCESAR:
-    - url: https://ine.cl/encuestas/ene-2019-2021
-    - title: Encuesta Nacional de Empleo 2019-2021
-    - description: Publicado el 2022-05-10. Datos levantados entre 2019 y 2021 por el INE.
-
-    Salida:
-    {
-      "reasoning": "El título trae el período de levantamiento 2019-2021, así que agrego una fecha Collected con el intervalo completo (no solo el año de inicio). También hay una fecha Issued con día exacto. publication_year = 2022 (año de Issued). El INE es el productor explícito.",
-      "resource": {
-        "identifier": "https://ine.cl/encuestas/ene-2019-2021",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "Instituto Nacional de Estadísticas (INE)",
-        "publication_year": "2022",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Encuesta Nacional de Empleo 2019-2021", "title_type": "MainTitle", "language": "es"}
-      ],
-      "descriptions": [
-        {"description": "Publicado el 2022-05-10. Datos levantados entre 2019 y 2021 por el INE.", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [
-        {"date": "2019/2021", "date_type": "Collected", "date_information": "Período completo en que se realizó el levantamiento de datos de la encuesta"},
-        {"date": "2022-05-10", "date_type": "Issued", "date_information": "Fecha en que el dataset fue publicado oficialmente tras el cierre del levantamiento"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
-    }
-
-    --- EJEMPLO 5: Recurso en inglés, con DOI, sin cobertura geográfica evidenciada (contraste con el EJEMPLO 3) ---
+    --- EJEMPLO 3: Recurso en inglés con DOI, sin cobertura geográfica evidenciada ---
     RECURSO A PROCESAR:
     - url: https://gfz-potsdam.de/dataset/seismic-catalog
     - doi: 10.5880/GFZ.2.4.2021.001
@@ -376,142 +178,30 @@ agents:
 
     Salida:
     {
-      "reasoning": "El recurso trae un doi explícito, así que identifier_type = DOI. El contenido está en inglés (título y descripción en inglés, sin indicación de institución chilena). El catálogo es GLOBAL, no de un país o región específica identificable con una caja real — por eso NO invento un geo_location_box aunque el recurso menciona cobertura geográfica en sentido amplio (mundial).",
-      "resource": {
-        "identifier": "10.5880/GFZ.2.4.2021.001",
-        "identifier_type": "DOI",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "GFZ Potsdam",
-        "publication_year": "2021",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "en"
-      },
-      "titles": [
-        {"name": "Global Seismic Event Catalog 2021", "title_type": "MainTitle", "language": "en"}
+      "reasoning": "El recurso trae un doi explícito → propertyID DOI. Contenido en inglés. El catálogo es GLOBAL, no de un país o región específica identificable con una caja real — no invento schema_spatial_coverage.",
+      "schema_name": "Global Seismic Event Catalog 2021",
+      "schema_description": "A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.",
+      "schema_identifier": [
+        {"propertyID": "DOI", "value": "10.5880/GFZ.2.4.2021.001", "url": "https://doi.org/10.5880/GFZ.2.4.2021.001"}
       ],
-      "descriptions": [
-        {"description": "A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.", "description_type": "Abstract", "language": "en"}
-      ],
-      "languages": [
-        {
-          "lang_code": "en",
-          "language": "English",
-          "description": "El recurso está disponible únicamente en inglés"
-        }
-      ],
-      "dates": [
-        {"date": "2021", "date_type": "Collected", "date_information": "Año en que fueron registrados los eventos sísmicos del catálogo"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
-    }
-
-    --- EJEMPLO 6: Recurso con fecha "Updated" únicamente (sin Issued, Created ni Collected) ---
-    RECURSO A PROCESAR:
-    - url: https://datos.gob.cl/dataset/reportes-transporte
-    - title: Reportes de transporte público
-    - description: Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.
-
-    Salida:
-    {
-      "reasoning": "La única fecha explícita en el texto es la de última actualización → date_type Updated, con día exacto (2023-07-15). No hay Issued, Created ni Collected. Aun así, publication_year NUNCA queda vacío si hay algún año identificable en mi propia salida: uso el año de esta fecha, 2023.",
-      "resource": {
-        "identifier": "https://datos.gob.cl/dataset/reportes-transporte",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "",
-        "publication_year": "2023",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Reportes de transporte público", "title_type": "MainTitle", "language": "es"}
-      ],
-      "descriptions": [
-        {"description": "Datos de reportes de transporte público de la región. Última actualización: 15 de julio de 2023.", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [
-        {"date": "2023-07-15", "date_type": "Updated", "date_information": "Fecha de la última actualización del recurso según el portal"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
-    }
-
-    --- EJEMPLO 7: Recurso con rango de años y sin fecha Issued/Created (contraste con el EJEMPLO 5, que usa un año único) ---
-    RECURSO A PROCESAR:
-    - url: https://datos.gob.cl/dataset/encuesta-hogares
-    - title: Encuesta de Hogares 2019-2021
-    - description: Encuesta de hogares correspondiente al período de levantamiento 2019-2021.
-
-    Salida:
-    {
-      "reasoning": "El único dato temporal es el período de levantamiento (2019-2021) → date_type Collected, con el rango completo en date ('2019/2021', ISO 8601). No hay Issued ni Created, así que publication_year usa el año MÁS ANTIGUO del rango extraído (2019) — nunca el año final, y nunca vacío.",
-      "resource": {
-        "identifier": "https://datos.gob.cl/dataset/encuesta-hogares",
-        "identifier_type": "URL",
-        "editor": "",
-        "maintainer": "",
-        "contact": "",
-        "producer": "",
-        "publication_year": "2019",
-        "resource_type": "Dataset",
-        "resource_type_general": "Dataset",
-        "version": "",
-        "thumbnail": "",
-        "language": "es"
-      },
-      "titles": [
-        {"name": "Encuesta de Hogares 2019-2021", "title_type": "MainTitle", "language": "es"}
-      ],
-      "descriptions": [
-        {"description": "Encuesta de hogares correspondiente al período de levantamiento 2019-2021.", "description_type": "Abstract", "language": "es"}
-      ],
-      "languages": [
-        {
-          "lang_code": "es",
-          "language": "Spanish",
-          "description": "El recurso está disponible únicamente en español"
-        }
-      ],
-      "dates": [
-        {"date": "2019/2021", "date_type": "Collected", "date_information": "Período de levantamiento de la Encuesta de Hogares según el título"}
-      ],
-      "alternate_identifiers": [],
-      "related_identifiers": [],
-      "geo_locations": [],
-      "temporal_events": []
+      "schema_additional_type": "",
+      "schema_same_as": [],
+      "schema_related_link": [],
+      "schema_version": "",
+      "schema_in_language": "en",
+      "schema_date_created": "2021",
+      "schema_date_published": "",
+      "schema_copyright_year": "",
+      "schema_conditions_of_access": [],
+      "schema_spatial_coverage": []
     }
 
     === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: asignar "geo_location_box": "-75.956,-57.987,-65.084,-16.309" a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena o porque "hay que llenar los 4 campos".
-    ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, dejar geo_location_box vacío.
+    ❌ MAL: asignar la caja de Chile continental a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena.
+    ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, omitir "geo".
 
-    ❌ MAL: {"date": "2021-01-01", "date_type": "Collected", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
-    ✅ BIEN: {"date": "2021", "date_type": "Collected", ...} — usa la precisión real disponible.
-
-    ❌ MAL: publication_year: "" cuando la única fecha extraída es Updated o Collected (no Issued ni Created) — dejarlo vacío "porque no hay Issued" ignora el resto de la regla.
-    ✅ BIEN: publication_year siempre toma el año de ALGUNA fecha ya extraída (la más antigua si hay varias) cuando no hay Issued ni Created — ver EJEMPLO 6 y EJEMPLO 7.
+    ❌ MAL: {"schema_date_created": "2021-01-01", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
+    ✅ BIEN: {"schema_date_created": "2021", ...} — usa la precisión real disponible.
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
@@ -524,109 +214,111 @@ agents:
       type: disabled
 - id: creators_publishers
   name: Creators and Publishers
-  description: Extrae los creadores (con identificadores ISNI/ROR y afiliaciones)
-    y editores del recurso.
+  description: Extrae los creadores (con identificadores ISNI/ROR/ORCID y afiliaciones),
+    el publicador y los contribuyentes (contacto, productor) del recurso.
   fields:
-  - creators
-  - publishers
+  - schema_creator
+  - schema_contributor
+  - schema_publisher
   system_prompt: *shared_system_prompt
   prompt: |
-    Tu tarea: identificar y estructurar todos los creadores y publicadores mencionados en el contenido.
+    Tu tarea: identificar y estructurar todos los creadores, el publicador y los contribuyentes (contacto, productor) mencionados en el contenido.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
     PASO 1 — IDENTIFICA ACTORES INVOLUCRADOS
-      - ¿Quién CREÓ o PRODUJO el contenido del recurso?
-      - ¿Quién lo PUBLICÓ o lo mantiene disponible?
+      - ¿Quién CREÓ o PRODUJO el contenido del recurso? → schema_creator
+      - ¿Quién lo PUBLICÓ o lo mantiene disponible? (antes llamado "editor") → schema_publisher
+      - ¿Hay un productor de los datos originales distinto del publicador, o un punto de contacto explícito? → schema_contributor
       - ¿Es una persona o una institución?
-      - ¿Hay más de un creador o publicador?
+      - ¿Hay más de un creador?
       Lista mentalmente todos los actores antes de estructurarlos.
-      Si el bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" está presente e incluye
-      un campo "resource" con editor/maintainer/producer/contact no vacíos, usa esos
-      nombres tal cual para los actores correspondientes en vez de re-derivarlos del
-      texto por tu cuenta — es la misma información ya extraída por otro paso del
-      pipeline; mantener consistencia evita que ambos pasos nombren a la misma
-      entidad de forma distinta. Si ese bloque no está presente o esos campos están
-      vacíos, deriva los actores normalmente del texto como en los pasos siguientes.
+      Si el bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" trae un schema_name, úsalo solo como contexto de qué recurso es — el nombre del recurso no determina sus actores, sigue derivándolos del texto.
 
-    PASO 2 — CLASIFICA CADA ACTOR
-      Para cada actor identificado:
+    PASO 2 — CLASIFICA CADA ACTOR (schema_creator)
+      Para cada creador identificado, produce un objeto:
+      {"@type": "schema:Person"|"schema:Organization", "name": "", "given_name": "", "family_name": "", "schema:identifier": [], "schema:affiliation": []}
       a) ¿Es persona o institución?
-         - Persona → name_type = "Personal", type = "Person", extraer given_name y family_name por separado. Formato de nombre completo en creator_name: "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido). Escribe el nombre de pila EXACTAMENTE como aparece en el texto — si el texto da el nombre completo, no lo trunques a una inicial por tu cuenta; pero si el texto SOLO da una inicial (ej. una cita bibliográfica "Apellido, A."), usa esa inicial tal cual: NUNCA inventes ni completes un nombre a partir de conocimiento externo sobre la persona, aunque la reconozcas. ❌ el texto dice "Sarricolea, Pablo" y escribes "Sarricolea, P." (truncaste sin motivo) ❌ el texto dice "Sarricolea, P." y escribes "Sarricolea, Pablo" (inventaste un nombre que el texto no da) ✅ en ambos casos, transcribe el nombre tal como el texto lo presenta.
-         - Institución → name_type = "Organizational", type = "Organization", creator_name = nombre completo oficial (con acentuación correcta).
-      b) ¿Es creador (produjo el contenido) o publicador (lo distribuye)?
-         - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, agrega la MISMA institución también en publishers (publisher_name = creator_name). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre en publishers en vez de duplicar.
+         - Persona → "@type": "schema:Person", extraer given_name y family_name por separado. Formato de "name": "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido). Escribe el nombre de pila EXACTAMENTE como aparece en el texto — si el texto da el nombre completo, no lo trunques a una inicial por tu cuenta; pero si el texto SOLO da una inicial (ej. una cita bibliográfica "Apellido, A."), usa esa inicial tal cual: NUNCA inventes ni completes un nombre a partir de conocimiento externo sobre la persona, aunque la reconozcas.
+         - Institución → "@type": "schema:Organization", "name" = nombre completo oficial (con acentuación correcta).
+      b) schema:identifier SIEMPRE vacío ([]) en esta etapa — ver PASO 4.
 
-    PASO 3 — IMPORTANTE SOBRE IDENTIFICADORES (LEER ATENTAMENTE)
-      - NO incluyas identificadores ROR, ISNI u ORCID en los campos name_identifiers, affiliation_identifier o publisher_identifier/publisher_scheme_uri.
-      - Deja name_identifiers como lista vacía ([]) para instituciones.
-      - Deja affiliation_identifier y affiliation_identifier_scheme como string vacío ("").
-      - Deja publisher_identifier, publisher_identifier_scheme y publisher_scheme_uri como string vacío ("").
-      - Los identificadores se resolverán automáticamente después del procesamiento mediante APIs oficiales (ROR, ISNI). Un campo con un esquema declarado pero sin valor real (ej. name_identifier_scheme: "ROR" con name_identifier: "") es peor que dejarlo vacío — invita a que se rellene con un ID inventado.
+    PASO 3 — PUBLICADOR Y CONTRIBUYENTES
+      a) schema_publisher (UN SOLO objeto, no una lista): la institución que publica o distribuye el recurso.
+         - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, usa la MISMA institución como schema_publisher (mismo "name" que el creador correspondiente). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre.
+         - Formato: {"@type": "schema:Organization"|"schema:Person", "name": "", "schema:identifier": []}
+         - Si no hay ningún publicador identificable → {} (objeto vacío).
+      b) schema_contributor (lista): un objeto por cada contribuyente distinto del creador/publicador —
+         - Productor (busca "Producido por", "Generado por", "Fuente original"): {"name": "", "role": "Producer"}. Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → {"name": "Unidad de Estadísticas, Ministerio de Educación", "role": "Producer"}.
+         - Contacto (busca ACTIVAMENTE en TODO el texto correos, teléfonos, formularios asociados a ESTE recurso): {"name": "", "role": "ContactPerson", "email": ""}. Concatena múltiples canales de contacto no-email en "name" o dentro de una nota si no hay campo dedicado; el email va SIEMPRE en "email" si existe una dirección real.
+         - Si no hay evidencia de productor ni contacto distintos → schema_contributor: []
+
+    PASO 4 — IMPORTANTE SOBRE IDENTIFICADORES (LEER ATENTAMENTE)
+      - NO incluyas identificadores ROR, ISNI u ORCID en schema:identifier de creadores, afiliaciones ni publicador.
+      - Déjalos como lista vacía ([]) siempre.
+      - Los identificadores se resolverán automáticamente después del procesamiento mediante APIs oficiales (ROR, ISNI, ORCID). Un identificador inventado es peor que uno vacío.
       - ENFÓCATE en extraer los NOMBRES correctos de instituciones y su estructura jerárquica de afiliaciones.
       - Si tienes dudas sobre el nombre oficial completo de una institución (ej. una sigla poco común, o un nombre que podría estar abreviado u obsoleto), puedes usar la herramienta lookup_organization con el nombre tal como aparece en el texto para confirmar su forma canónica antes de responder. Úsala solo cuando genuinamente lo necesites, no para instituciones ya conocidas o evidentes en el texto.
 
-    PASO 4 — DETERMINA AFILIACIONES RESPETANDO LA JERARQUÍA
+    PASO 5 — DETERMINA AFILIACIONES (schema:affiliation dentro de schema_creator) RESPETANDO LA JERARQUÍA
       REGLA FUNDAMENTAL: la afiliación debe ser el organismo INMEDIATAMENTE superior en la jerarquía, nunca saltar niveles.
       La cadena jerárquica del Estado chileno es: Servicio/Corporación/Oficina → Ministerio del que depende → Gobierno de Chile.
+      Formato de cada afiliación: {"@type": "schema:Organization", "name": "", "schema:identifier": []}
 
       PATRONES GENERALES (aplícalos por nombre, sin necesidad de tabla):
-      - "Municipalidad de X" → affiliation = "" (entidad autónoma, no depende de un ministerio)
-      - "Gobierno Regional de X" → affiliation = "" (entidad autónoma)
-      - "SEREMI de <área>" (ej. "SEREMI de Salud", "SEREMI de Vivienda") → affiliation = el ministerio correspondiente a esa área (ej. SEREMI de Salud → "Ministerio de Salud")
-      - "Servicio de Salud X" → affiliation = "Ministerio de Salud"
-      - "Delegación Presidencial (Regional/Provincial)" → affiliation = "Ministerio del Interior y Seguridad Pública"
-      - "Departamento/Facultad/Centro de <Universidad>" → creator = la unidad específica (ej. "Departamento de Geografía, Universidad de Chile"); affiliation = "" (las universidades son entidades independientes, sin afiliación superior)
-      - Cualquier Ministerio → affiliation = "Gobierno de Chile"
+      - "Municipalidad de X" → sin afiliación (entidad autónoma, no depende de un ministerio)
+      - "Gobierno Regional de X" → sin afiliación (entidad autónoma)
+      - "SEREMI de <área>" (ej. "SEREMI de Salud", "SEREMI de Vivienda") → afiliación = el ministerio correspondiente a esa área (ej. SEREMI de Salud → "Ministerio de Salud")
+      - "Servicio de Salud X" → afiliación = "Ministerio de Salud"
+      - "Delegación Presidencial (Regional/Provincial)" → afiliación = "Ministerio del Interior y Seguridad Pública"
+      - "Departamento/Facultad/Centro de <Universidad>" → creador = la unidad específica (ej. "Departamento de Geografía, Universidad de Chile"); sin afiliación superior (las universidades son entidades independientes)
+      - Cualquier Ministerio → afiliación = "Gobierno de Chile"
 
       EXCEPCIONES (siglas cuya afiliación no es derivable del nombre — memorízalas):
-      - ODEPA → affiliation = "Ministerio de Agricultura"
-      - CONAF → affiliation = "Ministerio de Agricultura"
-      - SERNATUR → affiliation = "Ministerio de Economía, Fomento y Turismo"
-      - INE → affiliation = "Ministerio de Economía, Fomento y Turismo"
-      - SENAME → affiliation = "Ministerio de Justicia y Derechos Humanos"
-      - JUNJI → affiliation = "Ministerio de Educación"
-      - SII → affiliation = "Ministerio de Hacienda"
-      - DIFROL → affiliation = "Ministerio de Relaciones Exteriores"
-      - Carabineros → affiliation = "Ministerio del Interior y Seguridad Pública"
-      - SHOA → affiliation = "Armada de Chile" (rama distinta de la cadena ministerial habitual — no tiene ministerio intermedio)
-      - BCN (Biblioteca del Congreso Nacional) → affiliation = "Congreso Nacional de Chile" (Poder Legislativo, no depende de un ministerio)
+      - ODEPA → afiliación = "Ministerio de Agricultura"
+      - CONAF → afiliación = "Ministerio de Agricultura"
+      - SERNATUR → afiliación = "Ministerio de Economía, Fomento y Turismo"
+      - INE → afiliación = "Ministerio de Economía, Fomento y Turismo"
+      - SENAME → afiliación = "Ministerio de Justicia y Derechos Humanos"
+      - JUNJI → afiliación = "Ministerio de Educación"
+      - SII → afiliación = "Ministerio de Hacienda"
+      - DIFROL → afiliación = "Ministerio de Relaciones Exteriores"
+      - Carabineros → afiliación = "Ministerio del Interior y Seguridad Pública"
+      - SHOA → afiliación = "Armada de Chile" (rama distinta de la cadena ministerial habitual)
+      - BCN (Biblioteca del Congreso Nacional) → afiliación = "Congreso Nacional de Chile" (Poder Legislativo)
 
       OTROS CASOS:
-      - Persona → affiliation = la institución donde trabaja, si el texto la menciona
-      - Sin información suficiente → affiliations = []
+      - Persona → afiliación = la institución donde trabaja, si el texto la menciona
+      - Sin información suficiente → schema:affiliation: []
 
     === REGLAS ESTRICTAS ===
-    - **CAMPO OBLIGATORIO:** creator_name SIEMPRE debe tener un valor NO vacío para cada objeto en creators
-    - **CAMPO OBLIGATORIO:** publisher_name SIEMPRE debe tener un valor NO vacío para cada objeto en publishers
+    - **CAMPO OBLIGATORIO:** "name" SIEMPRE debe tener un valor NO vacío para cada objeto en schema_creator y en schema_contributor
     - La afiliación SIEMPRE es el organismo inmediatamente superior, nunca saltar niveles jerárquicos
-    - Si no hay creadores ni publicadores → {"creators": [], "publishers": []}
+    - Si no hay creadores ni publicador → {"schema_creator": [], "schema_contributor": [], "schema_publisher": {}}
 
     === FORMATO EXACTO DE SALIDA ===
     {
       "reasoning": "",
-      "creators": [
+      "schema_creator": [
         {
-          "creator_name": "",
-          "name_type": "",
-          "type": "",
+          "@type": "",
+          "name": "",
           "given_name": "",
           "family_name": "",
-          "name_identifiers": [],
-          "affiliations": [
-            {"affiliation": "", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}
+          "schema:identifier": [],
+          "schema:affiliation": [
+            {"@type": "schema:Organization", "name": "", "schema:identifier": []}
           ]
         }
       ],
-      "publishers": [
-        {
-          "publisher_name": "",
-          "publisher_identifier": "",
-          "publisher_identifier_scheme": "",
-          "publisher_scheme_uri": "",
-          "lang": ""
-        }
-      ]
+      "schema_contributor": [
+        {"name": "", "role": "", "email": ""}
+      ],
+      "schema_publisher": {
+        "@type": "",
+        "name": "",
+        "schema:identifier": []
+      }
     }
 
     === EJEMPLOS FEW-SHOT ===
@@ -635,129 +327,69 @@ agents:
     Entrada: "Informe del Ministerio de Educación sobre matrícula escolar."
     Salida:
     {
-      "reasoning": "Único actor mencionado: el Ministerio de Educación, sin distinción entre quien produjo y quien publica el informe → lo agrego como creador y publicador. Es un ministerio, así que su afiliación es 'Gobierno de Chile'. No dejo identificadores, se resuelven después.",
-      "creators": [
-        {"creator_name": "Ministerio de Educación", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Gobierno de Chile", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
+      "reasoning": "Único actor mencionado: el Ministerio de Educación, sin distinción entre quien produjo y quien publica el informe → lo uso como creador y publicador. Es un ministerio, así que su afiliación es 'Gobierno de Chile'. Sin identificadores ni contribuyentes distintos.",
+      "schema_creator": [
+        {"@type": "schema:Organization", "name": "Ministerio de Educación", "given_name": "", "family_name": "",
+         "schema:identifier": [],
+         "schema:affiliation": [{"@type": "schema:Organization", "name": "Gobierno de Chile", "schema:identifier": []}]}
       ],
-      "publishers": [
-        {"publisher_name": "Ministerio de Educación", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
+      "schema_contributor": [],
+      "schema_publisher": {"@type": "schema:Organization", "name": "Ministerio de Educación", "schema:identifier": []}
     }
 
     --- EJEMPLO 2: SERNATUR (Servicio → Ministerio de Economía, Fomento y Turismo → Gobierno de Chile) ---
     Entrada: "Estudio del Servicio Nacional de Turismo sobre temporada estival."
     Salida:
     {
-      "reasoning": "SERNATUR (Servicio Nacional de Turismo) es un servicio dependiente del Ministerio de Economía, Fomento y Turismo (excepción memorizada, no se deriva del nombre). Sin publicador distinto mencionado → mismo actor en creators y publishers.",
-      "creators": [
-        {"creator_name": "Servicio Nacional de Turismo", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Ministerio de Economía, Fomento y Turismo", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
+      "reasoning": "SERNATUR (Servicio Nacional de Turismo) es un servicio dependiente del Ministerio de Economía, Fomento y Turismo (excepción memorizada, no se deriva del nombre). Sin publicador distinto mencionado → mismo actor en creator y publisher.",
+      "schema_creator": [
+        {"@type": "schema:Organization", "name": "Servicio Nacional de Turismo", "given_name": "", "family_name": "",
+         "schema:identifier": [],
+         "schema:affiliation": [{"@type": "schema:Organization", "name": "Ministerio de Economía, Fomento y Turismo", "schema:identifier": []}]}
       ],
-      "publishers": [
-        {"publisher_name": "Servicio Nacional de Turismo", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
+      "schema_contributor": [],
+      "schema_publisher": {"@type": "schema:Organization", "name": "Servicio Nacional de Turismo", "schema:identifier": []}
     }
 
-    --- EJEMPLO 3: ODEPA (Servicio → Ministerio de Agricultura → Gobierno de Chile) ---
-    Entrada: "Estudio de la Oficina de Estudios y Políticas Agrarias sobre producción frutícola."
-    Salida:
-    {
-      "reasoning": "ODEPA (Oficina de Estudios y Políticas Agrarias) depende del Ministerio de Agricultura (excepción memorizada). Sin publicador distinto mencionado.",
-      "creators": [
-        {"creator_name": "Oficina de Estudios y Políticas Agrarias", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Ministerio de Agricultura", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
-      ],
-      "publishers": [
-        {"publisher_name": "Oficina de Estudios y Políticas Agrarias", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
-    }
-
-    --- EJEMPLO 4: CONAF (Corporación → Ministerio de Agricultura → Gobierno de Chile) ---
-    Entrada: "Datos de la Corporación Nacional Forestal sobre áreas protegidas."
-    Salida:
-    {
-      "reasoning": "CONAF depende del Ministerio de Agricultura (excepción memorizada). Sin publicador distinto mencionado.",
-      "creators": [
-        {"creator_name": "Corporación Nacional Forestal", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Ministerio de Agricultura", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
-      ],
-      "publishers": [
-        {"publisher_name": "Corporación Nacional Forestal", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
-    }
-
-    --- EJEMPLO 5: Municipalidad (entidad autónoma, sin afiliación superior) ---
-    Entrada: "Datos de gastos e ingresos de la Municipalidad de Providencia."
-    Salida:
-    {
-      "reasoning": "Las municipalidades son entidades autónomas, no dependen de un ministerio, así que affiliations queda vacío. Sin publicador distinto mencionado.",
-      "creators": [
-        {"creator_name": "Municipalidad de Providencia", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [], "affiliations": []}
-      ],
-      "publishers": [
-        {"publisher_name": "Municipalidad de Providencia", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
-    }
-
-    --- EJEMPLO 6: Persona individual con afiliación ---
+    --- EJEMPLO 3: Persona individual con afiliación, sin publicador distinto ---
     Entrada: "Estudio de clasificación climática de Chile continental, por Pablo Sarricolea, del Departamento de Geografía de la Universidad de Chile."
     Salida:
     {
-      "reasoning": "Un único autor identificado por nombre completo, con afiliación institucional explícita. Es persona → name_type Personal, given_name/family_name separados, formato 'Apellido, Nombre'. La afiliación es la unidad universitaria mencionada, no la universidad como entidad superior (las universidades no tienen afiliación superior, pero la unidad SÍ pertenece a la universidad). Sin publicador distinto mencionado en el texto → no genero publishers.",
-      "creators": [
-        {"creator_name": "Sarricolea, Pablo", "name_type": "Personal", "type": "Person", "given_name": "Pablo", "family_name": "Sarricolea",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Departamento de Geografía, Universidad de Chile", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
+      "reasoning": "Un único autor identificado por nombre completo, con afiliación institucional explícita. Es persona → given_name/family_name separados, formato 'Apellido, Nombre'. La afiliación es la unidad universitaria mencionada, no la universidad como entidad superior. Sin publicador distinto mencionado en el texto.",
+      "schema_creator": [
+        {"@type": "schema:Person", "name": "Sarricolea, Pablo", "given_name": "Pablo", "family_name": "Sarricolea",
+         "schema:identifier": [],
+         "schema:affiliation": [{"@type": "schema:Organization", "name": "Departamento de Geografía, Universidad de Chile", "schema:identifier": []}]}
       ],
-      "publishers": []
+      "schema_contributor": [],
+      "schema_publisher": {}
     }
 
-    --- EJEMPLO 7: Múltiples autores personales con la misma afiliación, apellido compuesto ---
-    Entrada: "Regionalización climática de Chile continental. Autores: Pablo Sarricolea y Oliver Meseguer-Ruiz, Departamento de Geografía, Universidad de Chile."
+    --- EJEMPLO 4: Creador distinto del publicador, con contacto explícito ---
+    Entrada: "Estudio de la Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile, publicado en el Geoportal de Chile. Contacto: geoportal@chile.cl."
     Salida:
     {
-      "reasoning": "Dos autores personales identificados por nombre, ambos con la misma afiliación institucional. Uno tiene apellido compuesto (Meseguer-Ruiz) — lo mantengo completo como family_name.",
-      "creators": [
-        {"creator_name": "Sarricolea, Pablo", "name_type": "Personal", "type": "Person", "given_name": "Pablo", "family_name": "Sarricolea",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Departamento de Geografía, Universidad de Chile", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]},
-        {"creator_name": "Meseguer-Ruiz, Oliver", "name_type": "Personal", "type": "Person", "given_name": "Oliver", "family_name": "Meseguer-Ruiz",
-         "name_identifiers": [],
-         "affiliations": [{"affiliation": "Departamento de Geografía, Universidad de Chile", "affiliation_identifier": "", "affiliation_identifier_scheme": "", "scheme_uri": ""}]}
+      "reasoning": "El texto distingue explícitamente entre quien produjo el estudio (la Facultad) y quien lo publica (el Geoportal) → creador y publicador por separado. Hay un correo de contacto explícito → schema_contributor con rol ContactPerson.",
+      "schema_creator": [
+        {"@type": "schema:Organization", "name": "Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile", "given_name": "", "family_name": "",
+         "schema:identifier": [], "schema:affiliation": []}
       ],
-      "publishers": []
+      "schema_contributor": [
+        {"name": "", "role": "ContactPerson", "email": "geoportal@chile.cl"}
+      ],
+      "schema_publisher": {"@type": "schema:Organization", "name": "Geoportal de Chile", "schema:identifier": []}
     }
 
-    --- EJEMPLO 8: Creador distinto del publicador ---
-    Entrada: "Estudio de la Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile, publicado en el Geoportal de Chile."
-    Salida:
-    {
-      "reasoning": "El texto distingue explícitamente entre quien produjo el estudio (la Facultad) y quien lo publica (el Geoportal) → van en creators y publishers por separado, sin duplicar.",
-      "creators": [
-        {"creator_name": "Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile", "name_type": "Organizational", "type": "Organization", "given_name": "", "family_name": "",
-         "name_identifiers": [], "affiliations": []}
-      ],
-      "publishers": [
-        {"publisher_name": "Geoportal de Chile", "publisher_identifier": "", "publisher_identifier_scheme": "", "publisher_scheme_uri": "", "lang": "es"}
-      ]
-    }
-
-    --- EJEMPLO 9: Sin información ---
+    --- EJEMPLO 5: Sin información ---
     Entrada: "Recurso sin autoría identificada."
     Salida:
-    {"reasoning": "No hay ninguna mención de autor, creador ni publicador en el texto.", "creators": [], "publishers": []}
+    {"reasoning": "No hay ninguna mención de autor, creador ni publicador en el texto.", "schema_creator": [], "schema_contributor": [], "schema_publisher": {}}
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on:
   - core_metadata
   context_fields:
-  - resource
+  - schema_name
   tools:
   - lookup_organization
   model: deepseek-v4-flash
@@ -770,14 +402,14 @@ agents:
 - id: classification
   name: Classification Agent
   description: Clasifica el recurso en categorías temáticas, genera palabras clave
-    (subjects) e identifica la audiencia objetivo.
+    e identifica la audiencia objetivo.
   fields:
-  - categories
-  - subjects
-  - audiences
+  - schema_keywords
+  - schema_about
+  - schema_audience
   system_prompt: *shared_system_prompt
   prompt: |
-    Tu tarea: clasificar el recurso y definir sus audiencias objetivo.
+    Tu tarea: clasificar el recurso, extraer sus palabras clave y definir sus audiencias objetivo.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
@@ -785,28 +417,29 @@ agents:
       - ¿Cuál es el tema principal del recurso?
       - ¿Qué disciplina científica abarca?
       - ¿Cuáles son las palabras clave más representativas mencionadas en el texto?
-      - "Contexto suficiente" para clasificar = puedes nombrar el tema del recurso en una frase a partir del texto. Si el texto no dice de qué trata el recurso (título/descripción genéricos, sin tema identificable) → categories, subjects y audiences quedan todos vacíos.
+      - "Contexto suficiente" para clasificar = puedes nombrar el tema del recurso en una frase a partir del texto. Si el texto no dice de qué trata el recurso (título/descripción genéricos, sin tema identificable) → schema_about, schema_keywords y schema_audience quedan todos vacíos.
 
-    PASO 2 — CLASIFICA LA CATEGORÍA
+    PASO 2 — CLASIFICA LA CATEGORÍA (schema_about)
       - Elige SOLO UNA categoría principal de la lista validada (en español)
       - Dentro de esa categoría, puedes elegir UNA O MÚLTIPLES subcategorías (máximo 3)
-      - Para CADA subcategoría, crea un objeto SEPARADO dentro del array "categories"
-      - Todos los objetos comparten el mismo "name" (la categoría principal)
-      - Copia "name" y "sub_category" EXACTAMENTE como aparecen en la lista de categorías válidas — misma acentuación y mayúsculas. Verifica que la sub_category elegida pertenezca realmente a la categoría name que elegiste.
+      - Para CADA subcategoría, crea un objeto SEPARADO: {"name": "<subcategoría>", "inDefinedTermSet": "<categoría principal>"}
+      - Todos los objetos comparten el mismo "inDefinedTermSet" (la categoría principal)
+      - Copia los nombres EXACTAMENTE como aparecen en la lista de categorías válidas — misma acentuación y mayúsculas. Verifica que la subcategoría elegida pertenezca realmente a la categoría que elegiste.
       - Ejemplo: "Gasto público en educación" →
-        categories: [
-          {"name": "Ciencias Sociales", "sub_category": "Economía y negocios"},
-          {"name": "Ciencias Sociales", "sub_category": "Ciencias de la educación"}
+        schema_about: [
+          {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"},
+          {"name": "Ciencias de la educación", "inDefinedTermSet": "Ciencias Sociales"}
         ]
-      - Si no hay categoría clara → categories = []
+      - Si no hay categoría clara → schema_about = []
 
-    PASO 3 — EXTRAE SUBJECTS (palabras clave)
+    PASO 3 — EXTRAE PALABRAS CLAVE (schema_keywords)
       - Usa SOLO términos que aparecen explícitamente en el texto fuente. Puedes normalizar o combinar términos de la fuente (ej. "Tema -- Subtema -- País"), pero NUNCA introducir un concepto que no esté en el texto.
-      - subject_scheme y value_uri: déjalos VACÍOS por defecto. Solo complétalos si el recurso declara EXPLÍCITAMENTE a qué esquema de clasificación pertenece el término (ej. el texto cita un código o URI de LCSH/UNESCO/JEL) — un término con formato de encabezado de materia NO es automáticamente un término de ese esquema. NUNCA declares subject_scheme "LCSH", "UNESCO" ni "JEL" sin un value_uri concreto que lo respalde.
-      - Si no hay keywords explícitos → subjects = []
+      - Formato: {"name": "<término>", "inDefinedTermSet": "", "identifier": ""}
+      - inDefinedTermSet e identifier: déjalos VACÍOS por defecto. Solo complétalos si el recurso declara EXPLÍCITAMENTE a qué esquema de clasificación pertenece el término (ej. el texto cita un código o URI de LCSH/UNESCO/JEL) — un término con formato de encabezado de materia NO es automáticamente un término de ese esquema.
+      - Si no hay keywords explícitos → schema_keywords = []
       - NUNCA generar keywords no mencionados en la fuente
 
-    PASO 4 — DETERMINA AUDIENCIAS (2 a 4, solo cuando hay contexto suficiente — ver PASO 1)
+    PASO 4 — DETERMINA AUDIENCIAS (schema_audience, 2 a 4 elementos, solo cuando hay contexto suficiente — ver PASO 1)
       Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados.
 
       TABLA DE REFERENCIA (categoría → audiencias típicas, no exhaustiva ni obligatoria):
@@ -816,24 +449,23 @@ agents:
       - Ciencias Agrícolas → Investigadores, Profesionales, Administradores
       - Humanidades → Investigadores, Estudiantes, Docentes, Público general
 
-      Si no hay contexto suficiente (PASO 1) → audiences = []
+      Si no hay contexto suficiente (PASO 1) → schema_audience = []
 
     PASO 5 — AUTO-VERIFICACIÓN
-      ✓ ¿La categoría está en la lista validada? (solo UNA categoría principal)
-      ✓ ¿Cada objeto en categories tiene "name" y "sub_category", y la sub_category pertenece a esa categoría?
-      ✓ ¿Los subjects provienen del texto fuente, sin conceptos nuevos introducidos?
-      ✓ ¿subject_scheme y value_uri están vacíos salvo evidencia explícita del esquema?
+      ✓ ¿La categoría está en la lista validada? (solo UNA categoría principal en inDefinedTermSet)
+      ✓ ¿Cada objeto en schema_about tiene "name" y "inDefinedTermSet", y el "name" pertenece a esa categoría?
+      ✓ ¿Los keywords provienen del texto fuente, sin conceptos nuevos introducidos?
       ✓ ¿Hay entre 2 y 4 audiencias cuando hay contexto suficiente, con combinaciones no repetitivas?
       ✓ ¿Todos los valores están en las listas validadas?
       ✓ ¿El JSON es válido?
 
     === REGLAS ESTRICTAS ===
-    - categories: ARRAY de objetos. CADA objeto tiene "name" (categoría principal) y "sub_category" (string, NO array)
-    - Todas las subcategorías DEBEN pertenecer a la MISMA categoría principal
-    - Máximo 3 objetos en el array categories
+    - schema_about: ARRAY de objetos. CADA objeto tiene "name" (subcategoría) e "inDefinedTermSet" (categoría principal, string, NO array)
+    - Todos los objetos DEBEN compartir el mismo "inDefinedTermSet"
+    - Máximo 3 objetos en schema_about
     - audience, mediator, education_level, instructional_method: SOLO valores de las listas validadas, EN ESPAÑOL
-    - NUNCA inventar subjects ni categorías que no correspondan al texto
-    - audiences: entre 2 y 4 elementos cuando hay contexto suficiente (ver PASO 1); [] en caso contrario
+    - NUNCA inventar keywords ni categorías que no correspondan al texto
+    - schema_audience: entre 2 y 4 elementos cuando hay contexto suficiente (ver PASO 1); [] en caso contrario
 
     === CATEGORÍAS Y SUBCATEGORÍAS VÁLIDAS (EN ESPAÑOL) ===
     Ciencias Naturales y Exactas: Matemáticas | Ciencias de la computación e información | Ciencias físicas | Astronomía y astrofísica | Ciencias químicas | Ciencias de la Tierra | Ciencias medioambientales | Ciencias biológicas | Otras ciencias naturales
@@ -852,14 +484,13 @@ agents:
     === FORMATO EXACTO DE SALIDA ===
     {
       "reasoning": "",
-      "categories": [
-        {"name": "", "sub_category": ""},
-        {"name": "", "sub_category": ""}
+      "schema_about": [
+        {"name": "", "inDefinedTermSet": ""}
       ],
-      "subjects": [
-        {"subject_name": "", "subject_scheme": "", "scheme_uri": "", "value_uri": ""}
+      "schema_keywords": [
+        {"name": "", "inDefinedTermSet": "", "identifier": ""}
       ],
-      "audiences": [
+      "schema_audience": [
         {"audience": "", "mediator": "", "education_level": "", "instructional_method": ""}
       ]
     }
@@ -870,80 +501,46 @@ agents:
     Entrada: "Datos de gastos e ingresos municipales de Chile. Keywords: finanzas públicas, municipios, presupuesto."
     Salida:
     {
-      "reasoning": "El tema es economía/finanzas municipales → Ciencias Sociales / Economía y negocios. Los keywords vienen explícitos en el texto, sin esquema de clasificación declarado → subject_scheme vacío. Audiencia orientada a gestión pública y análisis.",
-      "categories": [
-        {"name": "Ciencias Sociales", "sub_category": "Economía y negocios"}
+      "reasoning": "El tema es economía/finanzas municipales → Ciencias Sociales / Economía y negocios. Los keywords vienen explícitos en el texto. Audiencia orientada a gestión pública y análisis.",
+      "schema_about": [
+        {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"}
       ],
-      "subjects": [
-        {"subject_name": "Finanzas públicas -- Municipios -- Chile", "subject_scheme": "", "scheme_uri": "", "value_uri": ""}
+      "schema_keywords": [
+        {"name": "Finanzas públicas -- Municipios -- Chile", "inDefinedTermSet": "", "identifier": ""}
       ],
-      "audiences": [
+      "schema_audience": [
         {"audience": "Administradores", "mediator": "Gerente", "education_level": "Profesional", "instructional_method": "Autoaprendizaje"},
         {"audience": "Tomadores de decisiones", "mediator": "Analista", "education_level": "Profesional", "instructional_method": "Consultoría"}
       ]
     }
 
-    --- EJEMPLO 2: Una categoría, múltiples subcategorías (objetos separados) ---
+    --- EJEMPLO 2: Una categoría, múltiples subcategorías ---
     Entrada: "Datos de gasto público en educación y su impacto en el desarrollo económico regional. Cobertura: Chile."
     Salida:
     {
-      "reasoning": "El recurso cruza dos subtemas de la misma categoría (economía y educación) → dos objetos categories con el mismo name. Subjects tomados directamente del texto.",
-      "categories": [
-        {"name": "Ciencias Sociales", "sub_category": "Economía y negocios"},
-        {"name": "Ciencias Sociales", "sub_category": "Ciencias de la educación"}
+      "reasoning": "El recurso cruza dos subtemas de la misma categoría (economía y educación) → dos objetos schema_about con el mismo inDefinedTermSet.",
+      "schema_about": [
+        {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"},
+        {"name": "Ciencias de la educación", "inDefinedTermSet": "Ciencias Sociales"}
       ],
-      "subjects": [
-        {"subject_name": "Gasto público -- Educación -- Chile", "subject_scheme": "", "scheme_uri": "", "value_uri": ""},
-        {"subject_name": "Desarrollo económico regional", "subject_scheme": "", "scheme_uri": "", "value_uri": ""}
+      "schema_keywords": [
+        {"name": "Gasto público -- Educación -- Chile", "inDefinedTermSet": "", "identifier": ""},
+        {"name": "Desarrollo económico regional", "inDefinedTermSet": "", "identifier": ""}
       ],
-      "audiences": [
+      "schema_audience": [
         {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"},
         {"audience": "Docentes", "mediator": "Docente", "education_level": "Educación continua", "instructional_method": "Discusión"}
       ]
     }
 
-    --- EJEMPLO 3: Ciencias Naturales con múltiples subcategorías ---
-    Entrada: "Datos geológicos y ambientales de la zona central de Chile. Incluye mapas de riesgo sísmico y calidad del aire."
-    Salida:
-    {
-      "reasoning": "Recurso de ciencias de la tierra y medioambientales → dos subcategorías dentro de Ciencias Naturales y Exactas. Audiencia técnica orientada a análisis de datos.",
-      "categories": [
-        {"name": "Ciencias Naturales y Exactas", "sub_category": "Ciencias de la Tierra"},
-        {"name": "Ciencias Naturales y Exactas", "sub_category": "Ciencias medioambientales"}
-      ],
-      "subjects": [
-        {"subject_name": "Geología -- Chile", "subject_scheme": "", "scheme_uri": "", "value_uri": ""},
-        {"subject_name": "Calidad del aire -- Chile", "subject_scheme": "", "scheme_uri": "", "value_uri": ""}
-      ],
-      "audiences": [
-        {"audience": "Científicos de datos", "mediator": "Analista", "education_level": "Profesional", "instructional_method": "Análisis"},
-        {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Laboratorio"}
-      ]
-    }
-
-    --- EJEMPLO 4: Contexto mínimo pero suficiente para clasificar ---
-    Entrada: "Base de datos sobre actividad económica."
-    Salida:
-    {
-      "reasoning": "El tema (actividad económica) es identificable en una frase → hay contexto suficiente para clasificar, aunque no haya keywords explícitos.",
-      "categories": [
-        {"name": "Ciencias Sociales", "sub_category": "Economía y negocios"}
-      ],
-      "subjects": [],
-      "audiences": [
-        {"audience": "Tomadores de decisiones", "mediator": "Analista", "education_level": "Profesional", "instructional_method": "Consultoría"},
-        {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"}
-      ]
-    }
-
-    --- EJEMPLO 5: Sin contexto suficiente ---
+    --- EJEMPLO 3: Sin contexto suficiente ---
     Entrada: "Recurso sin descripción temática."
     Salida:
-    {"reasoning": "El texto no indica de qué trata el recurso — no hay tema identificable en una frase, así que no hay contexto suficiente para clasificar.", "categories": [], "subjects": [], "audiences": []}
+    {"reasoning": "El texto no indica de qué trata el recurso — no hay tema identificable en una frase, así que no hay contexto suficiente para clasificar.", "schema_about": [], "schema_keywords": [], "schema_audience": []}
 
     === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: {"subject_name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "subject_scheme": "LCSH", "scheme_uri": "https://id.loc.gov/authorities/subjects.html", "value_uri": ""} — declara un esquema de autoridad real sin ningún value_uri que lo respalde, solo porque el término TIENE el formato de un encabezado LCSH.
-    ✅ BIEN: {"subject_name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "subject_scheme": "", "scheme_uri": "", "value_uri": ""} — mismo término, sin inventar una pertenencia a un esquema de autoridad que el texto no confirma.
+    ❌ MAL: {"name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "inDefinedTermSet": "LCSH", "identifier": "https://id.loc.gov/authorities/subjects.html"} — declara un esquema de autoridad real sin evidencia, solo porque el término TIENE el formato de un encabezado LCSH.
+    ✅ BIEN: {"name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "inDefinedTermSet": "", "identifier": ""} — mismo término, sin inventar una pertenencia a un esquema de autoridad que el texto no confirma.
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
@@ -959,9 +556,11 @@ agents:
   description: Analiza licencia, financiamiento e información para citar el recurso
     en un solo agente.
   fields:
-  - rights
-  - funding_references
-  - citations
+  - schema_license
+  - schema_conditions_of_access
+  - schema_copyright_holder
+  - schema_funding
+  - schema_citation
   system_prompt: *shared_system_prompt
   prompt: |
     Tu tarea: extraer licencia/derechos, financiamiento e información para citar el recurso.
@@ -970,87 +569,79 @@ agents:
 
     Paso 1: Lee el título, descripción y metadata disponible del recurso.
 
-    Paso 2: IDENTIFICA LA LICENCIA O DERECHOS DEL RECURSO
+    Paso 2: IDENTIFICA LA LICENCIA (schema_license)
 
-    IMPORTANTE: solo asigna una licencia si el título, descripción o contenido del recurso mencionan explícitamente una licencia, términos de uso, "datos abiertos", "dominio público", o el nombre concreto de una licencia (CC BY, CC0, MIT, etc.). NUNCA asumas una licencia solo porque la institución es científica, universitaria o gubernamental — eso es inventar información legal sin evidencia y viola la regla de no inventar información.
+    IMPORTANTE: solo asigna una licencia si el título, descripción o contenido del recurso mencionan explícitamente una licencia, términos de uso, "datos abiertos", "dominio público", o el nombre concreto de una licencia (CC BY, CC0, MIT, etc.). NUNCA asumas una licencia solo porque la institución es científica, universitaria o gubernamental — eso es inventar información legal sin evidencia.
+
+    Formato de cada entrada: {"name": "", "url": "", "identifier": ""}
 
     Si el recurso menciona una licencia explícitamente, usa este mapeo:
 
-    PRIORIDAD 1 — Creative Commons (usar SOLO si el texto menciona explícitamente "CC", "Creative Commons", o una URL de creativecommons.org — una mención aislada de "atribución" sin ese contexto NO es evidencia de licencia, va en rights_condition si acaso):
-    - CC0 o "dominio público" → rights_identifier: "CC0-1.0" | rights_uri: "https://creativecommons.org/publicdomain/zero/1.0/"
-    - CC BY → rights_identifier: "CC-BY-<versión>" | rights_uri: "https://creativecommons.org/licenses/by/<versión>/"
-    - CC BY-SA → rights_identifier: "CC-BY-SA-<versión>" | rights_uri: "https://creativecommons.org/licenses/by-sa/<versión>/"
-    - CC BY-NC → rights_identifier: "CC-BY-NC-<versión>" | rights_uri: "https://creativecommons.org/licenses/by-nc/<versión>/"
-    - CC BY-NC-SA → rights_identifier: "CC-BY-NC-SA-<versión>" | rights_uri: "https://creativecommons.org/licenses/by-nc-sa/<versión>/"
-    - CC BY-ND → rights_identifier: "CC-BY-ND-<versión>" | rights_uri: "https://creativecommons.org/licenses/by-nd/<versión>/"
+    PRIORIDAD 1 — Creative Commons (usar SOLO si el texto menciona explícitamente "CC", "Creative Commons", o una URL de creativecommons.org — una mención aislada de "atribución" sin ese contexto NO es evidencia de licencia, va en schema_conditions_of_access si acaso):
+    - CC0 o "dominio público" → identifier: "CC0-1.0" | url: "https://creativecommons.org/publicdomain/zero/1.0/"
+    - CC BY → identifier: "CC-BY-<versión>" | url: "https://creativecommons.org/licenses/by/<versión>/"
+    - CC BY-SA → identifier: "CC-BY-SA-<versión>" | url: "https://creativecommons.org/licenses/by-sa/<versión>/"
+    - CC BY-NC → identifier: "CC-BY-NC-<versión>" | url: "https://creativecommons.org/licenses/by-nc/<versión>/"
+    - CC BY-NC-SA → identifier: "CC-BY-NC-SA-<versión>" | url: "https://creativecommons.org/licenses/by-nc-sa/<versión>/"
+    - CC BY-ND → identifier: "CC-BY-ND-<versión>" | url: "https://creativecommons.org/licenses/by-nd/<versión>/"
     - <versión>: extrae la versión del texto si la menciona (ej. "CC BY 3.0" → "CC-BY-3.0"). Usa "4.0" SOLO si el texto menciona Creative Commons sin especificar versión.
-    → rights_identifier_scheme: "SPDX" | scheme_uri: "https://spdx.org/licenses/"
-    → rights_holder: la entidad que el texto identifica como titular de los derechos o del copyright (no todas las instituciones contribuyentes — ver Paso 2b)
+    - "name": el nombre legible de la licencia (ej. "Creative Commons Attribution 3.0 (CC BY 3.0)")
+    → schema_copyright_holder: la entidad que el texto identifica como titular de los derechos o del copyright (no todas las instituciones contribuyentes — ver Paso 2b)
 
     PRIORIDAD 2 — Licencias de software (solo si el recurso es código Y el texto menciona la licencia):
-    - MIT, Apache-2.0, GPL-3.0, BSD-3-Clause
-    → rights_identifier_scheme: "SPDX" | scheme_uri: "https://spdx.org/licenses/"
+    - MIT, Apache-2.0, GPL-3.0, BSD-3-Clause → identifier con ese valor SPDX
 
     PRIORIDAD 3 — Datos Abiertos del Estado de Chile (usar SOLO si el texto o URL mencionan explícitamente "datos abiertos", "datos.gob.cl", o portal de transparencia — estar alojado en ese portal NO es lo mismo que declarar una licencia concreta):
-    → rights: "Datos Abiertos del Estado de Chile"
-    → rights_holder: "Estado de Chile"
-    → rights_uri: la URL de la página de términos de uso citada en el texto, si existe; si no hay ninguna, déjalo vacío
-    → NO asignes rights_identifier ni rights_identifier_scheme en este caso — "datos abiertos" es una declaración de la institución, no el nombre de una licencia SPDX concreta, salvo que el texto también cite explícitamente una licencia específica (en cuyo caso aplica PRIORIDAD 1 además).
+    → {"name": "Datos Abiertos del Estado de Chile", "url": "<url de términos de uso si el texto la cita, si no vacío>", "identifier": ""}
+    → schema_copyright_holder: "Estado de Chile"
+    → NO asignes "identifier" en este caso — "datos abiertos" es una declaración de la institución, no el nombre de una licencia SPDX concreta, salvo que el texto también cite explícitamente una licencia específica (en cuyo caso aplica PRIORIDAD 1 además).
 
-    REGLA DE ORO: sin evidencia explícita de una licencia o términos de uso en el texto → "rights": []. NUNCA asumir una licencia por el tipo de institución (científica, universitaria, ministerial), aunque sea el caso más común en el corpus.
+    REGLA DE ORO: sin evidencia explícita de una licencia o términos de uso en el texto → schema_license: []. NUNCA asumir una licencia por el tipo de institución (científica, universitaria, ministerial), aunque sea el caso más común en el corpus.
 
-    Paso 2b: rights_holder y rights_condition
-    - rights_holder = la entidad que el texto identifica como titular de los derechos/copyright. Si el texto no lo distingue, usa el publisher_name del bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" (publishers), si está presente — es el mismo publicador que ya extrajo otro paso del pipeline, úsalo tal cual en vez de re-derivarlo del texto para mantener consistencia. Si ese bloque no está presente o publishers está vacío, y el texto tampoco distingue un publicador, déjalo vacío. NUNCA lo llenes con "todas las instituciones contribuyentes" — contribuir a un dataset no es lo mismo que ser su titular de derechos.
-    - rights_condition: restricciones de uso NO relacionadas con una licencia formal, si el texto las menciona (ej. "requiere registro previo", "uso no comercial", "solo con atribución de la fuente" sin mención de Creative Commons).
-    - start_date: fecha en que la licencia/término entró en vigencia, SOLO si el texto la menciona explícitamente.
+    Paso 2b: schema_copyright_holder y schema_conditions_of_access
+    - schema_copyright_holder = la entidad que el texto identifica como titular de los derechos/copyright. Si el texto no lo distingue, usa el nombre del publicador del bloque "DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR" (schema_publisher), si está presente. Si ese bloque no está presente o schema_publisher está vacío, y el texto tampoco distingue un titular, déjalo vacío. NUNCA lo llenes con "todas las instituciones contribuyentes" — contribuir a un dataset no es lo mismo que ser su titular de derechos. Para múltiples cotitulares (cuando el texto sí los identifica como tales) usa punto y coma: "Inst. A; Inst. B".
+    - schema_conditions_of_access: restricciones de uso NO relacionadas con una licencia formal, si el texto las menciona (ej. "requiere registro previo", "uso no comercial", "solo con atribución de la fuente" sin mención de Creative Commons). Formato: {"condition": ""}.
 
-    Paso 3: EXTRAE INFORMACIÓN DE FINANCIAMIENTO (prioritario para Data Observatory)
+    Paso 3: EXTRAE INFORMACIÓN DE FINANCIAMIENTO (schema_funding, prioritario para Data Observatory)
     - Busca nombres de fondos o instituciones financiadoras: ANID, FONDECYT, CONICYT (antecesor de ANID — usa el nombre que aparezca literalmente en el texto), FONDEQUIP, FONDEF, REGIONAL, PAI, FIC, FOVI, CORFO, INNOVA.
-    - funder_name = el nombre OFICIAL COMPLETO de la agencia financiadora, expandiendo el acrónimo (ej. "Agencia Nacional de Investigación y Desarrollo" para ANID). funding_stream = el instrumento o programa específico (FONDECYT, FONDEF, FIC, PAI...). NUNCA pongas el instrumento en funder_name.
+    - Formato de cada entrada: {"@type": "schema:MonetaryGrant", "name": "<título del proyecto si el texto lo da>", "identifier": [{"propertyID": "award_number", "value": ""}], "description": "<instrumento/programa, ej. FONDECYT>", "funder": {"@type": "schema:Organization", "name": "<nombre OFICIAL COMPLETO de la agencia, expandiendo el acrónimo>", "schema:identifier": []}}
+    - "funder.name" = el nombre OFICIAL COMPLETO de la agencia financiadora, expandiendo el acrónimo (ej. "Agencia Nacional de Investigación y Desarrollo" para ANID). "description" = el instrumento o programa específico (FONDECYT, FONDEF, FIC, PAI...). NUNCA pongas el instrumento en "funder.name".
     - Nota: FONDECYT, FONDEF y PAI son instrumentos de ANID; CORFO y FIC son agencias/fondos distintos de ANID — no los mezcles.
-    - award_number: el número de proyecto/adjudicación TAL COMO aparece en el texto fuente. Los award numbers de ANID suelen ser cadenas de 7-8 dígitos, pero copia el número real del texto — NUNCA copies un número de ejemplo de estas instrucciones.
-    - NO incluyas identificadores ROR para financiadores. Deja funder_identifier vacío — se resuelven automáticamente después del procesamiento.
-    - Multi-financiamiento: puede haber múltiples funding_references, uno por cada proyecto/financiador distinto.
+    - El número de proyecto/adjudicación va en identifier[0].value, TAL COMO aparece en el texto fuente. Los award numbers de ANID suelen ser cadenas de 7-8 dígitos, pero copia el número real del texto — NUNCA copies un número de ejemplo de estas instrucciones.
+    - NO incluyas identificadores ROR para financiadores. Deja funder["schema:identifier"] vacío — se resuelven automáticamente después del procesamiento.
+    - Multi-financiamiento: puede haber múltiples entradas en schema_funding, una por cada proyecto/financiador distinto.
 
-    Paso 4: EXTRAE INFORMACIÓN PARA CITAS BIBLIOGRÁFICAS
-    - Crea un objeto en citations SOLO si el recurso está publicado DENTRO de una publicación anfitriona (revista, congreso, libro) y el texto entrega al menos uno de: volumen, número, páginas, edición, o lugar/fecha de conferencia.
+    Paso 4: EXTRAE INFORMACIÓN PARA CITAS BIBLIOGRÁFICAS (schema_citation)
+    - Crea un objeto SOLO si el recurso está publicado DENTRO de una publicación anfitriona (revista, congreso, libro) y el texto entrega al menos uno de: volumen, número, páginas, edición, o lugar/fecha de conferencia.
     - El campo "title" de la cita es el título de esa publicación anfitriona o del artículo asociado — NO el título del propio dataset.
-    - Si solo tienes el título del recurso, sin ninguna de las señales anteriores de una publicación anfitriona → citations: [].
-    - Busca DOI cuando corresponda a la publicación (no al dataset en sí, salvo que sean el mismo objeto).
+    - Si solo tienes el título del recurso, sin ninguna de las señales anteriores de una publicación anfitriona → schema_citation: [].
 
     === REGLAS OBLIGATORIAS ===
     - NO inventar información
     - Si no hay información → array vacío [] o string vacío ""
-    - Para rights_holder con múltiples instituciones (cuando el texto sí las identifica como cotitulares) usar punto y coma: "Inst. A; Inst. B; Inst. C"
     - Devolver SOLO JSON válido
     - Cada campo debe estar presente aunque sea array vacío
 
     === FORMATO EXACTO DE SALIDA ===
     {
       "reasoning": "",
-      "rights": [
+      "schema_license": [
+        {"name": "", "url": "", "identifier": ""}
+      ],
+      "schema_conditions_of_access": [
+        {"condition": ""}
+      ],
+      "schema_copyright_holder": "",
+      "schema_funding": [
         {
-          "rights": "",
-          "start_date": "",
-          "rights_uri": "",
-          "rights_identifier": "",
-          "rights_identifier_scheme": "",
-          "scheme_uri": "",
-          "rights_condition": "",
-          "rights_holder": ""
+          "@type": "schema:MonetaryGrant",
+          "name": "",
+          "identifier": [{"propertyID": "award_number", "value": ""}],
+          "description": "",
+          "funder": {"@type": "schema:Organization", "name": "", "schema:identifier": []}
         }
       ],
-      "funding_references": [
-        {
-          "funder_name": "",
-          "funding_stream": "",
-          "award_number": "",
-          "award_uri": "",
-          "award_title": "",
-          "funder_identifiers": []
-        }
-      ],
-      "citations": [
+      "schema_citation": [
         {
           "title": "",
           "volume": "",
@@ -1066,24 +657,25 @@ agents:
 
     === EJEMPLOS ===
 
-    EJEMPLO 1: Dataset científico chileno multi-institucional, SIN mención de licencia (caso más común — la mayoría de recursos NO mencionan licencia explícitamente)
+    EJEMPLO 1: Dataset científico chileno multi-institucional, SIN mención de licencia (caso más común)
     Contexto: "Dataset oceanográfico del GEOPORTAL. Contribuyen: Ministerio de Ciencia, Tecnología, Conocimiento e Innovación, Universidad de Concepción, Centro de Investigación Ecosistemas Australes. Proyecto financiado por ANID FONDECYT N° 3220567."
 
     RESPUESTA:
     {
-      "reasoning": "No hay ninguna mención de licencia, términos de uso ni datos abiertos → rights vacío. Hay financiamiento ANID FONDECYT explícito con número de proyecto real (3220567) → un funding_reference. No hay señales de publicación anfitriona → citations vacío.",
-      "rights": [],
-      "funding_references": [
+      "reasoning": "No hay ninguna mención de licencia, términos de uso ni datos abiertos → schema_license vacío. Hay financiamiento ANID FONDECYT explícito con número de proyecto real (3220567) → una entrada en schema_funding. No hay señales de publicación anfitriona → schema_citation vacío.",
+      "schema_license": [],
+      "schema_conditions_of_access": [],
+      "schema_copyright_holder": "",
+      "schema_funding": [
         {
-          "funder_name": "Agencia Nacional de Investigación y Desarrollo",
-          "funding_stream": "FONDECYT",
-          "award_number": "3220567",
-          "award_uri": "",
-          "award_title": "",
-          "funder_identifiers": []
+          "@type": "schema:MonetaryGrant",
+          "name": "",
+          "identifier": [{"propertyID": "award_number", "value": "3220567"}],
+          "description": "FONDECYT",
+          "funder": {"@type": "schema:Organization", "name": "Agencia Nacional de Investigación y Desarrollo", "schema:identifier": []}
         }
       ],
-      "citations": []
+      "schema_citation": []
     }
 
     EJEMPLO 2: Dataset con licencia explícita, versión distinta a 4.0
@@ -1091,54 +683,27 @@ agents:
 
     RESPUESTA:
     {
-      "reasoning": "El texto menciona explícitamente Creative Commons y su versión (3.0) → rights_identifier CC-BY-3.0, no el 4.0 por defecto. rights_holder es la institución mencionada como responsable del dataset.",
-      "rights": [
-        {
-          "rights": "Creative Commons Attribution 3.0 (CC BY 3.0)",
-          "start_date": "",
-          "rights_uri": "https://creativecommons.org/licenses/by/3.0/",
-          "rights_identifier": "CC-BY-3.0",
-          "rights_identifier_scheme": "SPDX",
-          "scheme_uri": "https://spdx.org/licenses/",
-          "rights_condition": "",
-          "rights_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación"
-        }
+      "reasoning": "El texto menciona explícitamente Creative Commons y su versión (3.0) → identifier CC-BY-3.0, no el 4.0 por defecto. schema_copyright_holder es la institución mencionada como responsable del dataset.",
+      "schema_license": [
+        {"name": "Creative Commons Attribution 3.0 (CC BY 3.0)", "url": "https://creativecommons.org/licenses/by/3.0/", "identifier": "CC-BY-3.0"}
       ],
-      "funding_references": [],
-      "citations": []
+      "schema_conditions_of_access": [],
+      "schema_copyright_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
+      "schema_funding": [],
+      "schema_citation": []
     }
 
-    EJEMPLO 3: Dataset de portal de datos abiertos del Estado, sin licencia SPDX concreta
-    Contexto: "Dataset de gastos municipales, disponible en datos.gob.cl como datos abiertos del Estado de Chile."
-
-    RESPUESTA:
-    {
-      "reasoning": "El texto menciona explícitamente 'datos abiertos del Estado de Chile' → PRIORIDAD 3. No hay una licencia SPDX concreta citada (no dice 'CC BY' ni ninguna licencia con nombre), así que NO asigno rights_identifier — solo la etiqueta descriptiva y el titular.",
-      "rights": [
-        {
-          "rights": "Datos Abiertos del Estado de Chile",
-          "start_date": "",
-          "rights_uri": "",
-          "rights_identifier": "",
-          "rights_identifier_scheme": "",
-          "scheme_uri": "",
-          "rights_condition": "",
-          "rights_holder": "Estado de Chile"
-        }
-      ],
-      "funding_references": [],
-      "citations": []
-    }
-
-    EJEMPLO 4: Dataset con DOI y cita, SIN mención de licencia
+    EJEMPLO 3: Dataset con DOI y cita, SIN mención de licencia
     Contexto: "Dataset de calidad del aire (DOI: 10.1234/5678). Publicado en el Journal of Environmental Sciences, Vol. 45, No. 2, pp. 12-25."
 
     RESPUESTA:
     {
-      "reasoning": "Sin mención de licencia → rights vacío. Sin financiamiento mencionado → funding_references vacío. El dataset está publicado dentro de una revista con volumen, número y páginas → un objeto en citations con esos datos de la publicación anfitriona.",
-      "rights": [],
-      "funding_references": [],
-      "citations": [
+      "reasoning": "Sin mención de licencia → schema_license vacío. Sin financiamiento mencionado. El dataset está publicado dentro de una revista con volumen, número y páginas → un objeto en schema_citation con esos datos.",
+      "schema_license": [],
+      "schema_conditions_of_access": [],
+      "schema_copyright_holder": "",
+      "schema_funding": [],
+      "schema_citation": [
         {
           "title": "Journal of Environmental Sciences",
           "volume": "45",
@@ -1152,24 +717,12 @@ agents:
       ]
     }
 
-    EJEMPLO 5: Solo el título del dataset, sin publicación anfitriona (contraste con el EJEMPLO 4)
-    Contexto: "Dataset de calidad del aire de la Región Metropolitana, sin más información de publicación."
-
-    RESPUESTA:
-    {
-      "reasoning": "Hay un título de dataset pero ninguna señal de que esté publicado dentro de una revista, congreso o libro (sin volumen, número, páginas ni lugar/fecha de conferencia) → citations vacío, no relleno con el título del propio dataset.",
-      "rights": [],
-      "funding_references": [],
-      "citations": []
-    }
-
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on:
   - core_metadata
   - creators_publishers
   context_fields:
-  - resource
-  - publishers
+  - schema_publisher
   model: deepseek-v4-flash
   provider: opencode
   temperature: 0.0
@@ -1180,19 +733,23 @@ agents:
 - id: media_files
   name: Media Files
   description: 'Describe los archivos multimedia del recurso: formato, tamaño, URI,
-    procedencia, título y descripción.'
+    variable medida, calidad y procedencia de los datos.'
   fields:
-  - media_files
+  - schema_distribution
+  - schema_variable_measured
+  - schema_measurement_technique
+  - dqv_quality_measurement
+  - prov_generated_by
   system_prompt: *shared_system_prompt
   prompt: |
-    Tu tarea: describir los archivos descargables y datasets asociados al recurso.
+    Tu tarea: describir los archivos descargables del recurso y, si el texto lo permite, la variable medida, técnica de medición, calidad de los datos y procedencia.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
     Paso 1: Lee el título, descripción y metadata disponible del recurso.
 
-    Paso 2: IDENTIFICA EL O LOS ARCHIVOS DESCARGABLES
-    - Busca URLs de descarga (archivos, APIs, servicios web) en el texto. Si NO hay ninguna URL de descarga real, NO crees ningún objeto en media_files — un objeto con file_uri vacío no tiene sentido.
+    Paso 2: IDENTIFICA EL O LOS ARCHIVOS DESCARGABLES (schema_distribution)
+    - Busca URLs de descarga (archivos, APIs, servicios web) en el texto. Si NO hay ninguna URL de descarga real, NO crees ningún objeto — un objeto sin contentUrl no tiene sentido.
     - Para CADA URL, determina su formato IANA (tipo MIME) a partir de:
       a) La extensión del archivo en la URL (.kml, .kmz, .zip, .csv, .json, .tif, .pdf, etc.)
       b) La descripción explícita en el texto (ej. "formato KML", "archivo CSV")
@@ -1203,47 +760,44 @@ agents:
          - URL con /arcgis/rest/ → formato: "application/json"
          - URL con /wms o WMSServer → formato: "image/png"
          - URL con /wfs o WFSServer → formato: "application/json"
-      e) REGLA POR DEFECTO CONDICIONADA: usa "application/zip" ÚNICAMENTE si hay una URL de descarga real Y el texto sugiere un paquete de datos (shapefile, capa, "descargar", múltiples archivos comprimidos) pero ninguna de las vías anteriores determina el formato. Si hay URL pero ninguna pista de formato ni indicio de paquete comprimido, deja "format" vacío en vez de asumir ZIP.
-    - Detecta si hay múltiples archivos o un solo archivo — crea un objeto SEPARADO por cada URL de descarga encontrada.
+      e) REGLA POR DEFECTO CONDICIONADA: usa "application/zip" ÚNICAMENTE si hay una URL de descarga real Y el texto sugiere un paquete de datos (shapefile, capa, "descargar", múltiples archivos comprimidos) pero ninguna de las vías anteriores determina el formato. Si hay URL pero ninguna pista de formato ni indicio de paquete comprimido, deja "encodingFormat" vacío en vez de asumir ZIP.
+    - Formato de cada entrada: {"contentUrl": "", "encodingFormat": "", "contentSize": [], "checksum": "", "temporal_resolution": ""}
+    - contentSize: {"size": numero, "unit": "bytes|KB|MB|GB"} SOLO si el texto menciona el peso; si no, [].
+    - checksum (MD5, SHA-1, SHA-256) si está en el texto.
+    - temporal_resolution (daily, monthly, yearly, hourly) si está en el texto.
+    - Detecta si hay múltiples archivos o uno solo — crea un objeto SEPARADO por cada URL de descarga encontrada.
 
-    Paso 3: OBTIENE EL PESO/TAMAÑO DEL ARCHIVO
-    - Busca en el texto menciones de peso (ej. "2.5 MB", "450 KB", "1.2 GB")
-    - Si NO se menciona el peso → sizes = []
-    - Formato del peso: {"size": numero, "unit": "bytes|KB|MB|GB"}
-
-    Paso 4: EXTRAE INFORMACIÓN TÉCNICA DE CADA ARCHIVO
-    - Checksum (MD5, SHA-1, SHA-256) si está en el texto
-    - Resolución temporal (daily, monthly, yearly, hourly) si está en el texto
-
-    Paso 5: EXTRAE METADATOS DEL CONTENIDO
-    - Variable medida, técnica de medición, calidad de los datos, procedencia: solo si están explícitamente en el texto
+    Paso 3: METADATOS DEL CONTENIDO (a nivel del recurso, no por archivo — solo si están explícitamente en el texto)
+    - schema_variable_measured: [{"name": "<variable medida>"}], una entrada por variable distinta mencionada.
+    - schema_measurement_technique: ["<técnica>"], lista de strings.
+    - dqv_quality_measurement: [{"measure": "<qué se midió de la calidad>", "value": "<resultado, si el texto lo da>"}]
+    - prov_generated_by: {"description": "<procedencia o instrumentación de los datos>"} — un solo objeto, no una lista.
+    - Si el texto no menciona ninguno de estos → dejar la lista/objeto vacío correspondiente.
 
     === REGLAS OBLIGATORIAS ===
-    - **CAMPO OBLIGATORIO:** el campo "media_files" SIEMPRE debe existir en la salida JSON, aunque sea []. NUNCA lo omitas.
+    - **CAMPO OBLIGATORIO:** "schema_distribution" SIEMPRE debe existir en la salida JSON, aunque sea []. NUNCA lo omitas.
     - NO inventar información
-    - Si no hay archivos descargables → {"media_files": []}
-    - NUNCA crear un objeto en media_files con file_uri vacío
+    - Si no hay archivos descargables → schema_distribution: []
+    - NUNCA crear un objeto en schema_distribution sin contentUrl
     - Si un campo no tiene información en el texto → dejar "" (string vacío) o [] (array vacío)
     - Devolver SOLO JSON válido
-    - El campo "format" debe usar el tipo MIME IANA que corresponda según la extensión, descripción o patrón de URL del archivo
 
     === FORMATO EXACTO DE SALIDA ===
     {
       "reasoning": "",
-      "media_files": [
+      "schema_distribution": [
         {
-          "sizes": [],
-          "physical_carrier": "digital",
-          "format": "",
-          "variable_measured": "",
+          "contentUrl": "",
+          "encodingFormat": "",
+          "contentSize": [],
           "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "",
-          "file_uri": "",
           "temporal_resolution": ""
         }
-      ]
+      ],
+      "schema_variable_measured": [],
+      "schema_measurement_technique": [],
+      "dqv_quality_measurement": [],
+      "prov_generated_by": {}
     }
 
     === EJEMPLOS ===
@@ -1253,142 +807,52 @@ agents:
 
     RESPUESTA:
     {
-      "reasoning": "Hay una URL de descarga real con extensión .kml → formato KML determinado por extensión, no por el default. Peso mencionado explícitamente.",
-      "media_files": [
+      "reasoning": "Hay una URL de descarga real con extensión .kml → formato KML determinado por extensión. Peso mencionado explícitamente. Procedencia institucional explícita → prov_generated_by.",
+      "schema_distribution": [
         {
-          "sizes": [{"size": 2.5, "unit": "MB"}],
-          "physical_carrier": "digital",
-          "format": "application/vnd.google-earth.kml+xml",
-          "variable_measured": "",
+          "contentUrl": "https://datos.gob.cl/concesiones.kml",
+          "encodingFormat": "application/vnd.google-earth.kml+xml",
+          "contentSize": [{"size": 2.5, "unit": "MB"}],
           "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "Ministerio de Bienes Nacionales",
-          "file_uri": "https://datos.gob.cl/concesiones.kml",
           "temporal_resolution": ""
         }
-      ]
+      ],
+      "schema_variable_measured": [],
+      "schema_measurement_technique": [],
+      "dqv_quality_measurement": [],
+      "prov_generated_by": {"description": "Datos del Ministerio de Bienes Nacionales"}
     }
 
-    EJEMPLO 2: Dataset en SHP (ZIP), formato explícito por extensión
-    Contexto: "Establecimientos de salud. URL: https://deis.minsal.cl/establecimientos.zip. Peso 1.2 MB. Datos del Ministerio de Salud."
-
-    RESPUESTA:
-    {
-      "reasoning": "Extensión .zip explícita en la URL → application/zip determinado por extensión real, no por el default condicionado.",
-      "media_files": [
-        {
-          "sizes": [{"size": 1.2, "unit": "MB"}],
-          "physical_carrier": "digital",
-          "format": "application/zip",
-          "variable_measured": "",
-          "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "Ministerio de Salud",
-          "file_uri": "https://deis.minsal.cl/establecimientos.zip",
-          "temporal_resolution": ""
-        }
-      ]
-    }
-
-    EJEMPLO 3: Servicio ArcGIS REST (MapServer)
-    Contexto: "Visor de Obras MOP. URL: https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer. Fuente: Ministerio de Obras Públicas."
+    EJEMPLO 2: Servicio ArcGIS REST (MapServer)
+    Contexto: "Visor de Obras MOP. URL: https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer."
 
     RESPUESTA:
     {
       "reasoning": "La URL coincide con el patrón ArcGIS REST /arcgis/rest/.../MapServer → formato application/json por patrón conocido, sin peso mencionado.",
-      "media_files": [
+      "schema_distribution": [
         {
-          "sizes": [],
-          "physical_carrier": "digital",
-          "format": "application/json",
-          "variable_measured": "",
+          "contentUrl": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
+          "encodingFormat": "application/json",
+          "contentSize": [],
           "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "Ministerio de Obras Públicas",
-          "file_uri": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
           "temporal_resolution": ""
         }
-      ]
+      ],
+      "schema_variable_measured": [],
+      "schema_measurement_technique": [],
+      "dqv_quality_measurement": [],
+      "prov_generated_by": {}
     }
 
-    EJEMPLO 4: Servicio WMS con GetCapabilities
-    Contexto: "Plan Cuadrante Carabineros. URL: https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities. Fuente: Carabineros de Chile."
-
-    RESPUESTA:
-    {
-      "reasoning": "GetCapabilities en la URL → application/xml por patrón conocido.",
-      "media_files": [
-        {
-          "sizes": [],
-          "physical_carrier": "digital",
-          "format": "application/xml",
-          "variable_measured": "",
-          "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "Carabineros de Chile",
-          "file_uri": "https://geoportal.cl/geoserver/Plan_Cuadrante/wms?request=GetCapabilities",
-          "temporal_resolution": ""
-        }
-      ]
-    }
-
-    EJEMPLO 5: URL de descarga sin pistas de formato, pero con indicio de paquete de datos (aplica el default condicionado)
-    Contexto: "Datos geográficos. URL de descarga: https://datos.gob.cl/recurso/descargar?id=12345. Peso 3.7 MB. Descarga el paquete completo de capas. Fuente: Ministerio de Obras Públicas."
-
-    RESPUESTA:
-    {
-      "reasoning": "La URL no tiene extensión ni tipo MIME explícito, pero el texto dice 'descarga el paquete completo de capas' → indicio de paquete de datos, así que aplica el default condicionado application/zip.",
-      "media_files": [
-        {
-          "sizes": [{"size": 3.7, "unit": "MB"}],
-          "physical_carrier": "digital",
-          "format": "application/zip",
-          "variable_measured": "",
-          "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "Ministerio de Obras Públicas",
-          "file_uri": "https://datos.gob.cl/recurso/descargar?id=12345",
-          "temporal_resolution": ""
-        }
-      ]
-    }
-
-    EJEMPLO 6: URL de descarga sin ninguna pista de formato ni indicio de paquete (NO aplica el default)
-    Contexto: "Documento de referencia. URL: https://ejemplo.cl/recurso?id=999. Sin más detalles sobre el contenido del archivo."
-
-    RESPUESTA:
-    {
-      "reasoning": "Hay una URL real, pero ni extensión, ni tipo MIME, ni ningún indicio de que sea un paquete de datos comprimido → dejo format vacío en vez de asumir ZIP por defecto.",
-      "media_files": [
-        {
-          "sizes": [],
-          "physical_carrier": "digital",
-          "format": "",
-          "variable_measured": "",
-          "checksum": "",
-          "data_quality": "",
-          "measurement_technique": "",
-          "provenance": "",
-          "file_uri": "https://ejemplo.cl/recurso?id=999",
-          "temporal_resolution": ""
-        }
-      ]
-    }
-
-    EJEMPLO 7: Sin archivos descargables
+    EJEMPLO 3: Sin archivos descargables
     Contexto: "Página web informativa sin archivos descargables ni URLs de descarga."
 
     RESPUESTA:
-    {"reasoning": "No hay ninguna URL de descarga en el texto → no se crea ningún objeto.", "media_files": []}
+    {"reasoning": "No hay ninguna URL de descarga en el texto → no se crea ningún objeto.", "schema_distribution": [], "schema_variable_measured": [], "schema_measurement_technique": [], "dqv_quality_measurement": [], "prov_generated_by": {}}
 
     === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: {"format": "application/zip", "file_uri": ""} — crear un objeto media_files sin ninguna URL real, solo para "completar" el default.
-    ✅ BIEN: si no hay URL de descarga real, no crear el objeto — media_files: [].
+    ❌ MAL: {"encodingFormat": "application/zip", "contentUrl": ""} — crear un objeto sin ninguna URL real, solo para "completar" el default.
+    ✅ BIEN: si no hay URL de descarga real, no crear el objeto — schema_distribution: [].
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
@@ -1439,9 +903,10 @@ default_provider: opencode
 # PipelineConfig.effective_max_workers's cascade. Override per-invocation with
 # `gema process --max-workers N`.
 max_workers: 1
-# Post-merge resolution of ROR/ISNI identifiers for creators/publishers/
-# funders that the LLM left blank (prompts intentionally no longer supply a
-# hardcoded lookup table — see PASO 3 in the creators_publishers prompt).
+# Post-merge resolution of ROR/ISNI/ORCID identifiers for schema:creator/
+# schema:publisher/schema:funding that the LLM left blank (prompts
+# intentionally no longer supply a hardcoded lookup table — see PASO 4 in
+# the creators_publishers prompt).
 enable_identifier_enrichment: true
 # Fetches each resource's URL and feeds page text to agents as extra context.
 # Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
