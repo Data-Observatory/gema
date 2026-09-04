@@ -97,22 +97,37 @@ class TestBackfillCreators:
         enricher = DOIResolverEnricher(_mock_client())
         doc = _doi_doc()
         enricher.enrich(doc)
-        creators = doc.get_field("schema:creator")
+        # Backfilled schema:creator is wrapped {"@list": [...]} (constraint
+        # C4), same as what merge_agent_results would have produced.
         # "Apellido, Nombre" -- matches creators_publishers' own convention
         # (config/agents.yaml), not Crossref's raw given/family order.
-        assert creators[0] == {
-            "@type": "schema:Person",
-            "name": "Doe, Jane",
-            "given_name": "Jane",
-            "family_name": "Doe",
-            "schema:identifier": [],
-            "schema:affiliation": [
-                {"@type": "schema:Organization", "name": "GFZ Potsdam", "schema:identifier": []}
-            ],
-        }
         # Second author has no given name -- name falls back to family only.
-        assert creators[1]["name"] == "Smith"
-        assert creators[1]["schema:affiliation"] == []
+        assert doc.get_field("schema:creator") == {
+            "@list": [
+                {
+                    "@type": "schema:Person",
+                    "name": "Doe, Jane",
+                    "given_name": "Jane",
+                    "family_name": "Doe",
+                    "schema:identifier": [],
+                    "schema:affiliation": [
+                        {
+                            "@type": "schema:Organization",
+                            "name": "GFZ Potsdam",
+                            "schema:identifier": [],
+                        }
+                    ],
+                },
+                {
+                    "@type": "schema:Person",
+                    "name": "Smith",
+                    "given_name": "",
+                    "family_name": "Smith",
+                    "schema:identifier": [],
+                    "schema:affiliation": [],
+                },
+            ]
+        }
 
     def test_organizational_author_becomes_organizational_creator(self) -> None:
         """Crossref emits institutional authors as a bare {"name": ...},
@@ -128,15 +143,16 @@ class TestBackfillCreators:
         enricher = DOIResolverEnricher(client)
         doc = _doi_doc()
         enricher.enrich(doc)
-        creators = doc.get_field("schema:creator")
-        assert creators == [
-            {
-                "@type": "schema:Organization",
-                "name": "Deutsches GeoForschungsZentrum GFZ",
-                "schema:identifier": [],
-                "schema:affiliation": [],
-            }
-        ]
+        assert doc.get_field("schema:creator") == {
+            "@list": [
+                {
+                    "@type": "schema:Organization",
+                    "name": "Deutsches GeoForschungsZentrum GFZ",
+                    "schema:identifier": [],
+                    "schema:affiliation": [],
+                }
+            ]
+        }
 
     def test_preserves_existing_creators(self) -> None:
         enricher = DOIResolverEnricher(_mock_client())

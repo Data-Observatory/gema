@@ -146,6 +146,21 @@ class TestAuthors:
         assert author_field["value"][0]["authorName"]["value"] == "Unknown"
         assert any("no creators found" in w for w in result.warnings)
 
+    def test_wrapped_jsonld_list_creator_is_read(self):
+        """schema:creator is {"@list": [...]} once a real pipeline run has
+        gone through CDIFDiscoveryProfile.merge_agent_results (constraint
+        C4) -- must not be mistaken for a bare list (iterating a dict
+        iterates its keys, not entries)."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": {"@list": [_org("Ministerio de Hacienda")]},
+        })
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        author_field = next(f for f in fields if f["typeName"] == "author")
+        assert author_field["value"][0]["authorName"]["value"] == "Ministerio de Hacienda"
+        assert not any("no creators found" in w for w in result.warnings)
+
 
 class TestDatasetContact:
     def test_prefers_contributor_contact_person(self):
@@ -167,6 +182,21 @@ class TestDatasetContact:
         doc = make_document(**{
             "schema:name": "T",
             "schema:creator": [_org("Someone") | {"email": "creator@example.org"}],
+            "schema:description": "D.",
+        })
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+        fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
+        assert contact_field["value"][0]["datasetContactEmail"]["value"] == "creator@example.org"
+        assert result.warnings == []
+
+    def test_falls_back_to_creator_email_with_wrapped_jsonld_list(self):
+        """Same fallback, but schema:creator is {"@list": [...]} (constraint
+        C4) -- the real shape once a document has gone through
+        CDIFDiscoveryProfile.merge_agent_results."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": {"@list": [_org("Someone") | {"email": "creator@example.org"}]},
             "schema:description": "D.",
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))

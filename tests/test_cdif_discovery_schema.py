@@ -227,6 +227,27 @@ class TestMergeAgentResults:
         for key in ("@id", "@type", "@context", "schema:dateModified", "schema:subjectOf"):
             assert key in doc.fields
 
+    def test_schema_creator_wrapped_in_jsonld_list_construct(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        """Constraint C4: schema:creator is order-preserving JSON-LD --
+        {"@list": [...]}, not a bare array like schema:contributor -- per
+        the vendored schema.json's own field description. Agents still
+        emit a plain list; merge_agent_results wraps it."""
+        entry = {"@type": "schema:Person", "name": "Jane Doe"}
+        results = [
+            AgentResult(field_name="schema_creator", value=[entry]),
+            AgentResult(field_name="schema_contributor", value=[entry]),
+        ]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("schema:creator") == {"@list": [entry]}
+        assert doc.get_field("schema:contributor") == [entry]
+
+    def test_empty_schema_creator_still_wrapped(self, schema: CDIFDiscoveryProfile) -> None:
+        results = [AgentResult(field_name="schema_creator", value=[])]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("schema:creator") == {"@list": []}
+
     def test_a_misconfigured_agent_cannot_overwrite_envelope_fields(
         self, schema: CDIFDiscoveryProfile
     ) -> None:

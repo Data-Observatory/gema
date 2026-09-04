@@ -87,6 +87,20 @@ class TestEnrichCreators:
         assert identifiers[1]["value"] == "000000040628717X"
         assert identifiers[1]["propertyID"] == "ISNI"
 
+    def test_wrapped_jsonld_list_creator_is_enriched_in_place(self) -> None:
+        """schema:creator arrives as {"@list": [...]} once a real pipeline
+        run has gone through CDIFDiscoveryProfile.merge_agent_results
+        (constraint C4) -- the enricher must unwrap to reach entries, and
+        mutations must land back in the same wrapped document field."""
+        resolver = _mock_resolver()
+        enricher = IdentifierEnricher(resolver)
+        doc = _doc_with_fields({"schema:creator": {"@list": [_org("Ministerio de Hacienda")]}})
+        enricher.enrich(doc)
+        wrapped = doc.get_field("schema:creator")
+        assert isinstance(wrapped, dict) and "@list" in wrapped
+        identifiers = wrapped["@list"][0]["schema:identifier"]
+        assert identifiers[0]["propertyID"] == "ROR"
+
     def test_personal_creator_without_name_split_not_resolved(self) -> None:
         """No given_name/family_name split — nothing to search ORCID with."""
         resolver = _mock_resolver()
