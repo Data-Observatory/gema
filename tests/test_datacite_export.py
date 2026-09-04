@@ -360,6 +360,168 @@ class TestContributorRoles:
         assert any("unmapped role" in w for w in result.warnings)
 
 
+class TestSubjects:
+    def test_keywords_map_to_subjects(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:keywords": [
+                {"schema:name": "Open budgets", "schema:inDefinedTermSet": "Finance", "schema:identifier": "https://example.org/terms/1"},
+                {"schema:name": "Municipal spending"},
+            ],
+        })
+        result = to_datacite_json(doc)
+        subjects = _fields(result)["subjects"]
+        assert subjects == [
+            {"subject_name": "Open budgets", "subject_scheme": "Finance", "value_uri": "https://example.org/terms/1"},
+            {"subject_name": "Municipal spending", "subject_scheme": "", "value_uri": ""},
+        ]
+
+    def test_no_keywords_produces_empty_subjects_without_warning(self):
+        """No subjects extracted is a normal, non-alarming outcome -- not
+        every resource has keywords worth surfacing."""
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["subjects"] == []
+        assert not any("subject" in w.lower() for w in result.warnings)
+
+    def test_entries_without_name_are_skipped(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:keywords": [{"schema:inDefinedTermSet": "Finance"}, "not a dict"],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["subjects"] == []
+
+
+class TestCategories:
+    def test_about_maps_to_categories(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:about": [{"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"}],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["categories"] == [
+            {"name": "Economía y negocios", "sub_category": "Ciencias Sociales"}
+        ]
+
+    def test_no_about_produces_empty_categories_without_warning(self):
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["categories"] == []
+        assert not any("categor" in w.lower() for w in result.warnings)
+
+    def test_entries_without_name_are_skipped(self):
+        doc = make_document(**{"schema:name": "T", "schema:about": [{"schema:inDefinedTermSet": "X"}]})
+        result = to_datacite_json(doc)
+        assert _fields(result)["categories"] == []
+
+
+class TestAudiences:
+    def test_audience_entries_pass_through(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:audience": [
+                {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"},
+            ],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["audiences"] == [
+            {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"}
+        ]
+
+    def test_no_audience_produces_empty_list_without_warning(self):
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["audiences"] == []
+        assert not any("audience" in w.lower() for w in result.warnings)
+
+    def test_junk_shapes_filtered_out(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:audience": [{"mediator": "no audience key"}, "not a dict", {}],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["audiences"] == []
+
+
+class TestGeoLocations:
+    def test_spatial_coverage_maps_to_geo_locations(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:spatialCoverage": [
+                {
+                    "schema:name": "Chile",
+                    "schema:description": "Cobertura nacional",
+                    "schema:geo": {"schema:box": "-75.956,-57.987,-65.084,-16.309"},
+                }
+            ],
+        })
+        result = to_datacite_json(doc)
+        locations = _fields(result)["geo_locations"]
+        # Passes through DataCiteSchema46._normalize_geo_locations, which
+        # fills in geo_location_polygon/coverage defaults -- not a bare
+        # pass-through of the exporter's own raw dict.
+        assert locations == [
+            {
+                "geo_location_place": "Chile",
+                "geo_location_point": "",
+                "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
+                "geo_location_polygon": "",
+                "geo_description": "Cobertura nacional",
+                "coverage": "",
+            }
+        ]
+
+    def test_entries_without_name_or_description_are_skipped(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:spatialCoverage": [{"schema:geo": {"schema:box": "1,2,3,4"}}],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["geo_locations"] == []
+
+    def test_no_spatial_coverage_produces_empty_list(self):
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["geo_locations"] == []
+
+
+class TestCitations:
+    def test_citation_entries_pass_through(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:citation": [
+                {"title": "Climatic regionalization of continental Chile", "volume": "13", "issue": "2", "start_page": "66", "end_page": "73"},
+            ],
+        })
+        result = to_datacite_json(doc)
+        # Passes through DataCiteSchema46._normalize_citations, which fills
+        # in edition/conference_place/conference_date defaults.
+        assert _fields(result)["citations"] == [
+            {
+                "title": "Climatic regionalization of continental Chile",
+                "volume": "13",
+                "issue": "2",
+                "start_page": "66",
+                "end_page": "73",
+                "edition": "",
+                "conference_place": "",
+                "conference_date": "",
+            }
+        ]
+
+    def test_no_citation_produces_empty_list_without_warning(self):
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert _fields(result)["citations"] == []
+        assert not any("citation" in w.lower() for w in result.warnings)
+
+    def test_entries_without_title_are_skipped(self):
+        doc = make_document(**{"schema:name": "T", "schema:citation": [{"volume": "1"}, "not a dict"]})
+        result = to_datacite_json(doc)
+        assert _fields(result)["citations"] == []
+
+
 class TestTemporalEvents:
     def test_frequency_survives_datacite_normalization(self):
         """DataCiteSchema46._normalize_temporal_events only keeps dicts
@@ -561,3 +723,17 @@ class TestAgainstRealGoldenFixture:
         # the mapping doesn't fabricate one.
         assert data["rights"][0]["rights"] == "Datos Abiertos del Estado de Chile"
         assert data["rights"][0]["rights_identifier"] == ""
+
+        # This fixture carries real, populated schema:keywords/about/
+        # audience/spatialCoverage -- tightened per Opus review (2026-09-04,
+        # docs/cdif_pivot_implementation_plan.md's Backlog) so a broken
+        # reverse mapping on any of these can't pass silently just because
+        # titles/creators/publishers/language/identifier/rights looked fine.
+        subject_names = {s["subject_name"] for s in data["subjects"]}
+        assert "Presupuesto público" in subject_names
+        assert data["categories"][0]["name"] == "Economía y negocios"
+        assert data["categories"][0]["sub_category"] == "Ciencias Sociales"
+        assert data["audiences"][0]["audience"] == "Investigadores"
+        assert len(data["audiences"]) == len(raw["schema:audience"])
+        assert data["geo_locations"][0]["geo_location_place"] == "Chile"
+        assert data["geo_locations"][0]["geo_location_box"] == "-75.956,-57.987,-65.084,-16.309"
