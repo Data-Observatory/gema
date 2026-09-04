@@ -167,7 +167,15 @@ class TestDatasetContact:
         doc = make_document(**{
             "schema:name": "T",
             "schema:contributor": [
-                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "person@example.org"}
+                {
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "ContactPerson",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Someone",
+                        "schema:email": "person@example.org",
+                    },
+                }
             ],
             "schema:creator": [_org("Someone") | {"schema:email": "other@example.org"}],
             "schema:description": "D.",
@@ -214,9 +222,13 @@ class TestDatasetContact:
             "schema:name": "T",
             "schema:contributor": [
                 {
-                    "schema:name": "Someone",
-                    "role": "ContactPerson",
-                    "schema:email": "person@example.org; +34 123 456 789",
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "ContactPerson",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Someone",
+                        "schema:email": "person@example.org; +34 123 456 789",
+                    },
                 }
             ],
             "schema:creator": [_org("Someone")],
@@ -235,9 +247,13 @@ class TestDatasetContact:
             "schema:name": "T",
             "schema:contributor": [
                 {
-                    "schema:name": "Someone",
-                    "role": "ContactPerson",
-                    "schema:email": "+34 123 456 789; person@example.org",
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "ContactPerson",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Someone",
+                        "schema:email": "+34 123 456 789; person@example.org",
+                    },
                 }
             ],
             "schema:creator": [_org("Someone")],
@@ -379,7 +395,15 @@ class TestSubjectClassification:
             "schema:creator": [_org("Someone")],
             "schema:description": "D.",
             "schema:contributor": [
-                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "someone@example.org"}
+                {
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "ContactPerson",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Someone",
+                        "schema:email": "someone@example.org",
+                    },
+                }
             ],
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))

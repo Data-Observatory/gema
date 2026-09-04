@@ -52,6 +52,7 @@ from metadata_enricher.schemas.datacite import DataCiteOutputModel, DataCiteSche
 from metadata_enricher.types import (
     MetadataDocument,
     TokenUsage,
+    entity_identifiers,
     first_type_label,
     jsonld_list_unwrap,
 )
@@ -120,13 +121,17 @@ def _creator_list(value: object) -> list[dict[str, Any]]:
     return jsonld_list_unwrap(value)
 
 
-def _identifier_entries(entries: object) -> list[dict[str, Any]]:
-    """``schema:identifier`` PropertyValue list -> DataCite's
-    ``name_identifiers``/``funder_identifiers`` shape."""
+def _identifier_entries(entity: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Every identifier on a Person/Organization/MonetaryGrant *entity*
+    entry -> DataCite's ``name_identifiers``/``funder_identifiers`` shape
+    (which wants *every* resolved identifier, not just the preferred one).
+
+    ``schema:identifier`` is singular on these entries as of Open Question
+    #16 (docs/cdif_pivot_implementation_plan.md) -- any additional resolved
+    identifier lives in the same entry's ``schema:sameAs`` overflow.
+    ``types.entity_identifiers`` reads both."""
     out: list[dict[str, Any]] = []
-    for entry in _as_list(entries):
-        if not isinstance(entry, dict):
-            continue
+    for entry in entity_identifiers(entity):
         value = entry.get("schema:value")
         if not value:
             continue
@@ -140,10 +145,19 @@ def _identifier_entries(entries: object) -> list[dict[str, Any]]:
     return out
 
 
-def _preferred_identifier(entries: object) -> tuple[str, str, str]:
+def _preferred_identifier(value: object) -> tuple[str, str, str]:
     """(value, scheme, url) for the singular identifier slots
-    (publisher_identifier, affiliation_identifier) -- first entry wins."""
-    for entry in _as_list(entries):
+    (publisher_identifier, affiliation_identifier) -- *value* is normally
+    already the singular ``schema:identifier`` dict itself (Open Question
+    #16), but a bare list is also accepted defensively (legacy/synthetic
+    shape) -- first entry wins in that case."""
+    if isinstance(value, dict) and value.get("schema:value"):
+        return (
+            str(value["schema:value"]),
+            str(value.get("schema:propertyID", "")),
+            str(value.get("schema:url", "")),
+        )
+    for entry in _as_list(value):
         if isinstance(entry, dict) and entry.get("schema:value"):
             return (
                 str(entry["schema:value"]),
@@ -209,6 +223,23 @@ def _contact_string(entry: dict[str, Any]) -> str:
     return name or email
 
 
+def _role_and_actor(entry: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Splits a ``schema:contributor`` entry into ``(role, actor)``.
+
+    A role-carrying entry is the vendored Role wrapper (``{"@type":
+    ["schema:Role"], "schema:roleName": ..., "schema:contributor":
+    <Person|Organization>}``, Open Question #17, resolved) -- the actor's
+    own name/email live inside that nested ``schema:contributor``, not as
+    flat siblings. A bare Person/Organization/``{@id}`` entry (no role at
+    all -- still valid per the vendored schema's own ``anyOf``) returns
+    ``("", entry)`` unchanged, since there's no wrapper to unwrap."""
+    if first_type_label(entry.get("@type")) == "Role":
+        role = str(entry.get("schema:roleName") or "")
+        actor = entry.get("schema:contributor")
+        return role, (actor if isinstance(actor, dict) else {})
+    return "", entry
+
+
 def _build_resource(
     document: MetadataDocument, warnings: list[str]
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -249,20 +280,19 @@ def _build_resource(
             if isinstance(target, dict) and target.get("schema:url"):
                 resource["thumbnail"] = target["schema:url"]
 
-    # NOTE: "role" is read bare, not "schema:role" -- a real Role/roleName
-    # wrapper mismatch flagged in docs/cdif_pivot_implementation_plan.md's
-    # Open questions log, deliberately not restructured by this pass.
+    # Each entry is split into (role, actor) via _role_and_actor -- see that
+    # helper's docstring for the Role-wrapper shape (Open Question #17).
     leftover_contributors: list[dict[str, Any]] = []
     seen_roles: dict[str, list[str]] = {}
     for entry in _as_list(document.get_field("schema:contributor")):
         if not isinstance(entry, dict):
             continue
-        role = str(entry.get("role") or "")
+        role, actor = _role_and_actor(entry)
         slot = _RESOURCE_ROLE_MAP.get(role)
         if slot is None:
             leftover_contributors.append(entry)
             continue
-        value = _contact_string(entry) if slot == "contact" else str(entry.get("schema:name") or "")
+        value = _contact_string(actor) if slot == "contact" else str(actor.get("schema:name") or "")
         if not value:
             continue
         if resource[slot]:
@@ -429,7 +459,7 @@ def _build_creators(
                 "email": entry.get("schema:email", ""),
                 "type": type_label,
                 "contributor_type": "",
-                "name_identifiers": _identifier_entries(entry.get("schema:identifier")),
+                "name_identifiers": _identifier_entries(entry),
                 "affiliations": _affiliations_from(entry.get("schema:affiliation")),
             }
         )
@@ -442,11 +472,12 @@ def _build_creators(
     # -built for an arbitrary role, so they surface as extra creator
     # entries carrying their role in contributor_type (Q2 mapping:
     # creators[].contributor_type <- schema:contributor Role{roleName}).
-    # NOTE: "role" is read bare -- see the Role/roleName wrapper mismatch
-    # flagged in docs/cdif_pivot_implementation_plan.md's Open questions log.
+    # _role_and_actor unwraps the vendored Role wrapper (Open Question #17,
+    # resolved) -- a bare (role-less) contributor entry, if one ever makes
+    # it this far, is its own actor and folds in with an empty role.
     for entry in leftover_contributors:
-        name = entry.get("schema:name")
-        role = entry.get("role") or ""
+        role, actor = _role_and_actor(entry)
+        name = actor.get("schema:name")
         if not name:
             continue
         warnings.append(
@@ -459,10 +490,10 @@ def _build_creators(
                 "creator_name_type": "Organizational",
                 "given_name": "",
                 "family_name": "",
-                "email": entry.get("schema:email", ""),
+                "email": actor.get("schema:email", ""),
                 "type": "Organization",
                 "contributor_type": role,
-                "name_identifiers": [],
+                "name_identifiers": _identifier_entries(actor),
                 "affiliations": [],
             }
         )
@@ -724,7 +755,7 @@ def _build_funding_references(document: MetadataDocument) -> list[dict[str, Any]
                 "award_uri": award_uri,
                 "award_title": entry.get("schema:name", ""),
                 "funder_identifiers": _identifier_entries(
-                    funder.get("schema:identifier") if isinstance(funder, dict) else None
+                    funder if isinstance(funder, dict) else None
                 ),
             }
         )
@@ -805,15 +836,19 @@ def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, A
 
 
 def _build_citations(document: MetadataDocument) -> list[dict[str, Any]]:
-    # schema:citation entries already use DataCite's own key names --
-    # this profile's prompt was written to match Q2's mapping verbatim.
+    # dcterms:bibliographicCitation (Open Question #19, resolved -- was
+    # schema:citation, forbidden outright by the vendored shacl.ttl's
+    # cdifd:citationProperty, sh:maxCount 0). Entries already use DataCite's
+    # own key names -- this profile's prompt was written to match Q2's
+    # mapping verbatim, and the rename kept the same structured per
+    # -citation shape (see cdif_discovery.py's field docstring for why).
     # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
     # Backlog): citations are optional bibliography data -- most resources
     # legitimately cite nothing, so an empty result here is silent by
     # design, same reasoning as subjects/categories/audiences above.
     return [
         entry
-        for entry in _as_list(document.get_field("schema:citation"))
+        for entry in _as_list(document.get_field("dcterms:bibliographicCitation"))
         if isinstance(entry, dict) and entry.get("title")
     ]
 

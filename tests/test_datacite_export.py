@@ -400,8 +400,20 @@ class TestContributorRoles:
         doc = make_document(**{
             "schema:name": "T",
             "schema:contributor": [
-                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "someone@example.org"},
-                {"schema:name": "Data Unit", "role": "Producer"},
+                {
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "ContactPerson",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Someone",
+                        "schema:email": "someone@example.org",
+                    },
+                },
+                {
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "Producer",
+                    "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "Data Unit"},
+                },
             ],
         })
         result = to_datacite_json(doc)
@@ -413,7 +425,16 @@ class TestContributorRoles:
         doc = make_document(**{
             "schema:name": "T",
             "schema:creator": [_org("Main Creator")],
-            "schema:contributor": [{"schema:name": "Data Curator Org", "role": "DataCurator"}],
+            "schema:contributor": [
+                {
+                    "@type": ["schema:Role"],
+                    "schema:roleName": "DataCurator",
+                    "schema:contributor": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Data Curator Org",
+                    },
+                }
+            ],
         })
         result = to_datacite_json(doc)
         data = _fields(result)
@@ -552,7 +573,7 @@ class TestCitations:
     def test_citation_entries_pass_through(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:citation": [
+            "dcterms:bibliographicCitation": [
                 {"title": "Climatic regionalization of continental Chile", "volume": "13", "issue": "2", "start_page": "66", "end_page": "73"},
             ],
         })
@@ -579,7 +600,7 @@ class TestCitations:
         assert not any("citation" in w.lower() for w in result.warnings)
 
     def test_entries_without_title_are_skipped(self):
-        doc = make_document(**{"schema:name": "T", "schema:citation": [{"volume": "1"}, "not a dict"]})
+        doc = make_document(**{"schema:name": "T", "dcterms:bibliographicCitation": [{"volume": "1"}, "not a dict"]})
         result = to_datacite_json(doc)
         assert _fields(result)["citations"] == []
 

@@ -39,9 +39,11 @@ gap in this module -- there's nothing on a CDIF Discovery document to map
 them from): `sdLicense` (a license for the *metadata record* itself, a
 different concept from `schema:license`'s license for the *data*),
 `citeAs` (a citation string/bibtex FOR the dataset -- distinct from
-`schema:citation`, which is bibliography cited *by* the dataset, and not
-something safe to synthesize from title/creator/date without risking a
-malformed or misleading citation), `isLiveDataset` (no CDIF field signals
+`dcterms:bibliographicCitation` (Open Question #19's resolution, replacing
+the earlier, SHACL-forbidden `schema:citation`), which is bibliography
+cited *by* the dataset, and not something safe to synthesize from
+title/creator/date without risking a malformed or misleading citation),
+`isLiveDataset` (no CDIF field signals
 this), and `sdVersion` (metadata-record versioning; CDIF has no field for
 it either).
 
@@ -83,6 +85,7 @@ from typing import Any
 from metadata_enricher.types import (
     MetadataDocument,
     TokenUsage,
+    entity_identifiers,
     first_type_label,
     jsonld_list_unwrap,
 )
@@ -149,8 +152,12 @@ class CroissantExportResult:
 
 
 def _first_identifier_url(entry: dict[str, Any]) -> str | None:
-    identifiers = entry.get("schema:identifier") or []
-    if identifiers and isinstance(identifiers[0], dict):
+    # schema:identifier is singular on a Person/Organization entry as of
+    # Open Question #16 (docs/cdif_pivot_implementation_plan.md); any
+    # additional resolved identifier lives in schema:sameAs. Only the
+    # preferred (first) one is needed here.
+    identifiers = entity_identifiers(entry)
+    if identifiers:
         url = identifiers[0].get("schema:url")
         if url:
             return str(url)

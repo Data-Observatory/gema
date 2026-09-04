@@ -43,7 +43,12 @@ from pydantic import BaseModel, ConfigDict
 from metadata_enricher.config.models import DataverseExportConfig, ProviderConfig
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client
-from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
+from metadata_enricher.types import (
+    MetadataDocument,
+    TokenUsage,
+    entity_identifiers,
+    jsonld_list_unwrap,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +165,13 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
                 "multiple": False,
                 "typeName": "authorAffiliation",
             }
-        identifiers = creator.get("schema:identifier") or []
+        # schema:identifier is singular on a Person/Organization entry as of
+        # Open Question #16 (docs/cdif_pivot_implementation_plan.md) -- an
+        # additional resolved identifier, if any, lives in that same
+        # entry's schema:sameAs overflow. entity_identifiers reads both,
+        # preferred first; Dataverse's authorIdentifier* fields only ever
+        # hold one value, so only the first (preferred) match is used here.
+        identifiers = entity_identifiers(creator)
         if identifiers:
             scheme = identifiers[0].get("schema:propertyID")
             identifier = identifiers[0].get("schema:value")
@@ -204,18 +215,23 @@ def _build_dataset_contact(
     name = None
     # schema:contributor entries tagged with a ContactPerson role are the
     # CDIF mapping's home for DataCite's old resource.contact (Q6 in
-    # docs/cdif_pivot_implementation_plan.md).
+    # docs/cdif_pivot_implementation_plan.md). A role-carrying entry is a
+    # Role wrapper ({"@type": ["schema:Role"], "schema:roleName": ...,
+    # "schema:contributor": <actor>}) as of Open Question #17's resolution
+    # -- the actor (name/email) lives inside that nested schema:contributor,
+    # not as a flat sibling. A bare Person/Organization/{@id} with no role
+    # at all is still valid per the vendored schema but never carries a
+    # ContactPerson role, so it's never a match here.
     for contributor in document.get_field("schema:contributor") or []:
-        # NOTE: "role" is read bare, not "schema:role" -- a real Role/
-        # roleName wrapper mismatch flagged in
-        # docs/cdif_pivot_implementation_plan.md's Open questions log,
-        # deliberately not restructured by this pass (see that doc).
-        if not isinstance(contributor, dict) or contributor.get("role") != "ContactPerson":
+        if not isinstance(contributor, dict) or contributor.get("schema:roleName") != "ContactPerson":
             continue
-        contact_email = _extract_email(contributor.get("schema:email"))
+        actor = contributor.get("schema:contributor")
+        if not isinstance(actor, dict):
+            continue
+        contact_email = _extract_email(actor.get("schema:email"))
         if contact_email:
             email = contact_email
-            name = contributor.get("schema:name")
+            name = actor.get("schema:name")
             break
     if not email:
         # No guaranteed contact-email field — fall back to the first
