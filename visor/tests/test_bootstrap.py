@@ -175,11 +175,11 @@ class TestLoadPipelineConfig:
         config_path = tmp_path / "agents.yaml"
         config_path.write_text(
             """
-schema_name: datacite-4.6
+schema_name: cdif-discovery
 agents:
   - id: a
     name: A
-    fields: [titles]
+    fields: [schema_name]
     prompt: x
     provider: p
 providers:
@@ -197,7 +197,7 @@ default_provider: p
         assert error is None
         assert config is not None
         assert schema is not None
-        assert schema.name == "datacite-4.6"
+        assert schema.name == "cdif-discovery"
 
     def test_applies_external_user_provider_overrides_even_when_found_directly(
         self, monkeypatch, tmp_path
@@ -211,7 +211,7 @@ default_provider: p
         config_path.write_text(
             yaml.safe_dump(
                 {
-                    "schema_name": "datacite-4.6",
+                    "schema_name": "cdif-discovery",
                     "providers": [
                         {"name": "opencode", "api_key_env": "OPENCODE_API_KEY", "default": True},
                         {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY", "default": False},
@@ -221,7 +221,7 @@ default_provider: p
                         {
                             "id": "a0",
                             "name": "A",
-                            "fields": ["titles"],
+                            "fields": ["schema_name"],
                             "prompt": "x",
                             "provider": "opencode",
                             "model": "deepseek-v4-flash",
