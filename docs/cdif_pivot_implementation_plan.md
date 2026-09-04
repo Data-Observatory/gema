@@ -23,7 +23,7 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 
 ## Step 1 — Vendor CDIF artifacts
 
-- [x] Resolve Open Question #1 — see Research findings above; **pending: user confirms `doc-corediscovery`@`81c28260` is the right pin** before committing vendored files
+- [x] Resolve Open Question #1 — confirmed: `doc-corediscovery`@`81c28260778426cc61302105fc7191b4db360bc9`
 - [ ] Vendor `schema.json` (from `CDIFDiscoveryProfileStructuredSchema.json`), `frame.jsonld` (from `CDIFDiscovery-frame.jsonld`), `shacl.ttl` (from `discoveryRules.shacl`) verbatim under `src/metadata_enricher/schemas/cdif/discovery/` — no separate context.jsonld (see above)
 - [ ] `VENDORED_SHA.txt` (SHA `81c28260778426cc61302105fc7191b4db360bc9` + repo URL + fetch date)
 - [ ] `tests/test_cdif_vendored_artifacts.py`: existence, JSON parses, shacl non-empty, SHA pattern, **open-world shape assertion** (no top-level `additionalProperties: false`, no flat top-level `required` — note the real schema uses `allOf`+`anyOf` conditional requirements instead of a flat list, adjust the assertion to check for absence of a *closed* top-level shape rather than absence of any required-ness at all)
@@ -31,11 +31,12 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 
 ## Step 2 — CDIF schema + pivot core
 
-- [ ] Resolve Open Question #2 (CDIF field coverage beyond the 7-field floor)
-- [ ] Resolve Open Question #3 (`extra="forbid"` vs `"allow"` on `CDIFDiscoveryProfile.output_model`, incl. `allow_partial` interaction)
-- [ ] `CDIFDiscoveryProfile` (`cdif_discovery.py`): name/version/output_model/`build_output_model` (cache+digest pattern)/`_NORMALIZER_DISPATCH`
+- [ ] Resolve Open Question #2 (CDIF field coverage beyond the 7-field floor — pick from the real 27-property list)
+- [x] Resolve Open Question #3: `extra="allow"` on `output_model`, plus a `model_validator(mode="after")` hard-enforcing the required floor (`@id, @type, @context, schema:name, schema:identifier, schema:dateModified, schema:subjectOf`) and the two conditional groups (`schema:license` OR `schema:conditionsOfAccess`; `schema:url` OR `schema:distribution`) — raises if the floor/groups aren't satisfied, allows anything else through
+- [ ] `CDIFDiscoveryProfile` (`cdif_discovery.py`): name/version/output_model/`build_output_model` (cache+digest pattern)/`_NORMALIZER_DISPATCH`/the required-floor `model_validator`
 - [ ] JSON-LD envelope (`@context`/`@id`/`@type`/`dcterms:conformsTo`/`schema:dateModified`) injected inside `merge_agent_results`; dead-link comment above `conformsTo` emission (spec §8)
-- [ ] Resolve Open Question #5 (SHACL/JSON-LD framing execute in v1, or vendored-but-unused placeholders — new deps `pyshacl`/`rdflib`/`pyld` are a real decision)
+- [x] Resolve Open Question #5: yes, execute SHACL + JSON-LD framing in v1
+- [ ] Add `pyshacl`, `rdflib`, `pyld` to `pyproject.toml` deps; `validate_output` runs SHACL (`shacl.ttl`) as the spec's "non-blocking conformance check" and JSON-LD framing (`frame.jsonld`) as part of serialization/validation — note this is a deliberate deviation from spec §4's "no new runtime dependencies," record it as an amendment in `docs/codata_mcp_croissant_cdifspecs.md`'s changelog
 - [ ] `schemas/__init__.py`: deregister `DataCiteSchema46`, register `CDIFDiscoveryProfile`
 - [ ] `DataCiteSchema46` singleton pattern decided for post-deregistration reuse (avoid re-parsing 505KB IANA JSON per use)
 - [ ] Blast-radius retarget (option A, locked): `identifier_enricher.py`, `doi_resolver.py`, `pid_validator.py`, `output.py`, `exporters/dataverse.py` → CDIF field names
@@ -70,19 +71,14 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 - [ ] `tests/test_croissant_export.py` from CDIF-shaped synthetic fixtures
 - [ ] `make lint && make typecheck && make test`
 
-## Step 5 — Structure fetcher
+## Step 5 — Structure fetcher: SKIPPED for v1 (see Backlog)
 
-- [ ] Resolve Open Question #12 (ship in v1 at all, given no consumer until DataDescription)
-- [ ] Resolve Open Question #10 (format list, sample strategy, Parquet-as-new-dependency)
-- [ ] Resolve Open Question #11 (content-fetch vs. structure-fetch ordering/independence)
-- [ ] `enrichers/structure_fetcher.py`: fail-soft, mirrors `content_fetcher.py` contract
-- [ ] `config/models.py`: `enable_structure_fetch: bool = False`
-- [ ] `pipeline.py`: `_maybe_fetch_structure()` before generation
-- [ ] `types.py`: structure field on `ResourceDescription` (decide surfacing given `agents/base.py`'s strict 5-key dict)
-- [ ] `enrichers/AGENTS.md`: "measured, never generated" invariant documented; pipeline-integration renumbered
-- [ ] `docs/CONFIGURATION.md`: `enable_structure_fetch` row
-- [ ] `tests/test_structure_fetcher.py` (negative paths, ordering test); invariant test deferred until a real generation-consumer exists (documented why)
-- [ ] `make lint && make typecheck && make test`
+Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (`ResourceDescription` has no structure field, `agents/base.py::_build_resource_dict` hardcodes a strict 5-key dict, CDIF DataDescription itself is deferred per spec §2) — building it now would be dead code. Tracked in Backlog below so this doesn't get lost.
+
+## Backlog — deferred, not forgotten
+
+- **Structure fetcher (`enrichers/structure_fetcher.py`).** Explicitly deferred, not dropped. Build this when CDIF DataDescription work actually starts (spec §2/§7/§9). At that point also needs: `ResourceDescription` gaining a structure field, `agents/base.py::_build_resource_dict`'s strict 5-key `dict[str, str]` return type changed to carry it, `PipelineConfig.enable_structure_fetch`, a `Pipeline._maybe_fetch_structure()` step mirroring `_maybe_fetch_content()`, and — the part easy to get wrong — the "measured, never generated" invariant test must target LLM *output* (generated fields ⊆ measured columns) once there's a real prompt path, not just the fetcher's own input handling. Open Questions #10 (format list/sample strategy) and #11 (ordering vs. content-fetch) stay open until this is picked back up.
+- **Croissant `recordSet` / CDIF DataStructure profile.** Blocked on the structure fetcher above (spec §3.4, §7).
 
 ## A/B diagnostic (spec §9, manual, not CI-gating)
 
@@ -93,18 +89,18 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 
 | # | Question | Status |
 |---|----------|--------|
-| 1 | CDIF vendored artifact repo + commit SHA | **narrowed**: `doc-corediscovery`@`81c28260`, pending user confirm |
-| 2 | CDIF Discovery field coverage beyond required floor | **narrowed**: pick from the real 27-property list above |
-| 3 | `extra="forbid"` vs `"allow"` on output_model | open |
+| 1 | CDIF vendored artifact repo + commit SHA | **resolved**: `doc-corediscovery`@`81c28260778426cc61302105fc7191b4db360bc9` |
+| 2 | CDIF Discovery field coverage beyond required floor | open — pick from the real 27-property list in Research findings |
+| 3 | `extra="forbid"` vs `"allow"` on output_model | **resolved**: `extra="allow"` + a `model_validator` hard-enforcing the required floor and the two conditional (anyOf) groups (license/conditionsOfAccess, url/distribution) |
 | 4 | JSON-LD envelope emission site | **resolved**: inside `merge_agent_results` |
-| 5 | SHACL/JSON-LD framing execute in v1? | open |
+| 5 | SHACL/JSON-LD framing execute in v1? | **resolved**: yes — `pyshacl`, `rdflib`, `pyld` added as new runtime deps |
 | 6 | Enrichment architecture fork | **resolved: option (A)** |
 | 7 | Golden fixture strategy | **resolved**: full replace + baseline snapshot |
 | 8 | DataCite export LLM-call scope | open (default: none) |
 | 9 | Croissant top-level field mapping | **drafted**, see Research findings |
-| 10 | Structure fetcher format list / sample strategy | open |
-| 11 | Content-fetch vs. structure-fetch ordering | open |
-| 12 | Does structure-fetcher ship in v1 at all | open |
+| 10 | Structure fetcher format list / sample strategy | deferred with the whole feature — see Backlog |
+| 11 | Content-fetch vs. structure-fetch ordering | deferred with the whole feature — see Backlog |
+| 12 | Does structure-fetcher ship in v1 at all | **resolved: no** — see Backlog, must stay visible |
 | 13 | Where DataCite vocab/affiliation table lives post-rewrite | open |
 | 14 | `visor/session_settings.py` override migration | open |
 | 15 | `config/migrate.py` hardcoded schema name | **resolved**: keep, add warning |
