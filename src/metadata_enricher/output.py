@@ -72,9 +72,10 @@ class OutputWriter:
                 identifiers = document.get_field("schema:identifier") or []
                 doi = next(
                     (
-                        i.get("value")
+                        i.get("schema:value")
                         for i in identifiers
-                        if isinstance(i, dict) and str(i.get("propertyID", "")).upper() == "DOI"
+                        if isinstance(i, dict)
+                        and str(i.get("schema:propertyID", "")).upper() == "DOI"
                     ),
                     None,
                 )

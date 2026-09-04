@@ -12,30 +12,51 @@ wraps it at generation time -- agents themselves still emit a plain list,
 the natural Instructor/structured-output shape.
 
 Internal shape convention this module (and agents.yaml's prompts) commit
-to for these three fields -- not part of the vendored CDIF schema itself
-(which only requires ``schema:identifier`` to be PropertyValue-shaped),
-but the concrete shape gema's own pipeline produces and expects:
+to for these three fields -- CURIE-keyed at every nesting level (verified
+against the vendored schema.json's ``$defs`` -- see
+docs/cdif_pivot_implementation_plan.md's changelog entry for the pass that
+fixed this) so real JSON-LD tooling (rdflib/pyld) can actually resolve
+these properties via ``@context`` instead of silently dropping a bare key:
 
     creator/contributor/publisher/funder entry (Person or Organization)::
 
         {
-            "@type": "schema:Person" | "schema:Organization",
-            "name": str,
-            "given_name": str,       # Person only
-            "family_name": str,      # Person only
-            "schema:identifier": [{"propertyID": str, "value": str, "url": str}],
+            "@type": ["schema:Person"] | ["schema:Organization"],
+            "schema:name": str,
+            "schema:givenName": str,   # Person only -- gema extension: a
+                                        # real schema.org term the vendored
+                                        # profile just doesn't reference;
+                                        # used for citation formatting and
+                                        # ORCID matching, not part of this
+                                        # profile's Person def itself.
+            "schema:familyName": str,  # Person only -- same extension.
+            "schema:identifier": [{"schema:propertyID": str, "schema:value": str, "schema:url": str}],
             "schema:affiliation": [ <Organization entry, same shape> ],
         }
+
+    Each ``schema:identifier`` entry may also carry ``matched_via``,
+    ``confidence``, ``status`` as bare (non-CURIE) sibling keys --
+    gema-internal audit trail from this enricher, deliberately outside
+    the JSON-LD graph, never meant to round-trip through real JSON-LD
+    tooling. Left un-prefixed on purpose; don't "fix" them.
 
     schema:funding entry (MonetaryGrant)::
 
         {
-            "@type": "schema:MonetaryGrant",
-            "name": str,              # award title
-            "identifier": [{"propertyID": str, "value": str}],  # award number/URI
-            "funder": <Organization entry>,
-            "description": str,       # funding stream
+            "@type": ["schema:MonetaryGrant"],
+            "schema:name": str,              # award title
+            "schema:identifier": [{"schema:propertyID": str, "schema:value": str}],  # award number/URI
+            "schema:funder": <Organization entry>,
+            "schema:description": str,       # funding stream
         }
+
+    Note (cardinality): the vendored schema models ``Person``/
+    ``Organization``/``MonetaryGrant``'s ``schema:identifier`` as
+    *singular* (one Identifier object or a string), not a list. gema
+    deliberately keeps it a list at every nesting level here (a resolved
+    org can carry both a ROR and an ISNI at once) -- a known, flagged
+    deviation, not fixed by this module. See
+    docs/cdif_pivot_implementation_plan.md's Open questions log.
 """
 
 from __future__ import annotations
@@ -45,7 +66,7 @@ from typing import Any
 
 from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 from metadata_enricher.enrichers.identifier_types import IdentifierMatch
-from metadata_enricher.types import MetadataDocument, jsonld_list_unwrap
+from metadata_enricher.types import MetadataDocument, first_type_label, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +109,9 @@ def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
     """
     return [
         {
-            "propertyID": scheme,
-            "value": id_value,
-            "url": f"{_SCHEME_URI[scheme]}/{id_value}" if scheme != "ORCID" else id_value,
+            "schema:propertyID": scheme,
+            "schema:value": id_value,
+            "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}" if scheme != "ORCID" else id_value,
             "matched_via": match.matched_via,
             "confidence": match.confidence,
             "status": match.status,
@@ -120,7 +141,7 @@ def _is_auto(match: IdentifierMatch, kind: str, name: str) -> bool:
 def _has_real_identifier(entry: dict[str, Any]) -> bool:
     identifiers = entry.get("schema:identifier", [])
     return isinstance(identifiers, list) and any(
-        isinstance(i, dict) and i.get("value") for i in identifiers
+        isinstance(i, dict) and i.get("schema:value") for i in identifiers
     )
 
 
@@ -166,13 +187,13 @@ class IdentifierEnricher:
         for creator in creators:
             if not isinstance(creator, dict):
                 continue
-            is_person = creator.get("@type") == "schema:Person"
+            is_person = first_type_label(creator.get("@type")) == "Person"
 
             if is_person:
                 if not _has_real_identifier(creator):
                     self._enrich_personal_creator(creator)
             else:
-                name = creator.get("name", "")
+                name = creator.get("schema:name", "")
                 if name and not _has_real_identifier(creator):
                     match = self._resolver.resolve(name, country)
                     if match is not None and _is_auto(match, "org", name):
@@ -189,7 +210,7 @@ class IdentifierEnricher:
         for affil in affiliations:
             if not isinstance(affil, dict) or _has_real_identifier(affil):
                 continue
-            affil_name = affil.get("name", "")
+            affil_name = affil.get("schema:name", "")
             if not affil_name:
                 continue
             affil_match = self._resolver.resolve(affil_name, country)
@@ -200,9 +221,9 @@ class IdentifierEnricher:
                 id_value, scheme = identifier
                 affil["schema:identifier"] = [
                     {
-                        "propertyID": scheme,
-                        "value": id_value,
-                        "url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                        "schema:propertyID": scheme,
+                        "schema:value": id_value,
+                        "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}",
                         "matched_via": affil_match.matched_via,
                         "confidence": affil_match.confidence,
                         "status": affil_match.status,
@@ -210,8 +231,8 @@ class IdentifierEnricher:
                 ]
 
     def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
-        given_name = creator.get("given_name", "")
-        family_name = creator.get("family_name", "")
+        given_name = creator.get("schema:givenName", "")
+        family_name = creator.get("schema:familyName", "")
         if not given_name or not family_name:
             return
         affiliations = creator.get("schema:affiliation", [])
@@ -219,7 +240,7 @@ class IdentifierEnricher:
         if isinstance(affiliations, list) and affiliations:
             first = affiliations[0]
             if isinstance(first, dict):
-                affiliation_name = first.get("name") or None
+                affiliation_name = first.get("schema:name") or None
 
         match = self._resolver.resolve_person(given_name, family_name, affiliation_name)
         if match is None or not match.orcid_id:
@@ -228,9 +249,9 @@ class IdentifierEnricher:
             return
         creator["schema:identifier"] = [
             {
-                "propertyID": "ORCID",
-                "value": match.orcid_id,
-                "url": f"https://orcid.org/{match.orcid_id}",
+                "schema:propertyID": "ORCID",
+                "schema:value": match.orcid_id,
+                "schema:url": f"https://orcid.org/{match.orcid_id}",
                 "matched_via": match.matched_via,
                 "confidence": match.confidence,
                 "status": match.status,
@@ -241,7 +262,7 @@ class IdentifierEnricher:
         publisher = document.get_field("schema:publisher")
         if not isinstance(publisher, dict) or _has_real_identifier(publisher):
             return
-        name = publisher.get("name", "")
+        name = publisher.get("schema:name", "")
         if not name:
             return
         pub_match = self._resolver.resolve(name, country)
@@ -252,9 +273,9 @@ class IdentifierEnricher:
             id_value, scheme = identifier
             publisher["schema:identifier"] = [
                 {
-                    "propertyID": scheme,
-                    "value": id_value,
-                    "url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                    "schema:propertyID": scheme,
+                    "schema:value": id_value,
+                    "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}",
                     "matched_via": pub_match.matched_via,
                     "confidence": pub_match.confidence,
                     "status": pub_match.status,
@@ -268,10 +289,10 @@ class IdentifierEnricher:
         for grant in funding:
             if not isinstance(grant, dict):
                 continue
-            funder = grant.get("funder")
+            funder = grant.get("schema:funder")
             if not isinstance(funder, dict) or _has_real_identifier(funder):
                 continue
-            name = funder.get("name", "")
+            name = funder.get("schema:name", "")
             if not name:
                 continue
             funder_match = self._resolver.resolve(name, country)

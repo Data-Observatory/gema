@@ -40,9 +40,9 @@ from datetime import UTC, datetime
 from importlib import resources
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field, create_model, model_validator
+from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator, model_validator
 
-from metadata_enricher.types import AgentResult, MetadataDocument
+from metadata_enricher.types import AgentResult, MetadataDocument, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +134,12 @@ class CDIFDiscoveryOutputModel(BaseModel):
     schema_keywords: list[dict[str, Any]] = Field(default_factory=list, alias="schema:keywords")
     schema_about: list[dict[str, Any]] = Field(default_factory=list, alias="schema:about")
     schema_audience: list[dict[str, Any]] = Field(default_factory=list, alias="schema:audience")
+    # schema:creator arrives from merge_agent_results wrapped as a JSON-LD
+    # {"@list": [...]} construct (constraint C4) -- the validator below
+    # unwraps it back to a plain list for this model's internal shape, the
+    # same way types.jsonld_list_unwrap does for every other consumer.
+    # validate_output() checks *content*, not exact JSON-LD wire shape, so
+    # this field never needs to round-trip the wrapper itself.
     schema_creator: list[dict[str, Any]] = Field(default_factory=list, alias="schema:creator")
     schema_contributor: list[dict[str, Any]] = Field(
         default_factory=list, alias="schema:contributor"
@@ -162,6 +168,11 @@ class CDIFDiscoveryOutputModel(BaseModel):
     prov_derived_from: list[dict[str, Any]] = Field(
         default_factory=list, alias="prov:wasDerivedFrom"
     )
+
+    @field_validator("schema_creator", mode="before")
+    @classmethod
+    def _unwrap_creator_for_validation(cls, value: Any) -> Any:
+        return jsonld_list_unwrap(value)
 
     @model_validator(mode="after")
     def _check_required_floor(self) -> CDIFDiscoveryOutputModel:
@@ -348,7 +359,12 @@ class CDIFDiscoveryProfile:
             if isinstance(item, dict) and item:
                 result.append(item)
             elif isinstance(item, str) and item.strip():
-                result.append({"name": item.strip()})
+                # A bare string where a nested JSON-LD object was expected
+                # (DefinedTerm/Person/Organization/LabeledLink/etc. all
+                # define their human-readable label as schema:name) --
+                # CURIE-key the fallback the same way a real nested entry
+                # would be keyed, not a bare "name".
+                result.append({"schema:name": item.strip()})
         return result
 
     def _normalize_single_dict(self, value: object) -> dict[str, Any]:
@@ -357,7 +373,7 @@ class CDIFDiscoveryProfile:
         if isinstance(value, dict):
             return value
         if isinstance(value, str) and value.strip():
-            return {"name": value.strip()}
+            return {"schema:name": value.strip()}
         return {}
 
     # ------------------------------------------------------------------
@@ -404,6 +420,14 @@ class CDIFDiscoveryProfile:
         creator_list = doc.get_field("schema:creator")
         if isinstance(creator_list, list):
             doc.set_field("schema:creator", {"@list": creator_list})
+
+        # C6: schema:sameAs has minItems: 1 in the vendored schema -- an
+        # empty list is invalid, so omit the key entirely rather than
+        # emit []. Only schema:sameAs and @type carry a minItems
+        # constraint in the vendored schema; @type is always non-empty
+        # (injected by _inject_envelope below).
+        if doc.get_field("schema:sameAs") == []:
+            del doc.fields["schema:sameAs"]
 
         self._inject_envelope(doc)
 
@@ -457,7 +481,7 @@ class CDIFDiscoveryProfile:
         extracted. Never empty -- @id is part of the required floor."""
         for entry in doc.get_field("schema:identifier", []) or []:
             if isinstance(entry, dict):
-                candidate = entry.get("url") or entry.get("value") or ""
+                candidate = entry.get("schema:url") or entry.get("schema:value") or ""
                 if isinstance(candidate, str) and candidate.startswith(("http://", "https://")):
                     return candidate
         logger.warning("No resolvable identifier found; generating a placeholder @id")

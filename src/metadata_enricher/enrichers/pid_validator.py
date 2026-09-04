@@ -152,17 +152,18 @@ def extract_pids(output: dict[str, Any]) -> list[tuple[str, str, str]]:
 
     Covers the CDIF shape (see enrichers/identifier_enricher.py's module
     docstring for the full convention): every ``schema:identifier`` list
-    anywhere in the document, keyed by ``propertyID``/``value`` pairs, plus
-    DOIs surfaced via ``schema:sameAs``/``schema:relatedLink`` entries.
+    anywhere in the document, keyed by ``schema:propertyID``/``schema:value``
+    pairs, plus DOIs surfaced via ``schema:sameAs``/``schema:relatedLink``
+    entries.
     """
     triples: list[tuple[str, str, str]] = []
-    triples += _walk_scheme_pairs(output, "value", "propertyID", "root")
+    triples += _walk_scheme_pairs(output, "schema:value", "schema:propertyID", "root")
 
     for group in ("schema:sameAs", "schema:relatedLink"):
         for i, item in enumerate(output.get(group, []) or []):
             if not isinstance(item, dict):
                 continue
-            candidate = item.get("value") or item.get("url") or item.get("@id") or ""
+            candidate = item.get("schema:value") or item.get("schema:url") or item.get("@id") or ""
             if isinstance(candidate, str) and "doi.org" in candidate.lower():
                 triples.append(("DOI", candidate, f"{group}[{i}]"))
 

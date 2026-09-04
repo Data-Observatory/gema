@@ -76,6 +76,43 @@ class MetadataDocument(BaseModel):
                 self.fields[key] = value
 
 
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def _strip_curie(value: object) -> str:
+    text = str(value) if value is not None else ""
+    if ":" in text:
+        return text.split(":", 1)[1]
+    return text
+
+
+def first_type_label(types: object, default: str = "") -> str:
+    """First usable type label from a JSON-LD ``@type`` value.
+
+    Per constraint C7, every nested typed object's ``@type`` is a
+    one-or-more-element array of CURIE strings (e.g. ``["schema:Person"]``),
+    not a bare scalar string -- but this helper tolerates a bare string too
+    (defensive, for hand-built documents or partial LLM output that hasn't
+    gone through normalization yet). Returns the label after the CURIE's
+    colon (e.g. ``"Person"`` from ``"schema:Person"``), or *default* if
+    nothing usable is found. Shared by every exporter/enricher that needs
+    to classify a nested Person/Organization/etc. node by its ``@type`` --
+    comparing ``entry.get("@type") == "schema:Person"`` as a bare scalar is
+    a bug once ``@type`` is an array (see exporters/croissant.py's
+    ``_person_or_org``, which used to make exactly this mistake).
+    """
+    for t in _as_list(types):
+        label = _strip_curie(t)
+        if label:
+            return label
+    return default
+
+
 def jsonld_list_unwrap(value: Any) -> list[Any]:
     """Unwrap a JSON-LD ``{"@list": [...]}`` construct to its plain list.
 

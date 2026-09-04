@@ -42,8 +42,8 @@ def _date_parts_to_str(date_parts: object) -> str:
 def _doi_identifier(doc: MetadataDocument) -> str:
     """The DOI value, if schema:identifier carries one -- else empty."""
     for entry in doc.get_field("schema:identifier", []) or []:
-        if isinstance(entry, dict) and str(entry.get("propertyID", "")).upper() == "DOI":
-            return str(entry.get("value", ""))
+        if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
+            return str(entry.get("schema:value", ""))
     return ""
 
 
@@ -111,7 +111,11 @@ class DOIResolverEnricher:
             if not isinstance(author, dict):
                 continue
             affiliations = [
-                {"@type": "schema:Organization", "name": affil["name"], "schema:identifier": []}
+                {
+                    "@type": ["schema:Organization"],
+                    "schema:name": affil["name"],
+                    "schema:identifier": [],
+                }
                 for affil in author.get("affiliation") or []
                 if isinstance(affil, dict) and affil.get("name")
             ]
@@ -121,10 +125,10 @@ class DOIResolverEnricher:
                 name = f"{family}, {given}" if given else family
                 creators.append(
                     {
-                        "@type": "schema:Person",
-                        "name": name,
-                        "given_name": given,
-                        "family_name": family,
+                        "@type": ["schema:Person"],
+                        "schema:name": name,
+                        "schema:givenName": given,
+                        "schema:familyName": family,
                         "schema:identifier": [],
                         "schema:affiliation": affiliations,
                     }
@@ -135,8 +139,8 @@ class DOIResolverEnricher:
                     continue
                 creators.append(
                     {
-                        "@type": "schema:Organization",
-                        "name": org_name,
+                        "@type": ["schema:Organization"],
+                        "schema:name": org_name,
                         "schema:identifier": [],
                         "schema:affiliation": affiliations,
                     }
@@ -157,7 +161,7 @@ class DOIResolverEnricher:
             return
         document.set_field(
             "schema:publisher",
-            {"@type": "schema:Organization", "name": publisher, "schema:identifier": []},
+            {"@type": ["schema:Organization"], "schema:name": publisher, "schema:identifier": []},
         )
 
     def _backfill_date_published(self, document: MetadataDocument, work: dict[str, Any]) -> None:
