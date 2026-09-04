@@ -301,6 +301,11 @@ class TestEnrichPublisher:
         pub = doc.get_field("schema:publisher")
         assert pub["schema:identifier"][0]["schema:value"] == "https://ror.org/01h6h5x94"
         assert pub["schema:identifier"][0]["schema:propertyID"] == "ROR"
+        # Regression: _enrich_publisher was the one of three ROR-URL-writing
+        # sites that got missed when _scheme_url() was introduced elsewhere
+        # in this module -- schema:url must equal schema:value exactly, not
+        # accumulate a second "https://ror.org/" prefix.
+        assert pub["schema:identifier"][0]["schema:url"] == "https://ror.org/01h6h5x94"
 
     def test_publisher_isni_only_match_still_written(self) -> None:
         resolver = _mock_isni_only_resolver()

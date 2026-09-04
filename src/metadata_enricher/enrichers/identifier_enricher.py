@@ -286,7 +286,7 @@ class IdentifierEnricher:
                 {
                     "schema:propertyID": scheme,
                     "schema:value": id_value,
-                    "schema:url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                    "schema:url": _scheme_url(scheme, id_value),
                     "matched_via": pub_match.matched_via,
                     "confidence": pub_match.confidence,
                     "status": pub_match.status,
