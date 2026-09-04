@@ -255,8 +255,15 @@ class TestMergeAgentResults:
         assert doc.get_field("@id") != "hijacked"
 
     def test_dead_conforms_to_uri_is_emitted_anyway(self, schema: CDIFDiscoveryProfile) -> None:
+        # Open Question #18, resolved: both the core and discovery
+        # conformance URIs are required (shacl.ttl's
+        # cdifd:metadataProfileProperty), so both are emitted now, not
+        # just the discovery one.
         subject_of = schema.merge_agent_results([]).get_field("schema:subjectOf")
-        assert subject_of["dcterms:conformsTo"] == [{"@id": "https://w3id.org/cdif/discovery/1.0"}]
+        assert subject_of["dcterms:conformsTo"] == [
+            {"@id": "https://w3id.org/cdif/core/1.0"},
+            {"@id": "https://w3id.org/cdif/discovery/1.0"},
+        ]
 
     def test_id_prefers_a_resolvable_identifier(self, schema: CDIFDiscoveryProfile) -> None:
         results = [
@@ -330,10 +337,15 @@ class TestValidateOutput:
         assert model.schema_distribution
 
     def test_extra_unknown_key_is_allowed(self, schema: CDIFDiscoveryProfile) -> None:
+        # A genuinely unrecognized key -- "schema:citation" itself used to
+        # serve this purpose before Open Question #19's rename retargeted
+        # it to "dcterms:bibliographicCitation" (a real, known field now),
+        # so it no longer demonstrates "unknown key" behavior.
         raw = self._valid_raw()
-        raw["schema:citation"] = [{"name": "Some Paper"}]
+        raw["schema:whollyUnknownField"] = [{"name": "Some Paper"}]
         model = schema.validate_output(raw)
-        assert model.model_extra is None or "schema:citation" not in (model.model_extra or {})
+        assert model.model_extra is not None
+        assert "schema:whollyUnknownField" in model.model_extra
 
 
 class TestRegistryIntegration:

@@ -44,21 +44,22 @@ CDIF's canonical framed shape yet (no output writer, no exporter reads
 it), so wiring it into the pipeline would produce a value nobody uses.
 Both methods are exercised directly against real golden fixtures in
 ``tests/test_shacl_and_framing.py``, which also records what was found:
-every fixture produces *real*, sensible violations (not JSON-LD-conversion
+every fixture produced *real*, sensible violations (not JSON-LD-conversion
 noise -- that class of false positive was the Step 5.5 bug, already
-fixed) -- most commonly (a) ``dcterms:conformsTo`` only ever names
+fixed) -- most commonly (a) ``dcterms:conformsTo`` only ever named
 ``https://w3id.org/cdif/discovery/1.0``, never the ``.../cdif/core/1.0``
-URI the shapes also require (CDIFDiscoveryProfile emits only the one URI
-today, see ``_inject_envelope`` below), (b) nested ``schema:identifier``/
+URI the shapes also require, (b) nested ``schema:identifier``/
 ``schema:license`` entries carry no ``@type``, so SHACL's ``sh:class``
 checks can't recognize them as ``schema:PropertyValue``/typed nodes, and
 (c) at least one fixture (``sample_input06.json``) is missing real content
 for both required OR-groups (no ``schema:license``/``conditionsOfAccess``,
 no ``schema:url``/``distribution``) -- a genuine gap in that recording,
-not a framework bug. None of this is "fixed" here -- see the module-level
-docstring note in ``docs/cdif_pivot_implementation_plan.md``'s Step 6
-writeup; fixing the fixtures/generation to force conformance was
-explicitly out of scope for this pass.
+not a framework bug. (a) is now fixed -- see ``_inject_envelope`` below
+(Open Question #18) -- and the ``url``/``distribution`` half of (c) has a
+fallback via ``pipeline.py`` (Open Question #20); (b) and the
+``license``/``conditionsOfAccess`` half of (c) remain open, tracked in
+docs/cdif_pivot_implementation_plan.md's Open questions log rather than
+fixed here.
 """
 
 from __future__ import annotations
@@ -98,8 +99,17 @@ _BASE_CONTEXT: dict[str, str] = {
 # tagged releases, so its own spec-mandated conformance URIs 404 today.
 # See docs/codata_mcp_croissant_cdifspecs.md sec 8: emit anyway, this is a
 # defect in CDIF's own infrastructure, not gema's, and is expected to
-# resolve once CDIF tags a real release.
-_CONFORMS_TO = "https://w3id.org/cdif/discovery/1.0"
+# resolve once CDIF tags a real release. Checked 2026-09-04 (this session,
+# Open Question #18): the core URI 404s exactly like the discovery one --
+# same infrastructure gap, not a new one gema introduced by adding it.
+#
+# Open Question #18, resolved: the vendored shacl.ttl's own
+# cdifd:metadataProfileProperty (sh:hasValue x2) requires dcterms:conformsTo
+# to name BOTH of these URIs at once, not just the discovery one --
+# confirmed the cause of every real golden fixture failing that SHACL check
+# in Step 6. Both are emitted below.
+_CONFORMS_TO_DISCOVERY = "https://w3id.org/cdif/discovery/1.0"
+_CONFORMS_TO_CORE = "https://w3id.org/cdif/core/1.0"
 
 
 def _read_vendored_sha() -> str:
@@ -180,7 +190,26 @@ class CDIFDiscoveryOutputModel(BaseModel):
     schema_provider: list[dict[str, Any]] = Field(default_factory=list, alias="schema:provider")
     schema_copyright_holder: str = Field(default="", alias="schema:copyrightHolder")
     schema_funding: list[dict[str, Any]] = Field(default_factory=list, alias="schema:funding")
-    schema_citation: list[dict[str, Any]] = Field(default_factory=list, alias="schema:citation")
+    # Open Question #19, resolved: the vendored shacl.ttl's
+    # cdifd:citationProperty puts sh:maxCount 0 on schema:citation
+    # ("not recommended for use in CDIF because of semantic ambiguity...
+    # Use dcterms:bibliographicCitation ... or schema:relatedLink"), so
+    # schema:citation is forbidden outright -- not just unused, a real
+    # conformance violation every time it's non-empty (confirmed:
+    # sample_input03.json failed exactly this SHACL check in Step 6).
+    # Retargeted to dcterms:bibliographicCitation. Shape kept as the same
+    # structured per-citation dict (title/volume/issue/pages/edition/
+    # conference) rather than collapsing to a single formatted string --
+    # nothing in the vendored schema.json/shacl.ttl constrains this
+    # property's shape the way schema:citation was constrained (it isn't a
+    # first-class property in schema.json at all), and formatting a single
+    # correct citation string across highly variable inputs (journal
+    # article vs. conference paper vs. partial data) is its own nontrivial
+    # judgment call independent of this rename -- deferred; see
+    # docs/cdif_pivot_implementation_plan.md's Open Question #19 writeup.
+    dcterms_bibliographic_citation: list[dict[str, Any]] = Field(
+        default_factory=list, alias="dcterms:bibliographicCitation"
+    )
     schema_spatial_coverage: list[dict[str, Any]] = Field(
         default_factory=list, alias="schema:spatialCoverage"
     )
@@ -589,14 +618,18 @@ class CDIFDiscoveryProfile:
         doc.set_field("schema:dateModified", datetime.now(UTC).date().isoformat())
 
         record_id = f"{doc.get_field('@id')}#metadata"
-        # dcterms:conformsTo points at CDIF's own spec-mandated conformance
-        # URI. It 404s as of this vendored SHA's date (2026-09-04) -- CDIF
-        # has no tagged releases yet, so this is a known, temporary defect
-        # in CDIF's own infrastructure, not gema's. Emitted anyway per
-        # docs/codata_mcp_croissant_cdifspecs.md sec 8's explicit decision:
-        # omitting it would make gema's output non-conformant by CDIF's own
-        # stated rule today, and the URI is expected to resolve once CDIF
-        # tags a real release.
+        # dcterms:conformsTo names both of CDIF's spec-mandated conformance
+        # URIs -- the discovery profile AND the core profile it composes
+        # (Open Question #18, resolved: the vendored shacl.ttl's
+        # cdifd:metadataProfileProperty requires both at once, via two
+        # sh:hasValue constraints, not just the discovery one gema used to
+        # emit alone). Both URIs 404 as of this vendored SHA's date
+        # (2026-09-04) -- CDIF has no tagged releases yet, so this is a
+        # known, temporary defect in CDIF's own infrastructure, not gema's.
+        # Emitted anyway per docs/codata_mcp_croissant_cdifspecs.md sec 8's
+        # explicit decision: omitting either would make gema's output
+        # non-conformant by CDIF's own stated rule today, and both URIs are
+        # expected to resolve once CDIF tags a real release.
         doc.set_field(
             "schema:subjectOf",
             {
@@ -604,7 +637,10 @@ class CDIFDiscoveryProfile:
                 "@type": ["schema:Dataset"],
                 "schema:additionalType": ["dcat:CatalogRecord"],
                 "schema:about": {"@id": doc.get_field("@id")},
-                "dcterms:conformsTo": [{"@id": _CONFORMS_TO}],
+                "dcterms:conformsTo": [
+                    {"@id": _CONFORMS_TO_CORE},
+                    {"@id": _CONFORMS_TO_DISCOVERY},
+                ],
             },
         )
 
@@ -649,7 +685,7 @@ CDIFDiscoveryProfile._NORMALIZER_DISPATCH = {
     "schema_license": "_normalize_dict_list",
     "schema_conditions_of_access": "_normalize_dict_list",
     "schema_funding": "_normalize_dict_list",
-    "schema_citation": "_normalize_dict_list",
+    "dcterms_bibliographic_citation": "_normalize_dict_list",
     "schema_spatial_coverage": "_normalize_dict_list",
     "schema_variable_measured": "_normalize_dict_list",
     "dqv_quality_measurement": "_normalize_dict_list",

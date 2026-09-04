@@ -15,8 +15,9 @@ running the real shapes: ``schema:keywords`` entries need a
 ``schema:name`` of at least 3 characters (``cdifd:termLabelProperty``),
 and ``schema:subjectOf.dcterms:conformsTo`` must carry *both*
 ``https://w3id.org/cdif/core/1.0`` and ``.../cdif/discovery/1.0`` (CDIF's
-own shapes require both URIs; ``CDIFDiscoveryProfile`` only emits the
-discovery one today -- see the module docstring).
+own shapes require both URIs -- ``CDIFDiscoveryProfile`` now emits both,
+Open Question #18, resolved; this fixture always carried both, since it
+was written ahead of that fix).
 """
 
 from __future__ import annotations
@@ -151,29 +152,33 @@ class TestCheckShaclConformance:
     ) -> None:
         """Every real recorded golden fixture is expected to fail this
         check today (see module-level docstring and
-        docs/cdif_pivot_implementation_plan.md's "Step 6" notes) -- this
-        test isn't asserting conformance, it's asserting the failures are
-        *real* and *explicable* (missing dcterms:conformsTo to
-        cdif/core/1.0, missing @type typing on nested nodes, or genuinely
-        absent license/url/distribution data), never an empty violations
-        list masking a check that silently didn't run, and never a
-        violation whose focus node/shape is nonsensical."""
+        docs/cdif_pivot_implementation_plan.md's "Step 6"/Open Question #16
+        notes) -- this test isn't asserting conformance, it's asserting the
+        failures are *real* and *explicable* (missing @type typing on
+        nested identifier/license nodes, or genuinely absent license/url/
+        distribution data), never an empty violations list masking a check
+        that silently didn't run, and never a violation whose focus
+        node/shape is nonsensical."""
         raw = json.loads(fixture_path.read_text(encoding="utf-8"))
         doc = _doc_from(raw)
 
         violations = schema.check_shacl_conformance(doc)
 
         assert len(violations) > 0, (
-            f"{fixture_path.name}: expected real SHACL violations (every fixture is "
-            "missing at least dcterms:conformsTo's cdif/core/1.0 URI) -- an empty "
-            "list here would mean the check silently didn't run"
+            f"{fixture_path.name}: expected real SHACL violations (every fixture's "
+            "top-level schema:identifier entries carry no @type, failing "
+            "resourceIdentifierProperty's sh:class check) -- an empty list here "
+            "would mean the check silently didn't run"
         )
-        # Every fixture is missing the cdif/core/1.0 conformsTo URI --
-        # CDIFDiscoveryProfile only emits cdif/discovery/1.0 today (see
-        # module docstring). This is the one violation guaranteed across
-        # every fixture; the rest vary by what real content each fixture
-        # happens to carry.
-        assert any("conformsTo" in v or "conformance" in v for v in violations)
+        # Every fixture's top-level schema:identifier entries lack an
+        # explicit @type (schema:PropertyValue) -- a real, still-open gap
+        # (Open Question #16 only fixed *nested* Person/Organization/
+        # MonetaryGrant identifier cardinality, not @type on any
+        # identifier entry, nested or top-level). This is the one
+        # violation guaranteed across every fixture since Open Question
+        # #18 fixed the previously-guaranteed conformsTo gap; the rest
+        # vary by what real content each fixture happens to carry.
+        assert any("resourceIdentifierProperty" in v for v in violations)
         for violation in violations:
             assert violation.strip()
             assert "shape=" in violation
