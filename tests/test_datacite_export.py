@@ -30,15 +30,15 @@ def make_document(**fields: object) -> MetadataDocument:
 
 
 def _org(name: str, identifiers: list | None = None) -> dict:
-    return {"@type": "schema:Organization", "name": name, "schema:identifier": identifiers or []}
+    return {"@type": ["schema:Organization"], "schema:name": name, "schema:identifier": identifiers or []}
 
 
 def _person(name: str, given: str, family: str, identifiers: list | None = None) -> dict:
     return {
-        "@type": "schema:Person",
-        "name": name,
-        "given_name": given,
-        "family_name": family,
+        "@type": ["schema:Person"],
+        "schema:name": name,
+        "schema:givenName": given,
+        "schema:familyName": family,
         "schema:identifier": identifiers or [],
     }
 
@@ -145,7 +145,7 @@ class TestCreatorsC4Reversal:
             "schema:creator": [
                 _org(
                     "Ministerio de Hacienda",
-                    identifiers=[{"propertyID": "ISNI", "value": "123", "url": "https://isni.org/123"}],
+                    identifiers=[{"schema:propertyID": "ISNI", "schema:value": "123", "schema:url": "https://isni.org/123"}],
                 )
                 | {"schema:affiliation": [_org("Gobierno de Chile")]}
             ],
@@ -169,7 +169,7 @@ class TestPublishersC3Reversal:
             "schema:name": "T",
             "schema:publisher": _org(
                 "Data Observatory Foundation",
-                identifiers=[{"propertyID": "ROR", "value": "https://ror.org/027nn6b17", "url": "u"}],
+                identifiers=[{"schema:propertyID": "ROR", "schema:value": "https://ror.org/027nn6b17", "schema:url": "u"}],
             ),
         })
         result = to_datacite_json(doc)
@@ -199,9 +199,9 @@ class TestSameAsVsRelatedLinkStayDistinct:
     def test_same_as_maps_to_alternate_identifiers_only(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:sameAs": [{"value": "EPF-2021", "name": "EPF"}],
+            "schema:sameAs": [{"schema:value": "EPF-2021", "schema:name": "EPF"}],
             "schema:relatedLink": [
-                {"linkRelationship": "IsDescribedBy", "target": {"url": "https://api.example.org/docs", "name": "API"}}
+                {"schema:linkRelationship": "IsDescribedBy", "schema:target": {"schema:url": "https://api.example.org/docs", "schema:name": "API"}}
             ],
         })
         result = to_datacite_json(doc)
@@ -220,7 +220,7 @@ class TestSameAsVsRelatedLinkStayDistinct:
     def test_same_as_url_value_gets_url_type(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:sameAs": [{"value": "https://example.org/dup", "name": ""}],
+            "schema:sameAs": [{"schema:value": "https://example.org/dup", "schema:name": ""}],
         })
         result = to_datacite_json(doc)
         assert _fields(result)["alternate_identifiers"][0]["alternate_identifier_type"] == "URL"
@@ -228,7 +228,7 @@ class TestSameAsVsRelatedLinkStayDistinct:
     def test_prov_was_derived_from_maps_to_is_derived_from_relation(self):
         doc = make_document(**{
             "schema:name": "T",
-            "prov:wasDerivedFrom": [{"url": "https://example.org/source-dataset"}],
+            "prov:wasDerivedFrom": [{"schema:url": "https://example.org/source-dataset"}],
         })
         result = to_datacite_json(doc)
         related = _fields(result)["related_identifiers"][0]
@@ -240,7 +240,7 @@ class TestSameAsVsRelatedLinkStayDistinct:
         doc = make_document(**{
             "schema:name": "T",
             "schema:relatedLink": [
-                {"linkRelationship": "thumbnail", "target": {"url": "https://example.org/thumb.png"}}
+                {"schema:linkRelationship": "thumbnail", "schema:target": {"schema:url": "https://example.org/thumb.png"}}
             ],
         })
         result = to_datacite_json(doc)
@@ -255,7 +255,7 @@ class TestEnvelopeFields:
             "@id": "https://example.org/dataset/1",
             "schema:name": "T",
             "schema:identifier": [
-                {"propertyID": "URL", "value": "https://example.org/dataset/1", "url": "https://example.org/dataset/1"}
+                {"schema:propertyID": "URL", "schema:value": "https://example.org/dataset/1", "schema:url": "https://example.org/dataset/1"}
             ],
         })
         result = to_datacite_json(doc)
@@ -267,8 +267,8 @@ class TestEnvelopeFields:
         doc = make_document(**{
             "schema:name": "T",
             "schema:identifier": [
-                {"propertyID": "URL", "value": "https://example.org/x", "url": "https://example.org/x"},
-                {"propertyID": "DOI", "value": "10.5880/GFZ.1", "url": "https://doi.org/10.5880/GFZ.1"},
+                {"schema:propertyID": "URL", "schema:value": "https://example.org/x", "schema:url": "https://example.org/x"},
+                {"schema:propertyID": "DOI", "schema:value": "10.5880/GFZ.1", "schema:url": "https://doi.org/10.5880/GFZ.1"},
             ],
         })
         result = to_datacite_json(doc)
@@ -314,8 +314,8 @@ class TestContributorRoles:
         doc = make_document(**{
             "schema:name": "T",
             "schema:contributor": [
-                {"name": "Someone", "role": "ContactPerson", "email": "someone@example.org"},
-                {"name": "Data Unit", "role": "Producer"},
+                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "someone@example.org"},
+                {"schema:name": "Data Unit", "role": "Producer"},
             ],
         })
         result = to_datacite_json(doc)
@@ -327,7 +327,7 @@ class TestContributorRoles:
         doc = make_document(**{
             "schema:name": "T",
             "schema:creator": [_org("Main Creator")],
-            "schema:contributor": [{"name": "Data Curator Org", "role": "DataCurator"}],
+            "schema:contributor": [{"schema:name": "Data Curator Org", "role": "DataCurator"}],
         })
         result = to_datacite_json(doc)
         data = _fields(result)
@@ -341,7 +341,7 @@ class TestRightsAndFunding:
         doc = make_document(**{
             "schema:name": "T",
             "schema:license": [
-                {"name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "identifier": "CC-BY-4.0"}
+                {"schema:name": "CC BY 4.0", "schema:url": "https://creativecommons.org/licenses/by/4.0/", "schema:identifier": "CC-BY-4.0"}
             ],
             "schema:copyrightHolder": "Someone",
         })
@@ -366,11 +366,11 @@ class TestRightsAndFunding:
             "schema:name": "T",
             "schema:funding": [
                 {
-                    "@type": "schema:MonetaryGrant",
-                    "name": "Project X",
-                    "identifier": [{"propertyID": "award_number", "value": "3220567"}],
-                    "description": "FONDECYT",
-                    "funder": _org("Agencia Nacional de Investigación y Desarrollo"),
+                    "@type": ["schema:MonetaryGrant"],
+                    "schema:name": "Project X",
+                    "schema:identifier": [{"schema:propertyID": "award_number", "schema:value": "3220567"}],
+                    "schema:description": "FONDECYT",
+                    "schema:funder": _org("Agencia Nacional de Investigación y Desarrollo"),
                 }
             ],
         })
@@ -388,9 +388,9 @@ class TestMediaFilesAndCollectionsCapitalization:
             "schema:name": "T",
             "schema:distribution": [
                 {
-                    "contentUrl": "https://example.org/data.csv",
-                    "encodingFormat": "text/csv",
-                    "contentSize": [{"size": 2.5, "unit": "MB"}],
+                    "schema:contentUrl": "https://example.org/data.csv",
+                    "schema:encodingFormat": "text/csv",
+                    "schema:contentSize": [{"size": 2.5, "unit": "MB"}],
                     "checksum": "abc123",
                     "temporal_resolution": "daily",
                 }
@@ -414,7 +414,7 @@ class TestMediaFilesAndCollectionsCapitalization:
             "schema:name": "T",
             "schema:distribution": [
                 {
-                    "contentUrl": "https://example.org/data.csv",
+                    "schema:contentUrl": "https://example.org/data.csv",
                     "schema:includedInDataCatalog": {"@id": "https://example.org/catalog", "schema:name": "Open Data Catalog"},
                 }
             ],
@@ -435,7 +435,7 @@ class TestMediaFilesAndCollectionsCapitalization:
     def test_resource_level_quality_metadata_without_distribution_warns(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:variableMeasured": [{"name": "Rainfall"}],
+            "schema:variableMeasured": [{"schema:name": "Rainfall"}],
         })
         result = to_datacite_json(doc)
         assert _fields(result)["media_files"] == []
@@ -445,17 +445,17 @@ class TestMediaFilesAndCollectionsCapitalization:
         doc = make_document(**{
             "schema:name": "T",
             "schema:distribution": [
-                {"contentUrl": "https://example.org/a.csv"},
-                {"contentUrl": "https://example.org/b.csv"},
+                {"schema:contentUrl": "https://example.org/a.csv"},
+                {"schema:contentUrl": "https://example.org/b.csv"},
             ],
-            "schema:variableMeasured": [{"name": "Rainfall"}],
+            "schema:variableMeasured": [{"schema:name": "Rainfall"}],
             "schema:measurementTechnique": ["Weather station"],
         })
         result = to_datacite_json(doc)
         media_files = _fields(result)["media_files"]
         assert len(media_files) == 2
         for media in media_files:
-            assert media["variable_measured"] == [{"name": "Rainfall"}]
+            assert media["variable_measured"] == [{"schema:name": "Rainfall"}]
             assert media["measurement_technique"] == ["Weather station"]
 
 

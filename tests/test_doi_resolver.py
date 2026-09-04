@@ -32,7 +32,7 @@ def _mock_client(work: dict | None = MOCK_WORK) -> MagicMock:
 
 
 def _doi_doc(**extra: object) -> MetadataDocument:
-    fields = {"schema:identifier": [{"propertyID": "DOI", "value": "10.1/x"}]}
+    fields = {"schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.1/x"}]}
     fields.update(extra)
     return _doc_with_fields(fields)
 
@@ -41,7 +41,7 @@ class TestNotADOI:
     def test_skips_url_identified_resources(self) -> None:
         client = _mock_client()
         enricher = DOIResolverEnricher(client)
-        doc = _doc_with_fields({"schema:identifier": [{"propertyID": "URL", "value": "https://x.org"}]})
+        doc = _doc_with_fields({"schema:identifier": [{"schema:propertyID": "URL", "schema:value": "https://x.org"}]})
         enricher.enrich(doc)
         client.get_work.assert_not_called()
 
@@ -55,7 +55,7 @@ class TestNotADOI:
     def test_skips_when_identifier_value_empty(self) -> None:
         client = _mock_client()
         enricher = DOIResolverEnricher(client)
-        doc = _doc_with_fields({"schema:identifier": [{"propertyID": "DOI", "value": ""}]})
+        doc = _doc_with_fields({"schema:identifier": [{"schema:propertyID": "DOI", "schema:value": ""}]})
         enricher.enrich(doc)
         client.get_work.assert_not_called()
 
@@ -105,24 +105,24 @@ class TestBackfillCreators:
         assert doc.get_field("schema:creator") == {
             "@list": [
                 {
-                    "@type": "schema:Person",
-                    "name": "Doe, Jane",
-                    "given_name": "Jane",
-                    "family_name": "Doe",
+                    "@type": ["schema:Person"],
+                    "schema:name": "Doe, Jane",
+                    "schema:givenName": "Jane",
+                    "schema:familyName": "Doe",
                     "schema:identifier": [],
                     "schema:affiliation": [
                         {
-                            "@type": "schema:Organization",
-                            "name": "GFZ Potsdam",
+                            "@type": ["schema:Organization"],
+                            "schema:name": "GFZ Potsdam",
                             "schema:identifier": [],
                         }
                     ],
                 },
                 {
-                    "@type": "schema:Person",
-                    "name": "Smith",
-                    "given_name": "",
-                    "family_name": "Smith",
+                    "@type": ["schema:Person"],
+                    "schema:name": "Smith",
+                    "schema:givenName": "",
+                    "schema:familyName": "Smith",
                     "schema:identifier": [],
                     "schema:affiliation": [],
                 },
@@ -146,8 +146,8 @@ class TestBackfillCreators:
         assert doc.get_field("schema:creator") == {
             "@list": [
                 {
-                    "@type": "schema:Organization",
-                    "name": "Deutsches GeoForschungsZentrum GFZ",
+                    "@type": ["schema:Organization"],
+                    "schema:name": "Deutsches GeoForschungsZentrum GFZ",
                     "schema:identifier": [],
                     "schema:affiliation": [],
                 }
@@ -156,9 +156,9 @@ class TestBackfillCreators:
 
     def test_preserves_existing_creators(self) -> None:
         enricher = DOIResolverEnricher(_mock_client())
-        doc = _doi_doc(**{"schema:creator": [{"name": "LLM Author"}]})
+        doc = _doi_doc(**{"schema:creator": [{"schema:name": "LLM Author"}]})
         enricher.enrich(doc)
-        assert doc.get_field("schema:creator") == [{"name": "LLM Author"}]
+        assert doc.get_field("schema:creator") == [{"schema:name": "LLM Author"}]
 
     def test_author_without_family_or_org_name_is_skipped(self) -> None:
         client = _mock_client(work={**MOCK_WORK, "author": [{"given": "Jane", "family": ""}]})
@@ -174,16 +174,16 @@ class TestBackfillPublisher:
         doc = _doi_doc()
         enricher.enrich(doc)
         assert doc.get_field("schema:publisher") == {
-            "@type": "schema:Organization",
-            "name": "GFZ Potsdam",
+            "@type": ["schema:Organization"],
+            "schema:name": "GFZ Potsdam",
             "schema:identifier": [],
         }
 
     def test_preserves_existing_publisher(self) -> None:
         enricher = DOIResolverEnricher(_mock_client())
-        doc = _doi_doc(**{"schema:publisher": {"name": "LLM Publisher"}})
+        doc = _doi_doc(**{"schema:publisher": {"schema:name": "LLM Publisher"}})
         enricher.enrich(doc)
-        assert doc.get_field("schema:publisher") == {"name": "LLM Publisher"}
+        assert doc.get_field("schema:publisher") == {"schema:name": "LLM Publisher"}
 
 
 class TestBackfillDatePublished:

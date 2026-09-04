@@ -47,7 +47,7 @@ def _doc_with_fields(fields: dict) -> MetadataDocument:
 
 
 def _org(name: str, identifiers: list | None = None, affiliations: list | None = None) -> dict:
-    entry = {"@type": "schema:Organization", "name": name, "schema:identifier": identifiers or []}
+    entry = {"@type": ["schema:Organization"], "schema:name": name, "schema:identifier": identifiers or []}
     if affiliations is not None:
         entry["schema:affiliation"] = affiliations
     return entry
@@ -57,10 +57,10 @@ def _person(
     name: str, given: str, family: str, identifiers: list | None = None, affiliations=None
 ) -> dict:
     entry = {
-        "@type": "schema:Person",
-        "name": name,
-        "given_name": given,
-        "family_name": family,
+        "@type": ["schema:Person"],
+        "schema:name": name,
+        "schema:givenName": given,
+        "schema:familyName": family,
         "schema:identifier": identifiers or [],
     }
     if affiliations is not None:
@@ -82,10 +82,10 @@ class TestEnrichCreators:
         enricher.enrich(doc)
         identifiers = doc.get_field("schema:creator")[0]["schema:identifier"]
         assert len(identifiers) == 2
-        assert identifiers[0]["value"] == "https://ror.org/01h6h5x94"
-        assert identifiers[0]["propertyID"] == "ROR"
-        assert identifiers[1]["value"] == "000000040628717X"
-        assert identifiers[1]["propertyID"] == "ISNI"
+        assert identifiers[0]["schema:value"] == "https://ror.org/01h6h5x94"
+        assert identifiers[0]["schema:propertyID"] == "ROR"
+        assert identifiers[1]["schema:value"] == "000000040628717X"
+        assert identifiers[1]["schema:propertyID"] == "ISNI"
 
     def test_wrapped_jsonld_list_creator_is_enriched_in_place(self) -> None:
         """schema:creator arrives as {"@list": [...]} once a real pipeline
@@ -99,14 +99,14 @@ class TestEnrichCreators:
         wrapped = doc.get_field("schema:creator")
         assert isinstance(wrapped, dict) and "@list" in wrapped
         identifiers = wrapped["@list"][0]["schema:identifier"]
-        assert identifiers[0]["propertyID"] == "ROR"
+        assert identifiers[0]["schema:propertyID"] == "ROR"
 
     def test_personal_creator_without_name_split_not_resolved(self) -> None:
         """No given_name/family_name split — nothing to search ORCID with."""
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:creator": [{"@type": "schema:Person", "name": "John Doe", "schema:identifier": []}]}
+            {"schema:creator": [{"@type": ["schema:Person"], "schema:name": "John Doe", "schema:identifier": []}]}
         )
         enricher.enrich(doc)
         assert doc.get_field("schema:creator")[0]["schema:identifier"] == []
@@ -128,8 +128,8 @@ class TestEnrichCreators:
         identifiers = doc.get_field("schema:creator")[0]["schema:identifier"]
         resolver.resolve_person.assert_called_once_with("Jane", "Roe", None)
         assert len(identifiers) == 1
-        assert identifiers[0]["value"] == "0000-0002-1825-0097"
-        assert identifiers[0]["propertyID"] == "ORCID"
+        assert identifiers[0]["schema:value"] == "0000-0002-1825-0097"
+        assert identifiers[0]["schema:propertyID"] == "ORCID"
 
     def test_personal_creator_passes_affiliation_to_orcid_search(self) -> None:
         resolver = _mock_resolver()
@@ -166,7 +166,7 @@ class TestEnrichCreators:
 
     def test_personal_creator_with_existing_identifier_not_reresolved(self) -> None:
         resolver = _mock_resolver()
-        existing = [{"propertyID": "ORCID", "value": "EXISTING"}]
+        existing = [{"schema:propertyID": "ORCID", "schema:value": "EXISTING"}]
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
             {"schema:creator": [_person("Jane Roe", "Jane", "Roe", identifiers=existing)]}
@@ -178,7 +178,7 @@ class TestEnrichCreators:
     def test_already_populated_identifiers_preserved(self) -> None:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
-        existing = [{"propertyID": "ROR", "value": "https://ror.org/EXISTING"}]
+        existing = [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/EXISTING"}]
         doc = _doc_with_fields({"schema:creator": [_org("Test", identifiers=existing)]})
         enricher.enrich(doc)
         assert doc.get_field("schema:creator")[0]["schema:identifier"] == existing
@@ -193,14 +193,14 @@ class TestEnrichCreators:
                 "schema:creator": [
                     _org(
                         "Ministerio del Medio Ambiente",
-                        identifiers=[{"propertyID": "", "value": "", "url": ""}],
+                        identifiers=[{"schema:propertyID": "", "schema:value": "", "schema:url": ""}],
                     )
                 ]
             }
         )
         enricher.enrich(doc)
         identifiers = doc.get_field("schema:creator")[0]["schema:identifier"]
-        assert identifiers[0]["value"] == "https://ror.org/01h6h5x94"
+        assert identifiers[0]["schema:value"] == "https://ror.org/01h6h5x94"
 
     def test_isni_only_match_still_written(self) -> None:
         """When the resolver falls back to ISNI (no ROR hit), that ISNI must
@@ -211,9 +211,9 @@ class TestEnrichCreators:
         enricher.enrich(doc)
         identifiers = doc.get_field("schema:creator")[0]["schema:identifier"]
         assert len(identifiers) == 1
-        assert identifiers[0]["value"] == "000000040628717X"
-        assert identifiers[0]["propertyID"] == "ISNI"
-        assert identifiers[0]["url"] == "https://isni.org/000000040628717X"
+        assert identifiers[0]["schema:value"] == "000000040628717X"
+        assert identifiers[0]["schema:propertyID"] == "ISNI"
+        assert identifiers[0]["schema:url"] == "https://isni.org/000000040628717X"
 
     def test_affiliation_isni_only_match_still_written(self) -> None:
         resolver = _mock_isni_only_resolver()
@@ -223,7 +223,7 @@ class TestEnrichCreators:
                 "schema:creator": [
                     _org(
                         "Test Org",
-                        identifiers=[{"propertyID": "ROR", "value": "exists"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "exists"}],
                         affiliations=[_org("Parent Org")],
                     )
                 ]
@@ -231,8 +231,8 @@ class TestEnrichCreators:
         )
         enricher.enrich(doc)
         affil = doc.get_field("schema:creator")[0]["schema:affiliation"][0]
-        assert affil["schema:identifier"][0]["value"] == "000000040628717X"
-        assert affil["schema:identifier"][0]["propertyID"] == "ISNI"
+        assert affil["schema:identifier"][0]["schema:value"] == "000000040628717X"
+        assert affil["schema:identifier"][0]["schema:propertyID"] == "ISNI"
 
     def test_resolver_returns_none_leaves_empty(self) -> None:
         resolver = _mock_resolver(ror_id=None)
@@ -249,7 +249,7 @@ class TestEnrichCreators:
                 "schema:creator": [
                     _org(
                         "Test Org",
-                        identifiers=[{"propertyID": "ROR", "value": "exists"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "exists"}],
                         affiliations=[_org("Parent Org")],
                     )
                 ]
@@ -257,18 +257,18 @@ class TestEnrichCreators:
         )
         enricher.enrich(doc)
         affil = doc.get_field("schema:creator")[0]["schema:affiliation"][0]
-        assert affil["schema:identifier"][0]["value"] == "https://ror.org/01h6h5x94"
+        assert affil["schema:identifier"][0]["schema:value"] == "https://ror.org/01h6h5x94"
 
     def test_affiliation_already_populated_preserved(self) -> None:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
-        existing = [{"propertyID": "ROR", "value": "EXISTING"}]
+        existing = [{"schema:propertyID": "ROR", "schema:value": "EXISTING"}]
         doc = _doc_with_fields(
             {
                 "schema:creator": [
                     _org(
                         "Test",
-                        identifiers=[{"propertyID": "ROR", "value": "exists"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "exists"}],
                         affiliations=[_org("Parent", identifiers=existing)],
                     )
                 ]
@@ -291,8 +291,8 @@ class TestEnrichPublisher:
         doc = _doc_with_fields({"schema:publisher": _org("Ministerio")})
         enricher.enrich(doc)
         pub = doc.get_field("schema:publisher")
-        assert pub["schema:identifier"][0]["value"] == "https://ror.org/01h6h5x94"
-        assert pub["schema:identifier"][0]["propertyID"] == "ROR"
+        assert pub["schema:identifier"][0]["schema:value"] == "https://ror.org/01h6h5x94"
+        assert pub["schema:identifier"][0]["schema:propertyID"] == "ROR"
 
     def test_publisher_isni_only_match_still_written(self) -> None:
         resolver = _mock_isni_only_resolver()
@@ -300,13 +300,13 @@ class TestEnrichPublisher:
         doc = _doc_with_fields({"schema:publisher": _org("Ministerio")})
         enricher.enrich(doc)
         pub = doc.get_field("schema:publisher")
-        assert pub["schema:identifier"][0]["value"] == "000000040628717X"
-        assert pub["schema:identifier"][0]["propertyID"] == "ISNI"
+        assert pub["schema:identifier"][0]["schema:value"] == "000000040628717X"
+        assert pub["schema:identifier"][0]["schema:propertyID"] == "ISNI"
 
     def test_publisher_already_populated_preserved(self) -> None:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
-        existing = [{"propertyID": "ROR", "value": "EXISTING"}]
+        existing = [{"schema:propertyID": "ROR", "schema:value": "EXISTING"}]
         doc = _doc_with_fields({"schema:publisher": _org("Test", identifiers=existing)})
         enricher.enrich(doc)
         assert doc.get_field("schema:publisher")["schema:identifier"] == existing
@@ -322,14 +322,14 @@ class TestEnrichFunding:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:funding": [{"@type": "schema:MonetaryGrant", "funder": _org("ANID")}]}
+            {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("ANID")}]}
         )
         enricher.enrich(doc)
-        funder = doc.get_field("schema:funding")[0]["funder"]
+        funder = doc.get_field("schema:funding")[0]["schema:funder"]
         assert len(funder["schema:identifier"]) == 2
-        assert funder["schema:identifier"][0]["value"] == "https://ror.org/01h6h5x94"
-        assert funder["schema:identifier"][1]["value"] == "000000040628717X"
-        assert funder["schema:identifier"][1]["propertyID"] == "ISNI"
+        assert funder["schema:identifier"][0]["schema:value"] == "https://ror.org/01h6h5x94"
+        assert funder["schema:identifier"][1]["schema:value"] == "000000040628717X"
+        assert funder["schema:identifier"][1]["schema:propertyID"] == "ISNI"
 
     def test_blank_placeholder_funder_identifiers_still_enriched(self) -> None:
         resolver = _mock_resolver()
@@ -338,40 +338,40 @@ class TestEnrichFunding:
             {
                 "schema:funding": [
                     {
-                        "@type": "schema:MonetaryGrant",
-                        "funder": _org("ANID", identifiers=[{"propertyID": "", "value": ""}]),
+                        "@type": ["schema:MonetaryGrant"],
+                        "schema:funder": _org("ANID", identifiers=[{"schema:propertyID": "", "schema:value": ""}]),
                     }
                 ]
             }
         )
         enricher.enrich(doc)
-        funder = doc.get_field("schema:funding")[0]["funder"]
-        assert funder["schema:identifier"][0]["value"] == "https://ror.org/01h6h5x94"
+        funder = doc.get_field("schema:funding")[0]["schema:funder"]
+        assert funder["schema:identifier"][0]["schema:value"] == "https://ror.org/01h6h5x94"
 
     def test_funder_isni_only_match_still_written(self) -> None:
         resolver = _mock_isni_only_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:funding": [{"@type": "schema:MonetaryGrant", "funder": _org("ANID")}]}
+            {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("ANID")}]}
         )
         enricher.enrich(doc)
-        funder = doc.get_field("schema:funding")[0]["funder"]
-        assert funder["schema:identifier"][0]["value"] == "000000040628717X"
-        assert funder["schema:identifier"][0]["propertyID"] == "ISNI"
+        funder = doc.get_field("schema:funding")[0]["schema:funder"]
+        assert funder["schema:identifier"][0]["schema:value"] == "000000040628717X"
+        assert funder["schema:identifier"][0]["schema:propertyID"] == "ISNI"
 
     def test_funder_already_populated_preserved(self) -> None:
         resolver = _mock_resolver()
-        existing = [{"propertyID": "ROR", "value": "EXISTING"}]
+        existing = [{"schema:propertyID": "ROR", "schema:value": "EXISTING"}]
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
             {
                 "schema:funding": [
-                    {"@type": "schema:MonetaryGrant", "funder": _org("ANID", identifiers=existing)}
+                    {"@type": ["schema:MonetaryGrant"], "schema:funder": _org("ANID", identifiers=existing)}
                 ]
             }
         )
         enricher.enrich(doc)
-        assert doc.get_field("schema:funding")[0]["funder"]["schema:identifier"] == existing
+        assert doc.get_field("schema:funding")[0]["schema:funder"]["schema:identifier"] == existing
 
 
 # --------------------------------------------------------------------------
@@ -402,7 +402,7 @@ class TestEnrichEdgeCases:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:creator": [{"@type": "schema:Organization", "schema:identifier": []}]}
+            {"schema:creator": [{"@type": ["schema:Organization"], "schema:identifier": []}]}
         )
         enricher.enrich(doc)
         resolver.resolve.assert_not_called()
@@ -429,7 +429,7 @@ class TestCountryPassthrough:
                 "schema:creator": [
                     _org(
                         "Some Org",
-                        identifiers=[{"propertyID": "ROR", "value": "already-set"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "already-set"}],
                         affiliations=[_org("Universidad de Chile")],
                     )
                 ]
@@ -449,7 +449,7 @@ class TestCountryPassthrough:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:funding": [{"@type": "schema:MonetaryGrant", "funder": _org("Some Funder")}]}
+            {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("Some Funder")}]}
         )
         enricher.enrich(doc, country="AR")
         resolver.resolve.assert_called_once_with("Some Funder", "AR")
@@ -482,10 +482,10 @@ class TestProvenance:
         resolver = _mock_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:funding": [{"@type": "schema:MonetaryGrant", "funder": _org("Some Funder")}]}
+            {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("Some Funder")}]}
         )
         enricher.enrich(doc)
-        entry = doc.get_field("schema:funding")[0]["funder"]["schema:identifier"][0]
+        entry = doc.get_field("schema:funding")[0]["schema:funder"]["schema:identifier"][0]
         assert entry["matched_via"] == "ror_affiliation"
         assert entry["confidence"] == 0.95
         assert entry["status"] == "auto"
@@ -498,7 +498,7 @@ class TestProvenance:
                 "schema:creator": [
                     _org(
                         "Some Org",
-                        identifiers=[{"propertyID": "ROR", "value": "already-set"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "already-set"}],
                         affiliations=[_org("Universidad de Chile")],
                     )
                 ]
@@ -601,7 +601,7 @@ class TestStatusGatingAllPaths:
                 "schema:creator": [
                     _org(
                         "Some Org",
-                        identifiers=[{"propertyID": "ROR", "value": "already-set"}],
+                        identifiers=[{"schema:propertyID": "ROR", "schema:value": "already-set"}],
                         affiliations=[_org("Universidad de Chile")],
                     )
                 ]
@@ -622,10 +622,10 @@ class TestStatusGatingAllPaths:
         resolver = _review_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields(
-            {"schema:funding": [{"@type": "schema:MonetaryGrant", "funder": _org("Some Funder")}]}
+            {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("Some Funder")}]}
         )
         enricher.enrich(doc)
-        assert doc.get_field("schema:funding")[0]["funder"]["schema:identifier"] == []
+        assert doc.get_field("schema:funding")[0]["schema:funder"]["schema:identifier"] == []
 
     def test_auto_status_still_attaches_normally(self) -> None:
         """Control: the existing 'auto' fixture (_mock_resolver) still works
@@ -635,6 +635,6 @@ class TestStatusGatingAllPaths:
         doc = _doc_with_fields({"schema:publisher": _org("Some Publisher")})
         enricher.enrich(doc)
         assert (
-            doc.get_field("schema:publisher")["schema:identifier"][0]["value"]
+            doc.get_field("schema:publisher")["schema:identifier"][0]["schema:value"]
             == "https://ror.org/01h6h5x94"
         )

@@ -73,14 +73,14 @@ def make_document(**fields: object) -> MetadataDocument:
 
 
 def _org(name: str, identifiers: list | None = None) -> dict:
-    return {"@type": "schema:Organization", "name": name, "schema:identifier": identifiers or []}
+    return {"@type": ["schema:Organization"], "schema:name": name, "schema:identifier": identifiers or []}
 
 
 class TestTitle:
     def test_prefers_schema_name(self):
         doc = make_document(**{
             "schema:name": "A Title",
-            "schema:creator": [_org("Someone") | {"email": "someone@example.org"}],
+            "schema:creator": [_org("Someone") | {"schema:email": "someone@example.org"}],
             "schema:description": "D.",
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -91,7 +91,7 @@ class TestTitle:
 
     def test_falls_back_to_identifier_when_no_name(self):
         doc = make_document(**{
-            "schema:identifier": [{"propertyID": "URL", "value": "https://example.org/x"}]
+            "schema:identifier": [{"schema:propertyID": "URL", "schema:value": "https://example.org/x"}]
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
@@ -107,7 +107,7 @@ class TestAuthors:
             "schema:creator": [
                 _org(
                     "Ministerio de Hacienda",
-                    identifiers=[{"propertyID": "ISNI", "value": "123"}],
+                    identifiers=[{"schema:propertyID": "ISNI", "schema:value": "123"}],
                 )
                 | {"schema:affiliation": [_org("Gobierno de Chile")]}
             ],
@@ -128,7 +128,7 @@ class TestAuthors:
         doc = make_document(**{
             "schema:name": "T",
             "schema:creator": [
-                _org("Someone", identifiers=[{"propertyID": "Wikidata", "value": "999"}])
+                _org("Someone", identifiers=[{"schema:propertyID": "Wikidata", "schema:value": "999"}])
             ],
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -167,9 +167,9 @@ class TestDatasetContact:
         doc = make_document(**{
             "schema:name": "T",
             "schema:contributor": [
-                {"name": "Someone", "role": "ContactPerson", "email": "person@example.org"}
+                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "person@example.org"}
             ],
-            "schema:creator": [_org("Someone") | {"email": "other@example.org"}],
+            "schema:creator": [_org("Someone") | {"schema:email": "other@example.org"}],
             "schema:description": "D.",
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -181,7 +181,7 @@ class TestDatasetContact:
     def test_falls_back_to_creator_email(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:creator": [_org("Someone") | {"email": "creator@example.org"}],
+            "schema:creator": [_org("Someone") | {"schema:email": "creator@example.org"}],
             "schema:description": "D.",
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -196,7 +196,7 @@ class TestDatasetContact:
         CDIFDiscoveryProfile.merge_agent_results."""
         doc = make_document(**{
             "schema:name": "T",
-            "schema:creator": {"@list": [_org("Someone") | {"email": "creator@example.org"}]},
+            "schema:creator": {"@list": [_org("Someone") | {"schema:email": "creator@example.org"}]},
             "schema:description": "D.",
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -214,9 +214,9 @@ class TestDatasetContact:
             "schema:name": "T",
             "schema:contributor": [
                 {
-                    "name": "Someone",
+                    "schema:name": "Someone",
                     "role": "ContactPerson",
-                    "email": "person@example.org; +34 123 456 789",
+                    "schema:email": "person@example.org; +34 123 456 789",
                 }
             ],
             "schema:creator": [_org("Someone")],
@@ -235,9 +235,9 @@ class TestDatasetContact:
             "schema:name": "T",
             "schema:contributor": [
                 {
-                    "name": "Someone",
+                    "schema:name": "Someone",
                     "role": "ContactPerson",
-                    "email": "+34 123 456 789; person@example.org",
+                    "schema:email": "+34 123 456 789; person@example.org",
                 }
             ],
             "schema:creator": [_org("Someone")],
@@ -252,7 +252,7 @@ class TestDatasetContact:
         doc = make_document(**{
             "schema:name": "T",
             "schema:creator": [
-                _org("Someone") | {"email": "creator@example.org; fax: 555-1234"}
+                _org("Someone") | {"schema:email": "creator@example.org; fax: 555-1234"}
             ],
             "schema:description": "D.",
         })
@@ -292,8 +292,8 @@ class TestKeywords:
         doc = make_document(**{
             "schema:name": "T",
             "schema:keywords": [
-                {"name": "Gastos municipales -- Chile"},
-                {"name": "Presupuesto"},
+                {"schema:name": "Gastos municipales -- Chile"},
+                {"schema:name": "Presupuesto"},
             ],
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
@@ -325,7 +325,7 @@ class TestAlternativeURL:
     def test_resolves_doi_identifier_through_doi_org_when_no_url(self):
         doc = make_document(**{
             "schema:name": "T",
-            "schema:identifier": [{"propertyID": "DOI", "value": "10.5880/GFZ.2.4.2021.001"}],
+            "schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.5880/GFZ.2.4.2021.001"}],
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
@@ -347,7 +347,7 @@ class TestSubjectClassification:
             "schema:creator": [_org("Someone")],
             "schema:description": "D.",
             "schema:contributor": [
-                {"name": "Someone", "role": "ContactPerson", "email": "someone@example.org"}
+                {"schema:name": "Someone", "role": "ContactPerson", "schema:email": "someone@example.org"}
             ],
         })
         result = to_dataverse_json(doc, make_export_config(enabled=False))

@@ -24,22 +24,22 @@ def make_document(**fields: object) -> MetadataDocument:
 
 
 def _org(name: str, identifiers: list | None = None) -> dict:
-    return {"@type": "schema:Organization", "name": name, "schema:identifier": identifiers or []}
+    return {"@type": ["schema:Organization"], "schema:name": name, "schema:identifier": identifiers or []}
 
 
 def _person(name: str, identifiers: list | None = None) -> dict:
-    return {"@type": "schema:Person", "name": name, "schema:identifier": identifiers or []}
+    return {"@type": ["schema:Person"], "schema:name": name, "schema:identifier": identifiers or []}
 
 
 MINIMAL_VALID_FIELDS = {
     "schema:name": "A Title",
     "schema:description": "A description.",
-    "schema:license": [{"name": "CC0", "url": "https://creativecommons.org/publicdomain/zero/1.0"}],
+    "schema:license": [{"schema:name": "CC0", "schema:url": "https://creativecommons.org/publicdomain/zero/1.0"}],
     "schema:url": "https://example.org/dataset",
     "schema:creator": [_org("Someone")],
     "schema:datePublished": "2020",
     "schema:distribution": [
-        {"contentUrl": "https://example.org/data.csv", "encodingFormat": "text/csv"}
+        {"schema:contentUrl": "https://example.org/data.csv", "schema:encodingFormat": "text/csv"}
     ],
 }
 
@@ -92,7 +92,7 @@ class TestName:
 
     def test_falls_back_to_identifier_value_when_no_name(self):
         doc = make_document(
-            **{"schema:identifier": [{"propertyID": "URL", "value": "https://example.org/x"}]}
+            **{"schema:identifier": [{"schema:propertyID": "URL", "schema:value": "https://example.org/x"}]}
         )
         result = to_croissant_json(doc)
         assert result.croissant_json["name"] == "https://example.org/x"
@@ -120,13 +120,13 @@ class TestDescription:
 class TestLicense:
     def test_prefers_url_over_name(self):
         doc = make_document(
-            **{"schema:license": [{"name": "CC0", "url": "https://creativecommons.org/publicdomain/zero/1.0"}]}
+            **{"schema:license": [{"schema:name": "CC0", "schema:url": "https://creativecommons.org/publicdomain/zero/1.0"}]}
         )
         result = to_croissant_json(doc)
         assert result.croissant_json["license"] == ["https://creativecommons.org/publicdomain/zero/1.0"]
 
     def test_falls_back_to_name_when_no_url(self):
-        doc = make_document(**{"schema:license": [{"name": "Datos Abiertos de Chile", "url": ""}]})
+        doc = make_document(**{"schema:license": [{"schema:name": "Datos Abiertos de Chile", "schema:url": ""}]})
         result = to_croissant_json(doc)
         assert result.croissant_json["license"] == ["Datos Abiertos de Chile"]
 
@@ -134,8 +134,8 @@ class TestLicense:
         doc = make_document(
             **{
                 "schema:license": [
-                    {"name": "CC0", "url": "https://creativecommons.org/publicdomain/zero/1.0"},
-                    {"name": "ODbL", "url": ""},
+                    {"schema:name": "CC0", "schema:url": "https://creativecommons.org/publicdomain/zero/1.0"},
+                    {"schema:name": "ODbL", "schema:url": ""},
                 ]
             }
         )
@@ -160,7 +160,7 @@ class TestUrl:
 
     def test_resolves_doi_identifier_through_doi_org_when_no_url(self):
         doc = make_document(
-            **{"schema:identifier": [{"propertyID": "DOI", "value": "10.5880/GFZ.2.4.2021.001"}]}
+            **{"schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.5880/GFZ.2.4.2021.001"}]}
         )
         result = to_croissant_json(doc)
         assert result.croissant_json["url"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
@@ -169,7 +169,7 @@ class TestUrl:
         doc = make_document(
             **{
                 "schema:identifier": [
-                    {"propertyID": "URL", "value": "x", "url": "https://example.org/x"}
+                    {"schema:propertyID": "URL", "schema:value": "x", "schema:url": "https://example.org/x"}
                 ]
             }
         )
@@ -195,7 +195,7 @@ class TestCreators:
         doc = make_document(
             **{
                 "schema:creator": [
-                    _org("An Org", identifiers=[{"propertyID": "ROR", "value": "0x", "url": "https://ror.org/0x"}])
+                    _org("An Org", identifiers=[{"schema:propertyID": "ROR", "schema:value": "0x", "schema:url": "https://ror.org/0x"}])
                 ]
             }
         )
@@ -217,7 +217,7 @@ class TestCreators:
         assert any("no schema:creator found" in w for w in result.warnings)
 
     def test_skips_entries_with_no_name(self):
-        doc = make_document(**{"schema:creator": [{"@type": "schema:Organization", "name": ""}]})
+        doc = make_document(**{"schema:creator": [{"@type": ["schema:Organization"], "schema:name": ""}]})
         result = to_croissant_json(doc)
         assert "creator" not in result.croissant_json
 
@@ -246,7 +246,7 @@ class TestDistribution:
         doc = make_document(
             **{
                 "schema:distribution": [
-                    {"contentUrl": "https://example.org/data.csv", "encodingFormat": "text/csv"}
+                    {"schema:contentUrl": "https://example.org/data.csv", "schema:encodingFormat": "text/csv"}
                 ]
             }
         )
@@ -262,8 +262,8 @@ class TestDistribution:
             **{
                 "schema:distribution": [
                     {
-                        "contentUrl": "https://example.org/data.zip",
-                        "contentSize": [{"size": 2.5, "unit": "MB"}],
+                        "schema:contentUrl": "https://example.org/data.zip",
+                        "schema:contentSize": [{"size": 2.5, "unit": "MB"}],
                     }
                 ]
             }
@@ -276,7 +276,7 @@ class TestDistribution:
         doc = make_document(
             **{
                 "schema:distribution": [
-                    {"contentUrl": "https://example.org/data.csv", "checksum": checksum}
+                    {"schema:contentUrl": "https://example.org/data.csv", "checksum": checksum}
                 ]
             }
         )
@@ -288,7 +288,7 @@ class TestDistribution:
         doc = make_document(
             **{
                 "schema:distribution": [
-                    {"contentUrl": "https://example.org/data.csv", "checksum": checksum}
+                    {"schema:contentUrl": "https://example.org/data.csv", "checksum": checksum}
                 ]
             }
         )
@@ -300,7 +300,7 @@ class TestDistribution:
         doc = make_document(
             **{
                 "schema:distribution": [
-                    {"contentUrl": "https://example.org/data.csv", "checksum": checksum}
+                    {"schema:contentUrl": "https://example.org/data.csv", "checksum": checksum}
                 ]
             }
         )
@@ -311,7 +311,7 @@ class TestDistribution:
         assert any("isn't recognizable as md5/sha256" in w for w in result.warnings)
 
     def test_skips_entries_with_no_content_url(self):
-        doc = make_document(**{"schema:distribution": [{"encodingFormat": "text/csv"}]})
+        doc = make_document(**{"schema:distribution": [{"schema:encodingFormat": "text/csv"}]})
         result = to_croissant_json(doc)
         assert "distribution" not in result.croissant_json
 
@@ -333,7 +333,7 @@ class TestDistribution:
 class TestRecommendedFields:
     def test_maps_keywords_by_name(self):
         doc = make_document(
-            **{"schema:keywords": [{"name": "Gastos municipales"}, {"name": "Presupuesto"}]}
+            **{"schema:keywords": [{"schema:name": "Gastos municipales"}, {"schema:name": "Presupuesto"}]}
         )
         result = to_croissant_json(doc)
         assert result.croissant_json["keywords"] == ["Gastos municipales", "Presupuesto"]
@@ -367,7 +367,7 @@ class TestRecommendedFields:
         assert result.croissant_json["dateModified"] == "2020-01-01"
 
     def test_maps_same_as_by_value(self):
-        doc = make_document(**{"schema:sameAs": [{"value": "EPF-2021", "name": "EPF"}]})
+        doc = make_document(**{"schema:sameAs": [{"schema:value": "EPF-2021", "schema:name": "EPF"}]})
         result = to_croissant_json(doc)
         assert result.croissant_json["sameAs"] == ["EPF-2021"]
 

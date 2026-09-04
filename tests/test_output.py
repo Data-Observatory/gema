@@ -110,7 +110,7 @@ class TestWrite:
         """Directory output_path creates a .json file inside with auto-generated name."""
         doc = MetadataDocument(
             fields={
-                "schema:identifier": [{"propertyID": "DOI", "value": "10.1234/example-doi"}],
+                "schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.1234/example-doi"}],
                 "titles": [{"title": "Directory Test"}],
             }
         )
@@ -123,7 +123,7 @@ class TestWrite:
         content = target.read_text(encoding="utf-8")
         assert content == result
         data = json.loads(content)
-        assert data["schema:identifier"][0]["value"] == "10.1234/example-doi"
+        assert data["schema:identifier"][0]["schema:value"] == "10.1234/example-doi"
         assert data["titles"] == [{"title": "Directory Test"}]
 
     def test_write_creates_parent_dirs(self, writer: OutputWriter, tmp_path: Path):

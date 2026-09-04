@@ -424,9 +424,9 @@ class TestPipelinePidValidation:
             {
                 "fields": {
                     "schema_publisher": {
-                        "@type": "schema:Organization",
-                        "name": "Test Publisher",
-                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/BADID"}],
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}],
                     }
                 }
             }
@@ -450,9 +450,9 @@ class TestPipelinePidValidation:
             {
                 "fields": {
                     "schema_publisher": {
-                        "@type": "schema:Organization",
-                        "name": "Test Publisher",
-                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/02sevrz47"}],
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}],
                     }
                 }
             }
@@ -473,9 +473,9 @@ class TestPipelinePidValidation:
             {
                 "fields": {
                     "schema_publisher": {
-                        "@type": "schema:Organization",
-                        "name": "Test Publisher",
-                        "schema:identifier": [{"propertyID": "ROR", "value": "https://ror.org/BADID"}],
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}],
                     }
                 }
             }

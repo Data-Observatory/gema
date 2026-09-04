@@ -147,7 +147,7 @@ class TestGenericNormalizers:
         assert schema._normalize_string_list("solo") == ["solo"]
 
     def test_normalize_dict_list_wraps_bare_string(self, schema: CDIFDiscoveryProfile) -> None:
-        assert schema._normalize_dict_list("Alone") == [{"name": "Alone"}]
+        assert schema._normalize_dict_list("Alone") == [{"schema:name": "Alone"}]
 
     def test_normalize_dict_list_passes_through_dicts(self, schema: CDIFDiscoveryProfile) -> None:
         items = [{"a": 1}, {"b": 2}]
@@ -162,7 +162,7 @@ class TestGenericNormalizers:
         assert schema._normalize_single_dict([{"a": 1}, {"b": 2}]) == {"a": 1}
 
     def test_normalize_single_dict_wraps_bare_string(self, schema: CDIFDiscoveryProfile) -> None:
-        assert schema._normalize_single_dict("Solo Publisher") == {"name": "Solo Publisher"}
+        assert schema._normalize_single_dict("Solo Publisher") == {"schema:name": "Solo Publisher"}
 
     def test_normalize_single_dict_empty_list_is_empty_dict(
         self, schema: CDIFDiscoveryProfile
@@ -206,11 +206,11 @@ class TestMergeAgentResults:
         self, schema: CDIFDiscoveryProfile
     ) -> None:
         results = [
-            AgentResult(field_name="schema_keywords", value=[{"name": "a"}]),
-            AgentResult(field_name="schema_keywords", value=[{"name": "b"}]),
+            AgentResult(field_name="schema_keywords", value=[{"schema:name": "a"}]),
+            AgentResult(field_name="schema_keywords", value=[{"schema:name": "b"}]),
         ]
         doc = schema.merge_agent_results(results)
-        assert doc.get_field("schema:keywords") == [{"name": "a"}, {"name": "b"}]
+        assert doc.get_field("schema:keywords") == [{"schema:name": "a"}, {"schema:name": "b"}]
 
     def test_field_order_matches_get_field_order(self, schema: CDIFDiscoveryProfile) -> None:
         results = [
@@ -234,7 +234,7 @@ class TestMergeAgentResults:
         {"@list": [...]}, not a bare array like schema:contributor -- per
         the vendored schema.json's own field description. Agents still
         emit a plain list; merge_agent_results wraps it."""
-        entry = {"@type": "schema:Person", "name": "Jane Doe"}
+        entry = {"@type": ["schema:Person"], "schema:name": "Jane Doe"}
         results = [
             AgentResult(field_name="schema_creator", value=[entry]),
             AgentResult(field_name="schema_contributor", value=[entry]),
@@ -262,7 +262,7 @@ class TestMergeAgentResults:
         results = [
             AgentResult(
                 field_name="schema_identifier",
-                value=[{"value": "https://doi.org/10.5281/zenodo.1"}],
+                value=[{"schema:value": "https://doi.org/10.5281/zenodo.1"}],
             )
         ]
         doc = schema.merge_agent_results(results)
@@ -284,8 +284,8 @@ class TestValidateOutput:
             "schema:dateModified": "2026-09-04",
             "schema:subjectOf": {"@id": "https://doi.org/10.1/x#metadata"},
             "schema:name": "X",
-            "schema:identifier": [{"value": "https://doi.org/10.1/x"}],
-            "schema:license": [{"name": "CC-BY-4.0"}],
+            "schema:identifier": [{"schema:value": "https://doi.org/10.1/x"}],
+            "schema:license": [{"schema:name": "CC-BY-4.0"}],
             "schema:url": "https://example.org",
         }
 
@@ -325,7 +325,7 @@ class TestValidateOutput:
     def test_distribution_alone_satisfies_that_group(self, schema: CDIFDiscoveryProfile) -> None:
         raw = self._valid_raw()
         del raw["schema:url"]
-        raw["schema:distribution"] = [{"contentUrl": "https://example.org/f.csv"}]
+        raw["schema:distribution"] = [{"schema:contentUrl": "https://example.org/f.csv"}]
         model = schema.validate_output(raw)
         assert model.schema_distribution
 
