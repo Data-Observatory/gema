@@ -1,0 +1,344 @@
+{
+    "@context": {
+        "schema": "http://schema.org/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "dcat": "http://www.w3.org/ns/dcat#",
+        "prov": "http://www.w3.org/ns/prov#",
+        "dqv": "http://www.w3.org/ns/dqv#",
+        "geosparql": "http://www.opengis.net/ont/geosparql#",
+        "spdx": "http://spdx.org/rdf/terms#",
+        "time": "http://www.w3.org/2006/time#",
+        "sf": "http://www.opengis.net/ont/sf#",
+        "cdi": "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/",
+        "csvw": "http://www.w3.org/ns/csvw#",
+        "ada": "https://ada.astromat.org/metadata/",
+        "xas": "https://ada.astromat.org/metadata/xas/",
+        "nxs": "https://manual.nexusformat.org/classes/"
+    },
+
+    "@type": "schema:Dataset",
+    "@embed": "@always",
+
+    "schema:name": {},
+    "schema:description": {},
+    "schema:identifier": {
+        "@embed": "@always"
+    },
+    "schema:dateModified": {},
+    "schema:datePublished": {},
+    "schema:version": {},
+    "schema:inLanguage": {},
+    "schema:url": {},
+
+    "schema:additionalType": {
+        "@embed": "@always"
+    },
+
+    "schema:sameAs": {
+        "@embed": "@always"
+    },
+
+    "schema:keywords": {
+        "@embed": "@always"
+    },
+
+    "schema:license": {
+        "@embed": "@always"
+    },
+
+    "schema:conditionsOfAccess": {
+        "@embed": "@always"
+    },
+
+    "schema:creator": {
+        "@embed": "@always",
+        "schema:affiliation": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"}
+        },
+        "schema:identifier": {"@embed": "@always"},
+        "schema:contactPoint": {"@embed": "@always"}
+    },
+
+    "schema:contributor": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:description": {},
+        "schema:alternateName": {},
+        "schema:additionalType": {"@embed": "@always"},
+        "schema:sameAs": {"@embed": "@always"},
+        "schema:affiliation": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"}
+        },
+        "schema:identifier": {"@embed": "@always"},
+        "schema:contactPoint": {"@embed": "@always"},
+        "schema:roleName": {"@embed": "@always"},
+        "schema:contributor": {"@embed": "@always"}
+    },
+
+    "schema:publisher": {
+        "@embed": "@always",
+        "schema:identifier": {"@embed": "@always"}
+    },
+
+    "schema:provider": {
+        "@embed": "@always",
+        "schema:identifier": {"@embed": "@always"}
+    },
+
+    "schema:funding": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:description": {},
+        "schema:funder": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"}
+        },
+        "schema:identifier": {"@embed": "@always"}
+    },
+
+    "schema:measurementTechnique": {
+        "@embed": "@always"
+    },
+
+    "schema:distribution": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:contentUrl": {},
+        "schema:description": {},
+        "schema:encodingFormat": {},
+        "spdx:checksum": {"@embed": "@always"},
+        "schema:provider": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"}
+        },
+        "dcterms:conformsTo": {
+            "@embed": "@always"
+        },
+        "cdi:characterSet": {},
+        "cdi:fileSize": {},
+        "cdi:fileSizeUofM": {},
+        "cdi:arrayBase": {},
+        "csvw:commentPrefix": {},
+        "csvw:delimiter": {},
+        "cdi:escapeCharacter": {},
+        "csvw:header": {},
+        "cdi:headerIsCaseSensitive": {},
+        "csvw:headerRowCount": {},
+        "cdi:isDelimited": {},
+        "cdi:isFixedWidth": {},
+        "csvw:lineTerminators": {},
+        "csvw:quoteChar": {},
+        "csvw:skipBlankRows": {},
+        "csvw:skipColumns": {},
+        "csvw:skipInitialSpace": {},
+        "csvw:skipRows": {},
+        "csvw:tableDirection": {},
+        "csvw:textDirection": {},
+        "cdi:treatConsecutiveDelimitersAsOne": {},
+        "csvw:trim": {},
+        "cdi:hasPhysicalMapping": {
+            "@embed": "@always",
+            "cdi:decimalPositions": {},
+            "cdi:defaultValue": {},
+            "cdi:format": {},
+            "cdi:isRequired": {},
+            "cdi:maximumLength": {},
+            "cdi:minimumLength": {},
+            "cdi:nullSequence": {},
+            "cdi:physicalDataType": {},
+            "cdi:scale": {},
+            "cdi:index": {},
+            "cdi:locator": {},
+            "cdi:defaultDecimalSeparator": {},
+            "cdi:defaultDigitalGroupSeparator": {},
+            "cdi:displayLabel": {},
+            "cdi:length": {},
+            "cdi:formats_InstanceVariable": {
+                "@embed": "@always"
+            }
+        },
+        "schema:potentialAction": {
+            "@embed": "@always",
+            "schema:target": {"@embed": "@always"},
+            "schema:result": {"@embed": "@always"},
+            "schema:object": {
+                "@embed": "@always",
+                "schema:variableMeasured": {"@embed": "@always"}
+            },
+            "schema:query-input": {
+                "@embed": "@always"
+            }
+        },
+        "schema:hasPart": {
+            "@embed": "@always",
+            "schema:name": {},
+            "schema:contentUrl": {},
+            "schema:description": {},
+            "schema:encodingFormat": {},
+            "cdi:fileSize": {},
+            "cdi:fileSizeUofM": {},
+            "spdx:checksum": {"@embed": "@always"},
+            "dcterms:conformsTo": {"@embed": "@always"},
+            "cdi:hasPhysicalMapping": {
+                "@embed": "@always",
+                "cdi:formats_InstanceVariable": {"@embed": "@always"}
+            }
+        },
+        "schema:serviceType": {},
+        "schema:termsOfService": {"@embed": "@always"},
+        "schema:documentation": {"@embed": "@always"}
+    },
+
+    "schema:variableMeasured": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:description": {},
+        "schema:alternateName": {},
+        "schema:propertyID": {"@embed": "@always"},
+        "schema:measurementTechnique": {"@embed": "@always"},
+        "schema:unitText": {},
+        "schema:unitCode": {"@embed": "@always"},
+        "schema:minValue": {},
+        "schema:maxValue": {},
+        "schema:url": {},
+        "cdi:identifier": {},
+        "cdi:name": {},
+        "cdi:displayLabel": {},
+        "cdi:intendedDataType": {},
+        "cdi:physicalDataType": {},
+        "cdi:role": {},
+        "cdi:qualifies": {"@embed": "@always"},
+        "cdi:describedUnitOfMeasure": {"@embed": "@always"},
+        "cdi:simpleUnitOfMeasure": {},
+        "cdi:uses": {"@embed": "@always"}
+    },
+
+    "schema:spatialCoverage": {
+        "@embed": "@always",
+        "schema:name": {"@embed": "@always"},
+        "schema:identifier": {"@embed": "@always"},
+        "schema:alternateName": {"@embed": "@always"},
+        "schema:additionalType": {"@embed": "@always"},
+        "schema:geo": {"@embed": "@always"},
+        "geosparql:hasGeometry": {
+            "@embed": "@always",
+            "geosparql:asWKT": {"@embed": "@always"},
+            "geosparql:crs": {"@embed": "@always"}
+        }
+    },
+
+    "schema:temporalCoverage": {
+        "@embed": "@always",
+        "schema:description": {},
+        "time:intervalStartedBy": {},
+        "time:intervalFinishedBy": {},
+        "time:hasBeginning": {
+            "@embed": "@always",
+            "time:inTimePosition": {"@embed": "@always"},
+            "time:inXSDDate": {}
+        },
+        "time:hasEnd": {
+            "@embed": "@always",
+            "time:inTimePosition": {"@embed": "@always"},
+            "time:inXSDDate": {}
+        }
+    },
+
+    "schema:relatedLink": {
+        "@embed": "@always",
+        "schema:linkRelationship": {"@embed": "@always"},
+        "schema:target": {"@embed": "@always"}
+    },
+
+    "schema:publishingPrinciples": {
+        "@embed": "@always"
+    },
+
+    "prov:wasGeneratedBy": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:description": {},
+        "schema:startTime": {},
+        "schema:endTime": {},
+        "schema:actionStatus": {},
+        "schema:error": {},
+        "prov:used": {
+            "@embed": "@always",
+            "schema:instrument": {
+                "@embed": "@always",
+                "schema:identifier": {"@embed": "@always"},
+                "schema:additionalProperty": {"@embed": "@always"},
+                "schema:hasPart": {
+                    "@embed": "@always",
+                    "schema:additionalProperty": {"@embed": "@always"}
+                }
+            }
+        },
+        "schema:agent": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"},
+            "schema:contactPoint": {"@embed": "@always"},
+            "schema:affiliation": {"@embed": "@always"}
+        },
+        "schema:participant": {
+            "@embed": "@always",
+            "schema:contributor": {"@embed": "@always"}
+        },
+        "schema:instrument": {
+            "@embed": "@always"
+        },
+        "schema:identifier": {"@embed": "@always"},
+        "schema:object": {"@embed": "@always"},
+        "schema:result": {"@embed": "@always"},
+        "schema:location": {"@embed": "@always"},
+        "schema:actionProcess": {
+            "@embed": "@always",
+            "schema:step": {"@embed": "@always"}
+        },
+        "schema:additionalProperty": {"@embed": "@always"},
+        "prov:generated": {"@embed": "@always"},
+        "prov:wasAssociatedWith": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"},
+            "schema:contactPoint": {"@embed": "@always"},
+            "schema:affiliation": {"@embed": "@always"}
+        },
+        "prov:atLocation": {"@embed": "@always"},
+        "prov:wasInformedBy": {"@embed": "@always"}
+    },
+
+    "prov:wasDerivedFrom": {
+        "@embed": "@always",
+        "schema:name": {},
+        "schema:description": {},
+        "schema:url": {}
+    },
+
+    "dqv:hasQualityMeasurement": {
+        "@embed": "@always",
+        "dqv:isMeasurementOf": {"@embed": "@always"},
+        "dqv:value": {"@embed": "@always"}
+    },
+
+    "schema:subjectOf": {
+        "@embed": "@always",
+        "@type": "schema:Dataset",
+        "schema:about": {"@embed": "@always"},
+        "schema:sdDatePublished": {},
+        "dcterms:conformsTo": {
+            "@embed": "@always"
+        },
+        "schema:maintainer": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"},
+            "schema:contactPoint": {"@embed": "@always"},
+            "schema:affiliation": {"@embed": "@always"}
+        },
+        "schema:includedInDataCatalog": {
+            "@embed": "@always",
+            "schema:identifier": {"@embed": "@always"}
+        }
+    }
+}

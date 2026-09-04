@@ -1,0 +1,5 @@
+source_repo=https://github.com/Cross-Domain-Interoperability-Framework/doc-corediscovery
+commit_sha=81c28260778426cc61302105fc7191b4db360bc9
+fetched_date=2026-09-04
+vendored_files=schema.json (from CDIFDiscoveryProfileStructuredSchema.json), frame.jsonld (from CDIFDiscovery-frame.jsonld), shacl.ttl (from discoveryRules.shacl)
+notes=No standalone context.jsonld exists upstream; @context is embedded in both schema.json and frame.jsonld. Re-sync is manual and maintainer-declared only (see docs/codata_mcp_croissant_cdifspecs.md sec 6.2) -- no automated drift detection.

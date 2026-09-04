@@ -1,0 +1,2112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "CDIF Discovery metadata profile",
+  "description": "CDIF Discovery profile for dataset metadata. Composes cdifCore with discovery-oriented properties: measurement technique, variables, spatial and temporal coverage, quality measurements.",
+  "properties": {
+    "@context": {
+      "type": "object",
+      "description": "JSON-LD context declaring namespace prefixes used in the metadata record.",
+      "properties": {
+        "schema": {
+          "const": "http://schema.org/"
+        },
+        "dcterms": {
+          "const": "http://purl.org/dc/terms/"
+        },
+        "spdx": {
+          "const": "http://spdx.org/rdf/terms#"
+        },
+        "dcat": {
+          "const": "http://www.w3.org/ns/dcat#"
+        },
+        "prov": {
+          "const": "http://www.w3.org/ns/prov#"
+        }
+      },
+      "required": [
+        "schema",
+        "dcterms",
+        "dcat",
+        "prov"
+      ]
+    },
+    "@id": {
+      "type": "string",
+      "description": "The URI for the resource should be the @id value for the root of the JSON instance document tree. Must be an IRI (e.g. https://doi.org/..., urn:..., or a relative URI like #localid). Note that this identifier can be interpreted to identify the resource that is the subject of this metadata record, or the JSON-LD object that is the digital object containing the metadata information."
+    },
+    "@type": {
+      "description": "a schema.org Class that specifies the expected information content for the metadata record. The array must include at least one schema.org type value. Default is schema:Dataset.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "schema:CreativeWork",
+          "schema:SoftwareApplication",
+          "schema:SoftwareSourceCode",
+          "schema:Product",
+          "schema:WebAPI",
+          "schema:Dataset",
+          "schema:DigitalDocument",
+          "schema:Collection",
+          "schema:ImageObject",
+          "schema:DataCatalog",
+          "schema:DefinedTermSet",
+          "schema:MediaObject"
+        ]
+      },
+      "default": "schema:Dataset",
+      "minItems": 1,
+      "contains": {
+        "const": "schema:Dataset"
+      }
+    },
+    "schema:name": {
+      "type": "string",
+      "description": "A descriptive name of a dataset (e.g., 'Snow depth in Northern Hemisphere'). The name should uniquely identify the described resource for human use, in the scope of the metadata catalog containing this metadata record."
+    },
+    "schema:description": {
+      "type": "string",
+      "description": "A short summary describing a dataset. This text will be indexed by search applications, so the more information here, the better."
+    },
+    "schema:identifier": {
+      "description": "The primary identifier for the dataset; other identifiers should be listed in the sameAs field. Schema.org has three ways of encoding identifiers-- a text description, a URL, or by using the schema:PropertyValue field. The Science on Schema.org guidance strongly recommends using the PropertyValue approach. see https://github.com/ESIPFed/science-on-schema.org   .... Dataset.md#identifier.  Ideally, for any given data provided they would provide identifiers either all as strings or all as identifier_type.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Identifier"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "schema:additionalType": {
+      "description": "identifiers for datatypes from other vocabularies (not schema.org) that apply to this metadata.",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/$defs/DefinedTerm"
+          }
+        ]
+      }
+    },
+    "schema:sameAs": {
+      "description": "Other identifiers for the dataset, as IRI references, literal strings, or structured identifiers using schema:PropertyValue.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "IRI for an equivalent resource or alternate identifier"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/Identifier"
+          }
+        ]
+      }
+    },
+    "schema:version": {
+      "type": [
+        "string",
+        "number"
+      ],
+      "description": "The version number or identifier for this dataset (text or numeric). The values should sort from oldest to newest using an alphanumeric sort on version strings"
+    },
+    "schema:inLanguage": {
+      "type": "string",
+      "description": "the language of the dataset content"
+    },
+    "schema:dateModified": {
+      "type": "string",
+      "description": "ISO8601 formatted date (and optional time if relevant) when Dataset was last updated"
+    },
+    "schema:datePublished": {
+      "type": "string",
+      "description": "ISO8601 formatted date (and optional time if relevant) when Dataset was made public."
+    },
+    "schema:conditionsOfAccess": {
+      "description": "text statement of conditions for use and access; if an online resource documents the restrictions or a URI is used to identify the conditions, recommend using schema:CreativeWork to provide a label (name) and an identifier (URI or URL). ",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a reference to a resource defining conditions of Access"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/LabeledLink"
+          }
+        ]
+      }
+    },
+    "schema:license": {
+      "description": "legal statement of conditions for use and access; recommend using schema:CreativeWork to provide a label (name) for the license, and an identifier. Sources of license identifiers: https://opensource.org/licenses/, https://creativecommons.org/about/cclicenses/, https://spdx.org/licenses/, http://cor.esipfed.org/ont/earthcube/swl. If only a string is provided, it should be an identifier for the license, ideally a resolvable URI",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a reference to a license defintion"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/LabeledLink"
+          }
+        ]
+      }
+    },
+    "schema:url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Web Location of a page describing the dataset (landing page), typically providing links or instructions to get the actual resource content; analogous to dcat:accessURL. If a direct link is available to get the data, put in distribution/contentUrl"
+    },
+    "schema:distribution": {
+      "description": "specifies how to download the data in a specific format or access via a web API. This property describes where to get the data and in what format by using the schema:DataDownload type. If user must access data through a landing page, provide link to landing page in the 'url' property for the dataset",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "description": "schema to document file-based access to a resoruce via URL, based on schema.org/DataDownload",
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string"
+              },
+              "@type": {
+                "type": "array",
+                "description": "implement as array because extensions might need to add additional types",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:DataDownload"
+                },
+                "minItems": 1
+              },
+              "schema:name": {
+                "type": "string"
+              },
+              "schema:description": {
+                "type": "string",
+                "description": "Description of this distribution, e.g. what format, access constraints, etc."
+              },
+              "schema:contentUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "schema:encodingFormat": {
+                "type": "array",
+                "description": "MIME type with extension; should indicate the serialization scheme in sufficient detail that machine can know how to parse.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "spdx:checksum": {
+                "type": "object",
+                "description": "A string value calculated from the content of the resource representation, used to test if content has been modified. The checksum is a property of a particular distribution/DataDownload.",
+                "properties": {
+                  "@type": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "contains": {
+                      "const": "spdx:Checksum"
+                    },
+                    "minItems": 1
+                  },
+                  "spdx:algorithm": {
+                    "type": "string"
+                  },
+                  "spdx:checksumValue": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "@type"
+                ]
+              },
+              "dcterms:conformsTo": {
+                "description": "An identifier for a standard or specification that the distribution conforms to. Recommended to enable machine-actionable data access.",
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "@id": {
+                      "type": "string",
+                      "description": "uri for specification that this distribution conforms to"
+                    }
+                  }
+                }
+              },
+              "schema:provider": {
+                "type": "array",
+                "description": "Party who maintains this particular distribution option for the dataset. Use this property if there are multiple distributions from different providers",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "@id": {
+                          "type": "string",
+                          "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+                        }
+                      },
+                      "required": [
+                        "@id"
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/Person"
+                    },
+                    {
+                      "$ref": "#/$defs/Organization"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "schema:contentUrl",
+              "@type"
+            ]
+          },
+          {
+            "title": "Direct data access to a resource via web servcie",
+            "description": "use schema.org Action to document url or url template and parameters to request data through a web accessible location. At this point, schema is set up for one action-- an HTTP Get that requests data. The url template parameters (in curly brackets '{}') specify query paramters to filter the source data, request particular output formats or other aspects of data.",
+            "type": "object",
+            "properties": {
+              "@type": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:WebAPI"
+                },
+                "minItems": 1
+              },
+              "schema:serviceType": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ],
+                "description": "specify the kind of service. Ideally this should be a resolvable identifier. Currently there is no widely adopted registry for serviceType identifiers, in large part because services might be defined at different levels of granularity, and classifications might focus on function, data formats, thematic content, security, or other aspects of the service definition. For interoperability, there must be an external arrangement between data providers and consumers on the strings that will be used to specify service types."
+              },
+              "schema:termsOfService": {
+                "description": "Description of access privileges required to use the API, e.g. registration, licensing, payments. Note that access constraints applying to all distributions of the resource should be specified in the access constraints for the resource description as a whole.",
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "default": "not specified"
+                  },
+                  {
+                    "$ref": "#/$defs/LabeledLink"
+                  }
+                ]
+              },
+              "schema:documentation": {
+                "description": "a document that provides a machine-actionable description of a service instance. Examples include OpenAPI documents, OGC Capabilities documents. Software designed to utilise a particular service type will typically include functionality to parse such a description document and engage with the service endpoint. If such a document is available for the service instance providing the resource distribution, it should be included in the distribution metadata.",
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/LabeledLink"
+                  }
+                ]
+              },
+              "schema:potentialAction": {
+                "type": "array",
+                "description": "actions that can be invoked via the API",
+                "items": {
+                  "title": "Action ",
+                  "type": "object",
+                  "description": "this element defines an action (operation) that can be invoked via messages using the protocol defined. In most cases this will be an http request via TCP/IP, but in desktop or LAN environments, other protocols might be used. The target property defines the endpoint and syntax for invoking the action. Result specifies the encoding format for the (possible) response(s) when the action is invoked. Object specifies the information model for the resource that is the object of the action. This approach is an adoptation of the Action Blog Post from schema.org (see https://schema.org/docs/actions.html, and https://github.com/schemaorg/suggestions-questions-brainstorming/issues/62) ",
+                  "properties": {
+                    "@type": {
+                      "description": "The type of action. Must be schema:Action or one of its subtypes.",
+                      "default": "schema:Action",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "contains": {
+                        "enum": [
+                          "schema:Action",
+                          "schema:AssessAction",
+                          "schema:ConsumeAction",
+                          "schema:ControlAction",
+                          "schema:CreateAction",
+                          "schema:DeleteAction",
+                          "schema:FindAction",
+                          "schema:InteractAction",
+                          "schema:MoveAction",
+                          "schema:PlayAction",
+                          "schema:SearchAction",
+                          "schema:TransferAction",
+                          "schema:UpdateAction"
+                        ]
+                      },
+                      "minItems": 1
+                    },
+                    "schema:name": {
+                      "type": "string",
+                      "description": "text label for the action"
+                    },
+                    "schema:target": {
+                      "type": "object",
+                      "description": "specifies the request target location and request syntax. Documentation of the URL end point and syntax to invoke the service. This schema doesn't handle post requests.",
+                      "properties": {
+                        "@type": {
+                          "default": "schema:EntryPoint",
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "contains": {
+                            "const": "schema:EntryPoint"
+                          },
+                          "minItems": 1
+                        },
+                        "schema:description": {
+                          "type": "string"
+                        },
+                        "schema:urlTemplate": {
+                          "type": "string",
+                          "description": "a templated URL; parameters are enclosed in curly braces ({..}); parameters are not required. If included, parameters MUST be documented in the query-input element. Template should be consitent with URI Template (https://datatracker.ietf.org/doc/html/rfc6570) examples: - http://portal.chordsrt.com/api/v1/data.{encoding}; single parameter - http://portal.chordsrt.com/api/v1/data.{encoding}?instruments={instruments}&start={start}&end={end} ; multiple parameters - {endpoint}{encoding}; endpoint URL path is a parameter,should only appear in potential actions for API specification descriptions, which are generic-not specific to a particular endpoint."
+                        },
+                        "schema:httpMethod": {
+                          "title": "HTTP Method",
+                          "description": "only applicable if protocol is http or a protocol that tunnels on http",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "default": "GET",
+                            "enum": [
+                              "GET",
+                              "PUT",
+                              "POST",
+                              "PATCH",
+                              "DELETE",
+                              "COPY",
+                              "HEAD",
+                              "OPTIONS",
+                              "PROPFIND"
+                            ]
+                          }
+                        },
+                        "schema:contentType": {
+                          "type": "array",
+                          "description": "The supported content type(s) for an EntryPoint response. a MIME type (https://www.iana.org/assignments/media-types/media-types.xhtml) that specifies the content type for messages in resonses from the service endpoint. This is a schema.org property, and is redundant with encodingFormat in the result property for the Action.",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "schema:urlTemplate"
+                      ]
+                    },
+                    "schema:result": {
+                      "type": "object",
+                      "description": "specifies the serialization scheme (encoding format, information model) for expected representation of the data. Documentation of the serialization format for the API response.",
+                      "properties": {
+                        "@type": {
+                          "type": "array",
+                          "description": "Type of result object. Typically schema:DataDownload, but may include additional types.",
+                          "items": {
+                            "type": "string"
+                          },
+                          "contains": {
+                            "const": "schema:DataDownload"
+                          },
+                          "minItems": 1
+                        },
+                        "schema:encodingFormat": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "schema:description": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "schema:object": {
+                      "type": "object",
+                      "description": "The entity upon which the action is carried out, whose state is kept intact or changed. This is an open ended class for general description of Actions. When schema:Action (or a subclass) is used to describe operations for a WebAPI distribution, the object is implicitly the resource that is the subject of the containing metadata record, so this property would be superfluous.",
+                      "properties": {
+                        "@type": {
+                          "default": "schema:Thing",
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1
+                        },
+                        "schema:description": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "schema:query-input": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Query input parameter for a web API action, typed as schema:PropertyValueSpecification.",
+                        "properties": {
+                          "@id": {
+                            "type": "string"
+                          },
+                          "@type": {
+                            "default": "schema:PropertyValueSpecification",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "contains": {
+                              "const": "schema:PropertyValueSpecification"
+                            },
+                            "minItems": 1
+                          },
+                          "schema:valueName": {
+                            "type": "string"
+                          },
+                          "schema:description": {
+                            "type": "string"
+                          },
+                          "schema:valueRequired": {
+                            "type": "boolean",
+                            "default": true
+                          },
+                          "schema:valuePattern": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "schema:valueName",
+                          "schema:description"
+                        ]
+                      },
+                      "description": "set of explanations of the parameters in the URL template for the target."
+                    }
+                  },
+                  "required": [
+                    "schema:name",
+                    "schema:target"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "schema:serviceType",
+              "schema:potentialAction",
+              "schema:termsOfService"
+            ]
+          }
+        ]
+      }
+    },
+    "schema:relatedLink": {
+      "type": "array",
+      "description": "links to related resources; linkRelationship specifies how the resource is related.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "contains": {
+              "const": "schema:LinkRole"
+            },
+            "minItems": 1
+          },
+          "schema:linkRelationship": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/DefinedTerm"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "schema:target": {
+            "type": "object",
+            "properties": {
+              "@type": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:EntryPoint"
+                },
+                "minItems": 1
+              },
+              "schema:encodingFormat": {
+                "type": "string",
+                "description": "registered MIME types are expected"
+              },
+              "schema:name": {
+                "type": "string"
+              },
+              "schema:url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        }
+      }
+    },
+    "schema:publishingPrinciples": {
+      "description": "FDOF digitalObjectMutability, RDA digitalObjectPolicy, FDOF PersistencyPolicy. Policies related to maintenance, update, expected time to live. If an online resource documents the policies or a URI is used to identify the conditions, recommend using schema:CreativeWork to provide a label (name) and an identifier (URI or URL).",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a reference to a publishing principles statement"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/LabeledLink"
+          }
+        ]
+      }
+    },
+    "schema:keywords": {
+      "description": "Keywords are an array of strings, an array of schema:DefinedTerms, or some combination of these. If you have information about a controlled vocabulary from which keywords come from, use schema:DefinedTerm to descibe that keyword. This allowed variability makes parsing metadata hard; recommend using DefinedTerm for all keywords if any of them are from a known vocabulary, otherwise an array of strings.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/DefinedTerm"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "schema:creator": {
+      "description": "author or orginator of intellectual content of dataset. Uset the JSON-LD @list construct to preserve author order. Use contributor with the Role property to specify other roles related to creation or stewardship of the resource.",
+      "type": "object",
+      "properties": {
+        "@list": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "@id": {
+                    "type": "string",
+                    "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+                  }
+                },
+                "required": [
+                  "@id"
+                ]
+              },
+              {
+                "$ref": "#/$defs/Person"
+              },
+              {
+                "$ref": "#/$defs/Organization"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "schema:contributor": {
+      "description": "other parties who played a role in production of dataset",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+              }
+            },
+            "required": [
+              "@id"
+            ]
+          },
+          {
+            "$ref": "#/$defs/Person"
+          },
+          {
+            "$ref": "#/$defs/Organization"
+          },
+          {
+            "description": "For more granularity on how a person contributed to a Dataset, use schema:Role. The schema.org documentation does not state that the Role type is an expected data type of author, creator and contributor, but that is addressed in this blog post (http://blog.schema.org/2014/06/introducing-role.html). see https://github.com/ESIPFed/science-on-schema.org/blob/develop/guides/Dataset.md#roles-of-people",
+            "type": "object",
+            "properties": {
+              "@type": {
+                "default": "schema:Role",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:Role"
+                },
+                "minItems": 1
+              },
+              "schema:roleName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ]
+              },
+              "schema:contributor": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "@id": {
+                        "type": "string",
+                        "description": "IRI reference to a Person or Organization defined elsewhere"
+                      }
+                    },
+                    "required": [
+                      "@id"
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/Person"
+                  },
+                  {
+                    "$ref": "#/$defs/Organization"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "@type",
+              "schema:roleName",
+              "schema:contributor"
+            ]
+          }
+        ]
+      }
+    },
+    "schema:publisher": {
+      "description": "Party who made the dataset publicly available",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "@id": {
+              "type": "string",
+              "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+            }
+          },
+          "required": [
+            "@id"
+          ]
+        },
+        {
+          "$ref": "#/$defs/Person"
+        },
+        {
+          "$ref": "#/$defs/Organization"
+        }
+      ]
+    },
+    "schema:provider": {
+      "description": "Party who maintains the distribution options for the dataset. If there are multiple distributions from different providers, use the provider property on distribution/DataDownload",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+              }
+            },
+            "required": [
+              "@id"
+            ]
+          },
+          {
+            "$ref": "#/$defs/Person"
+          },
+          {
+            "$ref": "#/$defs/Organization"
+          }
+        ]
+      }
+    },
+    "schema:funding": {
+      "type": "array",
+      "items": {
+        "description": "Funding acknowledgement properties, profile of schema.org/MonetaryGrant",
+        "type": "object",
+        "properties": {
+          "@id": {
+            "type": "string",
+            "description": "URI identifier for this funding record"
+          },
+          "@type": {
+            "default": "schema:MonetaryGrant",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "contains": {
+              "const": "schema:MonetaryGrant"
+            },
+            "minItems": 1
+          },
+          "schema:identifier": {
+            "$ref": "#/$defs/Identifier",
+            "description": "identifier for a particular grant"
+          },
+          "schema:description": {
+            "type": "string",
+            "description": "description of the funding or grant"
+          },
+          "schema:name": {
+            "type": "string",
+            "description": "title of the grant"
+          },
+          "schema:funder": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "@id": {
+                    "type": "string",
+                    "description": "a identifier for an agent defined in this metadata, or externally; must be dereferenceable"
+                  }
+                },
+                "required": [
+                  "@id"
+                ]
+              },
+              {
+                "$ref": "#/$defs/Person"
+              },
+              {
+                "$ref": "#/$defs/Organization"
+              }
+            ]
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "schema:funder"
+            ]
+          },
+          {
+            "required": [
+              "schema:identifier"
+            ]
+          },
+          {
+            "required": [
+              "schema:name"
+            ]
+          }
+        ]
+      }
+    },
+    "prov:wasGeneratedBy": {
+      "description": "Brief information about instruments, software or experimental protocols used",
+      "type": "array",
+      "items": {
+        "title": "very simple links or names of software or instruments used to generate a resource.",
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "contains": {
+              "const": "prov:Activity"
+            }
+          },
+          "prov:used": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "@id": {
+                      "type": "string",
+                      "description": "a resolvable reference to a representation of the software or instrument used"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "prov:wasDerivedFrom": {
+      "description": "Brief information about sources of data used in aggregate datasets",
+      "type": "array",
+      "items": {
+        "title": "very simple links or names of data sources used to generate the described resource.",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "a resolvable reference to a representation of the software or instrument used"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/LabeledLink"
+          }
+        ]
+      }
+    },
+    "schema:subjectOf": {
+      "type": "object",
+      "description": "see https://github.com/Cross-Domain-Interoperability-Framework/Discovery/issues/13 for discussion on how to make assertion about the sample registration and metadata distinct from statements about the physical object",
+      "properties": {
+        "@type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "schema:Dataset"
+          },
+          "minItems": 1
+        },
+        "schema:additionalType": {
+          "type": "array",
+          "description": "additional type assertions for the catalog record node. dcat:CatalogRecord is required.",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "dcat:CatalogRecord"
+          },
+          "minItems": 1
+        },
+        "@id": {
+          "type": "string",
+          "description": "identifier for the metadata record"
+        },
+        "schema:about": {
+          "type": "object",
+          "properties": {
+            "@id": {
+              "type": "string",
+              "description": "this must be the @id value of the node containing the resource description metadata"
+            }
+          }
+        },
+        "dcterms:conformsTo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "type": "string",
+                "description": "uri for specifications that this metadata record conforms to"
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "uri for specifications that this metadata record conforms to. Minimimally should specify uri for CDIF discovery profile.",
+          "contains": {
+            "type": "object",
+            "properties": {
+              "@id": {
+                "const": "https://w3id.org/cdif/core/1.0"
+              }
+            }
+          }
+        },
+        "schema:maintainer": {
+          "description": "Identification of the agent that maintains the metadata, with contact information. Should include person name and affiliation, or position name and affiliation, or just organization name. e-mail address is preferred contact information.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Person"
+            },
+            {
+              "$ref": "#/$defs/Organization"
+            }
+          ]
+        },
+        "schema:sdDatePublished": {
+          "description": "date of most recent update to the metadata content",
+          "type": "string",
+          "format": "date"
+        },
+        "schema:includedInDataCatalog": {
+          "type": "object",
+          "description": "identify the source for the origin the metadata record.",
+          "properties": {
+            "@id": {
+              "type": "string",
+              "description": "identifier for the graph node."
+            },
+            "@type": {
+              "default": "schema:DataCatalog",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "contains": {
+                "const": "schema:DataCatalog"
+              },
+              "minItems": 1
+            },
+            "schema:name": {
+              "type": "string"
+            },
+            "schema:url": {
+              "type": "string",
+              "format": "uri",
+              "description": "locator to access a landing page for the collection or catalog"
+            },
+            "schema:identifier": {
+              "$ref": "#/$defs/Identifier",
+              "description": "identifier for the collection or catalog; use identifier_type to provide information on identifier scheme and context for identifier"
+            }
+          }
+        }
+      },
+      "required": [
+        "schema:about",
+        "dcterms:conformsTo",
+        "schema:additionalType",
+        "@type",
+        "@id"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "required": [
+        "@id",
+        "@type",
+        "@context",
+        "schema:name",
+        "schema:identifier",
+        "schema:dateModified",
+        "schema:subjectOf"
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "required": [
+            "schema:license"
+          ]
+        },
+        {
+          "required": [
+            "schema:conditionsOfAccess"
+          ]
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "required": [
+            "schema:url"
+          ]
+        },
+        {
+          "required": [
+            "schema:distribution"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "@context": {
+          "type": "object",
+          "description": "Additional JSON-LD namespace prefixes for discovery properties.",
+          "properties": {
+            "geosparql": {
+              "const": "http://www.opengis.net/ont/geosparql#"
+            },
+            "dqv": {
+              "const": "http://www.w3.org/ns/dqv#"
+            },
+            "cdi": {
+              "const": "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"
+            }
+          }
+        },
+        "schema:measurementTechnique": {
+          "description": "The technique, technology, or methodology used for measurement or determination of the dataset values.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/DefinedTerm"
+              }
+            ]
+          }
+        },
+        "schema:variableMeasured": {
+          "description": "What does the dataset measure? (e.g., temperature, pressure)",
+          "type": "array",
+          "items": {
+            "description": "Schema.org PropertyValue-based variableMeasured. Defines properties for a measured variable in a dataset, typed as schema:PropertyValue.",
+            "type": "object",
+            "properties": {
+              "@type": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:PropertyValue"
+                },
+                "minItems": 1
+              },
+              "@id": {
+                "type": "string"
+              },
+              "schema:name": {
+                "type": "string",
+                "description": "string label associated with the variable in the dataset serialization"
+              },
+              "schema:description": {
+                "type": "string",
+                "default": "missing"
+              },
+              "schema:alternateName": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "human intelligible name for variable that conveys semantics"
+                }
+              },
+              "schema:measurementTechnique": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "@id": {
+                        "type": "string",
+                        "description": "reference to a skos concept"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ],
+                "description": "Text description or URI specifying how values for the variable were obtained."
+              },
+              "schema:propertyID": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "@id": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/DefinedTerm"
+                    }
+                  ]
+                },
+                "description": "identifier or name for the property concept"
+              },
+              "schema:unitText": {
+                "type": "string",
+                "description": "unit of measurement as text"
+              },
+              "schema:unitCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "@id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ],
+                "description": "URI or code identifying the unit of measure"
+              },
+              "schema:minValue": {
+                "type": "number",
+                "description": "minimum numeric value in the dataset"
+              },
+              "schema:maxValue": {
+                "type": "number",
+                "description": "maximum numeric value in the dataset"
+              },
+              "schema:url": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "link to a web page useful for interpreting the variable"
+                  },
+                  {
+                    "$ref": "#/$defs/LabeledLink"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "@type",
+              "schema:name"
+            ]
+          }
+        },
+        "schema:spatialCoverage": {
+          "description": "Geographic extent of resource content.",
+          "type": "array",
+          "items": {
+            "description": "Spatial Extent description for CDIF discovery profile.  Note required prefix declaration for geoSparql ( http://www.opengis.net/ont/geosparql#) and OGC simple features (sf: http://www.opengis.net/ont/sf#)",
+            "type": "object",
+            "properties": {
+              "@type": {
+                "default": "schema:Place",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "schema:Place"
+                },
+                "minItems": 1
+              },
+              "schema:additionalType": {
+                "description": "Domain-specific type classifications for this place (e.g. facility type,laboratory classification, feature type).",
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/DefinedTerm"
+                    }
+                  ]
+                }
+              },
+              "schema:name": {
+                "description": "A place name for the location, either as a string or a DefinedTerm from a gazetteer.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ]
+              },
+              "schema:identifier": {
+                "description": "Formal identifier for this place (e.g. ROR identifier for a facility).",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/Identifier"
+                  }
+                ]
+              },
+              "schema:alternateName": {
+                "description": "Alternate or abbreviated name(s) for this place.",
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/$defs/DefinedTerm"
+                    }
+                  ]
+                }
+              },
+              "schema:geo": {
+                "description": "Either a bounding box or a point location.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "description": "A point location. Point locations are recommended for data that is associated with specific sample locations, particularly if these are widely spaced such that an enclosing bounding box would be a misleading representation of the spatial location. Be aware that some client applications might only index or display bounding box extents or a single point location.",
+                    "properties": {
+                      "@type": {
+                        "default": "schema:GeoCoordinates",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "schema:GeoCoordinates"
+                        },
+                        "minItems": 1
+                      },
+                      "schema:latitude": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      "schema:longitude": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    },
+                    "required": [
+                      "@type",
+                      "schema:latitude",
+                      "schema:longitude"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "description": "A schema:GeoShape bounding box. The geometry is described with a set of latitude/longitude pairs (in that order).The documentation for schema:GeoShape states 'Either whitespace or commas can be used to separate latitude and longitude; whitespace should be used when writing a list of several such points.'",
+                    "properties": {
+                      "@type": {
+                        "default": "schema:GeoShape",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "schema:GeoShape"
+                        },
+                        "minItems": 1
+                      },
+                      "schema:box": {
+                        "type": "string",
+                        "description": "A GeoShape box defines an area on the surface of the earth defined by point locations of the southwest corner and northeast corner of the rectangle in latitude-longitude coordinates. A space should be used to separate the latitude and longitude values. The two corner coordinate points are separated by a space. 'East longitude' means positive longitude values are east of the prime (Greenwich) meridian."
+                      }
+                    },
+                    "required": [
+                      "@type",
+                      "schema:box"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "description": "A schema:GeoShape curvilinear trace, for resource related to a linear trace like a ship track or airplane flight line",
+                    "properties": {
+                      "@type": {
+                        "default": "schema:GeoShape",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "schema:GeoShape"
+                        },
+                        "minItems": 1
+                      },
+                      "schema:line": {
+                        "type": "string",
+                        "description": "A GeoShape box defines a curvilinear geometry as a string of latitude-longitude coordinates. A space should be used to separate the latitude and longitude values. The coordinate point pairs are also separated by a space. 'East longitude' means positive longitude values are east of the prime (Greenwich) meridian. e.g. '39.33 120.77 40.44 123.96 41.00 121.34' "
+                      }
+                    },
+                    "required": [
+                      "@type",
+                      "schema:line"
+                    ]
+                  }
+                ]
+              },
+              "geosparql:hasGeometry": {
+                "type": "object",
+                "description": "Optional geographic extent using wkt geometry, see Ocean InfoHub (https://book.oceaninfohub.org/thematics/spatial/README.html#simple-geosparql-wkt). Other geometry schemes might be specified in a specific domain profile, e.g. for atmospheric, subsurface data, or local coordinate systems. NOTE that the location specified here should be the same as the schema.org point or contained within the specified bounding box.",
+                "properties": {
+                  "@type": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "description": "MUST be sf: (<http://www.opengis.net/ont/sf#>) SimpleFeature geometry type. See https://opengeospatial.github.io/ogc-geosparql/geosparql11/sf_geometries.ttl"
+                  },
+                  "geosparql:asWKT": {
+                    "type": "object",
+                    "properties": {
+                      "@type": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "geosparql:wktLiteral"
+                        },
+                        "minItems": 1
+                      },
+                      "@value": {
+                        "type": "string",
+                        "description": "a WKT geometry description string, e.g. 'POINT(-76 -18)'"
+                      }
+                    }
+                  },
+                  "geosparql:crs": {
+                    "type": "object",
+                    "properties": {
+                      "@id": {
+                        "type": "string",
+                        "description": "identifier string for coordinate reference system, e.g., 'CRS84'"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "schema:name"
+                ]
+              },
+              {
+                "required": [
+                  "schema:identifier"
+                ]
+              },
+              {
+                "required": [
+                  "schema:geo"
+                ]
+              },
+              {
+                "required": [
+                  "geosparql:hasGeometry"
+                ]
+              }
+            ]
+          }
+        },
+        "schema:temporalCoverage": {
+          "description": "Temporal extent of resource content.",
+          "type": "array",
+          "items": {
+            "description": "The time interval during which data was collected or observations were made; or a time period that an activity or collection is linked to intellectually or thematically (for example, 1997 to 1998; the 18th century) (see https://documentation.ardc.edu.au/display/DOC/Temporal+coverage). For documentation of Earth Science, Paleobiology or Paleontology datasets, we are interested in the second case-- the time period that data are linked to thematically. NOTE-- context must include \"time\": \"http://www.w3.org/2006/time#\"}",
+            "anyOf": [
+              {
+                "type": "object",
+                "description": "a w3c time proper interval with bounds that are named time ordinal eras with identifier, e.g. geologic age. This is a SOSO schema.org extension",
+                "properties": {
+                  "@type": {
+                    "default": "time:ProperInterval",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "contains": {
+                      "const": "time:ProperInterval"
+                    },
+                    "minItems": 1
+                  },
+                  "schema:description": {
+                    "type": "string",
+                    "description": "free text description of the temporal interval"
+                  },
+                  "time:intervalStartedBy": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "identifier for a named time ordinal era that is older bound of time interval, e.g. 'isc:LowerDevonian' "
+                  },
+                  "time:intervalFinishedBy": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "identifier for a named time ordinal era that is younger bound of time interval, e.g. 'isc:LowerDevonian' "
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "time:intervalStartedBy"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "time:intervalFinishedBy"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "object",
+                "description": "a w3c time proper interval with bounds that numeric ages.",
+                "properties": {
+                  "@context": {
+                    "type": "object",
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "const": "http://www.w3.org/2006/time#"
+                      },
+                      "schema": {
+                        "type": "string",
+                        "const": "http://schema.org/"
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "schema"
+                    ],
+                    "additionalProperties": true,
+                    "description": "Must exactly match the specified @context object."
+                  },
+                  "@type": {
+                    "default": "time:ProperInterval",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "contains": {
+                      "const": "time:ProperInterval"
+                    },
+                    "minItems": 1
+                  },
+                  "schema:description": {
+                    "type": "string",
+                    "description": "free text description of the temporal interval"
+                  },
+                  "time:hasBeginning": {
+                    "type": "object",
+                    "properties": {
+                      "@type": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "time:Instant"
+                        },
+                        "minItems": 1
+                      },
+                      "time:inTimePosition": {
+                        "type": "object",
+                        "properties": {
+                          "@type": {
+                            "default": "time:TimePosition",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "contains": {
+                              "const": "time:TimePosition"
+                            },
+                            "minItems": 1
+                          },
+                          "time:hasTRS": {
+                            "type": "string",
+                            "description": "identifier for a temporal reference system; default is million years before prsent as a decimal number",
+                            "default": "http://www.opengis.net/def/crs/OGC/0/ChronometricGeologicTime"
+                          },
+                          "time:numericPosition": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "@type",
+                          "time:hasTRS",
+                          "time:numericPosition"
+                        ]
+                      }
+                    }
+                  },
+                  "time:hasEnd": {
+                    "type": "object",
+                    "properties": {
+                      "@type": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "contains": {
+                          "const": "time:Instant"
+                        },
+                        "minItems": 1
+                      },
+                      "time:inTimePosition": {
+                        "type": "object",
+                        "properties": {
+                          "@type": {
+                            "default": "time:TimePosition",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "contains": {
+                              "const": "time:TimePosition"
+                            },
+                            "minItems": 1
+                          },
+                          "time:hasTRS": {
+                            "type": "string",
+                            "description": "identifier for a temporal reference system; default is million years before prsent as a decimal number",
+                            "default": "http://www.opengis.net/def/crs/OGC/0/ChronometricGeologicTime"
+                          },
+                          "time:numericPosition": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "@type",
+                          "time:hasTRS",
+                          "time:numericPosition"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "time:hasBeginning"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "time:hasEnd"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "string",
+                "description": "Simple ISO8601 encoding of calendar date, dateTime, or time interval with calendar date bounds"
+              }
+            ]
+          }
+        },
+        "dqv:hasQualityMeasurement": {
+          "description": "Quality measurements reported to assess the resource.",
+          "type": "array",
+          "items": {
+            "title": "definitions for simple quality measure property",
+            "type": "object",
+            "properties": {
+              "@type": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "contains": {
+                  "const": "dqv:QualityMeasurement"
+                },
+                "minItems": 1
+              },
+              "dqv:isMeasurementOf": {
+                "description": "specify the quality measure that is reported, by name, with an ID ref, or as a Defined Term",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "@id": {
+                        "type": "string",
+                        "description": "a resolvable reference to a representation of a quality measure"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ]
+              },
+              "dqv:value": {
+                "description": "the reported result of the quality measure, either as a string or a defined term from a vocabulary",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/$defs/DefinedTerm"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "dqv:isMeasurementOf",
+              "dqv:value"
+            ]
+          }
+        },
+        "schema:subjectOf": {
+          "properties": {
+            "dcterms:conformsTo": {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "@id": {
+                    "const": "https://w3id.org/cdif/discovery/1.0"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "LabeledLink": {
+      "description": "schema for a labeled link, a profile of schema.org/CreativeWork",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "default": "schema:CreativeWork",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "schema:CreativeWork"
+          },
+          "minItems": 1
+        },
+        "schema:name": {
+          "type": "string"
+        },
+        "schema:description": {
+          "type": "string"
+        },
+        "schema:url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "@type",
+        "schema:url"
+      ]
+    },
+    "Identifier": {
+      "description": "Properties for a schema.org identifier",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "schema:PropertyValue"
+          },
+          "minItems": 1
+        },
+        "schema:propertyID": {
+          "type": "string",
+          "description": "In this context for the schema:PropertyValue, this field is an identifier for the identifier schema, e.g. DOI, ARK.  Get values from https://registry.identifiers.org/registry/ for interoperability"
+        },
+        "schema:value": {
+          "type": "string",
+          "description": "the identifier string. E.g. 10.5066/F7VX0DMQ"
+        },
+        "schema:url": {
+          "type": "string",
+          "format": "uri",
+          "description": "web-resolveable string for the identifier; host name part is location of a resolver that will return some representation for the given identifier value. E.g. https://doi.org/10.5066/F7VX0DMQ "
+        }
+      },
+      "allOf": [
+        {
+          "required": [
+            "@type"
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "required": [
+                "schema:value"
+              ]
+            },
+            {
+              "required": [
+                "schema:url"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "DefinedTerm": {
+      "description": "schema.org Defined Term schema",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "schema:DefinedTerm"
+          },
+          "minItems": 1
+        },
+        "schema:name": {
+          "type": "string",
+          "description": "text label for the term that is useful to human user"
+        },
+        "schema:identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Identifier"
+            }
+          ]
+        },
+        "schema:inDefinedTermSet": {
+          "type": "string",
+          "description": "Name for the controlled vocabulary responsible for this keyword."
+        },
+        "schema:termCode": {
+          "type": "string",
+          "description": "A representative code for this keyword in the controlled vocabulary. Analogous to skos:Notation"
+        }
+      },
+      "allOf": [
+        {
+          "required": [
+            "@type"
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "required": [
+                "schema:name"
+              ]
+            },
+            {
+              "required": [
+                "schema:identifier"
+              ]
+            },
+            {
+              "required": [
+                "schema:termCode"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Person": {
+      "description": "schema for cdif profile of schema.org/Person",
+      "type": "object",
+      "properties": {
+        "@id": {
+          "type": "string"
+        },
+        "@type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "contains": {
+            "const": "schema:Person"
+          },
+          "minItems": 1
+        },
+        "schema:name": {
+          "type": "string",
+          "description": "string label for person that is meaningful for human users, should format consistently. Recommend 'Family Name, Given name' format."
+        },
+        "schema:description": {
+          "type": "string"
+        },
+        "schema:identifier": {
+          "description": "identifier for person, recommend ORCID",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "schema:alternateName": {
+          "type": "string",
+          "description": "other labels by which the person might be known"
+        },
+        "schema:affiliation": {
+          "$ref": "#/$defs/Organization",
+          "description": "if affiliation is present, value must be a schema:Organization."
+        },
+        "schema:contactPoint": {
+          "type": "object",
+          "description": "restrict to email only. Schema.org allows telephone and postal contacts as well",
+          "properties": {
+            "@type": {
+              "default": "schema:ContactPoint",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "contains": {
+                "const": "schema:ContactPoint"
+              },
+              "minItems": 1
+            },
+            "schema:email": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "schema:email"
+          ]
+        },
+        "schema:sameAs": {
+          "type": "array",
+          "description": "other identifiers for the person",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "required": [
+            "@type"
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "required": [
+                "schema:name"
+              ]
+            },
+            {
+              "required": [
+                "schema:identifier"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Organization": {
+      "type": "object",
+      "properties": {
+        "@id": {
+          "type": "string"
+        },
+        "@type": {
+          "default": "schema:Organization",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "schema:Organization",
+                  "schema:FundingAgency",
+                  "schema:Consortium",
+                  "schema:Corporation",
+                  "schema:EducationalOrganization",
+                  "schema:FundingScheme",
+                  "schema:GovernmentOrganization",
+                  "schema:NGO",
+                  "schema:Project",
+                  "schema:ResearchOrganization"
+                ]
+              }
+            ]
+          },
+          "contains": {
+            "const": "schema:Organization"
+          },
+          "minItems": 1
+        },
+        "schema:additionalType": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/DefinedTerm"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "schema:name": {
+          "type": "string",
+          "description": "string label for organization that is meaningful for human users"
+        },
+        "schema:alternateName": {
+          "type": "string",
+          "description": "other labels by which the organization might be known"
+        },
+        "schema:description": {
+          "type": "string"
+        },
+        "schema:identifier": {
+          "description": "identifier for organization",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "schema:sameAs": {
+          "type": "array",
+          "description": "other identifiers for the organization",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@id": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "required": [
+            "@type"
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "required": [
+                "schema:name"
+              ]
+            },
+            {
+              "required": [
+                "schema:identifier"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
