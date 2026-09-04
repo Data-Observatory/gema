@@ -21,13 +21,13 @@ Full top-level property list (27): `@context, @id, @type, schema:name, schema:de
 
 **Q9 — Croissant top-level fields, drafted.** Required: `@context, @type ("sc:Dataset"), dct:conformsTo, description, license, name, url, creator, datePublished`. Recommended: `keywords, publisher, version, dateCreated, dateModified, sameAs, sdLicense, inLanguage`. Croissant-specific: `citeAs, isLiveDataset, distribution`. Good enough to draft `exporters/croissant.py`'s top-level mapping against; still worth a spot-check against the pinned Croissant spec version when writing the actual mapping.
 
-## Step 1 — Vendor CDIF artifacts
+## Step 1 — Vendor CDIF artifacts — DONE (commit `78f0729`)
 
 - [x] Resolve Open Question #1 — confirmed: `doc-corediscovery`@`81c28260778426cc61302105fc7191b4db360bc9`
-- [ ] Vendor `schema.json` (from `CDIFDiscoveryProfileStructuredSchema.json`), `frame.jsonld` (from `CDIFDiscovery-frame.jsonld`), `shacl.ttl` (from `discoveryRules.shacl`) verbatim under `src/metadata_enricher/schemas/cdif/discovery/` — no separate context.jsonld (see above)
-- [ ] `VENDORED_SHA.txt` (SHA `81c28260778426cc61302105fc7191b4db360bc9` + repo URL + fetch date)
-- [ ] `tests/test_cdif_vendored_artifacts.py`: existence, JSON parses, shacl non-empty, SHA pattern, **open-world shape assertion** (no top-level `additionalProperties: false`, no flat top-level `required` — note the real schema uses `allOf`+`anyOf` conditional requirements instead of a flat list, adjust the assertion to check for absence of a *closed* top-level shape rather than absence of any required-ness at all)
-- [ ] `make lint && make typecheck && make test`
+- [x] Vendored `schema.json`, `frame.jsonld`, `shacl.ttl` under `src/metadata_enricher/schemas/cdif/discovery/` — no separate context.jsonld (doesn't exist upstream)
+- [x] `VENDORED_SHA.txt` (SHA + repo URL + fetch date)
+- [x] `tests/test_cdif_vendored_artifacts.py` — 12 tests, all passing: existence, JSON parses, shacl non-empty, SHA pattern, open-world shape (no closed top-level `additionalProperties`/`required`), required floor verified inside `allOf[0].required`
+- [x] `make lint && make typecheck && make test` — clean (13 pre-existing baseline mypy stub errors only, 1016 passed/1 skipped/17 deselected)
 
 ## Step 2 — CDIF schema + pivot core
 
