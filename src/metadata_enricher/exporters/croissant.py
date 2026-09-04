@@ -75,7 +75,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from metadata_enricher.types import MetadataDocument, TokenUsage
+from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -152,13 +152,12 @@ def _person_or_org(entry: Any) -> dict[str, Any] | None:
 
 
 def _as_entry_list(raw: Any) -> list[Any]:
-    """schema:creator's shipped shape is a bare list (see module
-    docstring) -- tolerate a {"@list": [...]} wrapper too, defensively."""
-    if isinstance(raw, dict):
-        return list(raw.get("@list") or [])
-    if isinstance(raw, list):
-        return raw
-    return []
+    """schema:creator is a {"@list": [...]} JSON-LD construct as of
+    ``CDIFDiscoveryProfile.merge_agent_results`` (constraint C4) -- a bare
+    list is also accepted, for synthetic test fixtures or documents built
+    without going through that merge step. See
+    ``types.jsonld_list_unwrap``, which this delegates to."""
+    return jsonld_list_unwrap(raw)
 
 
 def _build_name(document: MetadataDocument, warnings: list[str]) -> str:

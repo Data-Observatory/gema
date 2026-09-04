@@ -43,7 +43,7 @@ from pydantic import BaseModel, ConfigDict
 from metadata_enricher.config.models import DataverseExportConfig, ProviderConfig
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client
-from metadata_enricher.types import MetadataDocument, TokenUsage
+from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,7 @@ def _build_title(document: MetadataDocument, warnings: list[str]) -> str:
 
 
 def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]]:
-    creators = document.get_field("schema:creator") or []
+    creators = jsonld_list_unwrap(document.get_field("schema:creator"))
     entries = []
     for creator in creators:
         name = creator.get("name")
@@ -218,7 +218,7 @@ def _build_dataset_contact(
         # creator rather than inventing one; Dataverse still requires
         # *some* value, so this is flagged as a warning, not silently
         # fabricated.
-        for creator in document.get_field("schema:creator") or []:
+        for creator in jsonld_list_unwrap(document.get_field("schema:creator")):
             creator_email = _extract_email(creator.get("email"))
             if creator_email:
                 email = creator_email

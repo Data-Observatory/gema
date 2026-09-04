@@ -222,10 +222,9 @@ that work.
   `_get_datacite_schema()`, or the 505KB IANA parse repeats per call.
 - **NEVER synthesize a `recordSet`** (or any per-record/per-column structure) in
   `croissant.py` — see that module's docstring for the real blocker.
-- **NEVER assume `schema:creator`/`schema:publisher`'s shape without checking
-  `identifier_enricher.py`'s docstring first** — it has changed once already
-  (`docs/cdif_pivot_implementation_plan.md`'s constraint-C4 draft assumed an
-  `{"@list": [...]}` wrapper; the shipped `CDIFDiscoveryOutputModel.schema_creator` is a bare
-  list, currently a real, open gap against the vendored spec — see the plan doc). Both
-  `datacite.py` and `croissant.py` read defensively (tolerate both shapes) where cheap to do
-  so.
+- **NEVER read `document.get_field("schema:creator")` as a bare list** — it's a
+  `{"@list": [...]}` JSON-LD construct as of `CDIFDiscoveryProfile.merge_agent_results`
+  (constraint C4 in `docs/cdif_pivot_implementation_plan.md`), unlike `schema:contributor`/
+  `schema:publisher` (bare array / single object). Always go through
+  `types.jsonld_list_unwrap` (or an exporter's own thin wrapper around it, e.g. `datacite.py`'s
+  `_creator_list` / `croissant.py`'s `_as_entry_list`) — never index into it directly.

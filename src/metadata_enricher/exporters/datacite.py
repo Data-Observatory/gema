@@ -34,13 +34,12 @@ docstring: creator/contributor/publisher/funder entries are
 Person/Organization dicts carrying ``schema:identifier`` (a list of
 PropertyValue dicts: ``propertyID``/``value``/``url``), and
 ``schema:funding`` entries are MonetaryGrant dicts nesting a ``funder``
-Organization. ``schema:creator`` is read defensively as either a bare
-list (what ``CDIFDiscoveryProfile`` actually emits today) or a
-``{"@list": [...]}``-wrapped list (what the vendored CDIF schema.json's
-own field description asks for -- "Uset the JSON-LD @list construct to
-preserve author order" -- a real, currently-unclosed gap between the
-vendored spec and this repo's Step 2 generation code, tracked in the plan
-doc, not something to silently paper over here).
+Organization. ``schema:creator`` is a ``{"@list": [...]}``-wrapped list,
+per the vendored CDIF schema.json's own field description ("Uset the
+JSON-LD @list construct to preserve author order") -- ``CDIFDiscoveryProfile
+.merge_agent_results`` wraps it at generation time; a bare list is also
+accepted here, for synthetic fixtures or documents built without going
+through that merge step.
 """
 
 from __future__ import annotations
@@ -49,7 +48,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from metadata_enricher.schemas.datacite import DataCiteOutputModel, DataCiteSchema46
-from metadata_enricher.types import MetadataDocument, TokenUsage
+from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
 
 # ----------------------------------------------------------------------
 # DataCiteSchema46 singleton (Open Question resolved here, see
@@ -98,18 +97,12 @@ def _as_list(value: object) -> list[Any]:
 
 
 def _creator_list(value: object) -> list[dict[str, Any]]:
-    """``schema:creator`` is read as either a bare list (what
-    ``CDIFDiscoveryProfile`` actually produces today) or a
-    ``{"@list": [...]}`` wrapper (what the vendored schema.json's own
-    field description calls for, to preserve author order). Both are
-    accepted so this exporter keeps working whichever shape a given
-    document turns out to carry -- see module docstring."""
-    if isinstance(value, dict) and "@list" in value:
-        inner = value.get("@list")
-        return inner if isinstance(inner, list) else []
-    if isinstance(value, list):
-        return value
-    return []
+    """``schema:creator`` is a ``{"@list": [...]}`` JSON-LD construct as of
+    ``CDIFDiscoveryProfile.merge_agent_results`` (constraint C4) -- a bare
+    list is also accepted, for synthetic test fixtures or documents built
+    without going through that merge step. See
+    ``types.jsonld_list_unwrap``, which this delegates to."""
+    return jsonld_list_unwrap(value)
 
 
 def _strip_curie(value: object) -> str:
