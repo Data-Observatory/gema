@@ -69,19 +69,22 @@ class OutputWriter:
                 safe = "".join(c for c in filename_hint if c.isalnum() or c in "-_")[:80]
                 filename = f"{safe or 'output'}.json"
             else:
-                doi = document.get_field("doi") or document.get_field("identifiers")
-                title = document.get_field("titles")
+                identifiers = document.get_field("schema:identifier") or []
+                doi = next(
+                    (
+                        i.get("value")
+                        for i in identifiers
+                        if isinstance(i, dict) and str(i.get("propertyID", "")).upper() == "DOI"
+                    ),
+                    None,
+                )
+                name = document.get_field("schema:name")
                 if doi:
                     safe = str(doi).replace("/", "_").replace(":", "-")
                     filename = f"{safe}.json"
-                elif title:
-                    title_str = (
-                        title[0].get("title", "untitled")
-                        if isinstance(title, list) and title
-                        else "untitled"
-                    )
+                elif name:
                     safe = (
-                        "".join(c for c in title_str if c.isalnum() or c in "-_")[:50]
+                        "".join(c for c in str(name) if c.isalnum() or c in "-_")[:50]
                         or "untitled"
                     )
                     filename = f"{safe}.json"

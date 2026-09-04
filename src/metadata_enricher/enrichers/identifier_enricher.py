@@ -1,4 +1,36 @@
-"""Post-merge identifier enricher — resolves org/person names to ROR/ISNI/ORCID."""
+"""Post-merge identifier enricher — resolves org/person names to ROR/ISNI/ORCID.
+
+Retargeted from DataCite field names to CDIF field names as part of the
+CDIF/Croissant pivot (docs/codata_mcp_croissant_cdifspecs.md sec 3.5).
+Walks ``schema:creator``, ``schema:publisher``, and ``schema:funding`` on
+a CDIF-generated MetadataDocument.
+
+Internal shape convention this module (and agents.yaml's prompts) commit
+to for these three fields -- not part of the vendored CDIF schema itself
+(which only requires ``schema:identifier`` to be PropertyValue-shaped),
+but the concrete shape gema's own pipeline produces and expects:
+
+    creator/contributor/publisher/funder entry (Person or Organization)::
+
+        {
+            "@type": "schema:Person" | "schema:Organization",
+            "name": str,
+            "given_name": str,       # Person only
+            "family_name": str,      # Person only
+            "schema:identifier": [{"propertyID": str, "value": str, "url": str}],
+            "schema:affiliation": [ <Organization entry, same shape> ],
+        }
+
+    schema:funding entry (MonetaryGrant)::
+
+        {
+            "@type": "schema:MonetaryGrant",
+            "name": str,              # award title
+            "identifier": [{"propertyID": str, "value": str}],  # award number/URI
+            "funder": <Organization entry>,
+            "description": str,       # funding stream
+        }
+"""
 
 from __future__ import annotations
 
@@ -32,57 +64,43 @@ def _all_identifiers(match: IdentifierMatch | None) -> list[tuple[str, str]]:
 
 
 def _preferred_identifier(match: IdentifierMatch | None) -> tuple[str, str] | None:
-    """Single identifier for schema fields that only hold one (affiliation/publisher).
-
-    DataCite's affiliationIdentifier and publisherIdentifier are 0..1 fields —
-    unlike nameIdentifiers/funderIdentifiers, they cannot hold a second entry.
-    ROR is preferred there since it's the more actionable identifier for an
-    organization; ISNI is used only when ROR wasn't found.
+    """Single identifier for slots that only hold one (a Person/Organization's
+    ``schema:affiliation``, or ``schema:publisher``) — ROR is preferred there
+    since it's the more actionable identifier for an organization; ISNI is
+    used only when ROR wasn't found.
     """
     identifiers = _all_identifiers(match)
     return identifiers[0] if identifiers else None
 
 
-def _identifier_entry(
-    id_value: str, scheme: str, id_key: str, scheme_key: str, match: IdentifierMatch
-) -> dict[str, Any]:
-    """One name_identifier/funder_identifier-shaped list entry, carrying
-    the match's provenance (why this identifier was attached) as sibling
-    keys — a curated catalog needs that more than OpenAlex's bare numeric
-    confidence does, since a wrong PID here is worse than a missing one.
+def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
+    """``schema:identifier``-shaped PropertyValue list, one entry per scheme
+    the match found, carrying provenance (why this identifier was attached)
+    as sibling keys — a curated catalog needs that more than OpenAlex's bare
+    numeric confidence does, since a wrong PID here is worse than a missing
+    one.
     """
-    return {
-        id_key: id_value,
-        scheme_key: scheme,
-        "scheme_uri": _SCHEME_URI[scheme],
-        "matched_via": match.matched_via,
-        "confidence": match.confidence,
-        "status": match.status,
-    }
-
-
-def _provenance(field_prefix: str, match: IdentifierMatch) -> dict[str, Any]:
-    """Provenance keys for a single-slot field (affiliation_identifier,
-    publisher_identifier) — prefixed so they never collide with another
-    key on the same dict, unlike a name_identifiers/funder_identifiers list
-    entry, which is already its own namespace (see _identifier_entry).
-    """
-    return {
-        f"{field_prefix}_matched_via": match.matched_via,
-        f"{field_prefix}_confidence": match.confidence,
-        f"{field_prefix}_status": match.status,
-    }
+    return [
+        {
+            "propertyID": scheme,
+            "value": id_value,
+            "url": f"{_SCHEME_URI[scheme]}/{id_value}" if scheme != "ORCID" else id_value,
+            "matched_via": match.matched_via,
+            "confidence": match.confidence,
+            "status": match.status,
+        }
+        for id_value, scheme in _all_identifiers(match)
+    ]
 
 
 def _is_auto(match: IdentifierMatch, kind: str, name: str) -> bool:
     """True if *match* is unambiguous enough to auto-attach.
 
-    Same gate ``_enrich_personal_creator`` already applies to ORCID —
-    org identifiers (ROR/ISNI) get it too: a wrong PID is worse than a
-    missing one, so an ambiguous match (``status != "auto"``) is logged,
-    not attached. ``status`` is one field on the whole match, not
-    per-scheme — a ROR+ISNI merge where either side was ambiguous rejects
-    both identifiers together, same all-or-nothing shape as ORCID.
+    A wrong PID is worse than a missing one, so an ambiguous match
+    (``status != "auto"``) is logged, not attached. ``status`` is one field
+    on the whole match, not per-scheme — a ROR+ISNI merge where either side
+    was ambiguous rejects both identifiers together, same all-or-nothing
+    shape as ORCID.
     """
     if match.status != "auto":
         logger.info(
@@ -93,35 +111,29 @@ def _is_auto(match: IdentifierMatch, kind: str, name: str) -> bool:
     return True
 
 
+def _has_real_identifier(entry: dict[str, Any]) -> bool:
+    identifiers = entry.get("schema:identifier", [])
+    return isinstance(identifiers, list) and any(
+        isinstance(i, dict) and i.get("value") for i in identifiers
+    )
+
+
 class IdentifierEnricher:
     """Enriches a MetadataDocument with resolved ROR/ISNI/ORCID identifiers.
 
-    Walks creators, publishers, and funding_references after the LLM merge
-    step. For each organization name without an identifier, calls
-    ``IdentifierResolver.resolve`` to look up ROR/ISNI via API. For personal
-    creators with a given/family name split, calls
+    Walks ``schema:creator``, ``schema:publisher``, and ``schema:funding``
+    after the LLM merge step. For each organization name without an
+    identifier, calls ``IdentifierResolver.resolve`` to look up ROR/ISNI via
+    API. For personal creators with a given/family name split, calls
     ``IdentifierResolver.resolve_person`` to look up ORCID.
 
     An identifier is only written when the match is unambiguous
     (``status == "auto"``) — a wrong PID is worse than a missing one, so an
     ambiguous match (``status == "review"``) is logged (see ``_is_auto``)
-    but never attached. Applies uniformly to org identifiers (ROR/ISNI) and
-    ORCID alike. Where the schema allows more than one identifier
-    (``name_identifiers``, ``funder_identifiers``), every scheme the match
-    found is written; where it only allows one (``affiliation_identifier``,
-    ``publisher_identifier``), ROR is preferred over ISNI.
+    but never attached.
 
     Fields already populated by the LLM are preserved — the enricher only
     fills EMPTY identifier fields.
-
-    Every identifier attached also carries its match provenance —
-    ``matched_via``/``confidence``/``status`` as sibling keys on a
-    ``name_identifiers``/``funder_identifiers`` list entry, or
-    ``{field}_matched_via``/``{field}_confidence``/``{field}_status`` for a
-    single-slot field (``affiliation_identifier``, ``publisher_identifier``)
-    — so a human reviewing the catalog can tell an unambiguous ROR
-    affiliation hit from an ambiguous fuzzy match without re-running
-    resolution.
     """
 
     def __init__(self, resolver: IdentifierResolver) -> None:
@@ -133,143 +145,128 @@ class IdentifierEnricher:
         passed through to org resolution — see ``IdentifierResolver.resolve``.
         """
         self._enrich_creators(document, country)
-        self._enrich_publishers(document, country)
-        self._enrich_funding_references(document, country)
+        self._enrich_publisher(document, country)
+        self._enrich_funding(document, country)
         return document
 
     def _enrich_creators(self, document: MetadataDocument, country: str | None = None) -> None:
-        creators = document.get_field("creators")
+        creators = document.get_field("schema:creator")
         if not creators or not isinstance(creators, list):
             return
         for creator in creators:
             if not isinstance(creator, dict):
                 continue
-            name_type = creator.get("creator_name_type", "")
-            name_identifiers = creator.get("name_identifiers", [])
-            has_real_id = isinstance(name_identifiers, list) and any(
-                isinstance(ni, dict) and ni.get("name_identifier") for ni in name_identifiers
-            )
+            is_person = creator.get("@type") == "schema:Person"
 
-            if name_type == "Personal":
-                if not has_real_id:
+            if is_person:
+                if not _has_real_identifier(creator):
                     self._enrich_personal_creator(creator)
+            else:
+                name = creator.get("name", "")
+                if name and not _has_real_identifier(creator):
+                    match = self._resolver.resolve(name, country)
+                    if match is not None and _is_auto(match, "org", name):
+                        entries = _identifier_entries(match)
+                        if entries:
+                            creator["schema:identifier"] = entries
+
+            self._enrich_affiliations(creator, country)
+
+    def _enrich_affiliations(self, entry: dict[str, Any], country: str | None) -> None:
+        affiliations = entry.get("schema:affiliation", [])
+        if not isinstance(affiliations, list):
+            return
+        for affil in affiliations:
+            if not isinstance(affil, dict) or _has_real_identifier(affil):
                 continue
-
-            name = creator.get("creator_name", "")
-            if name and not has_real_id:
-                match = self._resolver.resolve(name, country)
-                if match is not None and _is_auto(match, "org", name):
-                    identifiers = _all_identifiers(match)
-                    if identifiers:
-                        creator["name_identifiers"] = [
-                            _identifier_entry(
-                                id_value, scheme, "name_identifier", "name_identifier_scheme", match
-                            )
-                            for id_value, scheme in identifiers
-                        ]
-
-            affiliations = creator.get("affiliations", [])
-            if isinstance(affiliations, list):
-                for affil in affiliations:
-                    if not isinstance(affil, dict):
-                        continue
-                    existing_id = affil.get("affiliation_identifier", "")
-                    if existing_id:
-                        continue
-                    affil_name = affil.get("affiliation", "")
-                    if not affil_name:
-                        continue
-                    affil_match = self._resolver.resolve(affil_name, country)
-                    if affil_match is None or not _is_auto(affil_match, "affiliation", affil_name):
-                        continue
-                    identifier = _preferred_identifier(affil_match)
-                    if identifier:
-                        id_value, scheme = identifier
-                        affil["affiliation_identifier"] = id_value
-                        affil["affiliation_identifier_scheme"] = scheme
-                        affil.update(_provenance("affiliation_identifier", affil_match))
+            affil_name = affil.get("name", "")
+            if not affil_name:
+                continue
+            affil_match = self._resolver.resolve(affil_name, country)
+            if affil_match is None or not _is_auto(affil_match, "affiliation", affil_name):
+                continue
+            identifier = _preferred_identifier(affil_match)
+            if identifier:
+                id_value, scheme = identifier
+                affil["schema:identifier"] = [
+                    {
+                        "propertyID": scheme,
+                        "value": id_value,
+                        "url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                        "matched_via": affil_match.matched_via,
+                        "confidence": affil_match.confidence,
+                        "status": affil_match.status,
+                    }
+                ]
 
     def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
         given_name = creator.get("given_name", "")
         family_name = creator.get("family_name", "")
         if not given_name or not family_name:
             return
-        affiliations = creator.get("affiliations", [])
+        affiliations = creator.get("schema:affiliation", [])
         affiliation_name = None
         if isinstance(affiliations, list) and affiliations:
             first = affiliations[0]
             if isinstance(first, dict):
-                affiliation_name = first.get("affiliation") or None
+                affiliation_name = first.get("name") or None
 
         match = self._resolver.resolve_person(given_name, family_name, affiliation_name)
         if match is None or not match.orcid_id:
             return
         if not _is_auto(match, "ORCID", f"{given_name} {family_name}"):
             return
-        creator["name_identifiers"] = [
-            _identifier_entry(
-                f"https://orcid.org/{match.orcid_id}",
-                "ORCID",
-                "name_identifier",
-                "name_identifier_scheme",
-                match,
-            )
+        creator["schema:identifier"] = [
+            {
+                "propertyID": "ORCID",
+                "value": match.orcid_id,
+                "url": f"https://orcid.org/{match.orcid_id}",
+                "matched_via": match.matched_via,
+                "confidence": match.confidence,
+                "status": match.status,
+            }
         ]
 
-    def _enrich_publishers(self, document: MetadataDocument, country: str | None = None) -> None:
-        publishers = document.get_field("publishers")
-        if not publishers or not isinstance(publishers, list):
+    def _enrich_publisher(self, document: MetadataDocument, country: str | None = None) -> None:
+        publisher = document.get_field("schema:publisher")
+        if not isinstance(publisher, dict) or _has_real_identifier(publisher):
             return
-        for publisher in publishers:
-            if not isinstance(publisher, dict):
-                continue
-            existing_id = publisher.get("publisher_identifier", "")
-            if existing_id:
-                continue
-            name = publisher.get("publisher_name", "")
-            if not name:
-                continue
-            pub_match = self._resolver.resolve(name, country)
-            if pub_match is None or not _is_auto(pub_match, "publisher", name):
-                continue
-            identifier = _preferred_identifier(pub_match)
-            if identifier:
-                id_value, scheme = identifier
-                publisher["publisher_identifier"] = id_value
-                publisher["publisher_identifier_scheme"] = scheme
-                publisher["publisher_scheme_uri"] = _SCHEME_URI[scheme]
-                publisher.update(_provenance("publisher_identifier", pub_match))
+        name = publisher.get("name", "")
+        if not name:
+            return
+        pub_match = self._resolver.resolve(name, country)
+        if pub_match is None or not _is_auto(pub_match, "publisher", name):
+            return
+        identifier = _preferred_identifier(pub_match)
+        if identifier:
+            id_value, scheme = identifier
+            publisher["schema:identifier"] = [
+                {
+                    "propertyID": scheme,
+                    "value": id_value,
+                    "url": f"{_SCHEME_URI[scheme]}/{id_value}",
+                    "matched_via": pub_match.matched_via,
+                    "confidence": pub_match.confidence,
+                    "status": pub_match.status,
+                }
+            ]
 
-    def _enrich_funding_references(
-        self, document: MetadataDocument, country: str | None = None
-    ) -> None:
-        funding = document.get_field("funding_references")
+    def _enrich_funding(self, document: MetadataDocument, country: str | None = None) -> None:
+        funding = document.get_field("schema:funding")
         if not funding or not isinstance(funding, list):
             return
-        for ref in funding:
-            if not isinstance(ref, dict):
+        for grant in funding:
+            if not isinstance(grant, dict):
                 continue
-            funder_ids = ref.get("funder_identifiers", [])
-            has_real_id = isinstance(funder_ids, list) and any(
-                isinstance(fi, dict) and fi.get("funder_identifier") for fi in funder_ids
-            )
-            if has_real_id:
+            funder = grant.get("funder")
+            if not isinstance(funder, dict) or _has_real_identifier(funder):
                 continue
-            name = ref.get("funder_name", "")
+            name = funder.get("name", "")
             if not name:
                 continue
             funder_match = self._resolver.resolve(name, country)
             if funder_match is None or not _is_auto(funder_match, "funder", name):
                 continue
-            identifiers = _all_identifiers(funder_match)
-            if identifiers:
-                ref["funder_identifiers"] = [
-                    _identifier_entry(
-                        id_value,
-                        scheme,
-                        "funder_identifier",
-                        "funder_identifier_type",
-                        funder_match,
-                    )
-                    for id_value, scheme in identifiers
-                ]
+            entries = _identifier_entries(funder_match)
+            if entries:
+                funder["schema:identifier"] = entries

@@ -1,11 +1,11 @@
-"""Convert a DataCite MetadataDocument into Dataverse's native dataset JSON.
+"""Convert a CDIF-generated MetadataDocument into Dataverse's native dataset JSON.
 
-Most fields map deterministically — DataCite already extracted them
+Most fields map deterministically — CDIF generation already extracted them
 faithfully, there's nothing left to decide. The one genuinely ambiguous
 field is Subject: Dataverse's citation metadata block requires it, and
 restricts it to a small fixed controlled vocabulary (confirmed live
 against a real Dataverse 6.11 instance on 2026-08-05 — see
-SUBJECT_CATEGORIES), while DataCite's own subject extraction is free-text.
+SUBJECT_CATEGORIES), while gema's own schema:keywords is free-text.
 Picking the right bucket for an arbitrary resource needs judgment a lookup
 table won't have — that's the one optional LLM call this module makes,
 via classify_subject() / to_dataverse_json(classify_subject=True).
@@ -14,8 +14,13 @@ This is NOT a Schema Protocol implementation (schemas/base.py) — that
 Protocol builds a MetadataDocument from raw AgentResults (i.e. extracts
 from scratch), which isn't what's needed here: re-running a full
 extraction pass would double LLM cost re-deriving facts (title, dates,
-creators) the DataCite pipeline already got right. This module transforms
+creators) the CDIF pipeline already got right. This module transforms
 an already-finished MetadataDocument instead.
+
+Retargeted from DataCite field names to CDIF field names as part of the
+CDIF/Croissant pivot (docs/codata_mcp_croissant_cdifspecs.md sec 3.5) —
+see enrichers/identifier_enricher.py's module docstring for the shared
+creator/organization entry shape convention this module reads.
 
 Field-shape reference: config/dataverse_export.yaml's docstring-equivalent
 comments, and the real citation metadata block fetched live via
@@ -119,22 +124,24 @@ def _compound_field(type_name: str, entries: list[dict[str, dict[str, Any]]]) ->
 
 
 def _build_title(document: MetadataDocument, warnings: list[str]) -> str:
-    titles = document.get_field("titles") or []
-    for title in titles:
-        if title.get("title_type") == "MainTitle" and title.get("name"):
-            return str(title["name"])
-    if titles and titles[0].get("name"):
-        return str(titles[0]["name"])
-    warnings.append("no title found — Dataverse requires one; using the resource identifier as a fallback")
-    resource = document.get_field("resource") or {}
-    return str(resource.get("identifier") or "Untitled resource")
+    name = document.get_field("schema:name")
+    if name:
+        return str(name)
+    warnings.append(
+        "no schema:name found — Dataverse requires a title; using the resource identifier "
+        "as a fallback"
+    )
+    identifiers = document.get_field("schema:identifier") or []
+    if identifiers and isinstance(identifiers[0], dict) and identifiers[0].get("value"):
+        return str(identifiers[0]["value"])
+    return "Untitled resource"
 
 
 def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]]:
-    creators = document.get_field("creators") or []
+    creators = document.get_field("schema:creator") or []
     entries = []
     for creator in creators:
-        name = creator.get("creator_name")
+        name = creator.get("name")
         if not name:
             continue
         author: dict[str, dict[str, Any]] = {
@@ -145,18 +152,18 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
                 "typeName": "authorName",
             }
         }
-        affiliations = creator.get("affiliations") or []
-        if affiliations and affiliations[0].get("affiliation"):
+        affiliations = creator.get("schema:affiliation") or []
+        if affiliations and affiliations[0].get("name"):
             author["authorAffiliation"] = {
-                "value": affiliations[0]["affiliation"],
+                "value": affiliations[0]["name"],
                 "typeClass": "primitive",
                 "multiple": False,
                 "typeName": "authorAffiliation",
             }
-        name_identifiers = creator.get("name_identifiers") or []
-        if name_identifiers:
-            scheme = name_identifiers[0].get("name_identifier_scheme")
-            identifier = name_identifiers[0].get("name_identifier")
+        identifiers = creator.get("schema:identifier") or []
+        if identifiers:
+            scheme = identifiers[0].get("propertyID")
+            identifier = identifiers[0].get("value")
             if scheme in _AUTHOR_IDENTIFIER_SCHEMES and identifier:
                 author["authorIdentifierScheme"] = {
                     "value": scheme,
@@ -193,20 +200,29 @@ def _extract_email(raw: str | None) -> str | None:
 def _build_dataset_contact(
     document: MetadataDocument, authors: list[dict[str, dict[str, Any]]], warnings: list[str]
 ) -> list[dict[str, dict[str, Any]]]:
-    resource = document.get_field("resource") or {}
-    email = _extract_email(resource.get("contact"))
+    email = None
     name = None
+    # schema:contributor entries tagged with a ContactPerson role are the
+    # CDIF mapping's home for DataCite's old resource.contact (Q6 in
+    # docs/cdif_pivot_implementation_plan.md).
+    for contributor in document.get_field("schema:contributor") or []:
+        if not isinstance(contributor, dict) or contributor.get("role") != "ContactPerson":
+            continue
+        contact_email = _extract_email(contributor.get("email"))
+        if contact_email:
+            email = contact_email
+            name = contributor.get("name")
+            break
     if not email:
-        # DataCite has no guaranteed contact-email field — resource.contact
-        # is very commonly empty (confirmed in the project's own golden
-        # fixtures). Fall back to the first author rather than inventing
-        # one; Dataverse still requires *some* value, so this is flagged
-        # as a warning, not silently fabricated.
-        for creator in document.get_field("creators") or []:
+        # No guaranteed contact-email field — fall back to the first
+        # creator rather than inventing one; Dataverse still requires
+        # *some* value, so this is flagged as a warning, not silently
+        # fabricated.
+        for creator in document.get_field("schema:creator") or []:
             creator_email = _extract_email(creator.get("email"))
             if creator_email:
                 email = creator_email
-                name = creator.get("creator_name")
+                name = creator.get("name")
                 break
     if not email:
         warnings.append(
@@ -239,61 +255,54 @@ def _build_dataset_contact(
 
 
 def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list[dict[str, dict[str, Any]]]:
-    descriptions = document.get_field("descriptions") or []
-    entries = [
-        {
-            "dsDescriptionValue": {
-                "value": d["description"],
-                "typeClass": "primitive",
-                "multiple": False,
-                "typeName": "dsDescriptionValue",
-            }
-        }
-        for d in descriptions
-        if d.get("description")
-    ]
-    if not entries:
-        warnings.append("no description found — Dataverse requires one; leaving a placeholder")
-        entries = [
+    description = document.get_field("schema:description")
+    if description:
+        return [
             {
                 "dsDescriptionValue": {
-                    "value": "No description was extracted for this resource.",
+                    "value": description,
                     "typeClass": "primitive",
                     "multiple": False,
                     "typeName": "dsDescriptionValue",
                 }
             }
         ]
-    return entries
+    warnings.append("no schema:description found — Dataverse requires one; leaving a placeholder")
+    return [
+        {
+            "dsDescriptionValue": {
+                "value": "No description was extracted for this resource.",
+                "typeClass": "primitive",
+                "multiple": False,
+                "typeName": "dsDescriptionValue",
+            }
+        }
+    ]
 
 
 def _build_keywords(document: MetadataDocument) -> list[str]:
-    subjects = document.get_field("subjects") or []
-    return [s["subject_name"] for s in subjects if s.get("subject_name")]
+    keywords = document.get_field("schema:keywords") or []
+    return [k["name"] for k in keywords if isinstance(k, dict) and k.get("name")]
 
 
 def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
-    """The one hook back to the original web resource — DataCite has no
-    dedicated `url` property; `core_metadata`'s prompt puts the resource's
-    URL (or, when present, its DOI) in `resource.identifier`, tagged by
-    `resource.identifier_type` (see config/agents.yaml and
-    DataCiteSchema46._normalize_resource). Dataverse's citation block has
-    a matching primitive field for exactly this (confirmed live against a
-    real Dataverse 6.11 instance's citation metadata block on 2026-08-17:
-    `alternativeURL`, typeClass primitive, multiple=False, description
-    "Another URL where one can view or access the data in the Dataset").
-    A DOI identifier isn't itself a URL, so it's resolved through
-    doi.org first.
+    """The one hook back to the original web resource. Dataverse's citation
+    block has a matching primitive field for exactly this (confirmed live
+    against a real Dataverse 6.11 instance's citation metadata block on
+    2026-08-17: `alternativeURL`, typeClass primitive, multiple=False,
+    description "Another URL where one can view or access the data in the
+    Dataset"). Prefers schema:url; falls back to a DOI resolved through
+    doi.org when schema:url is empty but schema:identifier carries one.
     """
-    resource = document.get_field("resource") or {}
-    identifier = resource.get("identifier")
-    if not identifier:
-        return None
-    if str(resource.get("identifier_type", "")).upper() == "DOI":
-        url = f"https://doi.org/{identifier}"
-    else:
-        url = str(identifier)
-    return _primitive_field("alternativeURL", url)
+    url = document.get_field("schema:url")
+    if url:
+        return _primitive_field("alternativeURL", str(url))
+    for entry in document.get_field("schema:identifier") or []:
+        if isinstance(entry, dict) and str(entry.get("propertyID", "")).upper() == "DOI":
+            value = entry.get("value")
+            if value:
+                return _primitive_field("alternativeURL", f"https://doi.org/{value}")
+    return None
 
 
 def classify_subject(
@@ -311,12 +320,10 @@ def classify_subject(
     pattern as Pipeline's/AgentRegistry's own llm_factory param, mainly so
     tests can substitute a fake without monkeypatching create_llm_client.
     """
-    titles = document.get_field("titles") or []
-    title = titles[0]["name"] if titles and titles[0].get("name") else ""
-    descriptions = document.get_field("descriptions") or []
-    description = descriptions[0]["description"] if descriptions and descriptions[0].get("description") else ""
-    subjects = document.get_field("subjects") or []
-    subjects_joined = "; ".join(s["subject_name"] for s in subjects if s.get("subject_name"))
+    title = str(document.get_field("schema:name") or "")
+    description = str(document.get_field("schema:description") or "")
+    keywords = document.get_field("schema:keywords") or []
+    subjects_joined = "; ".join(k["name"] for k in keywords if isinstance(k, dict) and k.get("name"))
 
     agent = export_config.agent
     prompt = agent.prompt

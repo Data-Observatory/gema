@@ -1,4 +1,4 @@
-"""Tests for exporters/dataverse.py — DataCite MetadataDocument -> Dataverse
+"""Tests for exporters/dataverse.py — CDIF MetadataDocument -> Dataverse
 native JSON, plus the one optional LLM-assisted Subject classification step.
 """
 
@@ -74,41 +74,46 @@ def make_document(**fields: object) -> MetadataDocument:
     return doc
 
 
+def _org(name: str, identifiers: list | None = None) -> dict:
+    return {"@type": "schema:Organization", "name": name, "schema:identifier": identifiers or []}
+
+
 class TestTitle:
-    def test_prefers_main_title(self):
-        doc = make_document(
-            titles=[{"name": "A Title", "title_type": "MainTitle"}],
-            creators=[{"creator_name": "Someone"}],
-            descriptions=[{"description": "D."}],
-            resource={"contact": "someone@example.org"},
-        )
+    def test_prefers_schema_name(self):
+        doc = make_document(**{
+            "schema:name": "A Title",
+            "schema:creator": [_org("Someone") | {"email": "someone@example.org"}],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         title_field = next(f for f in fields if f["typeName"] == "title")
         assert title_field["value"] == "A Title"
         assert result.warnings == []
 
-    def test_falls_back_to_resource_identifier_when_no_titles(self):
-        doc = make_document(titles=[], resource={"identifier": "https://example.org/x"})
+    def test_falls_back_to_identifier_when_no_name(self):
+        doc = make_document(**{
+            "schema:identifier": [{"propertyID": "URL", "value": "https://example.org/x"}]
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         title_field = next(f for f in fields if f["typeName"] == "title")
         assert title_field["value"] == "https://example.org/x"
-        assert any("no title found" in w for w in result.warnings)
+        assert any("no schema:name found" in w for w in result.warnings)
 
 
 class TestAuthors:
     def test_maps_name_affiliation_and_known_identifier_scheme(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            creators=[
-                {
-                    "creator_name": "Ministerio de Hacienda",
-                    "affiliations": [{"affiliation": "Gobierno de Chile"}],
-                    "name_identifiers": [{"name_identifier": "123", "name_identifier_scheme": "ISNI"}],
-                }
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [
+                _org(
+                    "Ministerio de Hacienda",
+                    identifiers=[{"propertyID": "ISNI", "value": "123"}],
+                )
+                | {"schema:affiliation": [_org("Gobierno de Chile")]}
             ],
-        )
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         author_field = next(f for f in fields if f["typeName"] == "author")
@@ -122,15 +127,12 @@ class TestAuthors:
         """Only schemes confirmed in Dataverse's real controlled vocabulary
         get passed through — an unrecognized scheme would make dataset
         creation fail with an invalid-controlled-vocabulary error."""
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            creators=[
-                {
-                    "creator_name": "Someone",
-                    "name_identifiers": [{"name_identifier": "999", "name_identifier_scheme": "Wikidata"}],
-                }
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [
+                _org("Someone", identifiers=[{"propertyID": "Wikidata", "value": "999"}])
             ],
-        )
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         author_field = next(f for f in fields if f["typeName"] == "author")
@@ -139,7 +141,7 @@ class TestAuthors:
         assert "authorIdentifier" not in entry
 
     def test_defaults_to_unknown_with_warning_when_no_creators(self):
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}], creators=[])
+        doc = make_document(**{"schema:name": "T", "schema:creator": []})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         author_field = next(f for f in fields if f["typeName"] == "author")
@@ -148,13 +150,15 @@ class TestAuthors:
 
 
 class TestDatasetContact:
-    def test_prefers_resource_contact(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": "person@example.org"},
-            creators=[{"creator_name": "Someone", "email": "other@example.org"}],
-            descriptions=[{"description": "D."}],
-        )
+    def test_prefers_contributor_contact_person(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:contributor": [
+                {"name": "Someone", "role": "ContactPerson", "email": "person@example.org"}
+            ],
+            "schema:creator": [_org("Someone") | {"email": "other@example.org"}],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
@@ -162,70 +166,77 @@ class TestDatasetContact:
         assert result.warnings == []
 
     def test_falls_back_to_creator_email(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": ""},
-            creators=[{"creator_name": "Someone", "email": "creator@example.org"}],
-            descriptions=[{"description": "D."}],
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [_org("Someone") | {"email": "creator@example.org"}],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
         assert contact_field["value"][0]["datasetContactEmail"]["value"] == "creator@example.org"
         assert result.warnings == []
 
-    def test_extracts_email_from_resource_contact_with_extra_data(self):
+    def test_extracts_email_from_contributor_contact_with_extra_data(self):
         """Regression: a source page's contact text is often more than a
         bare address ("person@example.org; +34 123 456 789") -- the raw
         string used to be passed straight through as datasetContactEmail,
         producing an invalid value Dataverse would reject."""
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": "person@example.org; +34 123 456 789"},
-            creators=[{"creator_name": "Someone"}],
-            descriptions=[{"description": "D."}],
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:contributor": [
+                {
+                    "name": "Someone",
+                    "role": "ContactPerson",
+                    "email": "person@example.org; +34 123 456 789",
+                }
+            ],
+            "schema:creator": [_org("Someone")],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
         assert contact_field["value"][0]["datasetContactEmail"]["value"] == "person@example.org"
         assert result.warnings == []
 
-    def test_extracts_email_from_resource_contact_when_phone_comes_first(self):
+    def test_extracts_email_from_contributor_contact_when_phone_comes_first(self):
         """A plain split on ";" would grab the phone number here instead --
         must search for the email pattern, not assume position."""
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": "+34 123 456 789; person@example.org"},
-            creators=[{"creator_name": "Someone"}],
-            descriptions=[{"description": "D."}],
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:contributor": [
+                {
+                    "name": "Someone",
+                    "role": "ContactPerson",
+                    "email": "+34 123 456 789; person@example.org",
+                }
+            ],
+            "schema:creator": [_org("Someone")],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
         assert contact_field["value"][0]["datasetContactEmail"]["value"] == "person@example.org"
 
     def test_extracts_email_from_creator_email_with_extra_data(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": ""},
-            creators=[{"creator_name": "Someone", "email": "creator@example.org; fax: 555-1234"}],
-            descriptions=[{"description": "D."}],
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [
+                _org("Someone") | {"email": "creator@example.org; fax: 555-1234"}
+            ],
+            "schema:description": "D.",
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
         assert contact_field["value"][0]["datasetContactEmail"]["value"] == "creator@example.org"
 
     def test_placeholder_with_warning_when_nothing_found(self):
-        """Real gap in DataCite -> Dataverse mapping: DataCite has no
-        guaranteed contact-email field. Must warn, never fabricate
-        silently."""
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"contact": ""},
-            creators=[{"creator_name": "Someone"}],
-        )
+        """Real gap in the mapping: nothing guarantees a contact-email
+        field. Must warn, never fabricate silently."""
+        doc = make_document(**{"schema:name": "T", "schema:creator": [_org("Someone")]})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         contact_field = next(f for f in fields if f["typeName"] == "datasetContact")
@@ -234,48 +245,45 @@ class TestDatasetContact:
 
 
 class TestDescriptions:
-    def test_maps_all_descriptions(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            descriptions=[{"description": "First."}, {"description": "Second."}],
-        )
+    def test_maps_the_description(self):
+        doc = make_document(**{"schema:name": "T", "schema:description": "First."})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         desc_field = next(f for f in fields if f["typeName"] == "dsDescription")
         values = [e["dsDescriptionValue"]["value"] for e in desc_field["value"]]
-        assert values == ["First.", "Second."]
+        assert values == ["First."]
 
     def test_placeholder_with_warning_when_empty(self):
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}], descriptions=[])
+        doc = make_document(**{"schema:name": "T"})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
-        assert any("no description found" in w for w in result.warnings)
+        assert any("no schema:description found" in w for w in result.warnings)
 
 
 class TestKeywords:
-    def test_maps_subject_names_to_keywords(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            subjects=[{"subject_name": "Gastos municipales -- Chile"}, {"subject_name": "Presupuesto"}],
-        )
+    def test_maps_keyword_names(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:keywords": [
+                {"name": "Gastos municipales -- Chile"},
+                {"name": "Presupuesto"},
+            ],
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         keyword_field = next(f for f in fields if f["typeName"] == "keyword")
         values = [e["keywordValue"]["value"] for e in keyword_field["value"]]
         assert values == ["Gastos municipales -- Chile", "Presupuesto"]
 
-    def test_no_keyword_field_when_no_subjects(self):
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+    def test_no_keyword_field_when_no_keywords(self):
+        doc = make_document(**{"schema:name": "T"})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         assert not any(f["typeName"] == "keyword" for f in fields)
 
 
 class TestAlternativeURL:
-    def test_maps_resource_identifier_url_to_alternative_url(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"identifier": "https://example.org/dataset", "identifier_type": "URL"},
-        )
+    def test_maps_schema_url_to_alternative_url(self):
+        doc = make_document(**{"schema:name": "T", "schema:url": "https://example.org/dataset"})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
@@ -286,18 +294,18 @@ class TestAlternativeURL:
             "typeName": "alternativeURL",
         }
 
-    def test_resolves_doi_identifier_through_doi_org(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            resource={"identifier": "10.5880/GFZ.2.4.2021.001", "identifier_type": "DOI"},
-        )
+    def test_resolves_doi_identifier_through_doi_org_when_no_url(self):
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:identifier": [{"propertyID": "DOI", "value": "10.5880/GFZ.2.4.2021.001"}],
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         url_field = next(f for f in fields if f["typeName"] == "alternativeURL")
         assert url_field["value"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
 
-    def test_no_alternative_url_field_when_no_resource_identifier(self):
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+    def test_no_alternative_url_field_when_nothing_to_map(self):
+        doc = make_document(**{"schema:name": "T"})
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         assert not any(f["typeName"] == "alternativeURL" for f in fields)
@@ -306,12 +314,14 @@ class TestAlternativeURL:
 class TestSubjectClassification:
     def test_disabled_defaults_to_other_with_no_warning(self):
         """Disabling is an intentional choice, not missing data — must not warn."""
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            creators=[{"creator_name": "Someone"}],
-            descriptions=[{"description": "D."}],
-            resource={"contact": "someone@example.org"},
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [_org("Someone")],
+            "schema:description": "D.",
+            "schema:contributor": [
+                {"name": "Someone", "role": "ContactPerson", "email": "someone@example.org"}
+            ],
+        })
         result = to_dataverse_json(doc, make_export_config(enabled=False))
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         subject_field = next(f for f in fields if f["typeName"] == "subject")
@@ -320,7 +330,7 @@ class TestSubjectClassification:
         assert result.token_usage == TokenUsage()
 
     def test_enabled_but_no_provider_warns_and_defaults_to_other(self):
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+        doc = make_document(**{"schema:name": "T"})
         result = to_dataverse_json(doc, make_export_config(enabled=True), provider=None)
         fields = result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
         subject_field = next(f for f in fields if f["typeName"] == "subject")
@@ -328,10 +338,10 @@ class TestSubjectClassification:
         assert any("no provider given" in w for w in result.warnings)
 
     def test_enabled_uses_injected_llm_client_result(self):
-        doc = make_document(
-            titles=[{"name": "T", "title_type": "MainTitle"}],
-            descriptions=[{"description": "About economics and government budgets."}],
-        )
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:description": "About economics and government budgets.",
+        })
         fake = FakeLLMClient(subject_value="Social Sciences")
         result = to_dataverse_json(
             doc, make_export_config(enabled=True), provider=make_provider(), llm_client=fake
@@ -347,7 +357,7 @@ class TestSubjectClassification:
         invalid category even if it tried; confirm the enum matches the
         live-verified list exactly."""
         fake = FakeLLMClient(subject_value="Chemistry")
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+        doc = make_document(**{"schema:name": "T"})
         subject, usage = classify_subject(doc, make_export_config(), make_provider(), llm_client=fake)
         assert subject == "Chemistry"
         assert subject in SUBJECT_CATEGORIES
@@ -357,12 +367,9 @@ class TestSubjectClassification:
         """Regression: classify_subject built its own client via
         create_llm_client(provider, model=..., temperature=...) without
         ever forwarding agent.extra_body -- a provider/model needing a
-        request-body override (e.g. disabling DeepSeek's default thinking
-        mode, required alongside Instructor's forced tool_choice -- see
-        config/dataverse_export.yaml's provider comment) would silently
-        not get it, the same failure mode already fixed for the main
-        pipeline's agents.yaml. Only exercised on the no-injected-client
-        path -- llm_client= bypasses create_llm_client entirely."""
+        request-body override would silently not get it. Only exercised
+        on the no-injected-client path -- llm_client= bypasses
+        create_llm_client entirely."""
         captured: dict[str, object] = {}
 
         def _fake_create_llm_client(provider, **kwargs):  # noqa: ANN001, ANN201
@@ -385,7 +392,7 @@ class TestSubjectClassification:
                 extra_body={"reasoning": {"enabled": False}},
             ),
         )
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+        doc = make_document(**{"schema:name": "T"})
 
         classify_subject(doc, config, make_provider())
 
@@ -393,7 +400,7 @@ class TestSubjectClassification:
 
     def test_token_usage_flows_through_to_result(self):
         fake = FakeLLMClient(usage=TokenUsage(prompt_tokens=50, completion_tokens=10))
-        doc = make_document(titles=[{"name": "T", "title_type": "MainTitle"}])
+        doc = make_document(**{"schema:name": "T"})
         result = to_dataverse_json(
             doc, make_export_config(enabled=True), provider=make_provider(), llm_client=fake
         )
@@ -420,38 +427,13 @@ class TestLoadDataverseExportConfig:
 
 
 class TestAgainstRealGoldenFixture:
-    """Not a synthetic example — the actual committed golden fixture
-    output from a real pipeline run, confirming the mapping holds up
-    against real, messy, Spanish-language DataCite output."""
+    """Not a synthetic example — the actual committed golden fixture output
+    from a real pipeline run. Skipped until golden fixtures are re-recorded
+    against the CDIF-generating pipeline (docs/cdif_pivot_implementation_plan.md
+    Step 2f) — the committed fixture today is still DataCite-shaped."""
 
     def test_produces_a_valid_shape_from_real_output(self):
-        if not GOLDEN_FIXTURE.is_file():
-            pytest.skip("golden fixture not present in this checkout")
-        data = json.loads(GOLDEN_FIXTURE.read_text(encoding="utf-8"))
-        doc = MetadataDocument()
-        for key, value in data.items():
-            doc.set_field(key, value)
-
-        result = to_dataverse_json(doc, make_export_config(enabled=False))
-
-        fields_by_name = {
-            f["typeName"]: f for f in result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
-        }
-        assert fields_by_name["title"]["value"] == "Gastos municipales (presupuesto abierto)"
-        assert (
-            fields_by_name["author"]["value"][0]["authorName"]["value"]
-            == "Ministerio de Hacienda - Gobierno de Chile"
+        pytest.skip(
+            "golden fixtures are still DataCite-shaped; CDIF re-record pending "
+            "(see docs/cdif_pivot_implementation_plan.md Step 2f)"
         )
-        # This re-record's creators_publishers completion resolved an
-        # unambiguous ROR+ISNI match (status=="auto") for this fixture's
-        # author, unlike the previous recording (which withheld an
-        # ambiguous one) — ordinary live-LLM run-to-run variance in the
-        # org name string, not a code change. Identifier mapping itself is
-        # covered by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
-        # against a synthetic fixture regardless of what this real one does.
-        assert fields_by_name["author"]["value"][0]["authorIdentifierScheme"]["value"] == "ROR"
-        assert fields_by_name["subject"]["value"] == ["Other"]
-        assert "keyword" in fields_by_name
-        # This real fixture has no resource.contact and no creator email —
-        # confirms the documented gap surfaces as a warning, not a crash.
-        assert any("no contact email found" in w for w in result.warnings)
