@@ -24,6 +24,9 @@
     },
     "dcterms:conformsTo": [
       {
+        "@id": "https://w3id.org/cdif/core/1.0"
+      },
+      {
         "@id": "https://w3id.org/cdif/discovery/1.0"
       }
     ]
@@ -99,15 +102,31 @@
         "schema:name": "Instituto de Políticas y Bienes Públicos",
         "schema:givenName": "",
         "schema:familyName": "",
-        "schema:identifier": [
+        "schema:identifier": {
+          "schema:propertyID": "ROR",
+          "schema:value": "https://ror.org/04q93ds34",
+          "schema:url": "https://ror.org/04q93ds34",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        },
+        "schema:affiliation": [
           {
-            "schema:propertyID": "ROR",
-            "schema:value": "https://ror.org/04q93ds34",
-            "schema:url": "https://ror.org/04q93ds34",
-            "matched_via": "ror_affiliation",
-            "confidence": 1.0,
-            "status": "auto"
-          },
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "Ministerio de Agricultura",
+            "schema:identifier": {
+              "schema:propertyID": "ROR",
+              "schema:value": "https://ror.org/05nqvv719",
+              "schema:url": "https://ror.org/05nqvv719",
+              "matched_via": "ror_affiliation+isni_sru",
+              "confidence": 0.9,
+              "status": "auto"
+            }
+          }
+        ],
+        "schema:sameAs": [
           {
             "schema:propertyID": "ISNI",
             "schema:value": "000000044684986X",
@@ -115,24 +134,6 @@
             "matched_via": "ror_affiliation",
             "confidence": 1.0,
             "status": "auto"
-          }
-        ],
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Ministerio de Agricultura",
-            "schema:identifier": [
-              {
-                "schema:propertyID": "ROR",
-                "schema:value": "https://ror.org/05nqvv719",
-                "schema:url": "https://ror.org/05nqvv719",
-                "matched_via": "ror_affiliation+isni_sru",
-                "confidence": 0.9,
-                "status": "auto"
-              }
-            ]
           }
         ]
       }
@@ -144,20 +145,18 @@
       "schema:Organization"
     ],
     "schema:name": "Instituto de Políticas y Bienes Públicos",
-    "schema:identifier": [
-      {
-        "schema:propertyID": "ROR",
-        "schema:value": "https://ror.org/04q93ds34",
-        "schema:url": "https://ror.org/04q93ds34",
-        "matched_via": "ror_affiliation",
-        "confidence": 1.0,
-        "status": "auto"
-      }
-    ]
+    "schema:identifier": {
+      "schema:propertyID": "ROR",
+      "schema:value": "https://ror.org/04q93ds34",
+      "schema:url": "https://ror.org/04q93ds34",
+      "matched_via": "ror_affiliation",
+      "confidence": 1.0,
+      "status": "auto"
+    }
   },
   "schema:copyrightHolder": "",
   "schema:funding": [],
-  "schema:citation": [],
+  "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
       "schema:name": "Isla de Pascua",
@@ -169,5 +168,6 @@
   "dqv:hasQualityMeasurement": [],
   "prov:wasGeneratedBy": {
     "schema:description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE."
-  }
+  },
+  "schema:url": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua"
 }

@@ -24,6 +24,9 @@
     },
     "dcterms:conformsTo": [
       {
+        "@id": "https://w3id.org/cdif/core/1.0"
+      },
+      {
         "@id": "https://w3id.org/cdif/discovery/1.0"
       }
     ]
@@ -133,7 +136,7 @@
   },
   "schema:copyrightHolder": "Estado de Chile",
   "schema:funding": [],
-  "schema:citation": [],
+  "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
@@ -146,5 +149,6 @@
   "schema:measurementTechnique": [],
   "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
-  "prov:wasGeneratedBy": {}
+  "prov:wasGeneratedBy": {},
+  "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
 }

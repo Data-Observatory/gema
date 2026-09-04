@@ -24,6 +24,9 @@
     },
     "dcterms:conformsTo": [
       {
+        "@id": "https://w3id.org/cdif/core/1.0"
+      },
+      {
         "@id": "https://w3id.org/cdif/discovery/1.0"
       }
     ]
@@ -93,23 +96,22 @@
       "schema:Organization"
     ],
     "schema:name": "Data Observatory Foundation",
-    "schema:identifier": [
-      {
-        "schema:propertyID": "ROR",
-        "schema:value": "https://ror.org/027nn6b17",
-        "schema:url": "https://ror.org/027nn6b17",
-        "matched_via": "ror_affiliation",
-        "confidence": 1.0,
-        "status": "auto"
-      }
-    ]
+    "schema:identifier": {
+      "schema:propertyID": "ROR",
+      "schema:value": "https://ror.org/027nn6b17",
+      "schema:url": "https://ror.org/027nn6b17",
+      "matched_via": "ror_affiliation",
+      "confidence": 1.0,
+      "status": "auto"
+    }
   },
   "schema:copyrightHolder": "",
   "schema:funding": [],
-  "schema:citation": [],
+  "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [],
   "schema:measurementTechnique": [],
   "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
-  "prov:wasGeneratedBy": {}
+  "prov:wasGeneratedBy": {},
+  "schema:url": "https://www.rasgos.cl/"
 }

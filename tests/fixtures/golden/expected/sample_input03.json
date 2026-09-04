@@ -24,6 +24,9 @@
     },
     "dcterms:conformsTo": [
       {
+        "@id": "https://w3id.org/cdif/core/1.0"
+      },
+      {
         "@id": "https://w3id.org/cdif/discovery/1.0"
       }
     ]
@@ -148,16 +151,14 @@
               "schema:Organization"
             ],
             "schema:name": "Departamento de Geografía, Universidad de Chile",
-            "schema:identifier": [
-              {
-                "schema:propertyID": "ROR",
-                "schema:value": "https://ror.org/047gc3g35",
-                "schema:url": "https://ror.org/047gc3g35",
-                "matched_via": "ror_affiliation",
-                "confidence": 1.0,
-                "status": "auto"
-              }
-            ]
+            "schema:identifier": {
+              "schema:propertyID": "ROR",
+              "schema:value": "https://ror.org/047gc3g35",
+              "schema:url": "https://ror.org/047gc3g35",
+              "matched_via": "ror_affiliation",
+              "confidence": 1.0,
+              "status": "auto"
+            }
           }
         ]
       },
@@ -185,14 +186,30 @@
   },
   "schema:contributor": [
     {
-      "schema:name": "Departamento de Geografía, Universidad de Chile",
-      "role": "ContactPerson",
-      "schema:email": "psarricolea@uchilefau.cl"
+      "@type": [
+        "schema:Role"
+      ],
+      "schema:roleName": "ContactPerson",
+      "schema:contributor": {
+        "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Departamento de Geografía, Universidad de Chile",
+        "schema:email": "psarricolea@uchilefau.cl"
+      }
     },
     {
-      "schema:name": "Pliscoff, P.; Luebert, F.; Hilger, H. H.; Guisan, A.",
-      "role": "Producer",
-      "schema:email": ""
+      "@type": [
+        "schema:Role"
+      ],
+      "schema:roleName": "Producer",
+      "schema:contributor": {
+        "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Pliscoff, P.; Luebert, F.; Hilger, H. H.; Guisan, A.",
+        "schema:email": ""
+      }
     }
   ],
   "schema:publisher": {
@@ -200,20 +217,18 @@
       "schema:Organization"
     ],
     "schema:name": "Departamento de Geografía, Universidad de Chile",
-    "schema:identifier": [
-      {
-        "schema:propertyID": "ROR",
-        "schema:value": "https://ror.org/047gc3g35",
-        "schema:url": "https://ror.org/047gc3g35",
-        "matched_via": "ror_affiliation",
-        "confidence": 1.0,
-        "status": "auto"
-      }
-    ]
+    "schema:identifier": {
+      "schema:propertyID": "ROR",
+      "schema:value": "https://ror.org/047gc3g35",
+      "schema:url": "https://ror.org/047gc3g35",
+      "matched_via": "ror_affiliation",
+      "confidence": 1.0,
+      "status": "auto"
+    }
   },
   "schema:copyrightHolder": "",
   "schema:funding": [],
-  "schema:citation": [
+  "dcterms:bibliographicCitation": [
     {
       "title": "Climatic regionalization of continental Chile",
       "volume": "13",
@@ -249,5 +264,6 @@
     }
   ],
   "dqv:hasQualityMeasurement": [],
-  "prov:wasGeneratedBy": {}
+  "prov:wasGeneratedBy": {},
+  "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
 }

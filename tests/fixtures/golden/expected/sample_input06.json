@@ -24,6 +24,9 @@
     },
     "dcterms:conformsTo": [
       {
+        "@id": "https://w3id.org/cdif/core/1.0"
+      },
+      {
         "@id": "https://w3id.org/cdif/discovery/1.0"
       }
     ]
@@ -150,9 +153,17 @@
   },
   "schema:contributor": [
     {
-      "schema:name": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
-      "role": "ContactPerson",
-      "schema:email": ""
+      "@type": [
+        "schema:Role"
+      ],
+      "schema:roleName": "ContactPerson",
+      "schema:contributor": {
+        "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
+        "schema:email": ""
+      }
     }
   ],
   "schema:publisher": {
@@ -164,7 +175,7 @@
   },
   "schema:copyrightHolder": "",
   "schema:funding": [],
-  "schema:citation": [],
+  "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
       "schema:name": "Coastal Cordillera of N-Chile (Atacama Fault System)",
@@ -198,5 +209,6 @@
   ],
   "prov:wasGeneratedBy": {
     "schema:description": "Base de datos compilada a partir de revisión exhaustiva de literatura, complementada con interpretación de datos de teledetección, trabajo de campo y sismicidad de placa superior del Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) y catálogos sísmicos locales del segmento Salar Grande (Bloch et al., 2014). Incluye datos de edad de unidades geológicas desplazadas. Compilada en Arc-GIS."
-  }
+  },
+  "schema:url": "10.5880/gfz.4.1.2020.012"
 }
