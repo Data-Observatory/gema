@@ -113,6 +113,42 @@ def first_type_label(types: object, default: str = "") -> str:
     return default
 
 
+def entity_identifiers(entry: object) -> list[dict[str, Any]]:
+    """Every resolved identifier on a nested Person/Organization/MonetaryGrant
+    *entry* dict (a creator/contributor-actor/publisher/funder entry).
+
+    The vendored CDIF schema.json models ``Person``/``Organization``/
+    ``MonetaryGrant``'s own ``schema:identifier`` as *singular* (one
+    Identifier object, or a bare string) -- not a list, unlike gema's own
+    (list-based) internal convention one level up (the document's top-level
+    ``schema:identifier``, untouched by this). See Open Question #16 in
+    docs/cdif_pivot_implementation_plan.md: the resolution is to write the
+    first/preferred identifier as the singular ``schema:identifier`` slot
+    and any additional resolved identifiers into the same entry's
+    ``schema:sameAs`` array -- the vendored ``Person``/``Organization``
+    ``$defs`` ship exactly that sibling array, documented there as "other
+    identifiers for the organization/person".
+
+    This reads both slots back into one flat list, preferred entry first --
+    the shape every pre-#16 caller (name_identifiers, funder_identifiers,
+    an author's authorIdentifier, ...) actually wants. Also tolerates a
+    bare list under ``schema:identifier`` itself (the pre-#16 shape, or a
+    hand-built/synthetic test fixture) so callers don't need two code paths.
+    """
+    if not isinstance(entry, dict):
+        return []
+    out: list[dict[str, Any]] = []
+    primary = entry.get("schema:identifier")
+    if isinstance(primary, dict) and primary:
+        out.append(primary)
+    elif isinstance(primary, list):
+        out.extend(item for item in primary if isinstance(item, dict) and item)
+    for extra in entry.get("schema:sameAs") or []:
+        if isinstance(extra, dict) and extra:
+            out.append(extra)
+    return out
+
+
 def jsonld_list_unwrap(value: Any) -> list[Any]:
     """Unwrap a JSON-LD ``{"@list": [...]}`` construct to its plain list.
 
