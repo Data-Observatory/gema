@@ -61,13 +61,13 @@ Full per-field mapping, verified against the real vendored schema, CDIF's own `C
 | `categories` | `schema:about[]` (DefinedTerm) recommended over folding into keywords — CDIF's own crosswalk says `keywords`; `about` is semantically cleaner. **Judgment call, flagged for review.** | Flagged |
 | `audiences` | `schema:audience`→`Audience{audienceType}` + `schema:educationalLevel` + `dcterms:mediator` + `dcterms:instructionalMethod` — all four are a verbatim DCMI-Terms lift, `dcterms` is already a required CDIF prefix. **Supersedes the earlier "fold into keywords" decision** — this preserves all 4 sub-fields instead of losing 3 of them. | Verified |
 | `creators` | `schema:creator` → `{"@list":[Person\|Organization]}` — **object wrapping `@list`, not a bare array, see C4** | Verified |
-| `creators[].contributor_type` | `schema:contributor` → `Role{roleName}` | Verified |
+| `creators[].contributor_type` | `schema:contributor` → `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <Person\|Organization>}` — **the actor nests inside the Role wrapper's own `schema:contributor` property, not a flat sibling; resolved Open Question #17, see Step 5.5/#17 writeup** | Verified |
 | `publishers` | `schema:publisher` (single) + overflow → `schema:provider[]` — **single-valued, not an array, see C3** | Verified constraint |
 | `rights.rights`/`rights_uri`/`rights_identifier` | `schema:license[]` (string\|`{@id}`\|`LabeledLink`) | Verified |
 | `rights.rights_condition` | `schema:conditionsOfAccess` | Verified |
 | `rights.rights_holder` | `schema:copyrightHolder` | Verified |
 | `funding_references` | `schema:funding[]` → `MonetaryGrant{name, identifier, funder: Organization}` — **funder nests inside the grant, no top-level `schema:funder`** | Verified |
-| `citations` | `schema:citation[]` → `ScholarlyArticle{pageStart, pageEnd, isPartOf: PublicationIssue → PublicationVolume}` — **not `prov:wasDerivedFrom`** (that's input-data lineage, a different concept; citations are bibliographic) | Verified |
+| `citations` | `dcterms:bibliographicCitation[]` (structured per-citation dict: title/volume/issue/pages/edition/conference, unchanged from the pre-#19 shape) — **not `schema:citation`, forbidden outright by the vendored `shacl.ttl` (`cdifd:citationProperty`, `sh:maxCount 0`); not `prov:wasDerivedFrom`** (that's input-data lineage, a different concept; citations are bibliographic). Resolved Open Question #19 — this row previously said `schema:citation[]` and was marked "Verified", which was wrong; see the #19 writeup for the correction and the kept-structured-vs-plain-string judgment call. | Corrected |
 | `media_files` (file access) | `schema:distribution[]` → `DataDownload{contentUrl, encodingFormat, contentSize, spdx:checksum}` | Verified |
 | `media_files[].variable_measured` | `schema:variableMeasured[]` → `PropertyValue` | Verified |
 | `media_files[].measurement_technique` | `schema:measurementTechnique` | Verified |
@@ -456,6 +456,113 @@ mypy src/ scripts/` clean (0 errors), full `-m "not live"` suite, `-m
 regression`, and the visor suite (via `uv run python -m pytest visor/tests
 -p nicegui.testing.user_plugin -o asyncio_mode=auto -m "not live" -q`).
 
+## Step 7 — Open Questions #16-#20 resolved (2026-09-04, post-Opus-validation-follow-up)
+
+All five open questions the Step 5.5/Step 6/Opus-review passes surfaced but
+deliberately left open are now resolved, in one combined pass (each with
+its own commit(s)):
+
+- **#16 (nested `schema:identifier` cardinality)** — singular
+  `schema:identifier` (preferred match first, per `_SCHEME_ORDER`) plus
+  `schema:sameAs` overflow for any additional match, at every nesting
+  level `identifier_enricher.py` writes to. New shared
+  `types.entity_identifiers()` (read: singular + overflow, preferred
+  first) and `identifier_enricher._write_identifiers()` (write). Every
+  exporter reading a nested `schema:identifier` (`dataverse.py`'s
+  `_build_authors`, `datacite.py`'s `_identifier_entries`/
+  `_preferred_identifier`, `croissant.py`'s `_first_identifier_url`) now
+  goes through the shared reader. `doi_resolver.py`'s Crossref-backfilled
+  placeholders (`"schema:identifier": []`) now omit the key entirely,
+  consistent with "absent, not empty" (same convention as constraint C6's
+  `schema:sameAs`). The top-level document's own `schema:identifier`
+  (a genuinely list-valued property per the vendored schema's top-level
+  `properties`, not its `$defs`) is untouched.
+- **#17 (`schema:contributor`'s Role wrapper)** — restructured
+  `config/agents.yaml`'s `creators_publishers` prompt (the only agent
+  producing role-carrying `schema_contributor` entries — confirmed
+  `media_files` never did, despite the original task brief's blast-radius
+  guess) to the vendored `{"@type":["schema:Role"], "schema:roleName",
+  "schema:contributor": <Person|Organization>}` shape. New shared
+  `exporters/datacite.py::_role_and_actor()` helper splits a contributor
+  entry into `(role, actor)`, handling both the Role wrapper and a bare
+  (role-less) actor, used by `_build_resource`'s `_RESOURCE_ROLE_MAP` loop
+  and `_build_creators`'s leftover-contributor fallback.
+  `exporters/dataverse.py::_build_dataset_contact` updated the same way.
+  Judgment call, flagged for reviewer double-check: the nested actor's own
+  `@type` is hardcoded to `schema:Organization` (the prompt never asks the
+  LLM to classify a contributor as Person vs. Organization the way it does
+  for `schema_creator`) — a deliberate simplification, not a data loss (no
+  Person-specific fields like `schema:givenName` existed on this shape
+  before either).
+- **#18 (`dcterms:conformsTo` missing the core URI)** — `_inject_envelope`
+  now emits both `https://w3id.org/cdif/core/1.0` and
+  `https://w3id.org/cdif/discovery/1.0` (core first) on
+  `schema:subjectOf.dcterms:conformsTo`, matching `cdifd:
+  metadataProfileProperty`'s two `sh:hasValue` constraints exactly.
+  `tests/test_shacl_and_framing.py`'s hand-built `CONFORMANT_FIELDS`
+  fixture already carried both URIs (built ahead of this fix, in Step 6);
+  that test's real-golden-fixture assertion was retargeted from the
+  now-fixed conformsTo violation to `resourceIdentifierProperty` (missing
+  `@type` on nested identifier entries — a real, still-open, separate gap;
+  #16 only fixed cardinality, not `@type` tagging), which remains the one
+  violation guaranteed across all 6 fixtures.
+- **#19 (`schema:citation` forbidden by SHACL)** — retargeted to
+  `dcterms:bibliographicCitation` throughout: `CDIFDiscoveryOutputModel`
+  (field renamed `schema_citation` → `dcterms_bibliographic_citation`),
+  `config/agents.yaml`'s `rights_funding_citations` agent (`fields:` +
+  prompt JSON examples — the field-name occurrences only, no other
+  wording touched), `exporters/datacite.py::_build_citations`, all 6
+  golden fixtures (mechanical key rename in place; only
+  `sample_input03.json` carried real citation data, preserved verbatim).
+  **Judgment call**: kept the existing structured per-citation shape
+  (title/volume/issue/start_page/end_page/edition/conference_place/
+  conference_date) rather than collapsing to a single formatted citation
+  string — nothing in the vendored `schema.json`/`shacl.ttl` constrains
+  this property's shape (it isn't a vendored first-class property at all,
+  unlike `schema:citation` which was), and correctly formatting a
+  citation string across highly variable inputs (journal article vs.
+  conference paper vs. partial data) is a nontrivial judgment call of its
+  own, independent of the rename. Flagged for a future pass if literal
+  -text DCMI conformance for this field ever becomes a hard requirement.
+- **#20 (`schema:url` unreachable from real output)** — `pipeline.py::
+  _process_resource` now sets `schema:url` to `resource.url` immediately
+  after `merger.merge()`, but only when no agent already produced a value
+  (defensive — none currently do) and only when `resource.url` is
+  non-empty. This is deliberately the *input* URL the pipeline was given,
+  not a separately-verified "documented landing page" — documented inline
+  at the call site. New `TestPipelineSchemaUrlFallback` in
+  `tests/test_pipeline_integration.py` covers all three cases (fires,
+  doesn't override, no-op when input has no URL either).
+
+**Cache/fixture migration mechanics** (worth recording since it's easy to
+get wrong on a future field rename): #17 and #19 both change either the
+LLM-facing prompt text or an agent's field list, which changes the LLM
+response disk-cache key (`cache.py:_make_key` hashes prompt +
+response-model name, and a per-agent response model's name is itself a
+digest of its field list — see `CDIFDiscoveryProfile.build_output_model`).
+Both changes therefore invalidated the committed
+`tests/fixtures/golden/cache/` entries for the `creators_publishers` (#17)
+and `rights_funding_citations` (#19) agents, across all 6 recorded inputs.
+Rather than a live `make record-golden` re-recording (unnecessary — the
+underlying facts extracted didn't change, only their key/shape), the
+cache was migrated mechanically: the old cached response for each
+affected (agent, resource) pair was read via the real `BaseAgent`/
+`CacheManager` machinery (a guaranteed cache hit against the *pre-edit*
+code), transformed in Python to the new shape (contributor Role-wrap /
+citation key rename), and written back under the *post-edit* code's own
+computed cache key (rebuilding the exact prompt text and, for
+`creators_publishers`, remembering that its cache key also folds in
+`tools=["lookup_organization"]` — a gap the first attempt at this missed
+and had to redo). `tests/fixtures/golden/expected/*.json` were transformed
+the same way (mechanical `json.load`/transform/`json.dumps`, no
+re-recording) for all five fixes at once. Full `-m regression` suite
+verified green after the migration, not just `-m "not live"`.
+
+`ruff check src/ tests/ scripts/`, `uv run python -m mypy src/ scripts/`
+(0 errors), the full `-m "not live"` suite, `-m regression`, and `uv run
+python -m pytest visor/tests -p nicegui.testing.user_plugin -o
+asyncio_mode=auto -m "not live" -q` are all green.
+
 ## Step 5 — Structure fetcher: SKIPPED for v1 (see Backlog)
 
 Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (`ResourceDescription` has no structure field, `agents/base.py::_build_resource_dict` hardcodes a strict 5-key dict, CDIF DataDescription itself is deferred per spec §2) — building it now would be dead code. Tracked in Backlog below so this doesn't get lost.
@@ -465,7 +572,7 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 - **Structure fetcher (`enrichers/structure_fetcher.py`).** Explicitly deferred, not dropped. Build this when CDIF DataDescription work actually starts (spec §2/§7/§9). At that point also needs: `ResourceDescription` gaining a structure field, `agents/base.py::_build_resource_dict`'s strict 5-key `dict[str, str]` return type changed to carry it, `PipelineConfig.enable_structure_fetch`, a `Pipeline._maybe_fetch_structure()` step mirroring `_maybe_fetch_content()`, and — the part easy to get wrong — the "measured, never generated" invariant test must target LLM *output* (generated fields ⊆ measured columns) once there's a real prompt path, not just the fetcher's own input handling. Open Questions #10 (format list/sample strategy) and #11 (ordering vs. content-fetch) stay open until this is picked back up.
 - **Croissant `recordSet` / CDIF DataStructure profile.** Blocked on the structure fetcher above (spec §3.4, §7). Correction (2026-09-04): earlier notes in this doc and `exporters/croissant.py`'s docstring called its absence "a gap" — per the real Croissant 1.1 spec, `recordSet` is simply optional; its absence is fully conformant, not a defect. Framing corrected here; still worth building once there's real column data to put in it, just not because leaving it out is wrong today.
 
-- **Two real, additional shape mismatches surfaced by Step 5.5, deliberately not fixed — Open Questions #16 and #17.** Nested `schema:identifier` cardinality (Person/Organization/MonetaryGrant want singular, gema always builds a list) and `schema:contributor`'s Role-wrapper shape (spec wants the actor nested inside `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}`). See Step 5.5's own writeup for the full detail — not repeated here.
+- ~~Two real, additional shape mismatches surfaced by Step 5.5, deliberately not fixed — Open Questions #16 and #17.~~ **Resolved in Step 7** (nested `schema:identifier` cardinality, and `schema:contributor`'s Role wrapper) — see that section and the Open Questions table.
 - **Neither `exporters/datacite.py` nor `exporters/croissant.py` is wired into anything yet** — both are reachable only from their own test files, not from `cli.py`, `pipeline.py`, or `visor/`. Not a bug (the deliverable was the exporter module + tests, matching Steps 3/4's own scope), but worth deciding when/how these become reachable from `gema process` or Visor's UI before they're considered "shipped" in the product sense, not just "implemented."
 
 ## A/B diagnostic (spec §9, manual, not CI-gating)
@@ -492,11 +599,11 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 | 13 | Where DataCite vocab/affiliation table lives post-rewrite | **resolved** (duplicate of Step 2's own resolution note, never reflected here): stays in `config/agents.yaml`'s CDIF-facing prompts — SPDX/CC license priority, ANID/FONDECYT funding taxonomy, and the Chilean ministry hierarchy table are domain knowledge for reading Spanish source text, not DataCite-shape knowledge, so nothing to move to `exporters/datacite.py` |
 | 14 | `visor/session_settings.py` override migration | **resolved**: checked, not actually a gap — `visor/settings.py::apply_agent_overrides` already skips (never raises on) an override whose agent ID or provider no longer exists, by design. Agent IDs/providers didn't change in the pivot, so pre-pivot persisted overrides keep working unchanged |
 | 15 | `config/migrate.py` hardcoded schema name | **resolved**: keep, add warning |
-| 16 | Nested `schema:identifier` cardinality: vendored schema wants singular on Person/Organization/MonetaryGrant, gema always builds a list | open — see Step 5.5, deliberate deviation, not fixed |
-| 17 | `schema:contributor`'s Role wrapper: vendored schema wants `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}` | open — see Step 5.5, real structural mismatch, not fixed |
-| 18 | `dcterms:conformsTo` on `schema:subjectOf`: the vendored shapes' `cdifd:metadataProfileProperty` requires *both* `https://w3id.org/cdif/core/1.0` and `.../cdif/discovery/1.0`, but `CDIFDiscoveryProfile._inject_envelope` only emits the discovery URI — every real golden fixture fails this SHACL check for exactly this reason | open — surfaced by Step 6's SHACL conformance check, not fixed (out of scope for that pass) |
-| 19 | `schema:citation` is forbidden outright by the vendored shapes (`shacl.ttl`'s `cdifd:citationProperty`: `sh:maxCount 0`, "not recommended... because of semantic ambiguity. Use dcterms:bibliographicCitation... or schema:relatedLink") — but the Q2 mapping table (line ~70) maps `citations` → `schema:citation[]` and marks it **"Verified"**. A real conflict between this repo's own field-mapping decision and the vendored artifact it's supposed to implement, found by Step 6's SHACL check (`sample_input03.json` fails `citationProperty` for exactly this reason) | open — not resolved; Q2's "Verified" label for this row is wrong and needs revisiting, but the actual fix (re-map to `dcterms:bibliographicCitation` or `schema:relatedLink`) touches `exporters/datacite.py`'s reverse mapping too and wasn't done here |
-| 20 | `schema:url` appears in no agent's `fields:` list in `config/agents.yaml` and nothing in `src/` writes it at the top level — the `url\|distribution` required OR-group can currently only be satisfied via `schema:distribution`, never via `schema:url`, even though the field exists on `CDIFDiscoveryOutputModel` and `exporters/datacite.py`/`exporters/croissant.py` both read it. `ResourceDescription.url` (always present on input) could satisfy this for free via `_inject_envelope`, but that changes what "the resource has a URL" means (input URL vs. a documented landing page) — a real design decision, not made here | open — surfaced by Step 6's SHACL conformance check (5/6 fixtures fail the `url\|distribution` group); not fixed |
+| 16 | Nested `schema:identifier` cardinality: vendored schema wants singular on Person/Organization/MonetaryGrant, gema always builds a list | **resolved**: singular `schema:identifier` (first/preferred match, `_SCHEME_ORDER`) plus `schema:sameAs` overflow for any additional match, on every entity `identifier_enricher.py` writes to (creator, affiliation, publisher, funder — `schema:contributor`'s nested actor carries no identifier in practice, so untouched). New shared `types.entity_identifiers()` reader (merges singular + overflow, preferred first) used by `dataverse.py`/`datacite.py`/`croissant.py`; `doi_resolver.py`'s Crossref-backfilled placeholders now omit the key entirely instead of `[]`. Top-level document `schema:identifier` untouched (stays a list, per the vendored schema's own top-level `properties`, not `$defs`). |
+| 17 | `schema:contributor`'s Role wrapper: vendored schema wants `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}` | **resolved**: restructured to the vendored shape exactly — `config/agents.yaml`'s `creators_publishers` prompt (the only agent that produces role-carrying `schema_contributor` entries; `media_files` never did), `exporters/dataverse.py::_build_dataset_contact`, `exporters/datacite.py` (`_RESOURCE_ROLE_MAP` loop and the leftover-contributor-becomes-creator fallback, via a new shared `_role_and_actor()` helper). The nested actor's own `@type` defaults to `schema:Organization` (the prompt doesn't ask the LLM to classify a contributor as Person vs Organization the way it does for `schema_creator`) — a deliberate simplification, flagged for reviewer double-check. A bare role-less contributor entry (still valid per the vendored `anyOf`) is untouched. |
+| 18 | `dcterms:conformsTo` on `schema:subjectOf`: the vendored shapes' `cdifd:metadataProfileProperty` requires *both* `https://w3id.org/cdif/core/1.0` and `.../cdif/discovery/1.0`, but `CDIFDiscoveryProfile._inject_envelope` only emits the discovery URI — every real golden fixture fails this SHACL check for exactly this reason | **resolved**: `_inject_envelope` now emits both URIs (core first, then discovery, matching `tests/test_shacl_and_framing.py`'s existing conformant fixture). Both are known-dead as of the vendored SHA's date (2026-09-04, CDIF has no tagged releases) — same status, not a new gema-introduced gap. |
+| 19 | `schema:citation` is forbidden outright by the vendored shapes (`shacl.ttl`'s `cdifd:citationProperty`: `sh:maxCount 0`, "not recommended... because of semantic ambiguity. Use dcterms:bibliographicCitation... or schema:relatedLink") — but the Q2 mapping table (line ~70) maps `citations` → `schema:citation[]` and marks it **"Verified"**. A real conflict between this repo's own field-mapping decision and the vendored artifact it's supposed to implement, found by Step 6's SHACL check (`sample_input03.json` fails `citationProperty` for exactly this reason) | **resolved**: retargeted to `dcterms:bibliographicCitation` — `CDIFDiscoveryOutputModel.dcterms_bibliographic_citation` (was `schema_citation`), `config/agents.yaml`'s `rights_funding_citations` agent (`fields:` + prompt, including JSON examples), `exporters/datacite.py::_build_citations`, all 6 golden fixtures (mechanical key rename; only `sample_input03.json` had non-empty data). **Shape kept structured** (the same title/volume/issue/pages/edition/conference dict, not collapsed to a plain formatted-citation string) — nothing in the vendored `schema.json`/`shacl.ttl` constrains `dcterms:bibliographicCitation`'s shape the way `schema:citation` was constrained (it isn't a first-class vendored property at all), and correctly formatting one citation string across highly variable inputs (journal article vs. conference paper vs. partial data) is its own nontrivial judgment call independent of this rename. Flagged for reviewer double-check if literal-text DCMI conformance ever becomes a hard requirement. |
+| 20 | `schema:url` appears in no agent's `fields:` list in `config/agents.yaml` and nothing in `src/` writes it at the top level — the `url\|distribution` required OR-group can currently only be satisfied via `schema:distribution`, never via `schema:url`, even though the field exists on `CDIFDiscoveryOutputModel` and `exporters/datacite.py`/`exporters/croissant.py` both read it. `ResourceDescription.url` (always present on input) could satisfy this for free via `_inject_envelope`, but that changes what "the resource has a URL" means (input URL vs. a documented landing page) — a real design decision, not made here | **resolved**: `pipeline.py::_process_resource` sets `schema:url` to `resource.url` right after `merger.merge()`, but only when no agent already produced one (defensive — no agent currently does) and only when `resource.url` is non-empty. Deliberately the *input* URL, not a separately-verified "documented landing page" — documented inline at the call site. Placed in `pipeline.py`, not `CDIFDiscoveryProfile.merge_agent_results`/`_inject_envelope`, since the `Schema` Protocol has no access to `ResourceDescription`. |
 
 ## Standing rules
 
