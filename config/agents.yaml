@@ -248,9 +248,10 @@ agents:
          - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, usa la MISMA institución como schema_publisher (mismo "schema:name" que el creador correspondiente). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre.
          - Formato: {"@type": ["schema:Organization"]|["schema:Person"], "schema:name": "", "schema:identifier": []}
          - Si no hay ningún publicador identificable → {} (objeto vacío).
-      b) schema_contributor (lista): un objeto por cada contribuyente distinto del creador/publicador —
-         - Productor (busca "Producido por", "Generado por", "Fuente original"): {"schema:name": "", "role": "Producer"}. Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → {"schema:name": "Unidad de Estadísticas, Ministerio de Educación", "role": "Producer"}.
-         - Contacto (busca ACTIVAMENTE en TODO el texto correos, teléfonos, formularios asociados a ESTE recurso): {"schema:name": "", "role": "ContactPerson", "schema:email": ""}. Concatena múltiples canales de contacto no-email en "schema:name" o dentro de una nota si no hay campo dedicado; el email va SIEMPRE en "schema:email" si existe una dirección real.
+      b) schema_contributor (lista): un objeto por cada contribuyente distinto del creador/publicador, envuelto en un objeto Role —
+         - Formato general: {"@type": ["schema:Role"], "schema:roleName": "", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "", "schema:email": ""}}
+         - Productor (busca "Producido por", "Generado por", "Fuente original"): {"@type": ["schema:Role"], "schema:roleName": "Producer", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": ""}}. Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → {"@type": ["schema:Role"], "schema:roleName": "Producer", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "Unidad de Estadísticas, Ministerio de Educación"}}.
+         - Contacto (busca ACTIVAMENTE en TODO el texto correos, teléfonos, formularios asociados a ESTE recurso): {"@type": ["schema:Role"], "schema:roleName": "ContactPerson", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "", "schema:email": ""}}. Concatena múltiples canales de contacto no-email en "schema:name" o dentro de una nota si no hay campo dedicado; el email va SIEMPRE en "schema:email" si existe una dirección real.
          - Si no hay evidencia de productor ni contacto distintos → schema_contributor: []
 
     PASO 4 — IMPORTANTE SOBRE IDENTIFICADORES (LEER ATENTAMENTE)
@@ -312,7 +313,7 @@ agents:
         }
       ],
       "schema_contributor": [
-        {"schema:name": "", "role": "", "schema:email": ""}
+        {"@type": ["schema:Role"], "schema:roleName": "", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "", "schema:email": ""}}
       ],
       "schema_publisher": {
         "@type": [],
@@ -375,7 +376,7 @@ agents:
          "schema:identifier": [], "schema:affiliation": []}
       ],
       "schema_contributor": [
-        {"schema:name": "", "role": "ContactPerson", "schema:email": "geoportal@chile.cl"}
+        {"@type": ["schema:Role"], "schema:roleName": "ContactPerson", "schema:contributor": {"@type": ["schema:Organization"], "schema:name": "", "schema:email": "geoportal@chile.cl"}}
       ],
       "schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Geoportal de Chile", "schema:identifier": []}
     }
@@ -560,7 +561,7 @@ agents:
   - schema_conditions_of_access
   - schema_copyright_holder
   - schema_funding
-  - schema_citation
+  - dcterms_bibliographic_citation
   system_prompt: *shared_system_prompt
   prompt: |
     Tu tarea: extraer licencia/derechos, financiamiento e información para citar el recurso.
@@ -611,10 +612,10 @@ agents:
     - NO incluyas identificadores ROR para financiadores. Deja funder["schema:identifier"] vacío — se resuelven automáticamente después del procesamiento.
     - Multi-financiamiento: puede haber múltiples entradas en schema_funding, una por cada proyecto/financiador distinto.
 
-    Paso 4: EXTRAE INFORMACIÓN PARA CITAS BIBLIOGRÁFICAS (schema_citation)
+    Paso 4: EXTRAE INFORMACIÓN PARA CITAS BIBLIOGRÁFICAS (dcterms_bibliographic_citation)
     - Crea un objeto SOLO si el recurso está publicado DENTRO de una publicación anfitriona (revista, congreso, libro) y el texto entrega al menos uno de: volumen, número, páginas, edición, o lugar/fecha de conferencia.
     - El campo "title" de la cita es el título de esa publicación anfitriona o del artículo asociado — NO el título del propio dataset.
-    - Si solo tienes el título del recurso, sin ninguna de las señales anteriores de una publicación anfitriona → schema_citation: [].
+    - Si solo tienes el título del recurso, sin ninguna de las señales anteriores de una publicación anfitriona → dcterms_bibliographic_citation: [].
 
     === REGLAS OBLIGATORIAS ===
     - NO inventar información
@@ -641,7 +642,7 @@ agents:
           "schema:funder": {"@type": ["schema:Organization"], "schema:name": "", "schema:identifier": []}
         }
       ],
-      "schema_citation": [
+      "dcterms_bibliographic_citation": [
         {
           "title": "",
           "volume": "",
@@ -662,7 +663,7 @@ agents:
 
     RESPUESTA:
     {
-      "reasoning": "No hay ninguna mención de licencia, términos de uso ni datos abiertos → schema_license vacío. Hay financiamiento ANID FONDECYT explícito con número de proyecto real (3220567) → una entrada en schema_funding. No hay señales de publicación anfitriona → schema_citation vacío.",
+      "reasoning": "No hay ninguna mención de licencia, términos de uso ni datos abiertos → schema_license vacío. Hay financiamiento ANID FONDECYT explícito con número de proyecto real (3220567) → una entrada en schema_funding. No hay señales de publicación anfitriona → dcterms_bibliographic_citation vacío.",
       "schema_license": [],
       "schema_conditions_of_access": [],
       "schema_copyright_holder": "",
@@ -675,7 +676,7 @@ agents:
           "schema:funder": {"@type": ["schema:Organization"], "schema:name": "Agencia Nacional de Investigación y Desarrollo", "schema:identifier": []}
         }
       ],
-      "schema_citation": []
+      "dcterms_bibliographic_citation": []
     }
 
     EJEMPLO 2: Dataset con licencia explícita, versión distinta a 4.0
@@ -690,7 +691,7 @@ agents:
       "schema_conditions_of_access": [],
       "schema_copyright_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
       "schema_funding": [],
-      "schema_citation": []
+      "dcterms_bibliographic_citation": []
     }
 
     EJEMPLO 3: Dataset con DOI y cita, SIN mención de licencia
@@ -698,12 +699,12 @@ agents:
 
     RESPUESTA:
     {
-      "reasoning": "Sin mención de licencia → schema_license vacío. Sin financiamiento mencionado. El dataset está publicado dentro de una revista con volumen, número y páginas → un objeto en schema_citation con esos datos.",
+      "reasoning": "Sin mención de licencia → schema_license vacío. Sin financiamiento mencionado. El dataset está publicado dentro de una revista con volumen, número y páginas → un objeto en dcterms_bibliographic_citation con esos datos.",
       "schema_license": [],
       "schema_conditions_of_access": [],
       "schema_copyright_holder": "",
       "schema_funding": [],
-      "schema_citation": [
+      "dcterms_bibliographic_citation": [
         {
           "title": "Journal of Environmental Sciences",
           "volume": "45",
