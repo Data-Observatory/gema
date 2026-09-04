@@ -92,6 +92,28 @@ def make_publisher_config() -> PipelineConfig:
     )
 
 
+def make_url_config() -> PipelineConfig:
+    """Config whose one agent produces schema_url, for the #20 fallback's
+    'don't clobber an agent-produced value' test."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="url-agent",
+                name="URL Agent",
+                fields=["schema_url"],
+                prompt="Extract url from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
 def make_input_file(tmp_path: pytest.TempPathFactory, data: dict) -> str:  # noqa: ARG001
     """Write a JSON input file into *tmp_path*."""
     f = tmp_path / "input.json"
@@ -1028,3 +1050,64 @@ class TestPipelineResultModelsUsed:
 
         assert len(results) == 1
         assert results[0].models_used == {}
+
+
+class TestPipelineSchemaUrlFallback:
+    """Open Question #20, resolved: schema:url falls back to the input
+    resource's own URL when no agent produced one -- see pipeline.py's
+    _process_resource, right after merger.merge(). This is the *input*
+    URL the pipeline was given, not a separately-verified "documented
+    landing page" -- a deliberate, reasonable default, not a stretch of
+    the field's meaning."""
+
+    def test_fallback_fires_when_schema_url_absent_and_resource_url_present(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        # make_test_config's single agent only ever produces schema_name --
+        # schema:url is never populated by any agent here.
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert result.document.get_field("schema:url") == "https://example.com/x"
+
+    def test_fallback_does_not_override_an_agent_produced_value(self, tmp_path) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_url": "https://example.org/documented-landing-page"}}
+        )
+        pipeline = Pipeline(config=make_url_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        # The agent's own value survives untouched -- never silently
+        # clobbered by the input URL, even though no agent currently
+        # produces schema:url in the real shipped config.
+        assert result.document.get_field("schema:url") == "https://example.org/documented-landing-page"
+
+    def test_fallback_does_nothing_when_resource_url_also_empty(self, tmp_path, llm_factory) -> None:
+        make_input_file(
+            tmp_path,
+            {"title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert not result.document.get_field("schema:url")

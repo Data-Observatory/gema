@@ -297,6 +297,23 @@ class Pipeline:
                 models_used=models_used,
             )
 
+        # schema:url fallback (Open Question #20, resolved): no agent's
+        # `fields:` list in config/agents.yaml ever populates schema:url, so
+        # the CDIF required floor's url|distribution OR-group could
+        # previously only ever be satisfied via schema:distribution from
+        # real generated output -- schema:url sat unreachable even though
+        # CDIFDiscoveryOutputModel/exporters/datacite.py/exporters/
+        # croissant.py all already read it. resource.url (the URL this
+        # pipeline run was actually given) is a reasonable, deliberate
+        # default here -- NOT a separately-verified "documented landing
+        # page" the way a real schema:url extraction would be, just the
+        # input page the resource description already carries. Only fires
+        # when no agent produced a schema:url of its own (defensive: no
+        # agent does today, but this must never clobber one that does) and
+        # never invents a URL the resource didn't already have.
+        if not document.get_field("schema:url") and resource.url:
+            document.set_field("schema:url", resource.url)
+
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
             return PipelineResult(
