@@ -30,33 +30,41 @@ these properties via ``@context`` instead of silently dropping a bare key:
                                         # ORCID matching, not part of this
                                         # profile's Person def itself.
             "schema:familyName": str,  # Person only -- same extension.
-            "schema:identifier": [{"schema:propertyID": str, "schema:value": str, "schema:url": str}],
+            "schema:identifier": {"schema:propertyID": str, "schema:value": str, "schema:url": str},
+            "schema:sameAs": [ <same PropertyValue shape>, ... ],  # overflow, see below
             "schema:affiliation": [ <Organization entry, same shape> ],
         }
 
-    Each ``schema:identifier`` entry may also carry ``matched_via``,
-    ``confidence``, ``status`` as bare (non-CURIE) sibling keys --
-    gema-internal audit trail from this enricher, deliberately outside
-    the JSON-LD graph, never meant to round-trip through real JSON-LD
-    tooling. Left un-prefixed on purpose; don't "fix" them.
+    Each ``schema:identifier``/``schema:sameAs`` entry may also carry
+    ``matched_via``, ``confidence``, ``status`` as bare (non-CURIE) sibling
+    keys -- gema-internal audit trail from this enricher, deliberately
+    outside the JSON-LD graph, never meant to round-trip through real
+    JSON-LD tooling. Left un-prefixed on purpose; don't "fix" them.
 
     schema:funding entry (MonetaryGrant)::
 
         {
             "@type": ["schema:MonetaryGrant"],
             "schema:name": str,              # award title
-            "schema:identifier": [{"schema:propertyID": str, "schema:value": str}],  # award number/URI
+            "schema:identifier": {"schema:propertyID": str, "schema:value": str},  # award number/URI
             "schema:funder": <Organization entry>,
             "schema:description": str,       # funding stream
         }
 
-    Note (cardinality): the vendored schema models ``Person``/
-    ``Organization``/``MonetaryGrant``'s ``schema:identifier`` as
-    *singular* (one Identifier object or a string), not a list. gema
-    deliberately keeps it a list at every nesting level here (a resolved
-    org can carry both a ROR and an ISNI at once) -- a known, flagged
-    deviation, not fixed by this module. See
-    docs/cdif_pivot_implementation_plan.md's Open questions log.
+    Cardinality (Open Question #16, resolved): the vendored schema models
+    ``Person``/``Organization``/``MonetaryGrant``'s ``schema:identifier`` as
+    *singular* (one Identifier object or a string), not a list -- but a
+    resolved organization/person can legitimately carry more than one
+    identifier at once (e.g. both a ROR and an ISNI). Resolution: write the
+    first/preferred match (``_SCHEME_ORDER``: ROR before ISNI for orgs) as
+    the singular ``schema:identifier``, and any additional matches into
+    ``schema:sameAs`` -- the vendored ``Person``/``Organization`` ``$defs``
+    ship exactly that sibling array for this purpose ("other identifiers
+    for the organization/person"). See ``types.entity_identifiers`` (the
+    shared reader every exporter now goes through) and this module's own
+    ``_write_identifiers`` (the shared writer). When there's no identifier
+    at all, the key is omitted entirely -- never an empty dict/list -- same
+    "absent, not empty" convention as constraint C6's ``schema:sameAs``.
 """
 
 from __future__ import annotations
@@ -150,10 +158,33 @@ def _is_auto(match: IdentifierMatch, kind: str, name: str) -> bool:
 
 
 def _has_real_identifier(entry: dict[str, Any]) -> bool:
-    identifiers = entry.get("schema:identifier", [])
-    return isinstance(identifiers, list) and any(
-        isinstance(i, dict) and i.get("schema:value") for i in identifiers
-    )
+    """True if *entry* already carries a real (non-empty) identifier.
+
+    Handles both shapes: the pre-enrichment placeholder the LLM writes
+    (an empty list, per config/agents.yaml's prompts) and the post-#16
+    singular-dict shape this module writes (see ``_write_identifiers``) --
+    plus a bare list with real entries, defensively, for anything
+    hand-built or not yet migrated to the singular shape.
+    """
+    identifiers = entry.get("schema:identifier")
+    if isinstance(identifiers, dict):
+        return bool(identifiers.get("schema:value"))
+    if isinstance(identifiers, list):
+        return any(isinstance(i, dict) and i.get("schema:value") for i in identifiers)
+    return False
+
+
+def _write_identifiers(entry: dict[str, Any], entries: list[dict[str, Any]]) -> None:
+    """Writes *entries* (preferred match first) as the singular
+    ``schema:identifier`` slot the vendored Person/Organization/
+    MonetaryGrant defs actually want, plus ``schema:sameAs`` overflow for
+    anything beyond the first (Open Question #16 -- see module docstring).
+    No-op if *entries* is empty; never writes an empty dict/list."""
+    if not entries:
+        return
+    entry["schema:identifier"] = entries[0]
+    if len(entries) > 1:
+        entry["schema:sameAs"] = entries[1:]
 
 
 class IdentifierEnricher:
@@ -208,9 +239,7 @@ class IdentifierEnricher:
                 if name and not _has_real_identifier(creator):
                     match = self._resolver.resolve(name, country)
                     if match is not None and _is_auto(match, "org", name):
-                        entries = _identifier_entries(match)
-                        if entries:
-                            creator["schema:identifier"] = entries
+                        _write_identifiers(creator, _identifier_entries(match))
 
             self._enrich_affiliations(creator, country)
 
@@ -230,16 +259,14 @@ class IdentifierEnricher:
             identifier = _preferred_identifier(affil_match)
             if identifier:
                 id_value, scheme = identifier
-                affil["schema:identifier"] = [
-                    {
-                        "schema:propertyID": scheme,
-                        "schema:value": id_value,
-                        "schema:url": _scheme_url(scheme, id_value),
-                        "matched_via": affil_match.matched_via,
-                        "confidence": affil_match.confidence,
-                        "status": affil_match.status,
-                    }
-                ]
+                affil["schema:identifier"] = {
+                    "schema:propertyID": scheme,
+                    "schema:value": id_value,
+                    "schema:url": _scheme_url(scheme, id_value),
+                    "matched_via": affil_match.matched_via,
+                    "confidence": affil_match.confidence,
+                    "status": affil_match.status,
+                }
 
     def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
         given_name = creator.get("schema:givenName", "")
@@ -258,16 +285,14 @@ class IdentifierEnricher:
             return
         if not _is_auto(match, "ORCID", f"{given_name} {family_name}"):
             return
-        creator["schema:identifier"] = [
-            {
-                "schema:propertyID": "ORCID",
-                "schema:value": match.orcid_id,
-                "schema:url": f"https://orcid.org/{match.orcid_id}",
-                "matched_via": match.matched_via,
-                "confidence": match.confidence,
-                "status": match.status,
-            }
-        ]
+        creator["schema:identifier"] = {
+            "schema:propertyID": "ORCID",
+            "schema:value": match.orcid_id,
+            "schema:url": f"https://orcid.org/{match.orcid_id}",
+            "matched_via": match.matched_via,
+            "confidence": match.confidence,
+            "status": match.status,
+        }
 
     def _enrich_publisher(self, document: MetadataDocument, country: str | None = None) -> None:
         publisher = document.get_field("schema:publisher")
@@ -282,16 +307,14 @@ class IdentifierEnricher:
         identifier = _preferred_identifier(pub_match)
         if identifier:
             id_value, scheme = identifier
-            publisher["schema:identifier"] = [
-                {
-                    "schema:propertyID": scheme,
-                    "schema:value": id_value,
-                    "schema:url": _scheme_url(scheme, id_value),
-                    "matched_via": pub_match.matched_via,
-                    "confidence": pub_match.confidence,
-                    "status": pub_match.status,
-                }
-            ]
+            publisher["schema:identifier"] = {
+                "schema:propertyID": scheme,
+                "schema:value": id_value,
+                "schema:url": _scheme_url(scheme, id_value),
+                "matched_via": pub_match.matched_via,
+                "confidence": pub_match.confidence,
+                "status": pub_match.status,
+            }
 
     def _enrich_funding(self, document: MetadataDocument, country: str | None = None) -> None:
         funding = document.get_field("schema:funding")
@@ -309,6 +332,4 @@ class IdentifierEnricher:
             funder_match = self._resolver.resolve(name, country)
             if funder_match is None or not _is_auto(funder_match, "funder", name):
                 continue
-            entries = _identifier_entries(funder_match)
-            if entries:
-                funder["schema:identifier"] = entries
+            _write_identifiers(funder, _identifier_entries(funder_match))

@@ -102,6 +102,8 @@ class TestBackfillCreators:
         # "Apellido, Nombre" -- matches creators_publishers' own convention
         # (config/agents.yaml), not Crossref's raw given/family order.
         # Second author has no given name -- name falls back to family only.
+        # schema:identifier is omitted, not an empty list (Open Question
+        # #16 -- see doi_resolver.py's own comment).
         assert doc.get_field("schema:creator") == {
             "@list": [
                 {
@@ -109,12 +111,10 @@ class TestBackfillCreators:
                     "schema:name": "Doe, Jane",
                     "schema:givenName": "Jane",
                     "schema:familyName": "Doe",
-                    "schema:identifier": [],
                     "schema:affiliation": [
                         {
                             "@type": ["schema:Organization"],
                             "schema:name": "GFZ Potsdam",
-                            "schema:identifier": [],
                         }
                     ],
                 },
@@ -123,7 +123,6 @@ class TestBackfillCreators:
                     "schema:name": "Smith",
                     "schema:givenName": "",
                     "schema:familyName": "Smith",
-                    "schema:identifier": [],
                     "schema:affiliation": [],
                 },
             ]
@@ -148,7 +147,6 @@ class TestBackfillCreators:
                 {
                     "@type": ["schema:Organization"],
                     "schema:name": "Deutsches GeoForschungsZentrum GFZ",
-                    "schema:identifier": [],
                     "schema:affiliation": [],
                 }
             ]
@@ -176,7 +174,6 @@ class TestBackfillPublisher:
         assert doc.get_field("schema:publisher") == {
             "@type": ["schema:Organization"],
             "schema:name": "GFZ Potsdam",
-            "schema:identifier": [],
         }
 
     def test_preserves_existing_publisher(self) -> None:

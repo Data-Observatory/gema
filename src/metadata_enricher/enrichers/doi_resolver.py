@@ -110,12 +110,17 @@ class DOIResolverEnricher:
         for author in authors:
             if not isinstance(author, dict):
                 continue
+            # schema:identifier is deliberately omitted here, not written as
+            # an empty placeholder ([] or {}) -- Open Question #16
+            # (docs/cdif_pivot_implementation_plan.md): the vendored schema
+            # models Person/Organization's schema:identifier as a singular
+            # object, and an empty value has no valid representation in
+            # that shape (unlike the pre-#16 list convention, where []
+            # was a harmless placeholder). IdentifierEnricher only fills
+            # an EMPTY identifier field -- an absent key reads as empty
+            # exactly the same way an empty list used to.
             affiliations = [
-                {
-                    "@type": ["schema:Organization"],
-                    "schema:name": affil["name"],
-                    "schema:identifier": [],
-                }
+                {"@type": ["schema:Organization"], "schema:name": affil["name"]}
                 for affil in author.get("affiliation") or []
                 if isinstance(affil, dict) and affil.get("name")
             ]
@@ -129,7 +134,6 @@ class DOIResolverEnricher:
                         "schema:name": name,
                         "schema:givenName": given,
                         "schema:familyName": family,
-                        "schema:identifier": [],
                         "schema:affiliation": affiliations,
                     }
                 )
@@ -141,7 +145,6 @@ class DOIResolverEnricher:
                     {
                         "@type": ["schema:Organization"],
                         "schema:name": org_name,
-                        "schema:identifier": [],
                         "schema:affiliation": affiliations,
                     }
                 )
@@ -159,9 +162,11 @@ class DOIResolverEnricher:
         publisher = work.get("publisher")
         if not publisher:
             return
+        # schema:identifier omitted, not an empty placeholder -- see the
+        # comment in _backfill_creators above (Open Question #16).
         document.set_field(
             "schema:publisher",
-            {"@type": ["schema:Organization"], "schema:name": publisher, "schema:identifier": []},
+            {"@type": ["schema:Organization"], "schema:name": publisher},
         )
 
     def _backfill_date_published(self, document: MetadataDocument, work: dict[str, Any]) -> None:
