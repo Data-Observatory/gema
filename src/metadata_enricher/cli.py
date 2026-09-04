@@ -157,7 +157,12 @@ def list_known_providers(
 def validate(
     ctx: typer.Context,
     file: Path = typer.Argument(..., help="Path to input JSON file"),
-    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
+    # No config file involved in this command (unlike `process`), so there's
+    # no schema_name to default from -- "cdif-discovery" is the sole
+    # generation-target schema as of the CDIF pivot (schemas/__init__.py).
+    # If a second schema is ever registered, this default should be
+    # reconsidered rather than assumed to still be correct.
+    schema: str = typer.Option("cdif-discovery", "--schema", "-s", help="Schema name"),
 ) -> None:
     """Validate an input JSON file for processing."""
     if not file.exists():
@@ -195,7 +200,14 @@ def process(
     ctx: typer.Context,
     input_path: Path = typer.Argument(..., help="Path to input JSON file or directory"),
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file or directory"),
-    schema: str = typer.Option("datacite-4.6", "--schema", "-s", help="Schema name"),
+    schema: Optional[str] = typer.Option(
+        None,
+        "--schema",
+        "-s",
+        help="Schema name for output field ordering. Defaults to the loaded "
+        "config's schema_name -- only pass this to format output using a "
+        "*different* schema's field order than the one that generated it.",
+    ),
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML config"),
     allow_partial: bool = typer.Option(
         False,
@@ -230,8 +242,9 @@ def process(
         raise typer.Exit(1)
 
     registry = get_registry()
+    schema_name = schema if schema is not None else pipeline_config.schema_name
     try:
-        schema_obj = registry.get(schema)
+        schema_obj = registry.get(schema_name)
     except KeyError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)

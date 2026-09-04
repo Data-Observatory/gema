@@ -22,12 +22,12 @@ runner = CliRunner()
 def _write_temp_config(**overrides: object) -> str:
     """Write a minimal valid YAML config to a temp file and return its path."""
     config_data: dict[str, object] = {
-        "schema_name": "datacite-4.6",
+        "schema_name": "cdif-discovery",
         "agents": [
             {
                 "id": "a1",
                 "name": "Test",
-                "fields": ["titles"],
+                "fields": ["schema_name"],
                 "prompt": "Test prompt",
                 "provider": "p1",
                 "model": "test-model",
@@ -86,10 +86,10 @@ class TestHelpOption:
 class TestListSchemasCommand:
     """list-schemas subcommand."""
 
-    def test_list_schemas_shows_datacite(self) -> None:
+    def test_list_schemas_shows_cdif_discovery(self) -> None:
         result = runner.invoke(app, ["list-schemas"])
         assert result.exit_code == 0
-        assert "datacite-4.6" in result.stdout
+        assert "cdif-discovery" in result.stdout
 
 
 class TestValidateCommand:
