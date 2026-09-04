@@ -31,37 +31,31 @@
   "schema:name": "Zonas climaticas de Chile segun Köppen-Geiger escala 1:1.500.000",
   "schema:identifier": [
     {
-      "propertyID": "URL",
-      "value": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
-      "url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
+      "schema:propertyID": "URL",
+      "schema:value": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
+      "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
     }
   ],
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [
     {
-      "contentUrl": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
-      "encodingFormat": "application/xml",
-      "contentSize": [],
+      "schema:contentUrl": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
+      "schema:encodingFormat": "application/xml",
+      "schema:contentSize": [],
       "checksum": "",
       "temporal_resolution": ""
     },
     {
-      "contentUrl": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
-      "encodingFormat": "application/zip",
-      "contentSize": [],
+      "schema:contentUrl": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
+      "schema:encodingFormat": "application/zip",
+      "schema:contentSize": [],
       "checksum": "",
       "temporal_resolution": ""
     }
   ],
   "schema:description": "Mapa que representa los 25 tipos de clima que posee Chile segun Sarricolea et al (2017) usando la clasificacion climatica de Köppen-Geiger, en formato shapefile, y realizado sobre cubiertas de temperatura y precipitacion mensual de 1 km2 de resolucion. Posee la abreviatura y el tipo de clima en español. La precipitacion (pp) representa el promedio de precipitacion por el tipo en toda su distribucion espacial, al igual que la temperatura. La altitud (min y max) son los extremos altitudinales en que se situa el tipo climatico. Zona geografica: Chile continental Oeste: -77.1975 Este: -63.547 Norte: -16.7587 Sur: -57.1275 Sistema de referencia: WGS84 - Coordenadas Geograficas Formato: Shapefile Fuentes de los datos (las coberturas climaticas de resolucion 1km2) de: Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014). Effects of alternative sets of climatic predictors on species distribution models and associated estimates of extinction risk: A test with plants in an arid environment. Ecological Modelling, 288, 166-177. El mapa se debe citar como: Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73.",
   "schema:additionalType": "Capa geoespacial",
-  "schema:sameAs": [
-    {
-      "value": "35414",
-      "name": "ID de catálogo"
-    }
-  ],
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "",
@@ -69,46 +63,53 @@
   "schema:copyrightYear": "",
   "schema:relatedLink": [
     {
-      "linkRelationship": "IsDescribedBy",
-      "target": {
-        "url": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
-        "name": "Servicio de mapas WMS"
+      "schema:linkRelationship": "IsDescribedBy",
+      "schema:target": {
+        "schema:url": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BFC85D54E-34B7-416D-ABC3-E0E3FAC45A31%7D",
+        "schema:name": "XML del metadato"
       }
     },
     {
-      "linkRelationship": "HasPart",
-      "target": {
-        "url": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
-        "name": "Capa"
+      "schema:linkRelationship": "HasPart",
+      "schema:target": {
+        "schema:url": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
+        "schema:name": "Capa"
+      }
+    },
+    {
+      "schema:linkRelationship": "IsDescribedBy",
+      "schema:target": {
+        "schema:url": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
+        "schema:name": "Servicio WMS"
       }
     }
   ],
   "schema:keywords": [
     {
-      "name": "Zonas climáticas -- Chile",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Zonas climáticas -- Köppen-Geiger -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Clasificación climática de Köppen-Geiger",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Clasificación climática",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Temperatura y precipitación",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Precipitación",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Chile continental",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Temperatura",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     }
   ],
   "schema:about": [
     {
-      "name": "Ciencias de la Tierra",
-      "inDefinedTermSet": "Ciencias Naturales y Exactas"
+      "schema:name": "Ciencias de la Tierra",
+      "schema:inDefinedTermSet": "Ciencias Naturales y Exactas"
     }
   ],
   "schema:audience": [
@@ -122,32 +123,36 @@
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Análisis"
     },
     {
       "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Laboratorio"
+      "instructional_method": "Análisis"
     }
   ],
   "schema:creator": {
     "@list": [
       {
-        "@type": "schema:Person",
-        "name": "Sarricolea, P.",
-        "given_name": "P.",
-        "family_name": "Sarricolea",
+        "@type": [
+          "schema:Person"
+        ],
+        "schema:name": "Sarricolea, P.",
+        "schema:givenName": "P.",
+        "schema:familyName": "Sarricolea",
         "schema:identifier": [],
         "schema:affiliation": [
           {
-            "@type": "schema:Organization",
-            "name": "Departamento de Geografía Universidad de Chile",
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "Departamento de Geografía, Universidad de Chile",
             "schema:identifier": [
               {
-                "propertyID": "ROR",
-                "value": "https://ror.org/047gc3g35",
-                "url": "https://ror.org/https://ror.org/047gc3g35",
+                "schema:propertyID": "ROR",
+                "schema:value": "https://ror.org/047gc3g35",
+                "schema:url": "https://ror.org/https://ror.org/047gc3g35",
                 "matched_via": "ror_affiliation",
                 "confidence": 1.0,
                 "status": "auto"
@@ -157,18 +162,22 @@
         ]
       },
       {
-        "@type": "schema:Person",
-        "name": "Herrera, MJ.",
-        "given_name": "MJ.",
-        "family_name": "Herrera",
+        "@type": [
+          "schema:Person"
+        ],
+        "schema:name": "Herrera, MJ.",
+        "schema:givenName": "MJ.",
+        "schema:familyName": "Herrera",
         "schema:identifier": [],
         "schema:affiliation": []
       },
       {
-        "@type": "schema:Person",
-        "name": "Meseguer-Ruiz, O.",
-        "given_name": "O.",
-        "family_name": "Meseguer-Ruiz",
+        "@type": [
+          "schema:Person"
+        ],
+        "schema:name": "Meseguer-Ruiz, O.",
+        "schema:givenName": "O.",
+        "schema:familyName": "Meseguer-Ruiz",
         "schema:identifier": [],
         "schema:affiliation": []
       }
@@ -176,19 +185,26 @@
   },
   "schema:contributor": [
     {
-      "name": "Departamento de Geografía Universidad de Chile",
+      "schema:name": "Departamento de Geografía, Universidad de Chile",
       "role": "ContactPerson",
-      "email": "psarricolea@uchilefau.cl"
+      "schema:email": "psarricolea@uchilefau.cl"
+    },
+    {
+      "schema:name": "Pliscoff, P.; Luebert, F.; Hilger, H. H.; Guisan, A.",
+      "role": "Producer",
+      "schema:email": ""
     }
   ],
   "schema:publisher": {
-    "@type": "schema:Organization",
-    "name": "Departamento de Geografía Universidad de Chile",
+    "@type": [
+      "schema:Organization"
+    ],
+    "schema:name": "Departamento de Geografía, Universidad de Chile",
     "schema:identifier": [
       {
-        "propertyID": "ROR",
-        "value": "https://ror.org/047gc3g35",
-        "url": "https://ror.org/https://ror.org/047gc3g35",
+        "schema:propertyID": "ROR",
+        "schema:value": "https://ror.org/047gc3g35",
+        "schema:url": "https://ror.org/https://ror.org/047gc3g35",
         "matched_via": "ror_affiliation",
         "confidence": 1.0,
         "status": "auto"
@@ -211,28 +227,25 @@
   ],
   "schema:spatialCoverage": [
     {
-      "name": "Chile continental",
-      "description": "Zona geográfica: Chile continental",
-      "geo": {
-        "box": "-77.1975,-57.1275,-63.547,-16.7587"
+      "schema:name": "Chile continental",
+      "schema:description": "Zona geográfica: Chile continental. Oeste: -77.1975, Este: -63.547, Norte: -16.7587, Sur: -57.1275",
+      "schema:geo": {
+        "schema:box": "-77.1975,-57.1275,-63.547,-16.7587"
       }
     }
   ],
   "schema:measurementTechnique": [
-    "Clasificación climática de Köppen-Geiger sobre cubiertas de temperatura y precipitación mensual de 1 km2 de resolución"
+    "Clasificación climática de Köppen-Geiger"
   ],
   "schema:variableMeasured": [
     {
-      "name": "tipo de clima"
+      "schema:name": "Precipitación"
     },
     {
-      "name": "precipitación (pp)"
+      "schema:name": "Temperatura"
     },
     {
-      "name": "temperatura"
-    },
-    {
-      "name": "altitud (min y max)"
+      "schema:name": "Altitud"
     }
   ],
   "dqv:hasQualityMeasurement": [],

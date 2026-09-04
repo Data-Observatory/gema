@@ -31,55 +31,54 @@
   "schema:name": "Gastos municipales (presupuesto abierto)",
   "schema:identifier": [
     {
-      "propertyID": "URL",
-      "value": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
-      "url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
+      "schema:propertyID": "URL",
+      "schema:value": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
+      "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
     }
   ],
   "schema:license": [
     {
-      "name": "Datos Abiertos del Estado de Chile",
-      "url": "",
-      "identifier": ""
+      "schema:name": "Datos Abiertos del Estado de Chile",
+      "schema:url": "",
+      "schema:identifier": ""
     }
   ],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [],
   "schema:description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
   "schema:additionalType": "Serie de tiempo",
-  "schema:sameAs": [],
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "",
-  "schema:datePublished": "",
+  "schema:datePublished": "2026-03-15",
   "schema:copyrightYear": "",
   "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "name": "Gastos municipales -- Presupuesto público -- Chile",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Gastos municipales -- Presupuesto abierto -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Presupuesto abierto",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Presupuesto público",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Corporaciones municipales",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Corporaciones municipales",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Egresos ejecutados -- Sector público local",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Sector público local",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     }
   ],
   "schema:about": [
     {
-      "name": "Economía y negocios",
-      "inDefinedTermSet": "Ciencias Sociales"
+      "schema:name": "Economía y negocios",
+      "schema:inDefinedTermSet": "Ciencias Sociales"
     }
   ],
   "schema:audience": [
@@ -96,12 +95,6 @@
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Administradores",
-      "mediator": "Gerente",
-      "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
       "audience": "Ciudadanos",
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
@@ -111,15 +104,19 @@
   "schema:creator": {
     "@list": [
       {
-        "@type": "schema:Organization",
-        "name": "Ministerio de Hacienda",
-        "given_name": "",
-        "family_name": "",
+        "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Ministerio de Hacienda",
+        "schema:givenName": "",
+        "schema:familyName": "",
         "schema:identifier": [],
         "schema:affiliation": [
           {
-            "@type": "schema:Organization",
-            "name": "Gobierno de Chile",
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "Gobierno de Chile",
             "schema:identifier": []
           }
         ]
@@ -128,28 +125,26 @@
   },
   "schema:contributor": [],
   "schema:publisher": {
-    "@type": "schema:Organization",
-    "name": "Ministerio de Hacienda",
+    "@type": [
+      "schema:Organization"
+    ],
+    "schema:name": "Ministerio de Hacienda",
     "schema:identifier": []
   },
-  "schema:copyrightHolder": "",
+  "schema:copyrightHolder": "Estado de Chile",
   "schema:funding": [],
   "schema:citation": [],
   "schema:spatialCoverage": [
     {
-      "name": "Chile",
-      "description": "Cobertura nacional, todos los municipios del territorio chileno continental",
-      "geo": {
-        "box": "-75.956,-57.987,-65.084,-16.309"
+      "schema:name": "Chile",
+      "schema:description": "Cobertura nacional, egresos ejecutados por los municipios en el territorio nacional",
+      "schema:geo": {
+        "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }
     }
   ],
   "schema:measurementTechnique": [],
-  "schema:variableMeasured": [
-    {
-      "name": "Egresos ejecutados por los municipios"
-    }
-  ],
+  "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
   "prov:wasGeneratedBy": {}
 }

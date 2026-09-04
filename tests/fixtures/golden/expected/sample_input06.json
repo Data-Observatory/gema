@@ -31,17 +31,16 @@
   "schema:name": "Active fault database for the Atacama Fault System (N-Chile) as basis for tracking forearc segmentation",
   "schema:identifier": [
     {
-      "propertyID": "DOI",
-      "value": "10.5880/GFZ.4.1.2020.012",
-      "url": "https://doi.org/10.5880/GFZ.4.1.2020.012"
+      "schema:propertyID": "DOI",
+      "schema:value": "10.5880/GFZ.4.1.2020.012",
+      "schema:url": "https://doi.org/10.5880/GFZ.4.1.2020.012"
     }
   ],
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [],
   "schema:description": "The Atacama Fault System (AFS) in N-Chile is a complex fault system with a variety of fault segments showing different degrees of activity. Initiated as a trench-linked fault system during the Jurassic it is now exposed in the Coastal Cordillera in the forearc of the Nazca-South America convergent plate margin. Fault scarps and surface ruptures indicate varying degrees of reactivation of this fault system that most likely roots into the subduction zone interface at the downdip end of coupling. Therefore, the interaction of these two systems is evident though not well understood. The active fault database for the northernmost segment of the Atacama Fault System (AFS) is the result of creating a comprehensive catalogue of active faults in the forearc to investigate activity patterns of the forearc in relation with megathrust segmentation and upper plate seismicity in the Coastal Cordillera of N-Chile (19°12’S - 25°12’S). The dataset has been compiled in Arc-GIS and is available as .mpk as well as .kmz formats to be visualised in Google Earth. The activity patterns are mapped according to a well-defined set of criteria (see below). The database for activity starts out from a thorough literature review and is supplemented by new evidences combining interpretation of remote sensing data, field work and upper plate seismicity from the Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) and a local seismic catalogues covering the area of the Salar Grande segment (Bloch et al., 2014). It also includes the available age data of offset geological units as references to bracket the chronology of fault activity. Fault activity for this study has been defined according to the Quaternary fault and fold database of the United States (https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con), but is subject to significant error due to slow slip rates (&lt; 0.2mm/yr), few chronologically constrained fault offsets and lack of historically or instrumentally observed earthquakes along the fault segments. Therefore, this database does not have the aim to serve as active fault database for seismic hazard assessment. It has been created with the clear aim to serve as database for general aspects of upper plate fault reactivation in relation with the megathrust seismic cycle and megathrust segmentation. This publication is part of an ongoing study investigating the interaction of megathrust segmentation with activity patterns in the overriding forearc.",
-  "schema:additionalType": "Base de datos",
-  "schema:sameAs": [],
+  "schema:additionalType": "Capa geoespacial",
   "schema:version": "",
   "schema:inLanguage": "en",
   "schema:dateCreated": "",
@@ -49,39 +48,44 @@
   "schema:copyrightYear": "",
   "schema:relatedLink": [
     {
-      "linkRelationship": "References",
-      "target": {
-        "url": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con",
-        "name": "Quaternary fault and fold database of the United States"
+      "schema:linkRelationship": "References",
+      "schema:target": {
+        "schema:url": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con",
+        "schema:name": "Quaternary fault and fold database of the United States"
       }
     }
   ],
   "schema:keywords": [
     {
-      "name": "Active faults",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Active faults",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Atacama Fault System",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Atacama Fault System",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "Forearc segmentation",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Megathrust segmentation",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     },
     {
-      "name": "GIS",
-      "inDefinedTermSet": "",
-      "identifier": ""
+      "schema:name": "Forearc",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "GIS",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
     }
   ],
   "schema:about": [
     {
-      "name": "Ciencias de la Tierra",
-      "inDefinedTermSet": "Ciencias Naturales y Exactas"
+      "schema:name": "Ciencias de la Tierra",
+      "schema:inDefinedTermSet": "Ciencias Naturales y Exactas"
     }
   ],
   "schema:audience": [
@@ -107,29 +111,37 @@
   "schema:creator": {
     "@list": [
       {
-        "@type": "schema:Person",
-        "name": "Mittelstädt, Jana",
-        "given_name": "Jana",
-        "family_name": "Mittelstädt",
+        "@type": [
+          "schema:Person"
+        ],
+        "schema:name": "Mittelstädt, Jana",
+        "schema:givenName": "Jana",
+        "schema:familyName": "Mittelstädt",
         "schema:identifier": [],
         "schema:affiliation": [
           {
-            "@type": "schema:Organization",
-            "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
             "schema:identifier": []
           }
         ]
       },
       {
-        "@type": "schema:Person",
-        "name": "Victor, Pia",
-        "given_name": "Pia",
-        "family_name": "Victor",
+        "@type": [
+          "schema:Person"
+        ],
+        "schema:name": "Victor, Pia",
+        "schema:givenName": "Pia",
+        "schema:familyName": "Victor",
         "schema:identifier": [],
         "schema:affiliation": [
           {
-            "@type": "schema:Organization",
-            "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
             "schema:identifier": []
           }
         ]
@@ -138,14 +150,16 @@
   },
   "schema:contributor": [
     {
-      "name": "Victor, Pia",
+      "schema:name": "Victor, Pia; GFZ German Research Centre for Geosciences, Potsdam, Germany",
       "role": "ContactPerson",
-      "email": ""
+      "schema:email": ""
     }
   ],
   "schema:publisher": {
-    "@type": "schema:Organization",
-    "name": "GFZ Data Services",
+    "@type": [
+      "schema:Organization"
+    ],
+    "schema:name": "GFZ Data Services",
     "schema:identifier": []
   },
   "schema:copyrightHolder": "",
@@ -153,34 +167,36 @@
   "schema:citation": [],
   "schema:spatialCoverage": [
     {
-      "name": "Atacama Fault System (N-Chile)",
-      "description": "Coastal Cordillera of northern Chile, between 19°12'S and 25°12'S"
+      "schema:name": "Coastal Cordillera of N-Chile (Atacama Fault System)",
+      "schema:description": "Coastal Cordillera of northern Chile, between 19°12'S and 25°12'S"
     }
   ],
   "schema:measurementTechnique": [
-    "interpretation of remote sensing data",
-    "field work",
-    "upper plate seismicity analysis (IPOC, Sippl et al., 2018)",
-    "local seismic catalogues (Bloch et al., 2014)"
+    "interpretación de datos de teledetección (remote sensing)",
+    "trabajo de campo",
+    "sismicidad de placa superior (catálogos sísmicos IPOC y local)"
   ],
   "schema:variableMeasured": [
     {
-      "name": "fault activity"
+      "schema:name": "fallas activas"
     },
     {
-      "name": "fault movement rate"
+      "schema:name": "patrones de actividad de fallas"
     },
     {
-      "name": "fault movement direction"
+      "schema:name": "tasas de deslizamiento"
+    },
+    {
+      "schema:name": "sismicidad de placa superior"
     }
   ],
   "dqv:hasQualityMeasurement": [
     {
-      "measure": "error/uncertainty of fault activity classification",
-      "value": "subject to significant error due to slow slip rates (< 0.2mm/yr), few chronologically constrained fault offsets and lack of historically or instrumentally observed earthquakes along the fault segments"
+      "dqv:isMeasurementOf": "error en la actividad de fallas",
+      "dqv:value": "sujeto a error significativo debido a tasas de deslizamiento lentas (< 0.2 mm/yr), pocos desplazamientos de fallas cronológicamente restringidos y falta de terremotos observados histórica o instrumentalmente"
     }
   ],
   "prov:wasGeneratedBy": {
-    "description": "Compiled in Arc-GIS from a thorough literature review supplemented by new evidence combining interpretation of remote sensing data, field work and upper plate seismicity from the Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) and local seismic catalogues covering the Salar Grande segment (Bloch et al., 2014)."
+    "schema:description": "Base de datos compilada a partir de revisión exhaustiva de literatura, complementada con interpretación de datos de teledetección, trabajo de campo y sismicidad de placa superior del Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) y catálogos sísmicos locales del segmento Salar Grande (Bloch et al., 2014). Incluye datos de edad de unidades geológicas desplazadas. Compilada en Arc-GIS."
   }
 }
