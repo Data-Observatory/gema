@@ -232,8 +232,18 @@ def _role_and_actor(entry: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     own name/email live inside that nested ``schema:contributor``, not as
     flat siblings. A bare Person/Organization/``{@id}`` entry (no role at
     all -- still valid per the vendored schema's own ``anyOf``) returns
-    ``("", entry)`` unchanged, since there's no wrapper to unwrap."""
-    if first_type_label(entry.get("@type")) == "Role":
+    ``("", entry)`` unchanged, since there's no wrapper to unwrap.
+
+    Detected by the presence of a nested ``schema:contributor``/
+    ``schema:roleName`` key, not just ``@type == "Role"`` -- an LLM
+    dropping the `@type` tag on an otherwise-correct Role wrapper used to
+    make the whole entry silently vanish (treated as a bare actor with no
+    ``schema:name`` of its own, since the wrapper itself has none). This
+    also matches how exporters/dataverse.py's own contributor-role
+    detection already worked (keyed on ``schema:roleName`` presence, no
+    `@type` check) -- the two exporters read the same document and must
+    agree on what a Role wrapper looks like."""
+    if "schema:contributor" in entry or "schema:roleName" in entry:
         role = str(entry.get("schema:roleName") or "")
         actor = entry.get("schema:contributor")
         return role, (actor if isinstance(actor, dict) else {})
