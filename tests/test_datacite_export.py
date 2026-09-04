@@ -63,6 +63,7 @@ class TestTitlesAndDescriptions:
             "schema:inLanguage": "es",
             "@id": "https://example.org/x",
             "schema:creator": [_org("Someone")],
+            "schema:publisher": _org("A Publisher"),
         })
         result = to_datacite_json(doc)
         data = _fields(result)
@@ -218,6 +219,20 @@ class TestPublishersC3Reversal:
         doc = make_document(**{"schema:name": "T", "schema:publisher": {}})
         result = to_datacite_json(doc)
         assert _fields(result)["publishers"] == []
+
+    def test_no_publisher_or_provider_warns(self):
+        """Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
+        Backlog): DataCite's own spec makes publisher mandatory, unlike
+        subjects/categories/audiences/citations (see TestOptionalFieldsStaySilentOnMiss),
+        so a missing publisher warrants a warning."""
+        doc = make_document(**{"schema:name": "T"})
+        result = to_datacite_json(doc)
+        assert any("no schema:publisher or schema:provider entries found" in w for w in result.warnings)
+
+    def test_provider_alone_satisfies_publisher_no_warning(self):
+        doc = make_document(**{"schema:name": "T", "schema:provider": [_org("Overflow Publisher")]})
+        result = to_datacite_json(doc)
+        assert not any("publisher" in w.lower() for w in result.warnings)
 
 
 class TestSameAsVsRelatedLinkStayDistinct:

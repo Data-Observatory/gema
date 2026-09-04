@@ -426,7 +426,7 @@ def _build_creators(
     return creators
 
 
-def _build_publishers(document: MetadataDocument) -> list[dict[str, Any]]:
+def _build_publishers(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
     publishers: list[dict[str, Any]] = []
 
     publisher = document.get_field("schema:publisher")
@@ -461,12 +461,33 @@ def _build_publishers(document: MetadataDocument) -> list[dict[str, Any]]:
             }
         )
 
+    if not publishers:
+        # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
+        # Backlog, "Warning-discipline inconsistency"): unlike
+        # subjects/categories/audiences/citations below, DataCite's own
+        # spec makes publisher a mandatory top-level property (Identifier,
+        # Creator, Title, Publisher, PublicationYear, ResourceType) --
+        # a missing publisher is a real gap in the emitted DataCite
+        # document, not a normal/expected absence, so it warrants a
+        # warning the same way _build_creators/_build_titles already warn
+        # on their own required-field misses.
+        warnings.append("no schema:publisher or schema:provider entries found -- DataCite requires a publisher")
+
     return publishers
 
 
 # ------------------------------------------------------------------
 # subjects / categories / audiences
 # ------------------------------------------------------------------
+
+# Warning-discipline decision for the three builders below (docs/
+# cdif_pivot_implementation_plan.md Backlog): subjects (keywords),
+# categories (about), and audiences are all optional DataCite fields
+# (unlike publisher above) -- a resource genuinely having no keywords,
+# no subject classification, or no defined audience is a normal, non
+# -alarming outcome, not a sign something was dropped. Deliberately
+# left silent, matching exporters/AGENTS.md's own carve-out for
+# legitimately-empty optional fields.
 
 
 def _build_subjects(document: MetadataDocument) -> list[dict[str, Any]]:
@@ -742,6 +763,10 @@ def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, A
 def _build_citations(document: MetadataDocument) -> list[dict[str, Any]]:
     # schema:citation entries already use DataCite's own key names --
     # this profile's prompt was written to match Q2's mapping verbatim.
+    # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
+    # Backlog): citations are optional bibliography data -- most resources
+    # legitimately cite nothing, so an empty result here is silent by
+    # design, same reasoning as subjects/categories/audiences above.
     return [
         entry
         for entry in _as_list(document.get_field("schema:citation"))
@@ -834,7 +859,7 @@ def to_datacite_json(document: MetadataDocument) -> DataCiteExportResult:
         "descriptions": _build_descriptions(document, warnings),
         "languages": _build_languages(document),
         "creators": _build_creators(document, leftover_contributors, warnings),
-        "publishers": _build_publishers(document),
+        "publishers": _build_publishers(document, warnings),
         "subjects": _build_subjects(document),
         "categories": _build_categories(document),
         "audiences": _build_audiences(document),
