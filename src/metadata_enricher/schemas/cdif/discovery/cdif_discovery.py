@@ -393,6 +393,18 @@ class CDIFDiscoveryProfile:
             else:
                 doc.set_field(curie_key, normalized)
 
+        # schema:creator is JSON-LD order-preserving per the vendored
+        # schema's own field description ("Use the JSON-LD @list construct
+        # to preserve author order") -- an {"@list": [...]} object, not a
+        # bare array, unlike schema:contributor (constraint C4 in
+        # docs/cdif_pivot_implementation_plan.md). Agents still emit a
+        # plain list (the natural Instructor/structured-output shape);
+        # wrapping is a pure JSON-LD serialization concern applied once
+        # here, after generation, so it never leaks into agent prompts.
+        creator_list = doc.get_field("schema:creator")
+        if isinstance(creator_list, list):
+            doc.set_field("schema:creator", {"@list": creator_list})
+
         self._inject_envelope(doc)
 
         # Order fields per _FIELD_ORDER, leftover/unknown fields appended
