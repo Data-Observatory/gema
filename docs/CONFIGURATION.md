@@ -67,6 +67,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `identifier_overrides_path` | `str` | no | `null` | Path to a human-curated overrides file (see `scripts/curate_ror_isni.py`'s promote mode), checked before any ROR/ISNI network call. Resolved relative to the current working directory, same as `--output`. Only takes effect when `enable_identifier_enrichment` is also `true` |
 | `validate_pids` | `bool` | no | `true` | Check every DOI/ROR/ISNI found in the output for correct format on **every run** — no flag needed. Problems become `PipelineResult.warnings`, never a hard failure |
 | `validate_pids_live` | `bool` | no | `true` | On top of the format check, actually look each PID up against doi.org/ror.org/isni.org to confirm it resolves. Set `false` to keep the format check but skip the live network calls |
+| `validate_shacl_conformance` | `bool` | no | `false` | Run the vendored CDIF Discovery SHACL shapes against the generated document, non-blocking (violations become warnings, never a hard failure). Defaults off: every currently-recorded golden fixture fails this check today, mostly for reasons the pipeline doesn't yet address (see `docs/cdif_pivot_implementation_plan.md`'s "Step 6") — enabling it would surface warnings on essentially every real run |
 
 ### AgentConfig Fields
 

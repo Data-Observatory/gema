@@ -213,9 +213,26 @@ writer, no exporter reads it).
 
 **Findings from running against all 6 real golden fixtures**
 (`tests/fixtures/golden/expected/sample_input0{1..6}.json`): all 6 are
-non-conformant, and every violation found is real and explicable — not
-JSON-LD-conversion noise (that class of false positive was exactly Step
-5.5's bug, already fixed):
+non-conformant (4/6/14/5/5/8 violations respectively), and every violation
+is real and explicable — not JSON-LD-conversion noise (that class of false
+positive was exactly Step 5.5's bug, already fixed; confirmed by reading
+the actual `shacl.ttl` shape definitions behind each one, not just trusting
+the message text). **Correction (2026-09-04, caught on review): the first
+write-up of this section named 3 causes; there are actually 9 distinct
+violated shapes.** Full account:
+
+| shape | fixtures hit | cause |
+|---|---|---|
+| `metadataProfileProperty` | all 6 | missing `dcterms:conformsTo`'s `cdif/core/1.0` value (see below) |
+| `resourceIdentifierProperty` | all 6 | nested `schema:identifier` entries carry no `@type` |
+| `rightsProperty` | all 6 | nested `schema:license` entries carry no `@type` (and some also have an empty `schema:url`) |
+| `accessProperty` | 01,02,04,05,06 | fails the `schema:url`\|`schema:distribution` OR-group (see below) |
+| `datePublishedProperty` | 02,04,05,06 | — |
+| `contributorProperty` | 03 (×2), 06 | — |
+| `distributionProperty` | 03 (×2) | — |
+| `relatedResourceProperty` (target not `schema:EntryPoint`) | 03 (×6), 06 (×2) | — |
+| `nameProperty` (empty `schema:name`) | 02 | — |
+| `citationProperty` | 03 | **not a gema bug — a real conflict with Q2's own mapping, see Open Question #19 below** |
 
 - **Every fixture** is missing `dcterms:conformsTo`'s
   `https://w3id.org/cdif/core/1.0` value on its `schema:subjectOf` node —
@@ -232,11 +249,29 @@ JSON-LD-conversion noise (that class of false positive was exactly Step
   `config/agents.yaml`'s prompts), not attempted to be fixed here (out of
   scope — this pass built the check, not a campaign to make fixtures pass
   it).
-- `sample_input06.json` genuinely fails **both** required OR-groups (no
-  `schema:license`/`conditionsOfAccess`, no `schema:url`/`distribution`)
-  — meaning it would also fail `CDIFDiscoveryOutputModel`'s own
-  `model_validator` required-floor check were that ever run against it.
-  A real gap in that recording, not a framework bug.
+- **All 6 fixtures, not just `sample_input06.json` as first written here,
+  fail `CDIFDiscoveryOutputModel`'s own required-floor `model_validator`**
+  (confirmed by calling `validate_output()` directly on each): every
+  fixture fails `license|conditionsOfAccess` except `sample_input01.json`
+  (which has a license but fails the `url|distribution` group instead),
+  and `sample_input02.json` additionally fails the base floor
+  (`schema:name`/`schema:identifier` both effectively empty in that
+  recording). Since `validate_output()` is never wired into `pipeline.py`,
+  none of this is currently caught by anything. The license/conditionsOfAccess
+  side of this is a data gap in these specific recordings, not a structural
+  one; the url/distribution side has a structural cause — see next bullet
+  and Open Question #20.
+- **The `url|distribution` OR-group failure has a structural cause, not
+  just missing data in these 6 recordings**: `schema:url` does not appear
+  in *any* agent's `fields:` list in `config/agents.yaml` — nothing in
+  `src/` ever writes it at the top level. The `07b417b` fix that taught
+  `exporters/datacite.py` to read `schema:url` as an identifier fallback
+  is correct but currently unreachable from real generated output; only a
+  hand-built document can exercise it. `ResourceDescription.url` (always
+  present on input) would satisfy this OR-group for free if injected
+  during `_inject_envelope`, but that's a real design decision (is the
+  *input* URL an acceptable stand-in for a *documented* landing page?),
+  not made here. See Open Question #20.
 
 None of the above was "fixed" here — per this session's scope, finding and
 reporting these is the deliverable; forcing the fixtures/generation to
@@ -289,13 +324,11 @@ commit):
   documented fallback behavior rather than a fabricated value. Added
   `TestMalformedInputNeverRaises`, mirroring
   `test_datacite_export.py::test_malformed_types_never_raise`, which
-  croissant had no equivalent of. **Finding, not fixed** (out of scope for
-  this change): `sample_input04.json`/`sample_input05.json`'s
-  `schema:creator` identifier entries carry a double-prefixed ROR URL
-  (`"https://ror.org/https://ror.org/..."`) in the committed fixture data
-  itself — a pre-existing `enrichers/identifier_enricher.py` data-quality
-  issue, unrelated to `croissant.py`. New tests assert creator names only,
-  not this URL.
+  croissant had no equivalent of. Flagged a double-prefixed ROR URL found
+  in `sample_input04.json`/`sample_input05.json`'s fixture data as
+  out-of-scope for this change — **fixed in the Opus validation follow-up
+  below**, where the actual blast radius turned out to be 4 fixtures/8
+  occurrences, not 2.
 - **`schema:measurementTechnique` double-mapping**: was written to both
   `descriptions[Methods]` and every `media_files[].measurement_technique`
   on the reverse mapping, duplicating the same fact on round-trip.
@@ -323,6 +356,90 @@ Full verification suite green after all of the above (see the Docs
 section's own instructions and this doc's own "must pass" checks):
 `ruff check`, `mypy` (via `python -m mypy`, see the note above), the
 full `-m "not live"` suite, `-m regression`, and the visor suite.
+
+### Opus validation follow-up (2026-09-04, same session)
+
+An Opus review of the 18 commits from Step 5.5 through Step 6 found 5 more
+real bugs and several doc-accuracy issues, all fixed the same session:
+
+- **`schema:measurementTechnique` fallback gated on the wrong predicate**
+  (a real regression introduced by the Step 6 fix above): `_build_descriptions`
+  checked raw truthiness of `schema:distribution`, but `_build_media_files`
+  applies a further filter (dict entries carrying `schema:contentUrl`)
+  before it emits anything. A distribution list present but missing
+  `schema:contentUrl` on every entry (reachable — `CDIFDiscoveryProfile`'s
+  own `_normalize_dict_list` produces exactly this from a bare-string
+  distribution) silently dropped the technique from *both* branches at
+  once, with no warning. Fixed by extracting `_has_usable_distribution()`
+  and gating both places on it; `_build_media_files`'s own warning
+  condition uses the same check now, so this case is no longer silent
+  either.
+- **ROR URL double-prefixing in `enrichers/identifier_enricher.py`**: ROR's
+  own API returns `id` as an already-full URI, but `_identifier_entries`/
+  `_enrich_affiliations`/`_enrich_publisher` unconditionally prefixed it
+  again. Real blast radius (not the 2-fixture estimate in the Backlog
+  cleanup note above): **4 of 6 committed fixtures, 8 occurrences total**.
+  Fixed with a shared `_scheme_url()` helper that no-ops when the value is
+  already a full URL; the 8 malformed values in the committed fixtures
+  were corrected in place (mechanical string fix — the value was
+  known-wrong, not re-derived, so no live re-recording needed).
+- **Same DOI double-prefix bug the Step 6 cleanup fixed in
+  `croissant.py`'s `_build_url`, missed in `exporters/dataverse.py`'s
+  `_build_alternative_url`** — same file range, same session, one of two
+  call sites fixed. Now fixed there too, plus prefers the identifier
+  entry's own `schema:url` before constructing one.
+- **`exporters/datacite.py`'s `media_files[].sizes` passed `schema:contentSize`
+  through raw**: DataCite's `sizes` field is a list of formatted strings;
+  the CDIF-generated shape (a dict, or a list of dicts) was never
+  normalized, unlike the equivalent fix already applied to
+  `exporters/croissant.py`'s `_build_distribution`. Fixed with a
+  `_content_size_strings()` helper.
+- **Visor's Agents-tab config download/upload silently dropped
+  `validate_shacl_conformance`**: `_download()` serializes the whole
+  `PipelineConfig` (`model_dump`), but `_handle_upload()`'s manual
+  field-by-field copy-back stopped at `validate_pids_live` and never
+  picked up the newer flag — an uploaded config with it set would
+  silently revert to the default the moment it was applied. Fixed by
+  adding the missing line (same fragile-by-construction pattern flagged
+  in a new inline comment, not restructured here).
+
+Also flagged, not fixed: `config/agents.yaml`'s `media_files` prompt
+describes `schema:contentSize` as always a single dict when populated,
+but its own worked example shows a list-wrapped dict instead — a real
+prompt-wording inconsistency. Attempted a wording fix here and reverted
+it immediately: `agents.yaml`'s prompt text is part of the LLM
+response-cache key (`cache.py:_make_key`), so *any* edit to it invalidates
+every cached fixture response for that agent — the regression suite
+started failing (`dqv_quality_measurement` field, live call attempted,
+rejected) the moment the wording changed, even though nothing about the
+generated *code* changed. Not worth a live re-record for a wording-only
+fix; both exporters already handle either shape defensively, so nothing
+is actually broken by leaving the prompt as-is. Left as a documented,
+deliberately-not-fixed inconsistency rather than silently reverted with
+no trace.
+
+The `frame_output` test that claimed to check "no data loss" only checked `@graph` presence and
+the root `@id` — tightened to actually diff `pyld.jsonld.expand()` output
+between the raw and framed documents (real check: zero leaf values lost
+across all 6 fixtures; the only differences are absolute type IRIs
+re-compacted to CURIEs, which re-expand identically). `docs/CONFIGURATION.md`
+gained the `validate_shacl_conformance` row it was missing.
+`schemas/AGENTS.md` had one more stale "(not-yet-built)" claim about
+`exporters/datacite.py` fixed in passing.
+
+Two new Open Questions logged from this review, not resolved:
+`schema:citation` is forbidden outright by the vendored SHACL shapes
+(`cdifd:citationProperty`, `sh:maxCount 0`) despite Q2's mapping table
+marking `citations` → `schema:citation[]` as **"Verified"** — a real
+conflict between this repo's own decision and the artifact it's supposed
+to implement (#19). `schema:url` appears in no agent's `fields:` list at
+all, so the `url|distribution` required OR-group can currently only ever
+be satisfied via `schema:distribution` from real generated output (#20).
+
+Full verification green throughout: `ruff check` clean, `uv run python -m
+mypy src/ scripts/` clean (0 errors), full `-m "not live"` suite, `-m
+regression`, and the visor suite (via `uv run python -m pytest visor/tests
+-p nicegui.testing.user_plugin -o asyncio_mode=auto -m "not live" -q`).
 
 ## Step 5 — Structure fetcher: SKIPPED for v1 (see Backlog)
 
@@ -363,6 +480,8 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 | 16 | Nested `schema:identifier` cardinality: vendored schema wants singular on Person/Organization/MonetaryGrant, gema always builds a list | open — see Step 5.5, deliberate deviation, not fixed |
 | 17 | `schema:contributor`'s Role wrapper: vendored schema wants `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}` | open — see Step 5.5, real structural mismatch, not fixed |
 | 18 | `dcterms:conformsTo` on `schema:subjectOf`: the vendored shapes' `cdifd:metadataProfileProperty` requires *both* `https://w3id.org/cdif/core/1.0` and `.../cdif/discovery/1.0`, but `CDIFDiscoveryProfile._inject_envelope` only emits the discovery URI — every real golden fixture fails this SHACL check for exactly this reason | open — surfaced by Step 6's SHACL conformance check, not fixed (out of scope for that pass) |
+| 19 | `schema:citation` is forbidden outright by the vendored shapes (`shacl.ttl`'s `cdifd:citationProperty`: `sh:maxCount 0`, "not recommended... because of semantic ambiguity. Use dcterms:bibliographicCitation... or schema:relatedLink") — but the Q2 mapping table (line ~70) maps `citations` → `schema:citation[]` and marks it **"Verified"**. A real conflict between this repo's own field-mapping decision and the vendored artifact it's supposed to implement, found by Step 6's SHACL check (`sample_input03.json` fails `citationProperty` for exactly this reason) | open — not resolved; Q2's "Verified" label for this row is wrong and needs revisiting, but the actual fix (re-map to `dcterms:bibliographicCitation` or `schema:relatedLink`) touches `exporters/datacite.py`'s reverse mapping too and wasn't done here |
+| 20 | `schema:url` appears in no agent's `fields:` list in `config/agents.yaml` and nothing in `src/` writes it at the top level — the `url\|distribution` required OR-group can currently only be satisfied via `schema:distribution`, never via `schema:url`, even though the field exists on `CDIFDiscoveryOutputModel` and `exporters/datacite.py`/`exporters/croissant.py` both read it. `ResourceDescription.url` (always present on input) could satisfy this for free via `_inject_envelope`, but that changes what "the resource has a URL" means (input URL vs. a documented landing page) — a real design decision, not made here | open — surfaced by Step 6's SHACL conformance check (5/6 fixtures fail the `url\|distribution` group); not fixed |
 
 ## Standing rules
 
