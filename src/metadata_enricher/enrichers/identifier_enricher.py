@@ -98,16 +98,6 @@ def _all_identifiers(match: IdentifierMatch | None) -> list[tuple[str, str]]:
     return [(value, scheme) for scheme in _SCHEME_ORDER if (value := by_scheme[scheme])]
 
 
-def _preferred_identifier(match: IdentifierMatch | None) -> tuple[str, str] | None:
-    """Single identifier for slots that only hold one (a Person/Organization's
-    ``schema:affiliation``, or ``schema:publisher``) — ROR is preferred there
-    since it's the more actionable identifier for an organization; ISNI is
-    used only when ROR wasn't found.
-    """
-    identifiers = _all_identifiers(match)
-    return identifiers[0] if identifiers else None
-
-
 def _scheme_url(scheme: str, id_value: str) -> str:
     """Resolvable URL for *id_value* under *scheme*. ROR's own API returns
     ``id`` as an already-full URI (``https://ror.org/027nn6b17``, not a
@@ -172,6 +162,20 @@ def _has_real_identifier(entry: dict[str, Any]) -> bool:
     if isinstance(identifiers, list):
         return any(isinstance(i, dict) and i.get("schema:value") for i in identifiers)
     return False
+
+
+def _strip_empty_identifier(entry: dict[str, Any]) -> None:
+    """Removes an empty ``schema:identifier`` placeholder (``[]`` -- what
+    config/agents.yaml's prompts instruct the LLM to emit when nothing was
+    found) so an unresolved entity ends up with the key *absent*, matching
+    the vendored schema's singular Identifier-or-string type (Open Question
+    #16) -- not present as a still-list-shaped `[]`, which would be exactly
+    the pre-#16 cardinality violation this module exists to fix. A no-op
+    when the key already holds a real (non-empty) identifier -- only ever
+    deletes a falsy value ([]/{}), never something `_write_identifiers`/an
+    enrichment call just wrote."""
+    if "schema:identifier" in entry and not entry["schema:identifier"]:
+        del entry["schema:identifier"]
 
 
 def _write_identifiers(entry: dict[str, Any], entries: list[dict[str, Any]]) -> None:
@@ -240,6 +244,7 @@ class IdentifierEnricher:
                     match = self._resolver.resolve(name, country)
                     if match is not None and _is_auto(match, "org", name):
                         _write_identifiers(creator, _identifier_entries(match))
+            _strip_empty_identifier(creator)
 
             self._enrich_affiliations(creator, country)
 
@@ -248,25 +253,16 @@ class IdentifierEnricher:
         if not isinstance(affiliations, list):
             return
         for affil in affiliations:
-            if not isinstance(affil, dict) or _has_real_identifier(affil):
+            if not isinstance(affil, dict):
+                continue
+            if _has_real_identifier(affil):
                 continue
             affil_name = affil.get("schema:name", "")
-            if not affil_name:
-                continue
-            affil_match = self._resolver.resolve(affil_name, country)
-            if affil_match is None or not _is_auto(affil_match, "affiliation", affil_name):
-                continue
-            identifier = _preferred_identifier(affil_match)
-            if identifier:
-                id_value, scheme = identifier
-                affil["schema:identifier"] = {
-                    "schema:propertyID": scheme,
-                    "schema:value": id_value,
-                    "schema:url": _scheme_url(scheme, id_value),
-                    "matched_via": affil_match.matched_via,
-                    "confidence": affil_match.confidence,
-                    "status": affil_match.status,
-                }
+            if affil_name:
+                affil_match = self._resolver.resolve(affil_name, country)
+                if affil_match is not None and _is_auto(affil_match, "affiliation", affil_name):
+                    _write_identifiers(affil, _identifier_entries(affil_match))
+            _strip_empty_identifier(affil)
 
     def _enrich_personal_creator(self, creator: dict[str, Any]) -> None:
         given_name = creator.get("schema:givenName", "")
@@ -281,40 +277,27 @@ class IdentifierEnricher:
                 affiliation_name = first.get("schema:name") or None
 
         match = self._resolver.resolve_person(given_name, family_name, affiliation_name)
-        if match is None or not match.orcid_id:
-            return
-        if not _is_auto(match, "ORCID", f"{given_name} {family_name}"):
-            return
-        creator["schema:identifier"] = {
-            "schema:propertyID": "ORCID",
-            "schema:value": match.orcid_id,
-            "schema:url": f"https://orcid.org/{match.orcid_id}",
-            "matched_via": match.matched_via,
-            "confidence": match.confidence,
-            "status": match.status,
-        }
+        if match is not None and match.orcid_id and _is_auto(match, "ORCID", f"{given_name} {family_name}"):
+            creator["schema:identifier"] = {
+                "schema:propertyID": "ORCID",
+                "schema:value": match.orcid_id,
+                "schema:url": f"https://orcid.org/{match.orcid_id}",
+                "matched_via": match.matched_via,
+                "confidence": match.confidence,
+                "status": match.status,
+            }
+        _strip_empty_identifier(creator)
 
     def _enrich_publisher(self, document: MetadataDocument, country: str | None = None) -> None:
         publisher = document.get_field("schema:publisher")
         if not isinstance(publisher, dict) or _has_real_identifier(publisher):
             return
         name = publisher.get("schema:name", "")
-        if not name:
-            return
-        pub_match = self._resolver.resolve(name, country)
-        if pub_match is None or not _is_auto(pub_match, "publisher", name):
-            return
-        identifier = _preferred_identifier(pub_match)
-        if identifier:
-            id_value, scheme = identifier
-            publisher["schema:identifier"] = {
-                "schema:propertyID": scheme,
-                "schema:value": id_value,
-                "schema:url": _scheme_url(scheme, id_value),
-                "matched_via": pub_match.matched_via,
-                "confidence": pub_match.confidence,
-                "status": pub_match.status,
-            }
+        if name:
+            pub_match = self._resolver.resolve(name, country)
+            if pub_match is not None and _is_auto(pub_match, "publisher", name):
+                _write_identifiers(publisher, _identifier_entries(pub_match))
+        _strip_empty_identifier(publisher)
 
     def _enrich_funding(self, document: MetadataDocument, country: str | None = None) -> None:
         funding = document.get_field("schema:funding")
@@ -324,12 +307,13 @@ class IdentifierEnricher:
             if not isinstance(grant, dict):
                 continue
             funder = grant.get("schema:funder")
-            if not isinstance(funder, dict) or _has_real_identifier(funder):
+            if not isinstance(funder, dict):
+                continue
+            if _has_real_identifier(funder):
                 continue
             name = funder.get("schema:name", "")
-            if not name:
-                continue
-            funder_match = self._resolver.resolve(name, country)
-            if funder_match is None or not _is_auto(funder_match, "funder", name):
-                continue
-            _write_identifiers(funder, _identifier_entries(funder_match))
+            if name:
+                funder_match = self._resolver.resolve(name, country)
+                if funder_match is not None and _is_auto(funder_match, "funder", name):
+                    _write_identifiers(funder, _identifier_entries(funder_match))
+            _strip_empty_identifier(funder)

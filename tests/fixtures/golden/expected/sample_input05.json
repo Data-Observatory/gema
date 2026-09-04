@@ -123,7 +123,17 @@
               "matched_via": "ror_affiliation+isni_sru",
               "confidence": 0.9,
               "status": "auto"
-            }
+            },
+            "schema:sameAs": [
+              {
+                "schema:propertyID": "ISNI",
+                "schema:value": "0000000406285553",
+                "schema:url": "https://isni.org/0000000406285553",
+                "matched_via": "ror_affiliation+isni_sru",
+                "confidence": 0.9,
+                "status": "auto"
+              }
+            ]
           }
         ],
         "schema:sameAs": [
@@ -152,7 +162,17 @@
       "matched_via": "ror_affiliation",
       "confidence": 1.0,
       "status": "auto"
-    }
+    },
+    "schema:sameAs": [
+      {
+        "schema:propertyID": "ISNI",
+        "schema:value": "000000044684986X",
+        "schema:url": "https://isni.org/000000044684986X",
+        "matched_via": "ror_affiliation",
+        "confidence": 1.0,
+        "status": "auto"
+      }
+    ]
   },
   "schema:copyrightHolder": "",
   "schema:funding": [],

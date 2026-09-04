@@ -121,7 +121,7 @@ class TestEnrichCreators:
             {"schema:creator": [{"@type": ["schema:Person"], "schema:name": "John Doe", "schema:identifier": []}]}
         )
         enricher.enrich(doc)
-        assert doc.get_field("schema:creator")[0]["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:creator")[0]
         resolver.resolve.assert_not_called()
         resolver.resolve_person.assert_not_called()
 
@@ -173,7 +173,7 @@ class TestEnrichCreators:
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({"schema:creator": [_person("Jane Roe", "Jane", "Roe")]})
         enricher.enrich(doc)
-        assert doc.get_field("schema:creator")[0]["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:creator")[0]
 
     def test_personal_creator_with_existing_identifier_not_reresolved(self) -> None:
         resolver = _mock_resolver()
@@ -250,7 +250,7 @@ class TestEnrichCreators:
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({"schema:creator": [_org("Unknown")]})
         enricher.enrich(doc)
-        assert doc.get_field("schema:creator")[0]["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:creator")[0]
 
     def test_affiliation_gets_identifier(self) -> None:
         resolver = _mock_resolver()
@@ -588,7 +588,7 @@ class TestProvenance:
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({"schema:creator": [_org("Some Org")]})
         enricher.enrich(doc)
-        assert doc.get_field("schema:creator")[0]["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:creator")[0]
 
 
 # --------------------------------------------------------------------------
@@ -625,14 +625,14 @@ class TestStatusGatingAllPaths:
         )
         enricher.enrich(doc)
         affil = doc.get_field("schema:creator")[0]["schema:affiliation"][0]
-        assert affil["schema:identifier"] == []
+        assert "schema:identifier" not in affil
 
     def test_publisher_identifier_not_attached_when_review(self) -> None:
         resolver = _review_resolver()
         enricher = IdentifierEnricher(resolver)
         doc = _doc_with_fields({"schema:publisher": _org("Some Publisher")})
         enricher.enrich(doc)
-        assert doc.get_field("schema:publisher")["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:publisher")
 
     def test_funder_identifiers_not_attached_when_review(self) -> None:
         resolver = _review_resolver()
@@ -641,7 +641,7 @@ class TestStatusGatingAllPaths:
             {"schema:funding": [{"@type": ["schema:MonetaryGrant"], "schema:funder": _org("Some Funder")}]}
         )
         enricher.enrich(doc)
-        assert doc.get_field("schema:funding")[0]["schema:funder"]["schema:identifier"] == []
+        assert "schema:identifier" not in doc.get_field("schema:funding")[0]["schema:funder"]
 
     def test_auto_status_still_attaches_normally(self) -> None:
         """Control: the existing 'auto' fixture (_mock_resolver) still works
