@@ -3,7 +3,13 @@
 Retargeted from DataCite field names to CDIF field names as part of the
 CDIF/Croissant pivot (docs/codata_mcp_croissant_cdifspecs.md sec 3.5).
 Walks ``schema:creator``, ``schema:publisher``, and ``schema:funding`` on
-a CDIF-generated MetadataDocument.
+a CDIF-generated MetadataDocument. ``schema:creator`` is a JSON-LD
+order-preserving list -- ``{"@list": [<entry>, ...]}``, per the vendored
+schema's own field description -- not a bare array like ``schema:publisher``
+or ``schema:funding``; use ``types.jsonld_list_unwrap`` to read it, never
+index into it directly. ``CDIFDiscoveryProfile.merge_agent_results`` is what
+wraps it at generation time -- agents themselves still emit a plain list,
+the natural Instructor/structured-output shape.
 
 Internal shape convention this module (and agents.yaml's prompts) commit
 to for these three fields -- not part of the vendored CDIF schema itself
@@ -39,7 +45,7 @@ from typing import Any
 
 from metadata_enricher.enrichers.identifier_resolver import IdentifierResolver
 from metadata_enricher.enrichers.identifier_types import IdentifierMatch
-from metadata_enricher.types import MetadataDocument
+from metadata_enricher.types import MetadataDocument, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -150,8 +156,12 @@ class IdentifierEnricher:
         return document
 
     def _enrich_creators(self, document: MetadataDocument, country: str | None = None) -> None:
-        creators = document.get_field("schema:creator")
-        if not creators or not isinstance(creators, list):
+        # schema:creator is a {"@list": [...]} JSON-LD construct, not a bare
+        # array (see jsonld_list_unwrap's docstring) -- unwrap to get the
+        # actual list. Entries are mutated in place, so no write-back is
+        # needed: the unwrapped list is the same object the document holds.
+        creators = jsonld_list_unwrap(document.get_field("schema:creator"))
+        if not creators:
             return
         for creator in creators:
             if not isinstance(creator, dict):

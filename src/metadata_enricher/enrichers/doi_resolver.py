@@ -14,7 +14,7 @@ import logging
 from typing import Any
 
 from metadata_enricher.enrichers.crossref_client import CrossrefClient
-from metadata_enricher.types import MetadataDocument
+from metadata_enricher.types import MetadataDocument, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,11 @@ class DOIResolverEnricher:
         (Crossref emits these as a bare {"name": ...}, no family/given) both
         become creators -- institutional DOI authorship is common for the
         government/agency resources this project targets."""
-        if document.get_field("schema:creator"):
+        # schema:creator is a {"@list": [...]} JSON-LD construct once the
+        # merge step has run (see jsonld_list_unwrap's docstring) -- check
+        # the unwrapped list's truthiness, not the wrapper dict's (a dict
+        # wrapping an empty list is still a non-empty dict).
+        if jsonld_list_unwrap(document.get_field("schema:creator")):
             return
         authors = work.get("author")
         if not isinstance(authors, list) or not authors:
@@ -138,7 +142,12 @@ class DOIResolverEnricher:
                     }
                 )
         if creators:
-            document.set_field("schema:creator", creators)
+            # Wrap to match the shape merge_agent_results would have
+            # produced had an agent extracted these creators instead of
+            # this Crossref backfill -- schema:creator must stay
+            # consistently {"@list": [...]} regardless of which code path
+            # populated it.
+            document.set_field("schema:creator", {"@list": creators})
 
     def _backfill_publisher(self, document: MetadataDocument, work: dict[str, Any]) -> None:
         if document.get_field("schema:publisher"):
