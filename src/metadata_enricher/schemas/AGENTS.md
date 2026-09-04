@@ -64,7 +64,7 @@ class Schema(Protocol):
 ## DataCiteSchema46 (`datacite.py`) — deregistered, exporter/diagnostic use only
 
 - No longer in `schemas/__init__.py`'s registry; still directly importable (`from metadata_enricher.schemas.datacite import DataCiteSchema46`).
-- Used by the (not-yet-built) `exporters/datacite.py` and by the A/B diagnostic (`docs/cdif_pivot_implementation_plan.md` §9) against `tests/fixtures/golden_datacite46_baseline/`.
+- Used by `exporters/datacite.py` (via a module-level singleton, `_get_datacite_schema()`) and by the not-yet-built A/B diagnostic (`docs/cdif_pivot_implementation_plan.md`'s "A/B diagnostic" section) against `tests/fixtures/golden_datacite46_baseline/`.
 - 18 normalizer methods (titles, descriptions, creators, languages, dates, geo, rights, funding, subjects, etc.).
 - `_NORMALIZER_DISPATCH` dict maps field → method. Built **after** class definition.
 - Contains migrated constants from legacy `Merger` class: `LANG_CODE_MAP`, `FREQUENCY_MAP`, `VALID_RESOURCE_TYPES`, `FIELD_ORDER`.
