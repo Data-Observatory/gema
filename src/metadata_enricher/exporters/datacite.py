@@ -293,6 +293,40 @@ def _build_titles(document: MetadataDocument, warnings: list[str]) -> list[dict[
     return [{"name": str(name), "title_type": "MainTitle", "language": language}]
 
 
+def _content_size_strings(raw: object) -> list[str]:
+    """DataCite's ``sizes`` field is a list of formatted size strings
+    (e.g. ``["2.5 MB"]``) -- but config/agents.yaml's media_files prompt
+    emits schema:contentSize as either a single dict ({"size", "unit"}) or
+    a list of them, never a pre-formatted string. Passing either raw shape
+    straight through used to produce a dict (or list of dicts) where
+    DataCite expects strings -- the same class of shape mismatch
+    exporters/croissant.py's _build_distribution was fixed for."""
+    entries = raw if isinstance(raw, list) else [raw]
+    sizes: list[str] = []
+    for entry in entries:
+        if isinstance(entry, dict) and entry.get("size") is not None:
+            unit = entry.get("unit", "")
+            sizes.append(f"{entry['size']} {unit}".strip())
+    return sizes
+
+
+def _has_usable_distribution(document: MetadataDocument) -> bool:
+    """True only if schema:distribution actually produces at least one
+    media_files entry -- i.e. the same filter _build_media_files applies
+    (dict entries carrying schema:contentUrl), not raw truthiness of the
+    field. A distribution list that's non-empty but entirely missing
+    contentUrl (or a bare-string entry CDIFDiscoveryProfile's own
+    normalizer can produce, e.g. from a plain URL string) produces zero
+    media_files entries -- callers gating a fallback on "is there a
+    distribution to attach this to instead" must use this, not
+    `bool(document.get_field("schema:distribution"))`, or data silently
+    vanishes from both branches at once."""
+    for entry in _as_list(document.get_field("schema:distribution")):
+        if isinstance(entry, dict) and entry.get("schema:contentUrl"):
+            return True
+    return False
+
+
 def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
     descriptions: list[dict[str, Any]] = []
     language = document.get_field("schema:inLanguage") or ""
@@ -314,11 +348,15 @@ def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list
     # higher-confidence, per-file-scoped mapping (see _build_media_files
     # below) and wins whenever there's a distribution to attach it to.
     # This branch is a fallback, not a duplicate: it only fires when
-    # schema:distribution is empty, so a document with real technique
-    # data but no distribution entries (a real recorded shape -- see
+    # schema:distribution produces no usable media_files entry (see
+    # _has_usable_distribution -- checking raw field truthiness here was
+    # a real bug: a distribution list present but missing contentUrl on
+    # every entry silently dropped the technique from *both* branches),
+    # so a document with real technique data but no usable distribution
+    # entry (a real recorded shape -- see
     # tests/fixtures/golden/expected/sample_input06.json) doesn't lose
     # that data entirely.
-    if not _as_list(document.get_field("schema:distribution")):
+    if not _has_usable_distribution(document):
         for technique in _as_list(document.get_field("schema:measurementTechnique")):
             if technique:
                 descriptions.append(
@@ -795,11 +833,20 @@ def _build_media_files(document: MetadataDocument, warnings: list[str]) -> list[
     provenance = document.get_field("prov:wasGeneratedBy") or {}
     top_level_collections = document.get_field("schema:includedInDataCatalog")
 
-    if not distributions and (variable_measured or measurement_technique or data_quality or provenance):
+    if not _has_usable_distribution(document) and (
+        variable_measured or measurement_technique or data_quality or provenance
+    ):
+        # Covers both "distribution is empty" and "distribution has
+        # entries but none carry schema:contentUrl" (e.g. a bare-string
+        # distribution CDIFDiscoveryProfile's own normalizer can produce)
+        # -- the latter used to fall through this check silently, since
+        # `distributions` (dict-filtered only) was non-empty even though
+        # zero media_files entries would actually be produced below.
         warnings.append(
             "resource-level media metadata (schema:variableMeasured/"
             "measurementTechnique/dqv:hasQualityMeasurement/prov:wasGeneratedBy) "
-            "present but schema:distribution is empty -- nothing to attach it to"
+            "present but schema:distribution has no usable entry (missing "
+            "schema:contentUrl) -- nothing to attach it to"
         )
 
     files: list[dict[str, Any]] = []
@@ -818,7 +865,7 @@ def _build_media_files(document: MetadataDocument, warnings: list[str]) -> list[
             {
                 "file_uri": content_url,
                 "format": entry.get("schema:encodingFormat", ""),
-                "sizes": entry.get("schema:contentSize", []),
+                "sizes": _content_size_strings(entry.get("schema:contentSize")),
                 "checksum": entry.get("checksum", ""),
                 "temporal_resolution": entry.get("temporal_resolution", ""),
                 "variable_measured": variable_measured,
