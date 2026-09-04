@@ -212,14 +212,16 @@ utility method**, the same status `validate_output()` itself already has
 writer, no exporter reads it).
 
 **Findings from running against all 6 real golden fixtures**
-(`tests/fixtures/golden/expected/sample_input0{1..6}.json`): all 6 are
-non-conformant (4/6/14/5/5/8 violations respectively), and every violation
-is real and explicable — not JSON-LD-conversion noise (that class of false
-positive was exactly Step 5.5's bug, already fixed; confirmed by reading
-the actual `shacl.ttl` shape definitions behind each one, not just trusting
-the message text). **Correction (2026-09-04, caught on review): the first
-write-up of this section named 3 causes; there are actually 9 distinct
-violated shapes.** Full account:
+(`tests/fixtures/golden/expected/sample_input0{1..6}.json`): all 6 return
+non-empty `check_shacl_conformance` results (4/6/14/5/5/8 respectively —
+these are SHACL *results* of any severity, not all `sh:Violation`; see
+the note below the table), and every one is real and explicable — not
+JSON-LD-conversion noise (that class of false positive was exactly Step
+5.5's bug, already fixed; confirmed by reading the actual `shacl.ttl`
+shape definitions behind each one, not just trusting the message text).
+**Correction (2026-09-04, caught on review): the first write-up of this
+section named 3 causes; there are actually 10 distinct shapes, not the
+"9" a first correction pass also miscounted.** Full account:
 
 | shape | fixtures hit | cause |
 |---|---|---|
@@ -233,6 +235,19 @@ violated shapes.** Full account:
 | `relatedResourceProperty` (target not `schema:EntryPoint`) | 03 (×6), 06 (×2) | — |
 | `nameProperty` (empty `schema:name`) | 02 | — |
 | `citationProperty` | 03 | **not a gema bug — a real conflict with Q2's own mapping, see Open Question #19 below** |
+
+`check_shacl_conformance` returns every `sh:ValidationResult` regardless
+of severity (`sh:Violation`/`sh:Warning`/`sh:Info`), stripped down to a
+plain message string with no severity label — the vendored `shacl.ttl`
+carries 18 `sh:Info` and 10 `sh:Warning` shapes alongside its
+`sh:Violation` ones, and `citationProperty` specifically is `sh:Info`
+severity (an advisory, not a hard violation, though "forbidden outright"
+per `sh:maxCount 0` is still an accurate description of the rule itself).
+The per-fixture counts above (4/6/14/5/5/8) are correct as "SHACL results
+found", not as "hard violations found" — a real distinction the method's
+current `list[str]` return type can't express. Worth a future decision:
+either surface severity in the return type, or filter to `sh:Violation`
+only for the non-blocking-warning use case `pipeline.py`'s wiring assumes.
 
 - **Every fixture** is missing `dcterms:conformsTo`'s
   `https://w3id.org/cdif/core/1.0` value on its `schema:subjectOf` node —
