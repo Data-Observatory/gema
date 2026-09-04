@@ -209,6 +209,5 @@
   ],
   "prov:wasGeneratedBy": {
     "schema:description": "Base de datos compilada a partir de revisión exhaustiva de literatura, complementada con interpretación de datos de teledetección, trabajo de campo y sismicidad de placa superior del Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) y catálogos sísmicos locales del segmento Salar Grande (Bloch et al., 2014). Incluye datos de edad de unidades geológicas desplazadas. Compilada en Arc-GIS."
-  },
-  "schema:url": "10.5880/gfz.4.1.2020.012"
+  }
 }

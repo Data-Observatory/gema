@@ -311,8 +311,19 @@ class Pipeline:
         # when no agent produced a schema:url of its own (defensive: no
         # agent does today, but this must never clobber one that does) and
         # never invents a URL the resource didn't already have.
-        if not document.get_field("schema:url") and resource.url:
-            document.set_field("schema:url", resource.url)
+        #
+        # resource.url is only ever a real http(s) URL, not a DOI --
+        # ResourceDescription has a separate `doi` field for that (a bare
+        # DOI like "10.5880/GFZ.4.1.2020.012" is a valid `resource.url`
+        # value for some input sources, though, so this must still be
+        # checked defensively). schema:url is typed `{"format": "uri"}` in
+        # the vendored schema and both exporters treat it as a resolvable
+        # web location, preferring it over their own DOI-to-URL resolution
+        # -- writing a bare DOI there pre-empted that resolution and
+        # regressed two real exporters (found on review).
+        url = resource.url
+        if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
+            document.set_field("schema:url", url)
 
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")

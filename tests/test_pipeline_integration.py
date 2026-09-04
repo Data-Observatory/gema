@@ -1111,3 +1111,25 @@ class TestPipelineSchemaUrlFallback:
         assert result.success is True
         assert result.document is not None
         assert not result.document.get_field("schema:url")
+
+    def test_fallback_does_nothing_when_resource_url_is_a_bare_doi(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Regression: some input sources put a bare DOI in the `url`
+        field (e.g. "10.5880/gfz.4.1.2020.012", not a real http(s) URL) --
+        writing that verbatim into schema:url used to pre-empt both
+        exporters/datacite.py's and exporters/croissant.py's own, smarter
+        DOI-to-URL resolution logic. Found on review against a real
+        recorded fixture (sample_input06.json)."""
+        make_input_file(
+            tmp_path,
+            {"url": "10.5880/gfz.4.1.2020.012", "title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert not result.document.get_field("schema:url")
