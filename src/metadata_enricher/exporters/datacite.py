@@ -32,14 +32,14 @@ future exporter that does need one).
 Shape conventions read from ``enrichers/identifier_enricher.py``'s module
 docstring: creator/contributor/publisher/funder entries are
 Person/Organization dicts carrying ``schema:identifier`` (a list of
-PropertyValue dicts: ``propertyID``/``value``/``url``), and
-``schema:funding`` entries are MonetaryGrant dicts nesting a ``funder``
-Organization. ``schema:creator`` is a ``{"@list": [...]}``-wrapped list,
-per the vendored CDIF schema.json's own field description ("Uset the
-JSON-LD @list construct to preserve author order") -- ``CDIFDiscoveryProfile
-.merge_agent_results`` wraps it at generation time; a bare list is also
-accepted here, for synthetic fixtures or documents built without going
-through that merge step.
+PropertyValue dicts: ``schema:propertyID``/``schema:value``/``schema:url``),
+and ``schema:funding`` entries are MonetaryGrant dicts nesting a
+``schema:funder`` Organization. ``schema:creator`` is a
+``{"@list": [...]}``-wrapped list, per the vendored CDIF schema.json's own
+field description ("Uset the JSON-LD @list construct to preserve author
+order") -- ``CDIFDiscoveryProfile.merge_agent_results`` wraps it at
+generation time; a bare list is also accepted here, for synthetic fixtures
+or documents built without going through that merge step.
 """
 
 from __future__ import annotations
@@ -48,7 +48,12 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from metadata_enricher.schemas.datacite import DataCiteOutputModel, DataCiteSchema46
-from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
+from metadata_enricher.types import (
+    MetadataDocument,
+    TokenUsage,
+    first_type_label,
+    jsonld_list_unwrap,
+)
 
 # ----------------------------------------------------------------------
 # DataCiteSchema46 singleton (Open Question resolved here, see
@@ -105,21 +110,6 @@ def _creator_list(value: object) -> list[dict[str, Any]]:
     return jsonld_list_unwrap(value)
 
 
-def _strip_curie(value: object) -> str:
-    text = str(value) if value is not None else ""
-    if ":" in text:
-        return text.split(":", 1)[1]
-    return text
-
-
-def _first_type_label(types: object, default: str = "Organization") -> str:
-    for t in _as_list(types):
-        label = _strip_curie(t)
-        if label:
-            return label
-    return default
-
-
 def _identifier_entries(entries: object) -> list[dict[str, Any]]:
     """``schema:identifier`` PropertyValue list -> DataCite's
     ``name_identifiers``/``funder_identifiers`` shape."""
@@ -127,14 +117,14 @@ def _identifier_entries(entries: object) -> list[dict[str, Any]]:
     for entry in _as_list(entries):
         if not isinstance(entry, dict):
             continue
-        value = entry.get("value")
+        value = entry.get("schema:value")
         if not value:
             continue
         out.append(
             {
                 "name_identifier": value,
-                "name_identifier_scheme": entry.get("propertyID", ""),
-                "scheme_uri": entry.get("url", ""),
+                "name_identifier_scheme": entry.get("schema:propertyID", ""),
+                "scheme_uri": entry.get("schema:url", ""),
             }
         )
     return out
@@ -144,8 +134,12 @@ def _preferred_identifier(entries: object) -> tuple[str, str, str]:
     """(value, scheme, url) for the singular identifier slots
     (publisher_identifier, affiliation_identifier) -- first entry wins."""
     for entry in _as_list(entries):
-        if isinstance(entry, dict) and entry.get("value"):
-            return str(entry["value"]), str(entry.get("propertyID", "")), str(entry.get("url", ""))
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            return (
+                str(entry["schema:value"]),
+                str(entry.get("schema:propertyID", "")),
+                str(entry.get("schema:url", "")),
+            )
     return "", "", ""
 
 
@@ -172,13 +166,13 @@ _RESOURCE_ROLE_MAP: dict[str, str] = {
 def _identifier_and_type(document: MetadataDocument) -> tuple[str, str]:
     identifiers = _as_list(document.get_field("schema:identifier"))
     for entry in identifiers:
-        if isinstance(entry, dict) and str(entry.get("propertyID", "")).upper() == "DOI":
-            value = entry.get("value")
+        if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
+            value = entry.get("schema:value")
             if value:
                 return str(value), "DOI"
     for entry in identifiers:
-        if isinstance(entry, dict) and entry.get("value"):
-            return str(entry["value"]), str(entry.get("propertyID", "")) or "URL"
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            return str(entry["schema:value"]), str(entry.get("schema:propertyID", "")) or "URL"
     envelope_id = document.get_field("@id")
     if envelope_id:
         return str(envelope_id), "URL"
@@ -186,8 +180,8 @@ def _identifier_and_type(document: MetadataDocument) -> tuple[str, str]:
 
 
 def _contact_string(entry: dict[str, Any]) -> str:
-    name = str(entry.get("name") or "").strip()
-    email = str(entry.get("email") or "").strip()
+    name = str(entry.get("schema:name") or "").strip()
+    email = str(entry.get("schema:email") or "").strip()
     if name and email:
         return f"{name} ({email})"
     return name or email
@@ -205,7 +199,7 @@ def _build_resource(
             "no schema:identifier or @id found -- resource.identifier will be empty"
         )
 
-    resource_type_general = _first_type_label(document.get_field("@type"), default="")
+    resource_type_general = first_type_label(document.get_field("@type"))
     publication_year = _year_from_date(
         document.get_field("schema:datePublished") or document.get_field("schema:dateCreated")
     )
@@ -228,11 +222,14 @@ def _build_resource(
     for entry in _as_list(document.get_field("schema:relatedLink")):
         if not isinstance(entry, dict):
             continue
-        if entry.get("linkRelationship") == "thumbnail":
-            target = entry.get("target") or {}
-            if isinstance(target, dict) and target.get("url"):
-                resource["thumbnail"] = target["url"]
+        if entry.get("schema:linkRelationship") == "thumbnail":
+            target = entry.get("schema:target") or {}
+            if isinstance(target, dict) and target.get("schema:url"):
+                resource["thumbnail"] = target["schema:url"]
 
+    # NOTE: "role" is read bare, not "schema:role" -- a real Role/roleName
+    # wrapper mismatch flagged in docs/cdif_pivot_implementation_plan.md's
+    # Open questions log, deliberately not restructured by this pass.
     leftover_contributors: list[dict[str, Any]] = []
     seen_roles: dict[str, list[str]] = {}
     for entry in _as_list(document.get_field("schema:contributor")):
@@ -243,7 +240,7 @@ def _build_resource(
         if slot is None:
             leftover_contributors.append(entry)
             continue
-        value = _contact_string(entry) if slot == "contact" else str(entry.get("name") or "")
+        value = _contact_string(entry) if slot == "contact" else str(entry.get("schema:name") or "")
         if not value:
             continue
         if resource[slot]:
@@ -316,12 +313,12 @@ def _build_languages(document: MetadataDocument) -> list[dict[str, Any]]:
 def _affiliations_from(entries: object) -> list[dict[str, Any]]:
     affiliations: list[dict[str, Any]] = []
     for entry in _as_list(entries):
-        if not isinstance(entry, dict) or not entry.get("name"):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
             continue
         aff_id, aff_scheme, _aff_url = _preferred_identifier(entry.get("schema:identifier"))
         affiliations.append(
             {
-                "affiliation": entry["name"],
+                "affiliation": entry["schema:name"],
                 "affiliation_identifier": aff_id,
                 "affiliation_identifier_scheme": aff_scheme,
             }
@@ -335,16 +332,16 @@ def _build_creators(
     creators: list[dict[str, Any]] = []
 
     for entry in _creator_list(document.get_field("schema:creator")):
-        if not isinstance(entry, dict) or not entry.get("name"):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
             continue
-        type_label = _first_type_label(entry.get("@type"))
+        type_label = first_type_label(entry.get("@type"), default="Organization")
         creators.append(
             {
-                "creator_name": entry["name"],
+                "creator_name": entry["schema:name"],
                 "creator_name_type": "Personal" if type_label == "Person" else "Organizational",
-                "given_name": entry.get("given_name", ""),
-                "family_name": entry.get("family_name", ""),
-                "email": entry.get("email", ""),
+                "given_name": entry.get("schema:givenName", ""),
+                "family_name": entry.get("schema:familyName", ""),
+                "email": entry.get("schema:email", ""),
                 "type": type_label,
                 "contributor_type": "",
                 "name_identifiers": _identifier_entries(entry.get("schema:identifier")),
@@ -360,8 +357,10 @@ def _build_creators(
     # -built for an arbitrary role, so they surface as extra creator
     # entries carrying their role in contributor_type (Q2 mapping:
     # creators[].contributor_type <- schema:contributor Role{roleName}).
+    # NOTE: "role" is read bare -- see the Role/roleName wrapper mismatch
+    # flagged in docs/cdif_pivot_implementation_plan.md's Open questions log.
     for entry in leftover_contributors:
-        name = entry.get("name")
+        name = entry.get("schema:name")
         role = entry.get("role") or ""
         if not name:
             continue
@@ -375,7 +374,7 @@ def _build_creators(
                 "creator_name_type": "Organizational",
                 "given_name": "",
                 "family_name": "",
-                "email": entry.get("email", ""),
+                "email": entry.get("schema:email", ""),
                 "type": "Organization",
                 "contributor_type": role,
                 "name_identifiers": [],
@@ -390,13 +389,13 @@ def _build_publishers(document: MetadataDocument) -> list[dict[str, Any]]:
     publishers: list[dict[str, Any]] = []
 
     publisher = document.get_field("schema:publisher")
-    if isinstance(publisher, dict) and publisher.get("name"):
+    if isinstance(publisher, dict) and publisher.get("schema:name"):
         pub_id, pub_scheme, pub_scheme_uri = _preferred_identifier(
             publisher.get("schema:identifier")
         )
         publishers.append(
             {
-                "publisher_name": publisher["name"],
+                "publisher_name": publisher["schema:name"],
                 "publisher_identifier": pub_id,
                 "publisher_identifier_scheme": pub_scheme,
                 "publisher_scheme_uri": pub_scheme_uri,
@@ -407,14 +406,14 @@ def _build_publishers(document: MetadataDocument) -> list[dict[str, Any]]:
     # schema:publisher couldn't hold on the way out to CDIF -- both come
     # back into DataCite's own (always-a-list) publishers field.
     for entry in _as_list(document.get_field("schema:provider")):
-        if not isinstance(entry, dict) or not entry.get("name"):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
             continue
         prov_id, prov_scheme, prov_scheme_uri = _preferred_identifier(
             entry.get("schema:identifier")
         )
         publishers.append(
             {
-                "publisher_name": entry["name"],
+                "publisher_name": entry["schema:name"],
                 "publisher_identifier": prov_id,
                 "publisher_identifier_scheme": prov_scheme,
                 "publisher_scheme_uri": prov_scheme_uri,
@@ -432,13 +431,13 @@ def _build_publishers(document: MetadataDocument) -> list[dict[str, Any]]:
 def _build_subjects(document: MetadataDocument) -> list[dict[str, Any]]:
     subjects: list[dict[str, Any]] = []
     for entry in _as_list(document.get_field("schema:keywords")):
-        if not isinstance(entry, dict) or not entry.get("name"):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
             continue
         subjects.append(
             {
-                "subject_name": entry["name"],
-                "subject_scheme": entry.get("inDefinedTermSet", ""),
-                "value_uri": entry.get("identifier", ""),
+                "subject_name": entry["schema:name"],
+                "subject_scheme": entry.get("schema:inDefinedTermSet", ""),
+                "value_uri": entry.get("schema:identifier", ""),
             }
         )
     return subjects
@@ -447,10 +446,10 @@ def _build_subjects(document: MetadataDocument) -> list[dict[str, Any]]:
 def _build_categories(document: MetadataDocument) -> list[dict[str, Any]]:
     categories: list[dict[str, Any]] = []
     for entry in _as_list(document.get_field("schema:about")):
-        if not isinstance(entry, dict) or not entry.get("name"):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
             continue
         categories.append(
-            {"name": entry["name"], "sub_category": entry.get("inDefinedTermSet", "")}
+            {"name": entry["schema:name"], "sub_category": entry.get("schema:inDefinedTermSet", "")}
         )
     return categories
 
@@ -526,15 +525,20 @@ def _build_temporal_events(document: MetadataDocument) -> list[dict[str, Any]]:
 def _build_geo_locations(document: MetadataDocument) -> list[dict[str, Any]]:
     locations: list[dict[str, Any]] = []
     for entry in _as_list(document.get_field("schema:spatialCoverage")):
-        if not isinstance(entry, dict) or not (entry.get("name") or entry.get("description")):
+        if not isinstance(entry, dict) or not (
+            entry.get("schema:name") or entry.get("schema:description")
+        ):
             continue
-        geo = entry.get("geo") or {}
+        geo = entry.get("schema:geo") or {}
         locations.append(
             {
-                "geo_location_place": entry.get("name", ""),
-                "geo_location_point": geo.get("point", "") if isinstance(geo, dict) else "",
-                "geo_location_box": geo.get("box", "") if isinstance(geo, dict) else "",
-                "geo_description": entry.get("description", ""),
+                "geo_location_place": entry.get("schema:name", ""),
+                # "point" was never a real key any agent/enricher emits
+                # under schema:geo (only schema:box is produced today) --
+                # read defensively in case a hand-built document adds one.
+                "geo_location_point": geo.get("schema:point", "") if isinstance(geo, dict) else "",
+                "geo_location_box": geo.get("schema:box", "") if isinstance(geo, dict) else "",
+                "geo_description": entry.get("schema:description", ""),
             }
         )
     return locations
@@ -553,9 +557,9 @@ def _build_rights(document: MetadataDocument) -> list[dict[str, Any]]:
         if isinstance(entry, dict):
             rights.append(
                 {
-                    "rights": entry.get("name", ""),
-                    "rights_uri": entry.get("url", ""),
-                    "rights_identifier": entry.get("identifier", ""),
+                    "rights": entry.get("schema:name", ""),
+                    "rights_uri": entry.get("schema:url", ""),
+                    "rights_identifier": entry.get("schema:identifier", ""),
                     "rights_holder": rights_holder,
                 }
             )
@@ -564,6 +568,11 @@ def _build_rights(document: MetadataDocument) -> list[dict[str, Any]]:
                 {"rights": entry.strip(), "rights_uri": "", "rights_holder": rights_holder}
             )
 
+    # NOTE: "condition"/"date" are read bare, not CURIE-keyed -- this
+    # schema:conditionsOfAccess shape doesn't correspond cleanly to the
+    # vendored LabeledLink def (no "condition"/"date" property exists
+    # there), so it's left as-is by this pass rather than force a
+    # semantic-guess CURIE. See docs/cdif_pivot_implementation_plan.md.
     conditions = [
         str(entry.get("condition"))
         for entry in _as_list(document.get_field("schema:conditionsOfAccess"))
@@ -594,15 +603,15 @@ def _build_funding_references(document: MetadataDocument) -> list[dict[str, Any]
     for entry in _as_list(document.get_field("schema:funding")):
         if not isinstance(entry, dict):
             continue
-        funder = entry.get("funder") or {}
-        award_number, _scheme, award_uri = _preferred_identifier(entry.get("identifier"))
+        funder = entry.get("schema:funder") or {}
+        award_number, _scheme, award_uri = _preferred_identifier(entry.get("schema:identifier"))
         refs.append(
             {
-                "funder_name": funder.get("name", "") if isinstance(funder, dict) else "",
-                "funding_stream": entry.get("description", ""),
+                "funder_name": funder.get("schema:name", "") if isinstance(funder, dict) else "",
+                "funding_stream": entry.get("schema:description", ""),
                 "award_number": award_number,
                 "award_uri": award_uri,
-                "award_title": entry.get("name", ""),
+                "award_title": entry.get("schema:name", ""),
                 "funder_identifiers": _identifier_entries(
                     funder.get("schema:identifier") if isinstance(funder, dict) else None
                 ),
@@ -624,17 +633,17 @@ def _build_related_identifiers(document: MetadataDocument) -> list[dict[str, Any
             continue
         # thumbnail links are consumed into resource.thumbnail (_build_resource)
         # -- don't double-represent them here as a generic related identifier.
-        if entry.get("linkRelationship") == "thumbnail":
+        if entry.get("schema:linkRelationship") == "thumbnail":
             continue
-        target = entry.get("target") or {}
-        url = target.get("url") if isinstance(target, dict) else None
+        target = entry.get("schema:target") or {}
+        url = target.get("schema:url") if isinstance(target, dict) else None
         if not url:
             continue
         related.append(
             {
                 "related_identifier": url,
                 "related_identifier_type": "URL",
-                "relation_type": entry.get("linkRelationship", "References"),
+                "relation_type": entry.get("schema:linkRelationship", "References"),
             }
         )
 
@@ -644,7 +653,7 @@ def _build_related_identifiers(document: MetadataDocument) -> list[dict[str, Any
     for entry in _as_list(document.get_field("prov:wasDerivedFrom")):
         if not isinstance(entry, dict):
             continue
-        identifier = entry.get("url") or entry.get("@id")
+        identifier = entry.get("schema:url") or entry.get("@id")
         if not identifier:
             continue
         related.append(
@@ -661,11 +670,11 @@ def _build_related_identifiers(document: MetadataDocument) -> list[dict[str, Any
 def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, Any]]:
     alternates: list[dict[str, Any]] = []
     for entry in _as_list(document.get_field("schema:sameAs")):
-        if isinstance(entry, dict) and entry.get("value"):
-            value = str(entry["value"])
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            value = str(entry["schema:value"])
             alternates.append(
                 {
-                    "alternate_name": entry.get("name", ""),
+                    "alternate_name": entry.get("schema:name", ""),
                     "alternate_identifier": value,
                     "alternate_identifier_type": "URL"
                     if value.startswith(("http://", "https://"))
@@ -724,15 +733,21 @@ def _build_media_files(document: MetadataDocument, warnings: list[str]) -> list[
 
     files: list[dict[str, Any]] = []
     for entry in distributions:
-        content_url = entry.get("contentUrl")
+        content_url = entry.get("schema:contentUrl")
         if not content_url:
             continue
         collections_source = entry.get("schema:includedInDataCatalog") or top_level_collections
+        # NOTE: "checksum"/"temporal_resolution" are read bare, not CURIE
+        # -keyed -- the vendored schema models checksum as a nested
+        # spdx:checksum{@type, algorithm, checksumValue} object, not a flat
+        # string, and defines no term for temporal_resolution at all,
+        # so a mechanical rename would be misleading. Left as-is; see
+        # docs/cdif_pivot_implementation_plan.md.
         files.append(
             {
                 "file_uri": content_url,
-                "format": entry.get("encodingFormat", ""),
-                "sizes": entry.get("contentSize", []),
+                "format": entry.get("schema:encodingFormat", ""),
+                "sizes": entry.get("schema:contentSize", []),
                 "checksum": entry.get("checksum", ""),
                 "temporal_resolution": entry.get("temporal_resolution", ""),
                 "variable_measured": variable_measured,

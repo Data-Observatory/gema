@@ -132,8 +132,8 @@ def _build_title(document: MetadataDocument, warnings: list[str]) -> str:
         "as a fallback"
     )
     identifiers = document.get_field("schema:identifier") or []
-    if identifiers and isinstance(identifiers[0], dict) and identifiers[0].get("value"):
-        return str(identifiers[0]["value"])
+    if identifiers and isinstance(identifiers[0], dict) and identifiers[0].get("schema:value"):
+        return str(identifiers[0]["schema:value"])
     return "Untitled resource"
 
 
@@ -141,7 +141,7 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
     creators = jsonld_list_unwrap(document.get_field("schema:creator"))
     entries = []
     for creator in creators:
-        name = creator.get("name")
+        name = creator.get("schema:name")
         if not name:
             continue
         author: dict[str, dict[str, Any]] = {
@@ -153,17 +153,17 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
             }
         }
         affiliations = creator.get("schema:affiliation") or []
-        if affiliations and affiliations[0].get("name"):
+        if affiliations and affiliations[0].get("schema:name"):
             author["authorAffiliation"] = {
-                "value": affiliations[0]["name"],
+                "value": affiliations[0]["schema:name"],
                 "typeClass": "primitive",
                 "multiple": False,
                 "typeName": "authorAffiliation",
             }
         identifiers = creator.get("schema:identifier") or []
         if identifiers:
-            scheme = identifiers[0].get("propertyID")
-            identifier = identifiers[0].get("value")
+            scheme = identifiers[0].get("schema:propertyID")
+            identifier = identifiers[0].get("schema:value")
             if scheme in _AUTHOR_IDENTIFIER_SCHEMES and identifier:
                 author["authorIdentifierScheme"] = {
                     "value": scheme,
@@ -206,12 +206,16 @@ def _build_dataset_contact(
     # CDIF mapping's home for DataCite's old resource.contact (Q6 in
     # docs/cdif_pivot_implementation_plan.md).
     for contributor in document.get_field("schema:contributor") or []:
+        # NOTE: "role" is read bare, not "schema:role" -- a real Role/
+        # roleName wrapper mismatch flagged in
+        # docs/cdif_pivot_implementation_plan.md's Open questions log,
+        # deliberately not restructured by this pass (see that doc).
         if not isinstance(contributor, dict) or contributor.get("role") != "ContactPerson":
             continue
-        contact_email = _extract_email(contributor.get("email"))
+        contact_email = _extract_email(contributor.get("schema:email"))
         if contact_email:
             email = contact_email
-            name = contributor.get("name")
+            name = contributor.get("schema:name")
             break
     if not email:
         # No guaranteed contact-email field — fall back to the first
@@ -219,10 +223,10 @@ def _build_dataset_contact(
         # *some* value, so this is flagged as a warning, not silently
         # fabricated.
         for creator in jsonld_list_unwrap(document.get_field("schema:creator")):
-            creator_email = _extract_email(creator.get("email"))
+            creator_email = _extract_email(creator.get("schema:email"))
             if creator_email:
                 email = creator_email
-                name = creator.get("name")
+                name = creator.get("schema:name")
                 break
     if not email:
         warnings.append(
@@ -282,7 +286,7 @@ def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list
 
 def _build_keywords(document: MetadataDocument) -> list[str]:
     keywords = document.get_field("schema:keywords") or []
-    return [k["name"] for k in keywords if isinstance(k, dict) and k.get("name")]
+    return [k["schema:name"] for k in keywords if isinstance(k, dict) and k.get("schema:name")]
 
 
 def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
@@ -298,8 +302,8 @@ def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
     if url:
         return _primitive_field("alternativeURL", str(url))
     for entry in document.get_field("schema:identifier") or []:
-        if isinstance(entry, dict) and str(entry.get("propertyID", "")).upper() == "DOI":
-            value = entry.get("value")
+        if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
+            value = entry.get("schema:value")
             if value:
                 return _primitive_field("alternativeURL", f"https://doi.org/{value}")
     return None
@@ -323,7 +327,7 @@ def classify_subject(
     title = str(document.get_field("schema:name") or "")
     description = str(document.get_field("schema:description") or "")
     keywords = document.get_field("schema:keywords") or []
-    subjects_joined = "; ".join(k["name"] for k in keywords if isinstance(k, dict) and k.get("name"))
+    subjects_joined = "; ".join(k["schema:name"] for k in keywords if isinstance(k, dict) and k.get("schema:name"))
 
     agent = export_config.agent
     prompt = agent.prompt

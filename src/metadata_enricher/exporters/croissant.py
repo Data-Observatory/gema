@@ -75,7 +75,12 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from metadata_enricher.types import MetadataDocument, TokenUsage, jsonld_list_unwrap
+from metadata_enricher.types import (
+    MetadataDocument,
+    TokenUsage,
+    first_type_label,
+    jsonld_list_unwrap,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +130,7 @@ class CroissantExportResult:
 def _first_identifier_url(entry: dict[str, Any]) -> str | None:
     identifiers = entry.get("schema:identifier") or []
     if identifiers and isinstance(identifiers[0], dict):
-        url = identifiers[0].get("url")
+        url = identifiers[0].get("schema:url")
         if url:
             return str(url)
     return None
@@ -138,11 +143,15 @@ def _person_or_org(entry: Any) -> dict[str, Any] | None:
     Returns None for anything unusable rather than raising."""
     if not isinstance(entry, dict):
         return None
-    name = entry.get("name")
+    name = entry.get("schema:name")
     if not name:
         return None
+    # first_type_label handles @type as a one-or-more-element array (C7)
+    # -- comparing entry.get("@type") == "schema:Person" as a bare scalar
+    # misclassified every Person as an Organization once @type became an
+    # array; see types.first_type_label's docstring.
     node: dict[str, Any] = {
-        "@type": "sc:Person" if entry.get("@type") == "schema:Person" else "sc:Organization",
+        "@type": "sc:Person" if first_type_label(entry.get("@type")) == "Person" else "sc:Organization",
         "name": name,
     }
     url = _first_identifier_url(entry)
@@ -169,8 +178,8 @@ def _build_name(document: MetadataDocument, warnings: list[str]) -> str:
         "as a fallback"
     )
     for entry in document.get_field("schema:identifier") or []:
-        if isinstance(entry, dict) and entry.get("value"):
-            return str(entry["value"])
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            return str(entry["schema:value"])
     return "Untitled resource"
 
 
@@ -188,8 +197,8 @@ def _build_license(document: MetadataDocument, warnings: list[str]) -> list[str]
     for entry in raw:
         if not isinstance(entry, dict):
             continue
-        url = entry.get("url")
-        name = entry.get("name")
+        url = entry.get("schema:url")
+        name = entry.get("schema:name")
         if url:
             values.append(str(url))
         elif name:
@@ -209,10 +218,10 @@ def _build_url(document: MetadataDocument, warnings: list[str]) -> str | None:
     for entry in document.get_field("schema:identifier") or []:
         if not isinstance(entry, dict):
             continue
-        if str(entry.get("propertyID", "")).upper() == "DOI" and entry.get("value"):
-            return f"https://doi.org/{entry['value']}"
-        if entry.get("url"):
-            return str(entry["url"])
+        if str(entry.get("schema:propertyID", "")).upper() == "DOI" and entry.get("schema:value"):
+            return f"https://doi.org/{entry['schema:value']}"
+        if entry.get("schema:url"):
+            return str(entry["schema:url"])
     warnings.append(
         "no schema:url or resolvable schema:identifier found — Croissant requires url; "
         "omitting the field"
@@ -263,7 +272,7 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
     for item in raw:
         if not isinstance(item, dict):
             continue
-        content_url = item.get("contentUrl")
+        content_url = item.get("schema:contentUrl")
         if not content_url:
             continue
         file_object: dict[str, Any] = {
@@ -275,10 +284,15 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
             "@id": str(content_url),
             "contentUrl": str(content_url),
         }
-        encoding_format = item.get("encodingFormat")
+        encoding_format = item.get("schema:encodingFormat")
         if encoding_format:
             file_object["encodingFormat"] = encoding_format
-        content_size = item.get("contentSize") or []
+        # NOTE: "size"/"unit" (inside each schema:contentSize entry) and
+        # "checksum" are read bare -- neither has a vendored CDIF shape at
+        # all (schema:contentSize is a plain Text value in schema.org, not
+        # this nested object; checksum wants a nested spdx:checksum
+        # object). Left as-is; see docs/cdif_pivot_implementation_plan.md.
+        content_size = item.get("schema:contentSize") or []
         if content_size and isinstance(content_size[0], dict) and content_size[0].get("size") is not None:
             size, unit = content_size[0]["size"], content_size[0].get("unit", "")
             file_object["contentSize"] = f"{size} {unit}".strip()
@@ -304,7 +318,7 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
 
 def _build_keywords(document: MetadataDocument) -> list[str]:
     keywords = document.get_field("schema:keywords") or []
-    return [k["name"] for k in keywords if isinstance(k, dict) and k.get("name")]
+    return [k["schema:name"] for k in keywords if isinstance(k, dict) and k.get("schema:name")]
 
 
 def _build_publisher(document: MetadataDocument) -> dict[str, Any] | None:
@@ -319,7 +333,7 @@ def _build_same_as(document: MetadataDocument) -> list[str]:
     values: list[str] = []
     for entry in raw:
         if isinstance(entry, dict):
-            candidate = entry.get("value") or entry.get("url") or entry.get("@id")
+            candidate = entry.get("schema:value") or entry.get("schema:url") or entry.get("@id")
             if candidate:
                 values.append(str(candidate))
         elif isinstance(entry, str) and entry:
