@@ -57,7 +57,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `schema_name` | `str` | yes | Schema to use (e.g. `datacite-4.6`) |
+| `schema_name` | `str` | yes | Schema to use — `cdif-discovery` (sole registered generation target; `datacite-4.6` is deregistered, exporter-only) |
 | `agents` | `list[AgentConfig]` | yes | Ordered list of agent definitions (at least 1) |
 | `providers` | `list[ProviderConfig]` | yes | LLM provider connection settings (at least 1) |
 | `default_provider` | `str` | no | Provider name used when an agent omits the `provider` field |
@@ -155,7 +155,7 @@ pipeline config.
 ## Full Example
 
 ```yaml
-schema_name: datacite-4.6
+schema_name: cdif-discovery
 default_provider: opencode
 providers:
   - name: opencode

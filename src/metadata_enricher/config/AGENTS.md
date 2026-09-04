@@ -56,7 +56,7 @@ All `model_config = ConfigDict(extra="forbid")`.
 
 **Rules** (lines 90-94):
 - **NEVER modifies original JSON** — read-only.
-- `schema_name` hard-coded to `"datacite-4.6"`.
+- `schema_name` hard-coded to `"datacite-4.6"` (legacy JSON configs are DataCite-shaped; emitting `cdif-discovery` over DataCite field lists would produce a guaranteed-broken config). Since the CDIF pivot, this schema name is no longer registered — `migrate.py` logs a `logger.warning` at migration time saying so.
 - `default_provider` chosen deterministically (first provider marked `default: true`, else first).
 
 ## ANTI-PATTERNS

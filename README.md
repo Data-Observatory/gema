@@ -7,8 +7,9 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
 
 Automatic metadata generation for scholarly resources using LLM agents,
-producing DataCite 4.6 records from minimal resource descriptions (URL,
-title, description, DOI).
+producing CDIF Discovery profile (JSON-LD) records from minimal resource
+descriptions (URL, title, description, DOI). DataCite 4.6 export is planned
+but not yet built.
 
 Two ways to use it:
 
@@ -83,7 +84,7 @@ uv sync --extra dev
    # Edit .env with your OPENROUTER_API_KEY, OPENAI_API_KEY, OPENCODE_API_KEY, or ANTHROPIC_API_KEY
    ```
 
-2. The default config is at `config/agents.yaml` (5 agents for DataCite 4.6 metadata).
+2. The default config is at `config/agents.yaml` (5 agents for CDIF Discovery metadata).
    Provider connection settings are defined in `config/providers.yaml`.
 
 ### Processing your own dataset
@@ -134,7 +135,7 @@ lookup — see the testing-tiers table in [`docs/CONFIGURATION.md`](docs/CONFIGU
 uv run gema process my_dataset.json --output my_dataset_metadata.json
 ```
 
-**4. Read the result.** `my_dataset_metadata.json` is the full DataCite 4.6 record.
+**4. Read the result.** `my_dataset_metadata.json` is the full CDIF Discovery (JSON-LD) record.
 Check stderr too — that's where `gema` prints anything worth knowing:
 
 ```
@@ -185,7 +186,7 @@ For flags on `record_golden.py`, `run_live_eval.py`, `sample_corpus.py`,
 ```
 Input JSON -> FilesystemInputSource -> ResourceDescription
                                              |
-                                    PreFlightValidator <- Schema Registry -> DataCiteSchema46
+                                    PreFlightValidator <- Schema Registry -> CDIFDiscoveryProfile
                                              |
                 AgentRegistry <- PipelineConfig -> ProviderConfig -> LLMClient factory
                                              |
@@ -196,7 +197,7 @@ Input JSON -> FilesystemInputSource -> ResourceDescription
 
 ### Key Design Decisions
 
-- **Pluggable schemas**: DataCite 4.6 ships as reference implementation. New schemas implement the `Schema` Protocol.
+- **Pluggable schemas**: CDIF Discovery (JSON-LD) is the sole generation target. DataCite 4.6 is deregistered, kept only as an exporter/diagnostic target (`schemas/datacite.py`, still directly importable). New schemas implement the `Schema` Protocol.
 - **OpenAI-compatible LLM client**: Works with OpenAI, OpenRouter, vLLM, Ollama, ZAI, OpenCode, and any OpenAI-compatible endpoint.
 - **Agent pipeline**: Agents run in parallel waves based on dependencies (Kahn topological sort).
 - **Disk caching**: LLM responses cached with 7-day TTL to reduce costs during development.
@@ -209,7 +210,7 @@ The main pipeline configuration file. Key fields:
 
 | Field | Description |
 |-------|-------------|
-| `schema_name` | Schema to use (default: `datacite-4.6`) |
+| `schema_name` | Schema to use (default: `cdif-discovery`) |
 | `agents` | List of agent definitions |
 | `providers` | List of LLM provider connection settings |
 | `default_provider` | Provider to use when an agent doesn't specify one |
@@ -220,7 +221,7 @@ The main pipeline configuration file. Key fields:
 - id: core_metadata
   name: Core Metadata Extractor
   description: Extracts basic metadata from resources
-  fields: [resource, titles, descriptions, languages, dates]
+  fields: [schema_name, schema_description, schema_identifier, schema_in_language, schema_date_created]
   prompt: "Your prompt template here..."
   provider: opencode
   model: deepseek-v4-flash
@@ -254,7 +255,7 @@ instead — a fresh Visor install should never ship an already-stale pinned
 checkpoint. See `visor/bootstrap.py::apply_external_user_provider_overrides`
 for the exact rule.
 
-## Agents (DataCite 4.6)
+## Agents (CDIF Discovery)
 
 The default config defines 5 agents, resolved (via Kahn topological sort
 over `depends_on`) into **3 execution waves**, not 1 — agents within a
@@ -264,16 +265,16 @@ since it needs that wave's merged output:
 | Wave | Agent(s) | Depends on | Why |
 |------|----------|------------|-----|
 | 1 (parallel) | `core_metadata`, `classification`, `media_files` | — | No cross-agent data needed |
-| 2 | `creators_publishers` | `core_metadata` | Reuses `core_metadata`'s editor/maintainer/producer names (via `context_fields: [resource]`) instead of re-deriving them, so both agents name the same institution consistently |
-| 3 | `rights_funding_citations` | `core_metadata`, `creators_publishers` | Needs `resource` and `publishers` (via `context_fields`) for citation formatting |
+| 2 | `creators_publishers` | `core_metadata` | Reuses `core_metadata`'s editor/maintainer/producer names (via `context_fields: [schema_name]`) instead of re-deriving them, so both agents name the same institution consistently |
+| 3 | `rights_funding_citations` | `core_metadata`, `creators_publishers` | Needs `schema_publisher` (via `context_fields`) for citation formatting |
 
-| Agent | Fields |
+| Agent | Fields (CDIF CURIEs, snake_case attrs) |
 |-------|--------|
-| `core_metadata` | resource, titles, descriptions, languages, dates, alternate_identifiers, related_identifiers, geo_locations, temporal_events |
-| `creators_publishers` | creators, publishers |
-| `classification` | categories, subjects, audiences |
-| `rights_funding_citations` | rights, funding_references, citations |
-| `media_files` | media_files |
+| `core_metadata` | schema_name, schema_description, schema_identifier, schema_additional_type, schema_same_as, schema_related_link, schema_version, schema_in_language, schema_date_created, schema_date_published, schema_copyright_year, schema_conditions_of_access, schema_spatial_coverage |
+| `creators_publishers` | schema_creator, schema_contributor, schema_publisher |
+| `classification` | schema_keywords, schema_about, schema_audience |
+| `rights_funding_citations` | schema_license, schema_conditions_of_access, schema_copyright_holder, schema_funding, schema_citation |
+| `media_files` | schema_distribution, schema_variable_measured, schema_measurement_technique, dqv_quality_measurement, prov_generated_by |
 
 Legacy JSON configurations are preserved at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents) for reference.
 
@@ -331,5 +332,5 @@ v1 -- stable core API. The CLI, config loading, schema registry, agent pipeline,
 
 ### Known Limitations
 
-- Only DataCite 4.6 schema is bundled. Custom schemas require implementing the `Schema` Protocol.
+- Only CDIF Discovery schema is registered for generation. DataCite 4.6 is exporter-only (export module not yet built). Custom schemas require implementing the `Schema` Protocol.
 - Prompt optimization via DSPy teleprompters is planned but not yet implemented.

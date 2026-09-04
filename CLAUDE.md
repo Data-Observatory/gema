@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`gema` — a multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference implementation) from minimal resource descriptions (URL, title, description, DOI). Python 3.11+, uv-managed, `pydantic` v2 + `typer` + `openai`/`instructor`.
+`gema` — a multi-agent LLM library that generates scholarly metadata (CDIF Discovery profile, JSON-LD) from minimal resource descriptions (URL, title, description, DOI). DataCite 4.6 is exporter-only (see `docs/cdif_pivot_implementation_plan.md`). Python 3.11+, uv-managed, `pydantic` v2 + `typer` + `openai`/`instructor`.
 
 ## Commands
 
@@ -40,7 +40,7 @@ No Docker, no pre-commit hooks. GitHub Actions CI exists (`.github/workflows/ci.
 ```
 Input JSON -> FilesystemInputSource -> ResourceDescription
                                              |
-                                    PreFlightValidator <- Schema Registry -> DataCiteSchema46
+                                    PreFlightValidator <- Schema Registry -> CDIFDiscoveryProfile
                                              |
                 AgentRegistry <- PipelineConfig <- ProviderConfig -> LLMClient factory
                                              |
@@ -53,11 +53,11 @@ Input JSON -> FilesystemInputSource -> ResourceDescription
 
 ### The Schema Protocol — the central abstraction
 
-`src/metadata_enricher/schemas/base.py` defines a `Schema` Protocol (8 methods: `name`, `version`, `output_model`, `validate_output`, `normalize_field`, `merge_agent_results`, `get_field_order`, `get_required_fields`). `DataCiteSchema46` (`schemas/datacite.py`) is the only shipped implementation (~600+ LOC, 18 normalizer methods dispatched via a `_NORMALIZER_DISPATCH` dict built after the class body). Adding a new metadata standard means implementing this Protocol and registering it in `schemas/__init__.py` — no other code changes needed. `MetadataMerger` just delegates to `Schema.merge_agent_results`.
+`src/metadata_enricher/schemas/base.py` defines a `Schema` Protocol (8 methods: `name`, `version`, `output_model`, `validate_output`, `normalize_field`, `merge_agent_results`, `get_field_order`, `get_required_fields`). `CDIFDiscoveryProfile` (`schemas/cdif/discovery/cdif_discovery.py`) is the sole registered generation target — `name = "cdif-discovery"`, output shaped as JSON-LD keyed by CURIE (`schema:name`, `schema:creator`, ...) per CODATA's CDIF Discovery profile (vendored from `doc-corediscovery`, SHA in `VENDORED_SHA.txt`). `DataCiteSchema46` (`schemas/datacite.py`, ~600+ LOC, 18 normalizer methods dispatched via a `_NORMALIZER_DISPATCH` dict built after the class body) is deregistered from `schemas/__init__.py` but still directly importable — used only as an export target (`exporters/datacite.py`, not yet built) and for the A/B diagnostic against the frozen `tests/fixtures/golden_datacite46_baseline/`. Adding a new metadata standard means implementing this Protocol and registering it in `schemas/__init__.py` — no other code changes needed. `MetadataMerger` just delegates to `Schema.merge_agent_results`.
 
 ### Agents are pure config, not code
 
-Agents are defined entirely in `config/agents.yaml` (id, fields, prompt, provider, model, temperature, `depends_on`, `context_fields`, `use_chain_of_thought`) — `BaseAgent` is fully generic. Adding a new agent requires **no code**, only a new YAML entry. The default config wires 5 agents for DataCite 4.6 (`core_metadata`, `creators_publishers`, `classification`, `rights_funding_citations`, `media_files`) into 3 dependency waves, not 1: wave 1 (parallel) is `core_metadata`, `classification`, `media_files`; wave 2 is `creators_publishers` alone (`depends_on: [core_metadata]`, `context_fields: [resource]` — reuses `core_metadata`'s editor/maintainer/producer names instead of re-deriving them, so both agents describe the same institution consistently); wave 3 is `rights_funding_citations` alone (`depends_on: [core_metadata, creators_publishers]`, `context_fields: [resource, publishers]`, for citation formatting). Waves run strictly in order (each needs the prior wave's merged output); agents within one wave run concurrently. Legacy JSON configs live at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents), migratable via `metadata_enricher.config.migrate.migrate_json_to_yaml()` (never modifies the source JSON — writes a `.yaml` sibling).
+Agents are defined entirely in `config/agents.yaml` (id, fields, prompt, provider, model, temperature, `depends_on`, `context_fields`, `use_chain_of_thought`) — `BaseAgent` is fully generic. Adding a new agent requires **no code**, only a new YAML entry. The default config (`schema_name: cdif-discovery`) wires 5 agents for CDIF Discovery (`core_metadata`, `creators_publishers`, `classification`, `rights_funding_citations`, `media_files`) into 3 dependency waves, not 1: wave 1 (parallel) is `core_metadata`, `classification`, `media_files`; wave 2 is `creators_publishers` alone (`depends_on: [core_metadata]`, `context_fields: [schema_name]` — reuses `core_metadata`'s editor/maintainer/producer names instead of re-deriving them, so both agents describe the same institution consistently); wave 3 is `rights_funding_citations` alone (`depends_on: [core_metadata, creators_publishers]`, `context_fields: [schema_publisher]`, for citation formatting). Waves run strictly in order (each needs the prior wave's merged output); agents within one wave run concurrently. Agent fields use CDIF CURIEs as snake_case attribute names (e.g. `schema_name` for `schema:name`) since `agents/base.py` does `getattr(result, field_name)`, which requires a valid Python identifier — the real CURIE lives on each Pydantic field's `alias`. Legacy JSON configs live at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents), migratable via `metadata_enricher.config.migrate.migrate_json_to_yaml()` (never modifies the source JSON — writes a `.yaml` sibling; emits DataCite-shaped `schema_name: datacite-4.6`, which is no longer registered — `migrate.py` warns at migration time). The frozen pre-pivot config is preserved at `config/legacy/agents_datacite46.yaml` for the A/B diagnostic.
 
 ### Orchestrator
 
@@ -90,7 +90,7 @@ Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` 
 - Config migration (`config/migrate.py`) **never** modifies the original JSON — writes a `.yaml` sibling only.
 - Unknown MIME types in `enrichers/iana_normalizer.py` are preserved unchanged — never nulled, never raised on.
 - A single resource failure in `pipeline.py` must never abort the batch.
-- `DataCiteSchema46` uses `"Collections"` with a capital C intentionally (`schemas/datacite.py:628`) — preserves legacy merger behavior; don't "fix" the casing.
+- `DataCiteSchema46` uses `"Collections"` with a capital C intentionally (`schemas/datacite.py:724`) — preserves legacy merger behavior; don't "fix" the casing. Applies only via the (not-yet-built) DataCite exporter now, not live generation.
 
 ## Testing
 
