@@ -307,6 +307,12 @@ def _content_size_strings(raw: object) -> list[str]:
         if isinstance(entry, dict) and entry.get("size") is not None:
             unit = entry.get("unit", "")
             sizes.append(f"{entry['size']} {unit}".strip())
+        elif isinstance(entry, str) and entry.strip():
+            # schema.org's own contentSize is canonically a plain Text
+            # value (not the {"size","unit"} object shape above) -- a
+            # hand-built or externally-sourced document using that spec
+            # shape directly used to be silently dropped entirely.
+            sizes.append(entry.strip())
     return sizes
 
 

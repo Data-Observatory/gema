@@ -694,6 +694,20 @@ class TestMediaFilesAndCollectionsCapitalization:
         result = to_datacite_json(doc)
         assert _fields(result)["media_files"][0]["sizes"] == ["2.5 MB"]
 
+    def test_content_size_as_a_plain_string_is_preserved(self):
+        """schema.org's own contentSize is canonically a plain Text value
+        (see exporters/croissant.py's own comment on this same field) --
+        the dict-normalizing fix above must not drop this shape entirely
+        for a hand-built or externally-sourced document using it."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:distribution": [
+                {"schema:contentUrl": "https://example.org/data.zip", "schema:contentSize": "2.5 MB"}
+            ],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["media_files"][0]["sizes"] == ["2.5 MB"]
+
     def test_collections_capitalization_survives_end_to_end(self):
         """Regression: DataCiteSchema46._normalize_media_files uses
         "Collections" with an intentional capital C (schemas/datacite.py) --
