@@ -101,48 +101,50 @@
       "instructional_method": "Consultoría"
     }
   ],
-  "schema:creator": [
-    {
-      "@type": "schema:Organization",
-      "name": "Instituto Nacional de Estadísticas",
-      "given_name": "",
-      "family_name": "",
-      "schema:identifier": [
-        {
-          "propertyID": "ROR",
-          "value": "https://ror.org/03ftrk873",
-          "url": "https://ror.org/https://ror.org/03ftrk873",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        },
-        {
-          "propertyID": "ISNI",
-          "value": "0000000122544402",
-          "url": "https://isni.org/0000000122544402",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        }
-      ],
-      "schema:affiliation": [
-        {
-          "@type": "schema:Organization",
-          "name": "Ministerio de Economía, Fomento y Turismo",
-          "schema:identifier": [
-            {
-              "propertyID": "ISNI",
-              "value": "0000000404784842",
-              "url": "https://isni.org/0000000404784842",
-              "matched_via": "isni_sru",
-              "confidence": 1.0,
-              "status": "auto"
-            }
-          ]
-        }
-      ]
-    }
-  ],
+  "schema:creator": {
+    "@list": [
+      {
+        "@type": "schema:Organization",
+        "name": "Instituto Nacional de Estadísticas",
+        "given_name": "",
+        "family_name": "",
+        "schema:identifier": [
+          {
+            "propertyID": "ROR",
+            "value": "https://ror.org/03ftrk873",
+            "url": "https://ror.org/https://ror.org/03ftrk873",
+            "matched_via": "ror_affiliation",
+            "confidence": 1.0,
+            "status": "auto"
+          },
+          {
+            "propertyID": "ISNI",
+            "value": "0000000122544402",
+            "url": "https://isni.org/0000000122544402",
+            "matched_via": "ror_affiliation",
+            "confidence": 1.0,
+            "status": "auto"
+          }
+        ],
+        "schema:affiliation": [
+          {
+            "@type": "schema:Organization",
+            "name": "Ministerio de Economía, Fomento y Turismo",
+            "schema:identifier": [
+              {
+                "propertyID": "ISNI",
+                "value": "0000000404784842",
+                "url": "https://isni.org/0000000404784842",
+                "matched_via": "isni_sru",
+                "confidence": 1.0,
+                "status": "auto"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "schema:contributor": [],
   "schema:publisher": {
     "@type": "schema:Organization",

@@ -100,7 +100,9 @@
       "instructional_method": "Autoaprendizaje"
     }
   ],
-  "schema:creator": [],
+  "schema:creator": {
+    "@list": []
+  },
   "schema:contributor": [],
   "schema:publisher": {
     "@type": "schema:Organization",

@@ -104,36 +104,38 @@
       "instructional_method": "Laboratorio"
     }
   ],
-  "schema:creator": [
-    {
-      "@type": "schema:Person",
-      "name": "Mittelstädt, Jana",
-      "given_name": "Jana",
-      "family_name": "Mittelstädt",
-      "schema:identifier": [],
-      "schema:affiliation": [
-        {
-          "@type": "schema:Organization",
-          "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
-          "schema:identifier": []
-        }
-      ]
-    },
-    {
-      "@type": "schema:Person",
-      "name": "Victor, Pia",
-      "given_name": "Pia",
-      "family_name": "Victor",
-      "schema:identifier": [],
-      "schema:affiliation": [
-        {
-          "@type": "schema:Organization",
-          "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
-          "schema:identifier": []
-        }
-      ]
-    }
-  ],
+  "schema:creator": {
+    "@list": [
+      {
+        "@type": "schema:Person",
+        "name": "Mittelstädt, Jana",
+        "given_name": "Jana",
+        "family_name": "Mittelstädt",
+        "schema:identifier": [],
+        "schema:affiliation": [
+          {
+            "@type": "schema:Organization",
+            "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+            "schema:identifier": []
+          }
+        ]
+      },
+      {
+        "@type": "schema:Person",
+        "name": "Victor, Pia",
+        "given_name": "Pia",
+        "family_name": "Victor",
+        "schema:identifier": [],
+        "schema:affiliation": [
+          {
+            "@type": "schema:Organization",
+            "name": "GFZ German Research Centre for Geosciences, Potsdam, Germany",
+            "schema:identifier": []
+          }
+        ]
+      }
+    ]
+  },
   "schema:contributor": [
     {
       "name": "Victor, Pia",

@@ -108,22 +108,24 @@
       "instructional_method": "Autoaprendizaje"
     }
   ],
-  "schema:creator": [
-    {
-      "@type": "schema:Organization",
-      "name": "Ministerio de Hacienda",
-      "given_name": "",
-      "family_name": "",
-      "schema:identifier": [],
-      "schema:affiliation": [
-        {
-          "@type": "schema:Organization",
-          "name": "Gobierno de Chile",
-          "schema:identifier": []
-        }
-      ]
-    }
-  ],
+  "schema:creator": {
+    "@list": [
+      {
+        "@type": "schema:Organization",
+        "name": "Ministerio de Hacienda",
+        "given_name": "",
+        "family_name": "",
+        "schema:identifier": [],
+        "schema:affiliation": [
+          {
+            "@type": "schema:Organization",
+            "name": "Gobierno de Chile",
+            "schema:identifier": []
+          }
+        ]
+      }
+    ]
+  },
   "schema:contributor": [],
   "schema:publisher": {
     "@type": "schema:Organization",
