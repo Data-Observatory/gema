@@ -303,9 +303,19 @@ def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
         return _primitive_field("alternativeURL", str(url))
     for entry in document.get_field("schema:identifier") or []:
         if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
+            # Prefer the entry's own schema:url (already resolvable) over
+            # constructing one -- and never double-prefix a value that's
+            # already a full URL (same class of bug fixed in
+            # exporters/croissant.py's _build_url).
+            existing_url = entry.get("schema:url")
+            if existing_url:
+                return _primitive_field("alternativeURL", str(existing_url))
             value = entry.get("schema:value")
             if value:
-                return _primitive_field("alternativeURL", f"https://doi.org/{value}")
+                value_str = str(value)
+                if value_str.startswith(("http://", "https://")):
+                    return _primitive_field("alternativeURL", value_str)
+                return _primitive_field("alternativeURL", f"https://doi.org/{value_str}")
     return None
 
 
