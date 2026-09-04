@@ -12,7 +12,10 @@ Verified against the real MLCommons Croissant format specification
 section, which undercounted -- see the correction note below):
 
     Source: https://github.com/mlcommons/croissant/blob/main/docs/croissant-spec-1.1.md
-    Commit checked: 401f6fff81db26a49c0d1704f02bffc4e4fa8fe2
+    Commit checked: 0e5dcb796dba285b396011638a68909c78a39664 (last commit to touch
+      this file as of the fetch date below -- an earlier citation of this pin
+      wrongly named a commit that only touched README.md, not the spec itself;
+      corrected 2026-09-04, see docs/cdif_pivot_implementation_plan.md)
     Fetched: 2026-09-04
     Croissant format version: 1.1 (conformsTo "http://mlcommons.org/croissant/1.1")
 
@@ -117,6 +120,22 @@ CROISSANT_CONTEXT: dict[str, str] = {
 _CHECKSUM_PROPERTY_BY_HEX_LENGTH: dict[int, str] = {64: "sha256", 32: "md5"}
 
 
+def _as_list(value: Any) -> list[Any]:
+    """gema's own generation always produces license/keywords/sameAs as a
+    list (see config/agents.yaml's prompts) -- but the vendored schema
+    itself allows some of these (schema:license especially) as a bare
+    string or single object too. Iterating an un-guarded string silently
+    walks its characters instead of raising, so a hand-built or
+    differently-shaped document would produce an empty/wrong result with
+    no indication why. Same shape of guard as exporters/datacite.py's own
+    ``_as_list``."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
 @dataclass
 class CroissantExportResult:
     """Result of to_croissant_json() -- mirrors DataverseExportResult's own
@@ -177,7 +196,7 @@ def _build_name(document: MetadataDocument, warnings: list[str]) -> str:
         "no schema:name found — Croissant requires name; using the resource identifier "
         "as a fallback"
     )
-    for entry in document.get_field("schema:identifier") or []:
+    for entry in _as_list(document.get_field("schema:identifier")):
         if isinstance(entry, dict) and entry.get("schema:value"):
             return str(entry["schema:value"])
     return "Untitled resource"
@@ -192,17 +211,20 @@ def _build_description(document: MetadataDocument, warnings: list[str]) -> str:
 
 
 def _build_license(document: MetadataDocument, warnings: list[str]) -> list[str]:
-    raw = document.get_field("schema:license") or []
     values: list[str] = []
-    for entry in raw:
-        if not isinstance(entry, dict):
-            continue
-        url = entry.get("schema:url")
-        name = entry.get("schema:name")
-        if url:
-            values.append(str(url))
-        elif name:
-            values.append(str(name))
+    for entry in _as_list(document.get_field("schema:license")):
+        if isinstance(entry, dict):
+            url = entry.get("schema:url") or entry.get("@id")
+            name = entry.get("schema:name")
+            if url:
+                values.append(str(url))
+            elif name:
+                values.append(str(name))
+        elif isinstance(entry, str) and entry.strip():
+            # The vendored schema allows schema:license as a bare string
+            # or {"@id": ...} -- gema's own generation always produces the
+            # dict shape above, but this is cheap to also accept.
+            values.append(entry.strip())
     if not values:
         warnings.append(
             "no schema:license found — Croissant requires license; omitting the field "
@@ -215,7 +237,7 @@ def _build_url(document: MetadataDocument, warnings: list[str]) -> str | None:
     url = document.get_field("schema:url")
     if url:
         return str(url)
-    for entry in document.get_field("schema:identifier") or []:
+    for entry in _as_list(document.get_field("schema:identifier")):
         if not isinstance(entry, dict):
             continue
         if str(entry.get("schema:propertyID", "")).upper() == "DOI" and entry.get("schema:value"):
@@ -292,9 +314,15 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
         # all (schema:contentSize is a plain Text value in schema.org, not
         # this nested object; checksum wants a nested spdx:checksum
         # object). Left as-is; see docs/cdif_pivot_implementation_plan.md.
-        content_size = item.get("schema:contentSize") or []
-        if content_size and isinstance(content_size[0], dict) and content_size[0].get("size") is not None:
-            size, unit = content_size[0]["size"], content_size[0].get("unit", "")
+        # config/agents.yaml's media_files prompt emits schema:contentSize
+        # as a single dict ({"size": ..., "unit": ...}) when populated, an
+        # empty list when not -- both shapes are handled here (indexing a
+        # dict by 0 raises KeyError, a real bug this used to hit).
+        content_size = item.get("schema:contentSize")
+        if isinstance(content_size, list):
+            content_size = content_size[0] if content_size else None
+        if isinstance(content_size, dict) and content_size.get("size") is not None:
+            size, unit = content_size["size"], content_size.get("unit", "")
             file_object["contentSize"] = f"{size} {unit}".strip()
         checksum = item.get("checksum")
         if checksum:
@@ -317,7 +345,7 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
 
 
 def _build_keywords(document: MetadataDocument) -> list[str]:
-    keywords = document.get_field("schema:keywords") or []
+    keywords = _as_list(document.get_field("schema:keywords"))
     return [k["schema:name"] for k in keywords if isinstance(k, dict) and k.get("schema:name")]
 
 
@@ -329,9 +357,8 @@ def _build_publisher(document: MetadataDocument) -> dict[str, Any] | None:
 
 
 def _build_same_as(document: MetadataDocument) -> list[str]:
-    raw = document.get_field("schema:sameAs") or []
     values: list[str] = []
-    for entry in raw:
+    for entry in _as_list(document.get_field("schema:sameAs")):
         if isinstance(entry, dict):
             candidate = entry.get("schema:value") or entry.get("schema:url") or entry.get("@id")
             if candidate:

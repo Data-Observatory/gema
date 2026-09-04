@@ -44,6 +44,7 @@ or documents built without going through that merge step.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -60,21 +61,30 @@ from metadata_enricher.types import (
 # docs/cdif_pivot_implementation_plan.md Step 3).
 #
 # DataCiteSchema46.__init__ eagerly parses a ~505KB bundled IANA MIME-type
-# JSON file (IANANormalizer). Before the CDIF pivot this cost was paid
-# once because schemas/__init__.py's SchemaRegistry held one process-wide
-# instance. Now that DataCiteSchema46 is deregistered, nothing caches an
-# instance any more -- so this module owns its own module-level singleton,
-# lazily constructed on first use, instead of instantiating one per
+# JSON file (IANANormalizer), which can itself trigger a network refresh
+# and a non-atomic write to ~/.cache/gema/iana/ (see IANANormalizer._maybe
+# _use_cache). Before the CDIF pivot this cost was paid once because
+# schemas/__init__.py's SchemaRegistry held one process-wide instance. Now
+# that DataCiteSchema46 is deregistered, nothing caches an instance any
+# more -- so this module owns its own module-level singleton, lazily
+# constructed on first use, instead of instantiating one per
 # to_datacite_json() call (which would re-parse the IANA file every time a
-# batch export runs).
+# batch export runs). Guarded by a lock: an unlocked check-then-set here
+# would let two threads (e.g. two concurrent exports, or a future visor
+# integration mirroring exporters/dataverse.py's run_in_executor pattern)
+# both observe None and both construct + refresh-write the cache file at
+# once.
 # ----------------------------------------------------------------------
 _datacite_schema_instance: DataCiteSchema46 | None = None
+_datacite_schema_lock = threading.Lock()
 
 
 def _get_datacite_schema() -> DataCiteSchema46:
     global _datacite_schema_instance
     if _datacite_schema_instance is None:
-        _datacite_schema_instance = DataCiteSchema46()
+        with _datacite_schema_lock:
+            if _datacite_schema_instance is None:
+                _datacite_schema_instance = DataCiteSchema46()
     return _datacite_schema_instance
 
 
@@ -173,6 +183,18 @@ def _identifier_and_type(document: MetadataDocument) -> tuple[str, str]:
     for entry in identifiers:
         if isinstance(entry, dict) and entry.get("schema:value"):
             return str(entry["schema:value"]), str(entry.get("schema:propertyID", "")) or "URL"
+    # schema:url is a first-class CDIFDiscoveryOutputModel field (half of
+    # the required floor's url|distribution OR-group) but used to never be
+    # read here -- a document carrying only schema:url (no
+    # schema:identifier) fell straight through to @id, which is only a
+    # real URL when schema:identifier had one in the first place (see
+    # CDIFDiscoveryProfile._derive_id) -- otherwise it's a synthetic
+    # "urn:gema:generated:..." placeholder, worse than the real URL sitting
+    # right there in schema:url. Checked before the @id fallback for that
+    # reason.
+    url = document.get_field("schema:url")
+    if url:
+        return str(url), "URL"
     envelope_id = document.get_field("@id")
     if envelope_id:
         return str(envelope_id), "URL"
@@ -196,7 +218,7 @@ def _build_resource(
     identifier, identifier_type = _identifier_and_type(document)
     if not identifier:
         warnings.append(
-            "no schema:identifier or @id found -- resource.identifier will be empty"
+            "no schema:identifier, schema:url, or @id found -- resource.identifier will be empty"
         )
 
     resource_type_general = first_type_label(document.get_field("@type"))
@@ -510,10 +532,15 @@ def _build_temporal_events(document: MetadataDocument) -> list[dict[str, Any]]:
     # Q2 mapping's flagged judgment call: dcterms:accrualPeriodicity, not
     # produced by CDIFDiscoveryProfile today -- read defensively so a
     # hand-built/future document carrying it round-trips correctly.
+    # DataCiteSchema46._normalize_temporal_events only keeps dicts carrying
+    # a "start_date" or "description" *key* (presence, not truthiness) --
+    # a bare {"frequency_type": ...} silently vanished at that step. The
+    # empty "description" key is enough to survive normalization while
+    # correctly reporting no description was extracted.
     events: list[dict[str, Any]] = []
     frequency = document.get_field("dcterms:accrualPeriodicity")
     if frequency:
-        events.append({"frequency_type": str(frequency)})
+        events.append({"frequency_type": str(frequency), "description": ""})
     return events
 
 
