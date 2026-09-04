@@ -1,31 +1,99 @@
 {
-  "resource": {
-    "identifier": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
-    "identifier_type": "URL",
-    "editor": "Ministerio de Hacienda - Gobierno de Chile",
-    "maintainer": "",
-    "contact": "",
-    "producer": "",
-    "publication_year": "2026",
-    "resource_type": "Dataset",
-    "resource_type_general": "Dataset",
-    "version": "",
-    "thumbnail": "",
-    "language": "es"
+  "@id": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
+  "@type": [
+    "schema:Dataset"
+  ],
+  "@context": {
+    "schema": "http://schema.org/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "prov": "http://www.w3.org/ns/prov#",
+    "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "alternate_identifiers": [],
-  "audiences": [
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+  "schema:dateModified": "2026-09-04",
+  "schema:subjectOf": {
+    "@id": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto#metadata",
+    "@type": [
+      "schema:Dataset"
+    ],
+    "schema:additionalType": [
+      "dcat:CatalogRecord"
+    ],
+    "schema:about": {
+      "@id": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
     },
+    "dcterms:conformsTo": [
+      {
+        "@id": "https://w3id.org/cdif/discovery/1.0"
+      }
+    ]
+  },
+  "schema:name": "Gastos municipales (presupuesto abierto)",
+  "schema:identifier": [
+    {
+      "propertyID": "URL",
+      "value": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
+      "url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
+    }
+  ],
+  "schema:license": [
+    {
+      "name": "Datos Abiertos del Estado de Chile",
+      "url": "",
+      "identifier": ""
+    }
+  ],
+  "schema:conditionsOfAccess": [],
+  "schema:distribution": [],
+  "schema:description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
+  "schema:additionalType": "Serie de tiempo",
+  "schema:sameAs": [],
+  "schema:version": "",
+  "schema:inLanguage": "es",
+  "schema:dateCreated": "",
+  "schema:datePublished": "",
+  "schema:copyrightYear": "",
+  "schema:relatedLink": [],
+  "schema:keywords": [
+    {
+      "name": "Gastos municipales -- Presupuesto público -- Chile",
+      "inDefinedTermSet": "",
+      "identifier": ""
+    },
+    {
+      "name": "Presupuesto abierto",
+      "inDefinedTermSet": "",
+      "identifier": ""
+    },
+    {
+      "name": "Corporaciones municipales",
+      "inDefinedTermSet": "",
+      "identifier": ""
+    },
+    {
+      "name": "Egresos ejecutados -- Sector público local",
+      "inDefinedTermSet": "",
+      "identifier": ""
+    }
+  ],
+  "schema:about": [
+    {
+      "name": "Economía y negocios",
+      "inDefinedTermSet": "Ciencias Sociales"
+    }
+  ],
+  "schema:audience": [
     {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     },
     {
       "audience": "Administradores",
@@ -40,141 +108,46 @@
       "instructional_method": "Autoaprendizaje"
     }
   ],
-  "categories": [
+  "schema:creator": [
     {
-      "name": "Ciencias Sociales",
-      "sub_category": "Economía y negocios"
-    }
-  ],
-  "citations": [],
-  "creators": [
-    {
-      "creator_name": "Ministerio de Hacienda - Gobierno de Chile",
-      "creator_name_type": "Organizational",
+      "@type": "schema:Organization",
+      "name": "Ministerio de Hacienda",
       "given_name": "",
       "family_name": "",
-      "email": "",
-      "genre": "",
-      "type": "Organization",
-      "contributor_type": "",
-      "name_identifiers": [
+      "schema:identifier": [],
+      "schema:affiliation": [
         {
-          "name_identifier": "https://ror.org/02sevrz47",
-          "name_identifier_scheme": "ROR",
-          "scheme_uri": "https://ror.org",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        },
-        {
-          "name_identifier": "000000011234970X",
-          "name_identifier_scheme": "ISNI",
-          "scheme_uri": "https://isni.org",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        }
-      ],
-      "affiliations": [
-        {
-          "affiliation": "Gobierno de Chile",
-          "affiliation_identifier": "",
-          "affiliation_identifier_scheme": "",
-          "scheme_uri": ""
+          "@type": "schema:Organization",
+          "name": "Gobierno de Chile",
+          "schema:identifier": []
         }
       ]
     }
   ],
-  "dates": [
+  "schema:contributor": [],
+  "schema:publisher": {
+    "@type": "schema:Organization",
+    "name": "Ministerio de Hacienda",
+    "schema:identifier": []
+  },
+  "schema:copyrightHolder": "",
+  "schema:funding": [],
+  "schema:citation": [],
+  "schema:spatialCoverage": [
     {
-      "date": "2026-03-15",
-      "date_type": "Updated",
-      "date_information": "Fecha de la última actualización del recurso según el portal"
+      "name": "Chile",
+      "description": "Cobertura nacional, todos los municipios del territorio chileno continental",
+      "geo": {
+        "box": "-75.956,-57.987,-65.084,-16.309"
+      }
     }
   ],
-  "descriptions": [
+  "schema:measurementTechnique": [],
+  "schema:variableMeasured": [
     {
-      "description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
-      "description_type": "Abstract",
-      "language": "es"
+      "name": "Egresos ejecutados por los municipios"
     }
   ],
-  "funding_references": [],
-  "geo_locations": [
-    {
-      "geo_location_place": "Chile",
-      "geo_location_point": "",
-      "geo_location_box": "-75.956,-57.987,-65.084,-16.309",
-      "geo_location_polygon": "",
-      "geo_description": "Cobertura nacional, egresos ejecutados por los municipios en el territorio nacional",
-      "coverage": "nacional"
-    }
-  ],
-  "languages": [
-    {
-      "lang_code": "es",
-      "language": "Spanish",
-      "description": "El recurso está disponible únicamente en español"
-    }
-  ],
-  "media_files": [],
-  "publishers": [
-    {
-      "publisher_name": "Ministerio de Hacienda - Gobierno de Chile",
-      "publisher_identifier": "https://ror.org/02sevrz47",
-      "publisher_identifier_scheme": "ROR",
-      "publisher_scheme_uri": "https://ror.org",
-      "lang": "es",
-      "publisher_identifier_matched_via": "ror_affiliation",
-      "publisher_identifier_confidence": 1.0,
-      "publisher_identifier_status": "auto"
-    }
-  ],
-  "related_identifiers": [],
-  "rights": [
-    {
-      "rights": "Datos Abiertos del Estado de Chile",
-      "rights_uri": "",
-      "rights_identifier": "",
-      "rights_identifier_scheme": "",
-      "scheme_uri": "",
-      "rights_condition": "",
-      "rights_holder": "Estado de Chile"
-    }
-  ],
-  "subjects": [
-    {
-      "subject_name": "Gastos municipales -- Presupuesto abierto -- Chile",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Corporaciones municipales",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    },
-    {
-      "subject_name": "Egresos ejecutados -- Sector público local",
-      "subject_scheme": "",
-      "scheme_uri": "",
-      "value_uri": ""
-    }
-  ],
-  "temporal_events": [
-    {
-      "start_date": "",
-      "frequency_number": "",
-      "frequency_type": "monthly",
-      "description": "Frecuencia de actualización declarada directamente en los metadatos del recurso"
-    }
-  ],
-  "titles": [
-    {
-      "name": "Gastos municipales (presupuesto abierto)",
-      "title_type": "MainTitle",
-      "language": "es"
-    }
-  ]
+  "dqv:hasQualityMeasurement": [],
+  "prov:wasGeneratedBy": {}
 }

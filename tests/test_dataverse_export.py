@@ -4,6 +4,7 @@ native JSON, plus the one optional LLM-assisted Subject classification step.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -423,14 +424,42 @@ class TestLoadDataverseExportConfig:
         config.validate_provider_exists({"mock"})  # should not raise
 
 
+GOLDEN_FIXTURE = Path(__file__).parent / "fixtures" / "golden" / "expected" / "sample_input01.json"
+
+
 class TestAgainstRealGoldenFixture:
     """Not a synthetic example — the actual committed golden fixture output
-    from a real pipeline run. Skipped until golden fixtures are re-recorded
-    against the CDIF-generating pipeline (docs/cdif_pivot_implementation_plan.md
-    Step 2f) — the committed fixture today is still DataCite-shaped."""
+    from a real CDIF-generating pipeline run (re-recorded in
+    docs/cdif_pivot_implementation_plan.md Step 2f)."""
 
     def test_produces_a_valid_shape_from_real_output(self):
-        pytest.skip(
-            "golden fixtures are still DataCite-shaped; CDIF re-record pending "
-            "(see docs/cdif_pivot_implementation_plan.md Step 2f)"
-        )
+        if not GOLDEN_FIXTURE.is_file():
+            pytest.skip("golden fixture not present in this checkout")
+        data = json.loads(GOLDEN_FIXTURE.read_text(encoding="utf-8"))
+        doc = MetadataDocument()
+        for key, value in data.items():
+            doc.set_field(key, value)
+
+        result = to_dataverse_json(doc, make_export_config(enabled=False))
+
+        fields_by_name = {
+            f["typeName"]: f for f in result.dataset_json["datasetVersion"]["metadataBlocks"]["citation"]["fields"]
+        }
+        assert fields_by_name["title"]["value"] == "Gastos municipales (presupuesto abierto)"
+        assert fields_by_name["author"]["value"][0]["authorName"]["value"] == "Ministerio de Hacienda"
+        # This re-record's creators_publishers completion produced an
+        # ambiguous (status=="review") ROR match for this fixture's
+        # creator/publisher -- ordinary live-LLM run-to-run fuzzy-match
+        # variance, not a code change. Per identifier_enricher.py's
+        # "wrong PID worse than missing" rule, an ambiguous match is never
+        # auto-attached, so no authorIdentifierScheme is expected here.
+        # Identifier *mapping* itself (when a match IS unambiguous) is
+        # covered by TestAuthors.test_maps_name_affiliation_and_known_identifier_scheme
+        # against a synthetic fixture regardless of what this real one does.
+        assert "authorIdentifierScheme" not in fields_by_name["author"]["value"][0]
+        assert fields_by_name["subject"]["value"] == ["Other"]
+        assert "keyword" in fields_by_name
+        # This real fixture has no schema:contributor with a ContactPerson
+        # role and no creator email — confirms the documented gap surfaces
+        # as a warning, not a crash.
+        assert any("no contact email found" in w for w in result.warnings)
