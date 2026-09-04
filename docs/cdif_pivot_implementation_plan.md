@@ -489,8 +489,8 @@ Decided: not building `enrichers/structure_fetcher.py` now. No consumer exists (
 | 10 | Structure fetcher format list / sample strategy | deferred with the whole feature — see Backlog |
 | 11 | Content-fetch vs. structure-fetch ordering | deferred with the whole feature — see Backlog |
 | 12 | Does structure-fetcher ship in v1 at all | **resolved: no** — see Backlog, must stay visible |
-| 13 | Where DataCite vocab/affiliation table lives post-rewrite | open |
-| 14 | `visor/session_settings.py` override migration | open |
+| 13 | Where DataCite vocab/affiliation table lives post-rewrite | **resolved** (duplicate of Step 2's own resolution note, never reflected here): stays in `config/agents.yaml`'s CDIF-facing prompts — SPDX/CC license priority, ANID/FONDECYT funding taxonomy, and the Chilean ministry hierarchy table are domain knowledge for reading Spanish source text, not DataCite-shape knowledge, so nothing to move to `exporters/datacite.py` |
+| 14 | `visor/session_settings.py` override migration | **resolved**: checked, not actually a gap — `visor/settings.py::apply_agent_overrides` already skips (never raises on) an override whose agent ID or provider no longer exists, by design. Agent IDs/providers didn't change in the pivot, so pre-pivot persisted overrides keep working unchanged |
 | 15 | `config/migrate.py` hardcoded schema name | **resolved**: keep, add warning |
 | 16 | Nested `schema:identifier` cardinality: vendored schema wants singular on Person/Organization/MonetaryGrant, gema always builds a list | open — see Step 5.5, deliberate deviation, not fixed |
 | 17 | `schema:contributor`'s Role wrapper: vendored schema wants `{"@type":["schema:Role"], "schema:roleName", "schema:contributor": <actor>}`, gema reads/writes a flat `{"schema:name","role","schema:email"}` | open — see Step 5.5, real structural mismatch, not fixed |
