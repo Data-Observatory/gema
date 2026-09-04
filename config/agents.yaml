@@ -48,7 +48,7 @@ agents:
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
 
     PASO 1 — IDENTIFICADOR Y TIPO
-      - schema_identifier: UNA entrada {"propertyID": "URL"|"DOI", "value": "<el valor>", "url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
+      - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
       - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico (ej. "Encuesta", "Serie de tiempo", "Capa geoespacial"); vacío si no hay evidencia clara.
       - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
 
@@ -59,18 +59,18 @@ agents:
     PASO 3 — IDENTIFICADORES ALTERNATIVOS Y RELACIONADOS
       a) schema_same_as (identidad — el MISMO recurso bajo otro identificador o nombre):
         - Códigos internos, IDs locales, abreviaciones o títulos alternativos DEL MISMO RECURSO.
-        - {"value": "<código o URL>", "name": "<abreviatura o título alternativo, si aplica>"}
+        - {"schema:value": "<código o URL>", "schema:name": "<abreviatura o título alternativo, si aplica>"}
         - NUNCA uses un GUID/UUID opaco de la plataforma si no aporta información útil a un lector externo.
-        Ejemplo: {"value": "EPF-2021", "name": "EPF"}
+        Ejemplo: {"schema:value": "EPF-2021", "schema:name": "EPF"}
       b) schema_related_link (relación tipada con OTRO recurso — API, documentación, dataset relacionado mencionado explícitamente):
-        - {"linkRelationship": "<tipo de relación>", "target": {"url": "<url>", "name": "<nombre si el texto lo da>"}}
-        - linkRelationship: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
-        Ejemplo: {"linkRelationship": "IsDescribedBy", "target": {"url": "https://api.datos.gob.cl/v1/gastos", "name": ""}}
+        - {"schema:linkRelationship": "<tipo de relación>", "schema:target": {"schema:url": "<url>", "schema:name": "<nombre si el texto lo da>"}}
+        - schema:linkRelationship: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
+        Ejemplo: {"schema:linkRelationship": "IsDescribedBy", "schema:target": {"schema:url": "https://api.datos.gob.cl/v1/gastos", "schema:name": ""}}
 
     PASO 4 — COBERTURA ESPACIAL (schema_spatial_coverage)
       Crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
-      - {"name": "<lugar>", "description": "<descripción del área>", "geo": {"box": "<oeste,sur,este,norte>"}}
-      - "geo.box": SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso omite "geo" — un campo ausente es mejor que una caja inventada.
+      - {"schema:name": "<lugar>", "schema:description": "<descripción del área>", "schema:geo": {"schema:box": "<oeste,sur,este,norte>"}}
+      - "schema:geo.schema:box": SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso omite "schema:geo" — un campo ausente es mejor que una caja inventada.
 
     PASO 5 — IDIOMA
       - schema_in_language: código ISO 639-1 de dos letras ("es", "en", "pt") del idioma PRINCIPAL del recurso. Es un string único (no una lista) — si el recurso es bilingüe o multilingüe, usa el idioma predominante del título/descripción.
@@ -96,7 +96,7 @@ agents:
       "schema_name": "",
       "schema_description": "",
       "schema_identifier": [
-        {"propertyID": "URL", "value": "", "url": ""}
+        {"schema:propertyID": "URL", "schema:value": "", "schema:url": ""}
       ],
       "schema_additional_type": "",
       "schema_same_as": [],
@@ -124,7 +124,7 @@ agents:
       "schema_name": "Dataset de gastos municipales 2024",
       "schema_description": "Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.",
       "schema_identifier": [
-        {"propertyID": "URL", "value": "https://datos.gob.cl/dataset/gastos-municipales-2024", "url": "https://datos.gob.cl/dataset/gastos-municipales-2024"}
+        {"schema:propertyID": "URL", "schema:value": "https://datos.gob.cl/dataset/gastos-municipales-2024", "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-2024"}
       ],
       "schema_additional_type": "",
       "schema_same_as": [],
@@ -151,12 +151,12 @@ agents:
       "schema_name": "Gastos e ingresos municipales de Chile",
       "schema_description": "Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.",
       "schema_identifier": [
-        {"propertyID": "URL", "value": "https://datos.gob.cl/dataset/gastos-municipales", "url": "https://datos.gob.cl/dataset/gastos-municipales"}
+        {"schema:propertyID": "URL", "schema:value": "https://datos.gob.cl/dataset/gastos-municipales", "schema:url": "https://datos.gob.cl/dataset/gastos-municipales"}
       ],
       "schema_additional_type": "",
       "schema_same_as": [],
       "schema_related_link": [
-        {"linkRelationship": "IsDescribedBy", "target": {"url": "https://api.datos.gob.cl/v1/gastos", "name": ""}}
+        {"schema:linkRelationship": "IsDescribedBy", "schema:target": {"schema:url": "https://api.datos.gob.cl/v1/gastos", "schema:name": ""}}
       ],
       "schema_version": "",
       "schema_in_language": "es",
@@ -165,7 +165,7 @@ agents:
       "schema_copyright_year": "",
       "schema_conditions_of_access": [],
       "schema_spatial_coverage": [
-        {"name": "Chile", "description": "Cobertura nacional, todas las municipalidades de Chile continental", "geo": {"box": "-75.956,-57.987,-65.084,-16.309"}}
+        {"schema:name": "Chile", "schema:description": "Cobertura nacional, todas las municipalidades de Chile continental", "schema:geo": {"schema:box": "-75.956,-57.987,-65.084,-16.309"}}
       ]
     }
 
@@ -182,7 +182,7 @@ agents:
       "schema_name": "Global Seismic Event Catalog 2021",
       "schema_description": "A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.",
       "schema_identifier": [
-        {"propertyID": "DOI", "value": "10.5880/GFZ.2.4.2021.001", "url": "https://doi.org/10.5880/GFZ.2.4.2021.001"}
+        {"schema:propertyID": "DOI", "schema:value": "10.5880/GFZ.2.4.2021.001", "schema:url": "https://doi.org/10.5880/GFZ.2.4.2021.001"}
       ],
       "schema_additional_type": "",
       "schema_same_as": [],
@@ -198,7 +198,7 @@ agents:
 
     === ERRORES COMUNES A EVITAR ===
     ❌ MAL: asignar la caja de Chile continental a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena.
-    ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, omitir "geo".
+    ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, omitir "schema:geo".
 
     ❌ MAL: {"schema_date_created": "2021-01-01", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
     ✅ BIEN: {"schema_date_created": "2021", ...} — usa la precisión real disponible.
@@ -237,20 +237,20 @@ agents:
 
     PASO 2 — CLASIFICA CADA ACTOR (schema_creator)
       Para cada creador identificado, produce un objeto:
-      {"@type": "schema:Person"|"schema:Organization", "name": "", "given_name": "", "family_name": "", "schema:identifier": [], "schema:affiliation": []}
+      {"@type": ["schema:Person"]|["schema:Organization"], "schema:name": "", "schema:givenName": "", "schema:familyName": "", "schema:identifier": [], "schema:affiliation": []}
       a) ¿Es persona o institución?
-         - Persona → "@type": "schema:Person", extraer given_name y family_name por separado. Formato de "name": "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido). Escribe el nombre de pila EXACTAMENTE como aparece en el texto — si el texto da el nombre completo, no lo trunques a una inicial por tu cuenta; pero si el texto SOLO da una inicial (ej. una cita bibliográfica "Apellido, A."), usa esa inicial tal cual: NUNCA inventes ni completes un nombre a partir de conocimiento externo sobre la persona, aunque la reconozcas.
-         - Institución → "@type": "schema:Organization", "name" = nombre completo oficial (con acentuación correcta).
+         - Persona → "@type": ["schema:Person"], extraer schema:givenName y schema:familyName por separado. Formato de "schema:name": "Apellido, Nombre" (ej. "Sarricolea, Pablo"; para apellidos compuestos, "Meseguer-Ruiz, Oliver"; respeta partículas como "de la", "van" como parte del apellido). Escribe el nombre de pila EXACTAMENTE como aparece en el texto — si el texto da el nombre completo, no lo trunques a una inicial por tu cuenta; pero si el texto SOLO da una inicial (ej. una cita bibliográfica "Apellido, A."), usa esa inicial tal cual: NUNCA inventes ni completes un nombre a partir de conocimiento externo sobre la persona, aunque la reconozcas.
+         - Institución → "@type": ["schema:Organization"], "schema:name" = nombre completo oficial (con acentuación correcta).
       b) schema:identifier SIEMPRE vacío ([]) en esta etapa — ver PASO 4.
 
     PASO 3 — PUBLICADOR Y CONTRIBUYENTES
       a) schema_publisher (UN SOLO objeto, no una lista): la institución que publica o distribuye el recurso.
-         - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, usa la MISMA institución como schema_publisher (mismo "name" que el creador correspondiente). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre.
-         - Formato: {"@type": "schema:Organization"|"schema:Person", "name": "", "schema:identifier": []}
+         - REGLA: para instituciones públicas chilenas, si el texto NO identifica un publicador distinto del creador, usa la MISMA institución como schema_publisher (mismo "schema:name" que el creador correspondiente). Si el texto SÍ distingue un publicador diferente (ej. un portal, un departamento distinto que lo aloja), usa ese nombre.
+         - Formato: {"@type": ["schema:Organization"]|["schema:Person"], "schema:name": "", "schema:identifier": []}
          - Si no hay ningún publicador identificable → {} (objeto vacío).
       b) schema_contributor (lista): un objeto por cada contribuyente distinto del creador/publicador —
-         - Productor (busca "Producido por", "Generado por", "Fuente original"): {"name": "", "role": "Producer"}. Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → {"name": "Unidad de Estadísticas, Ministerio de Educación", "role": "Producer"}.
-         - Contacto (busca ACTIVAMENTE en TODO el texto correos, teléfonos, formularios asociados a ESTE recurso): {"name": "", "role": "ContactPerson", "email": ""}. Concatena múltiples canales de contacto no-email en "name" o dentro de una nota si no hay campo dedicado; el email va SIEMPRE en "email" si existe una dirección real.
+         - Productor (busca "Producido por", "Generado por", "Fuente original"): {"schema:name": "", "role": "Producer"}. Ejemplo: "Datos generados por la Unidad de Estadísticas del Mineduc" → {"schema:name": "Unidad de Estadísticas, Ministerio de Educación", "role": "Producer"}.
+         - Contacto (busca ACTIVAMENTE en TODO el texto correos, teléfonos, formularios asociados a ESTE recurso): {"schema:name": "", "role": "ContactPerson", "schema:email": ""}. Concatena múltiples canales de contacto no-email en "schema:name" o dentro de una nota si no hay campo dedicado; el email va SIEMPRE en "schema:email" si existe una dirección real.
          - Si no hay evidencia de productor ni contacto distintos → schema_contributor: []
 
     PASO 4 — IMPORTANTE SOBRE IDENTIFICADORES (LEER ATENTAMENTE)
@@ -263,7 +263,7 @@ agents:
     PASO 5 — DETERMINA AFILIACIONES (schema:affiliation dentro de schema_creator) RESPETANDO LA JERARQUÍA
       REGLA FUNDAMENTAL: la afiliación debe ser el organismo INMEDIATAMENTE superior en la jerarquía, nunca saltar niveles.
       La cadena jerárquica del Estado chileno es: Servicio/Corporación/Oficina → Ministerio del que depende → Gobierno de Chile.
-      Formato de cada afiliación: {"@type": "schema:Organization", "name": "", "schema:identifier": []}
+      Formato de cada afiliación: {"@type": ["schema:Organization"], "schema:name": "", "schema:identifier": []}
 
       PATRONES GENERALES (aplícalos por nombre, sin necesidad de tabla):
       - "Municipalidad de X" → sin afiliación (entidad autónoma, no depende de un ministerio)
@@ -292,7 +292,7 @@ agents:
       - Sin información suficiente → schema:affiliation: []
 
     === REGLAS ESTRICTAS ===
-    - **CAMPO OBLIGATORIO:** "name" SIEMPRE debe tener un valor NO vacío para cada objeto en schema_creator y en schema_contributor
+    - **CAMPO OBLIGATORIO:** "schema:name" SIEMPRE debe tener un valor NO vacío para cada objeto en schema_creator y en schema_contributor
     - La afiliación SIEMPRE es el organismo inmediatamente superior, nunca saltar niveles jerárquicos
     - Si no hay creadores ni publicador → {"schema_creator": [], "schema_contributor": [], "schema_publisher": {}}
 
@@ -301,22 +301,22 @@ agents:
       "reasoning": "",
       "schema_creator": [
         {
-          "@type": "",
-          "name": "",
-          "given_name": "",
-          "family_name": "",
+          "@type": [],
+          "schema:name": "",
+          "schema:givenName": "",
+          "schema:familyName": "",
           "schema:identifier": [],
           "schema:affiliation": [
-            {"@type": "schema:Organization", "name": "", "schema:identifier": []}
+            {"@type": ["schema:Organization"], "schema:name": "", "schema:identifier": []}
           ]
         }
       ],
       "schema_contributor": [
-        {"name": "", "role": "", "email": ""}
+        {"schema:name": "", "role": "", "schema:email": ""}
       ],
       "schema_publisher": {
-        "@type": "",
-        "name": "",
+        "@type": [],
+        "schema:name": "",
         "schema:identifier": []
       }
     }
@@ -329,12 +329,12 @@ agents:
     {
       "reasoning": "Único actor mencionado: el Ministerio de Educación, sin distinción entre quien produjo y quien publica el informe → lo uso como creador y publicador. Es un ministerio, así que su afiliación es 'Gobierno de Chile'. Sin identificadores ni contribuyentes distintos.",
       "schema_creator": [
-        {"@type": "schema:Organization", "name": "Ministerio de Educación", "given_name": "", "family_name": "",
+        {"@type": ["schema:Organization"], "schema:name": "Ministerio de Educación", "schema:givenName": "", "schema:familyName": "",
          "schema:identifier": [],
-         "schema:affiliation": [{"@type": "schema:Organization", "name": "Gobierno de Chile", "schema:identifier": []}]}
+         "schema:affiliation": [{"@type": ["schema:Organization"], "schema:name": "Gobierno de Chile", "schema:identifier": []}]}
       ],
       "schema_contributor": [],
-      "schema_publisher": {"@type": "schema:Organization", "name": "Ministerio de Educación", "schema:identifier": []}
+      "schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Ministerio de Educación", "schema:identifier": []}
     }
 
     --- EJEMPLO 2: SERNATUR (Servicio → Ministerio de Economía, Fomento y Turismo → Gobierno de Chile) ---
@@ -343,23 +343,23 @@ agents:
     {
       "reasoning": "SERNATUR (Servicio Nacional de Turismo) es un servicio dependiente del Ministerio de Economía, Fomento y Turismo (excepción memorizada, no se deriva del nombre). Sin publicador distinto mencionado → mismo actor en creator y publisher.",
       "schema_creator": [
-        {"@type": "schema:Organization", "name": "Servicio Nacional de Turismo", "given_name": "", "family_name": "",
+        {"@type": ["schema:Organization"], "schema:name": "Servicio Nacional de Turismo", "schema:givenName": "", "schema:familyName": "",
          "schema:identifier": [],
-         "schema:affiliation": [{"@type": "schema:Organization", "name": "Ministerio de Economía, Fomento y Turismo", "schema:identifier": []}]}
+         "schema:affiliation": [{"@type": ["schema:Organization"], "schema:name": "Ministerio de Economía, Fomento y Turismo", "schema:identifier": []}]}
       ],
       "schema_contributor": [],
-      "schema_publisher": {"@type": "schema:Organization", "name": "Servicio Nacional de Turismo", "schema:identifier": []}
+      "schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Servicio Nacional de Turismo", "schema:identifier": []}
     }
 
     --- EJEMPLO 3: Persona individual con afiliación, sin publicador distinto ---
     Entrada: "Estudio de clasificación climática de Chile continental, por Pablo Sarricolea, del Departamento de Geografía de la Universidad de Chile."
     Salida:
     {
-      "reasoning": "Un único autor identificado por nombre completo, con afiliación institucional explícita. Es persona → given_name/family_name separados, formato 'Apellido, Nombre'. La afiliación es la unidad universitaria mencionada, no la universidad como entidad superior. Sin publicador distinto mencionado en el texto.",
+      "reasoning": "Un único autor identificado por nombre completo, con afiliación institucional explícita. Es persona → schema:givenName/schema:familyName separados, formato 'Apellido, Nombre'. La afiliación es la unidad universitaria mencionada, no la universidad como entidad superior. Sin publicador distinto mencionado en el texto.",
       "schema_creator": [
-        {"@type": "schema:Person", "name": "Sarricolea, Pablo", "given_name": "Pablo", "family_name": "Sarricolea",
+        {"@type": ["schema:Person"], "schema:name": "Sarricolea, Pablo", "schema:givenName": "Pablo", "schema:familyName": "Sarricolea",
          "schema:identifier": [],
-         "schema:affiliation": [{"@type": "schema:Organization", "name": "Departamento de Geografía, Universidad de Chile", "schema:identifier": []}]}
+         "schema:affiliation": [{"@type": ["schema:Organization"], "schema:name": "Departamento de Geografía, Universidad de Chile", "schema:identifier": []}]}
       ],
       "schema_contributor": [],
       "schema_publisher": {}
@@ -371,13 +371,13 @@ agents:
     {
       "reasoning": "El texto distingue explícitamente entre quien produjo el estudio (la Facultad) y quien lo publica (el Geoportal) → creador y publicador por separado. Hay un correo de contacto explícito → schema_contributor con rol ContactPerson.",
       "schema_creator": [
-        {"@type": "schema:Organization", "name": "Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile", "given_name": "", "family_name": "",
+        {"@type": ["schema:Organization"], "schema:name": "Facultad de Ciencias Físicas y Matemáticas, Universidad de Chile", "schema:givenName": "", "schema:familyName": "",
          "schema:identifier": [], "schema:affiliation": []}
       ],
       "schema_contributor": [
-        {"name": "", "role": "ContactPerson", "email": "geoportal@chile.cl"}
+        {"schema:name": "", "role": "ContactPerson", "schema:email": "geoportal@chile.cl"}
       ],
-      "schema_publisher": {"@type": "schema:Organization", "name": "Geoportal de Chile", "schema:identifier": []}
+      "schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Geoportal de Chile", "schema:identifier": []}
     }
 
     --- EJEMPLO 5: Sin información ---
@@ -422,20 +422,20 @@ agents:
     PASO 2 — CLASIFICA LA CATEGORÍA (schema_about)
       - Elige SOLO UNA categoría principal de la lista validada (en español)
       - Dentro de esa categoría, puedes elegir UNA O MÚLTIPLES subcategorías (máximo 3)
-      - Para CADA subcategoría, crea un objeto SEPARADO: {"name": "<subcategoría>", "inDefinedTermSet": "<categoría principal>"}
-      - Todos los objetos comparten el mismo "inDefinedTermSet" (la categoría principal)
+      - Para CADA subcategoría, crea un objeto SEPARADO: {"schema:name": "<subcategoría>", "schema:inDefinedTermSet": "<categoría principal>"}
+      - Todos los objetos comparten el mismo "schema:inDefinedTermSet" (la categoría principal)
       - Copia los nombres EXACTAMENTE como aparecen en la lista de categorías válidas — misma acentuación y mayúsculas. Verifica que la subcategoría elegida pertenezca realmente a la categoría que elegiste.
       - Ejemplo: "Gasto público en educación" →
         schema_about: [
-          {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"},
-          {"name": "Ciencias de la educación", "inDefinedTermSet": "Ciencias Sociales"}
+          {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"},
+          {"schema:name": "Ciencias de la educación", "schema:inDefinedTermSet": "Ciencias Sociales"}
         ]
       - Si no hay categoría clara → schema_about = []
 
     PASO 3 — EXTRAE PALABRAS CLAVE (schema_keywords)
       - Usa SOLO términos que aparecen explícitamente en el texto fuente. Puedes normalizar o combinar términos de la fuente (ej. "Tema -- Subtema -- País"), pero NUNCA introducir un concepto que no esté en el texto.
-      - Formato: {"name": "<término>", "inDefinedTermSet": "", "identifier": ""}
-      - inDefinedTermSet e identifier: déjalos VACÍOS por defecto. Solo complétalos si el recurso declara EXPLÍCITAMENTE a qué esquema de clasificación pertenece el término (ej. el texto cita un código o URI de LCSH/UNESCO/JEL) — un término con formato de encabezado de materia NO es automáticamente un término de ese esquema.
+      - Formato: {"schema:name": "<término>", "schema:inDefinedTermSet": "", "schema:identifier": ""}
+      - schema:inDefinedTermSet e schema:identifier: déjalos VACÍOS por defecto. Solo complétalos si el recurso declara EXPLÍCITAMENTE a qué esquema de clasificación pertenece el término (ej. el texto cita un código o URI de LCSH/UNESCO/JEL) — un término con formato de encabezado de materia NO es automáticamente un término de ese esquema.
       - Si no hay keywords explícitos → schema_keywords = []
       - NUNCA generar keywords no mencionados en la fuente
 
@@ -452,16 +452,16 @@ agents:
       Si no hay contexto suficiente (PASO 1) → schema_audience = []
 
     PASO 5 — AUTO-VERIFICACIÓN
-      ✓ ¿La categoría está en la lista validada? (solo UNA categoría principal en inDefinedTermSet)
-      ✓ ¿Cada objeto en schema_about tiene "name" y "inDefinedTermSet", y el "name" pertenece a esa categoría?
+      ✓ ¿La categoría está en la lista validada? (solo UNA categoría principal en schema:inDefinedTermSet)
+      ✓ ¿Cada objeto en schema_about tiene "schema:name" y "schema:inDefinedTermSet", y el "schema:name" pertenece a esa categoría?
       ✓ ¿Los keywords provienen del texto fuente, sin conceptos nuevos introducidos?
       ✓ ¿Hay entre 2 y 4 audiencias cuando hay contexto suficiente, con combinaciones no repetitivas?
       ✓ ¿Todos los valores están en las listas validadas?
       ✓ ¿El JSON es válido?
 
     === REGLAS ESTRICTAS ===
-    - schema_about: ARRAY de objetos. CADA objeto tiene "name" (subcategoría) e "inDefinedTermSet" (categoría principal, string, NO array)
-    - Todos los objetos DEBEN compartir el mismo "inDefinedTermSet"
+    - schema_about: ARRAY de objetos. CADA objeto tiene "schema:name" (subcategoría) e "schema:inDefinedTermSet" (categoría principal, string, NO array)
+    - Todos los objetos DEBEN compartir el mismo "schema:inDefinedTermSet"
     - Máximo 3 objetos en schema_about
     - audience, mediator, education_level, instructional_method: SOLO valores de las listas validadas, EN ESPAÑOL
     - NUNCA inventar keywords ni categorías que no correspondan al texto
@@ -485,10 +485,10 @@ agents:
     {
       "reasoning": "",
       "schema_about": [
-        {"name": "", "inDefinedTermSet": ""}
+        {"schema:name": "", "schema:inDefinedTermSet": ""}
       ],
       "schema_keywords": [
-        {"name": "", "inDefinedTermSet": "", "identifier": ""}
+        {"schema:name": "", "schema:inDefinedTermSet": "", "schema:identifier": ""}
       ],
       "schema_audience": [
         {"audience": "", "mediator": "", "education_level": "", "instructional_method": ""}
@@ -503,10 +503,10 @@ agents:
     {
       "reasoning": "El tema es economía/finanzas municipales → Ciencias Sociales / Economía y negocios. Los keywords vienen explícitos en el texto. Audiencia orientada a gestión pública y análisis.",
       "schema_about": [
-        {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"}
+        {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"}
       ],
       "schema_keywords": [
-        {"name": "Finanzas públicas -- Municipios -- Chile", "inDefinedTermSet": "", "identifier": ""}
+        {"schema:name": "Finanzas públicas -- Municipios -- Chile", "schema:inDefinedTermSet": "", "schema:identifier": ""}
       ],
       "schema_audience": [
         {"audience": "Administradores", "mediator": "Gerente", "education_level": "Profesional", "instructional_method": "Autoaprendizaje"},
@@ -518,14 +518,14 @@ agents:
     Entrada: "Datos de gasto público en educación y su impacto en el desarrollo económico regional. Cobertura: Chile."
     Salida:
     {
-      "reasoning": "El recurso cruza dos subtemas de la misma categoría (economía y educación) → dos objetos schema_about con el mismo inDefinedTermSet.",
+      "reasoning": "El recurso cruza dos subtemas de la misma categoría (economía y educación) → dos objetos schema_about con el mismo schema:inDefinedTermSet.",
       "schema_about": [
-        {"name": "Economía y negocios", "inDefinedTermSet": "Ciencias Sociales"},
-        {"name": "Ciencias de la educación", "inDefinedTermSet": "Ciencias Sociales"}
+        {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"},
+        {"schema:name": "Ciencias de la educación", "schema:inDefinedTermSet": "Ciencias Sociales"}
       ],
       "schema_keywords": [
-        {"name": "Gasto público -- Educación -- Chile", "inDefinedTermSet": "", "identifier": ""},
-        {"name": "Desarrollo económico regional", "inDefinedTermSet": "", "identifier": ""}
+        {"schema:name": "Gasto público -- Educación -- Chile", "schema:inDefinedTermSet": "", "schema:identifier": ""},
+        {"schema:name": "Desarrollo económico regional", "schema:inDefinedTermSet": "", "schema:identifier": ""}
       ],
       "schema_audience": [
         {"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"},
@@ -539,8 +539,8 @@ agents:
     {"reasoning": "El texto no indica de qué trata el recurso — no hay tema identificable en una frase, así que no hay contexto suficiente para clasificar.", "schema_about": [], "schema_keywords": [], "schema_audience": []}
 
     === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: {"name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "inDefinedTermSet": "LCSH", "identifier": "https://id.loc.gov/authorities/subjects.html"} — declara un esquema de autoridad real sin evidencia, solo porque el término TIENE el formato de un encabezado LCSH.
-    ✅ BIEN: {"name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "inDefinedTermSet": "", "identifier": ""} — mismo término, sin inventar una pertenencia a un esquema de autoridad que el texto no confirma.
+    ❌ MAL: {"schema:name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "schema:inDefinedTermSet": "LCSH", "schema:identifier": "https://id.loc.gov/authorities/subjects.html"} — declara un esquema de autoridad real sin evidencia, solo porque el término TIENE el formato de un encabezado LCSH.
+    ✅ BIEN: {"schema:name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "schema:inDefinedTermSet": "", "schema:identifier": ""} — mismo término, sin inventar una pertenencia a un esquema de autoridad que el texto no confirma.
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
@@ -573,28 +573,28 @@ agents:
 
     IMPORTANTE: solo asigna una licencia si el título, descripción o contenido del recurso mencionan explícitamente una licencia, términos de uso, "datos abiertos", "dominio público", o el nombre concreto de una licencia (CC BY, CC0, MIT, etc.). NUNCA asumas una licencia solo porque la institución es científica, universitaria o gubernamental — eso es inventar información legal sin evidencia.
 
-    Formato de cada entrada: {"name": "", "url": "", "identifier": ""}
+    Formato de cada entrada: {"schema:name": "", "schema:url": "", "schema:identifier": ""}
 
     Si el recurso menciona una licencia explícitamente, usa este mapeo:
 
     PRIORIDAD 1 — Creative Commons (usar SOLO si el texto menciona explícitamente "CC", "Creative Commons", o una URL de creativecommons.org — una mención aislada de "atribución" sin ese contexto NO es evidencia de licencia, va en schema_conditions_of_access si acaso):
-    - CC0 o "dominio público" → identifier: "CC0-1.0" | url: "https://creativecommons.org/publicdomain/zero/1.0/"
-    - CC BY → identifier: "CC-BY-<versión>" | url: "https://creativecommons.org/licenses/by/<versión>/"
-    - CC BY-SA → identifier: "CC-BY-SA-<versión>" | url: "https://creativecommons.org/licenses/by-sa/<versión>/"
-    - CC BY-NC → identifier: "CC-BY-NC-<versión>" | url: "https://creativecommons.org/licenses/by-nc/<versión>/"
-    - CC BY-NC-SA → identifier: "CC-BY-NC-SA-<versión>" | url: "https://creativecommons.org/licenses/by-nc-sa/<versión>/"
-    - CC BY-ND → identifier: "CC-BY-ND-<versión>" | url: "https://creativecommons.org/licenses/by-nd/<versión>/"
+    - CC0 o "dominio público" → schema:identifier: "CC0-1.0" | schema:url: "https://creativecommons.org/publicdomain/zero/1.0/"
+    - CC BY → schema:identifier: "CC-BY-<versión>" | schema:url: "https://creativecommons.org/licenses/by/<versión>/"
+    - CC BY-SA → schema:identifier: "CC-BY-SA-<versión>" | schema:url: "https://creativecommons.org/licenses/by-sa/<versión>/"
+    - CC BY-NC → schema:identifier: "CC-BY-NC-<versión>" | schema:url: "https://creativecommons.org/licenses/by-nc/<versión>/"
+    - CC BY-NC-SA → schema:identifier: "CC-BY-NC-SA-<versión>" | schema:url: "https://creativecommons.org/licenses/by-nc-sa/<versión>/"
+    - CC BY-ND → schema:identifier: "CC-BY-ND-<versión>" | schema:url: "https://creativecommons.org/licenses/by-nd/<versión>/"
     - <versión>: extrae la versión del texto si la menciona (ej. "CC BY 3.0" → "CC-BY-3.0"). Usa "4.0" SOLO si el texto menciona Creative Commons sin especificar versión.
-    - "name": el nombre legible de la licencia (ej. "Creative Commons Attribution 3.0 (CC BY 3.0)")
+    - "schema:name": el nombre legible de la licencia (ej. "Creative Commons Attribution 3.0 (CC BY 3.0)")
     → schema_copyright_holder: la entidad que el texto identifica como titular de los derechos o del copyright (no todas las instituciones contribuyentes — ver Paso 2b)
 
     PRIORIDAD 2 — Licencias de software (solo si el recurso es código Y el texto menciona la licencia):
-    - MIT, Apache-2.0, GPL-3.0, BSD-3-Clause → identifier con ese valor SPDX
+    - MIT, Apache-2.0, GPL-3.0, BSD-3-Clause → schema:identifier con ese valor SPDX
 
     PRIORIDAD 3 — Datos Abiertos del Estado de Chile (usar SOLO si el texto o URL mencionan explícitamente "datos abiertos", "datos.gob.cl", o portal de transparencia — estar alojado en ese portal NO es lo mismo que declarar una licencia concreta):
-    → {"name": "Datos Abiertos del Estado de Chile", "url": "<url de términos de uso si el texto la cita, si no vacío>", "identifier": ""}
+    → {"schema:name": "Datos Abiertos del Estado de Chile", "schema:url": "<url de términos de uso si el texto la cita, si no vacío>", "schema:identifier": ""}
     → schema_copyright_holder: "Estado de Chile"
-    → NO asignes "identifier" en este caso — "datos abiertos" es una declaración de la institución, no el nombre de una licencia SPDX concreta, salvo que el texto también cite explícitamente una licencia específica (en cuyo caso aplica PRIORIDAD 1 además).
+    → NO asignes "schema:identifier" en este caso — "datos abiertos" es una declaración de la institución, no el nombre de una licencia SPDX concreta, salvo que el texto también cite explícitamente una licencia específica (en cuyo caso aplica PRIORIDAD 1 además).
 
     REGLA DE ORO: sin evidencia explícita de una licencia o términos de uso en el texto → schema_license: []. NUNCA asumir una licencia por el tipo de institución (científica, universitaria, ministerial), aunque sea el caso más común en el corpus.
 
@@ -604,10 +604,10 @@ agents:
 
     Paso 3: EXTRAE INFORMACIÓN DE FINANCIAMIENTO (schema_funding, prioritario para Data Observatory)
     - Busca nombres de fondos o instituciones financiadoras: ANID, FONDECYT, CONICYT (antecesor de ANID — usa el nombre que aparezca literalmente en el texto), FONDEQUIP, FONDEF, REGIONAL, PAI, FIC, FOVI, CORFO, INNOVA.
-    - Formato de cada entrada: {"@type": "schema:MonetaryGrant", "name": "<título del proyecto si el texto lo da>", "identifier": [{"propertyID": "award_number", "value": ""}], "description": "<instrumento/programa, ej. FONDECYT>", "funder": {"@type": "schema:Organization", "name": "<nombre OFICIAL COMPLETO de la agencia, expandiendo el acrónimo>", "schema:identifier": []}}
-    - "funder.name" = el nombre OFICIAL COMPLETO de la agencia financiadora, expandiendo el acrónimo (ej. "Agencia Nacional de Investigación y Desarrollo" para ANID). "description" = el instrumento o programa específico (FONDECYT, FONDEF, FIC, PAI...). NUNCA pongas el instrumento en "funder.name".
+    - Formato de cada entrada: {"@type": ["schema:MonetaryGrant"], "schema:name": "<título del proyecto si el texto lo da>", "schema:identifier": [{"schema:propertyID": "award_number", "schema:value": ""}], "schema:description": "<instrumento/programa, ej. FONDECYT>", "schema:funder": {"@type": ["schema:Organization"], "schema:name": "<nombre OFICIAL COMPLETO de la agencia, expandiendo el acrónimo>", "schema:identifier": []}}
+    - "schema:funder.schema:name" = el nombre OFICIAL COMPLETO de la agencia financiadora, expandiendo el acrónimo (ej. "Agencia Nacional de Investigación y Desarrollo" para ANID). "schema:description" = el instrumento o programa específico (FONDECYT, FONDEF, FIC, PAI...). NUNCA pongas el instrumento en "schema:funder.schema:name".
     - Nota: FONDECYT, FONDEF y PAI son instrumentos de ANID; CORFO y FIC son agencias/fondos distintos de ANID — no los mezcles.
-    - El número de proyecto/adjudicación va en identifier[0].value, TAL COMO aparece en el texto fuente. Los award numbers de ANID suelen ser cadenas de 7-8 dígitos, pero copia el número real del texto — NUNCA copies un número de ejemplo de estas instrucciones.
+    - El número de proyecto/adjudicación va en schema:identifier[0].schema:value, TAL COMO aparece en el texto fuente. Los award numbers de ANID suelen ser cadenas de 7-8 dígitos, pero copia el número real del texto — NUNCA copies un número de ejemplo de estas instrucciones.
     - NO incluyas identificadores ROR para financiadores. Deja funder["schema:identifier"] vacío — se resuelven automáticamente después del procesamiento.
     - Multi-financiamiento: puede haber múltiples entradas en schema_funding, una por cada proyecto/financiador distinto.
 
@@ -626,7 +626,7 @@ agents:
     {
       "reasoning": "",
       "schema_license": [
-        {"name": "", "url": "", "identifier": ""}
+        {"schema:name": "", "schema:url": "", "schema:identifier": ""}
       ],
       "schema_conditions_of_access": [
         {"condition": ""}
@@ -634,11 +634,11 @@ agents:
       "schema_copyright_holder": "",
       "schema_funding": [
         {
-          "@type": "schema:MonetaryGrant",
-          "name": "",
-          "identifier": [{"propertyID": "award_number", "value": ""}],
-          "description": "",
-          "funder": {"@type": "schema:Organization", "name": "", "schema:identifier": []}
+          "@type": ["schema:MonetaryGrant"],
+          "schema:name": "",
+          "schema:identifier": [{"schema:propertyID": "award_number", "schema:value": ""}],
+          "schema:description": "",
+          "schema:funder": {"@type": ["schema:Organization"], "schema:name": "", "schema:identifier": []}
         }
       ],
       "schema_citation": [
@@ -668,11 +668,11 @@ agents:
       "schema_copyright_holder": "",
       "schema_funding": [
         {
-          "@type": "schema:MonetaryGrant",
-          "name": "",
-          "identifier": [{"propertyID": "award_number", "value": "3220567"}],
-          "description": "FONDECYT",
-          "funder": {"@type": "schema:Organization", "name": "Agencia Nacional de Investigación y Desarrollo", "schema:identifier": []}
+          "@type": ["schema:MonetaryGrant"],
+          "schema:name": "",
+          "schema:identifier": [{"schema:propertyID": "award_number", "schema:value": "3220567"}],
+          "schema:description": "FONDECYT",
+          "schema:funder": {"@type": ["schema:Organization"], "schema:name": "Agencia Nacional de Investigación y Desarrollo", "schema:identifier": []}
         }
       ],
       "schema_citation": []
@@ -683,9 +683,9 @@ agents:
 
     RESPUESTA:
     {
-      "reasoning": "El texto menciona explícitamente Creative Commons y su versión (3.0) → identifier CC-BY-3.0, no el 4.0 por defecto. schema_copyright_holder es la institución mencionada como responsable del dataset.",
+      "reasoning": "El texto menciona explícitamente Creative Commons y su versión (3.0) → schema:identifier CC-BY-3.0, no el 4.0 por defecto. schema_copyright_holder es la institución mencionada como responsable del dataset.",
       "schema_license": [
-        {"name": "Creative Commons Attribution 3.0 (CC BY 3.0)", "url": "https://creativecommons.org/licenses/by/3.0/", "identifier": "CC-BY-3.0"}
+        {"schema:name": "Creative Commons Attribution 3.0 (CC BY 3.0)", "schema:url": "https://creativecommons.org/licenses/by/3.0/", "schema:identifier": "CC-BY-3.0"}
       ],
       "schema_conditions_of_access": [],
       "schema_copyright_holder": "Ministerio de Ciencia, Tecnología, Conocimiento e Innovación",
@@ -749,7 +749,7 @@ agents:
     Paso 1: Lee el título, descripción y metadata disponible del recurso.
 
     Paso 2: IDENTIFICA EL O LOS ARCHIVOS DESCARGABLES (schema_distribution)
-    - Busca URLs de descarga (archivos, APIs, servicios web) en el texto. Si NO hay ninguna URL de descarga real, NO crees ningún objeto — un objeto sin contentUrl no tiene sentido.
+    - Busca URLs de descarga (archivos, APIs, servicios web) en el texto. Si NO hay ninguna URL de descarga real, NO crees ningún objeto — un objeto sin schema:contentUrl no tiene sentido.
     - Para CADA URL, determina su formato IANA (tipo MIME) a partir de:
       a) La extensión del archivo en la URL (.kml, .kmz, .zip, .csv, .json, .tif, .pdf, etc.)
       b) La descripción explícita en el texto (ej. "formato KML", "archivo CSV")
@@ -760,25 +760,25 @@ agents:
          - URL con /arcgis/rest/ → formato: "application/json"
          - URL con /wms o WMSServer → formato: "image/png"
          - URL con /wfs o WFSServer → formato: "application/json"
-      e) REGLA POR DEFECTO CONDICIONADA: usa "application/zip" ÚNICAMENTE si hay una URL de descarga real Y el texto sugiere un paquete de datos (shapefile, capa, "descargar", múltiples archivos comprimidos) pero ninguna de las vías anteriores determina el formato. Si hay URL pero ninguna pista de formato ni indicio de paquete comprimido, deja "encodingFormat" vacío en vez de asumir ZIP.
-    - Formato de cada entrada: {"contentUrl": "", "encodingFormat": "", "contentSize": [], "checksum": "", "temporal_resolution": ""}
-    - contentSize: {"size": numero, "unit": "bytes|KB|MB|GB"} SOLO si el texto menciona el peso; si no, [].
+      e) REGLA POR DEFECTO CONDICIONADA: usa "application/zip" ÚNICAMENTE si hay una URL de descarga real Y el texto sugiere un paquete de datos (shapefile, capa, "descargar", múltiples archivos comprimidos) pero ninguna de las vías anteriores determina el formato. Si hay URL pero ninguna pista de formato ni indicio de paquete comprimido, deja "schema:encodingFormat" vacío en vez de asumir ZIP.
+    - Formato de cada entrada: {"schema:contentUrl": "", "schema:encodingFormat": "", "schema:contentSize": [], "checksum": "", "temporal_resolution": ""}
+    - schema:contentSize: {"size": numero, "unit": "bytes|KB|MB|GB"} SOLO si el texto menciona el peso; si no, [].
     - checksum (MD5, SHA-1, SHA-256) si está en el texto.
     - temporal_resolution (daily, monthly, yearly, hourly) si está en el texto.
     - Detecta si hay múltiples archivos o uno solo — crea un objeto SEPARADO por cada URL de descarga encontrada.
 
     Paso 3: METADATOS DEL CONTENIDO (a nivel del recurso, no por archivo — solo si están explícitamente en el texto)
-    - schema_variable_measured: [{"name": "<variable medida>"}], una entrada por variable distinta mencionada.
+    - schema_variable_measured: [{"schema:name": "<variable medida>"}], una entrada por variable distinta mencionada.
     - schema_measurement_technique: ["<técnica>"], lista de strings.
-    - dqv_quality_measurement: [{"measure": "<qué se midió de la calidad>", "value": "<resultado, si el texto lo da>"}]
-    - prov_generated_by: {"description": "<procedencia o instrumentación de los datos>"} — un solo objeto, no una lista.
+    - dqv_quality_measurement: [{"dqv:isMeasurementOf": "<qué se midió de la calidad>", "dqv:value": "<resultado, si el texto lo da>"}]
+    - prov_generated_by: {"schema:description": "<procedencia o instrumentación de los datos>"} — un solo objeto, no una lista.
     - Si el texto no menciona ninguno de estos → dejar la lista/objeto vacío correspondiente.
 
     === REGLAS OBLIGATORIAS ===
     - **CAMPO OBLIGATORIO:** "schema_distribution" SIEMPRE debe existir en la salida JSON, aunque sea []. NUNCA lo omitas.
     - NO inventar información
     - Si no hay archivos descargables → schema_distribution: []
-    - NUNCA crear un objeto en schema_distribution sin contentUrl
+    - NUNCA crear un objeto en schema_distribution sin schema:contentUrl
     - Si un campo no tiene información en el texto → dejar "" (string vacío) o [] (array vacío)
     - Devolver SOLO JSON válido
 
@@ -787,9 +787,9 @@ agents:
       "reasoning": "",
       "schema_distribution": [
         {
-          "contentUrl": "",
-          "encodingFormat": "",
-          "contentSize": [],
+          "schema:contentUrl": "",
+          "schema:encodingFormat": "",
+          "schema:contentSize": [],
           "checksum": "",
           "temporal_resolution": ""
         }
@@ -810,9 +810,9 @@ agents:
       "reasoning": "Hay una URL de descarga real con extensión .kml → formato KML determinado por extensión. Peso mencionado explícitamente. Procedencia institucional explícita → prov_generated_by.",
       "schema_distribution": [
         {
-          "contentUrl": "https://datos.gob.cl/concesiones.kml",
-          "encodingFormat": "application/vnd.google-earth.kml+xml",
-          "contentSize": [{"size": 2.5, "unit": "MB"}],
+          "schema:contentUrl": "https://datos.gob.cl/concesiones.kml",
+          "schema:encodingFormat": "application/vnd.google-earth.kml+xml",
+          "schema:contentSize": [{"size": 2.5, "unit": "MB"}],
           "checksum": "",
           "temporal_resolution": ""
         }
@@ -820,7 +820,7 @@ agents:
       "schema_variable_measured": [],
       "schema_measurement_technique": [],
       "dqv_quality_measurement": [],
-      "prov_generated_by": {"description": "Datos del Ministerio de Bienes Nacionales"}
+      "prov_generated_by": {"schema:description": "Datos del Ministerio de Bienes Nacionales"}
     }
 
     EJEMPLO 2: Servicio ArcGIS REST (MapServer)
@@ -831,9 +831,9 @@ agents:
       "reasoning": "La URL coincide con el patrón ArcGIS REST /arcgis/rest/.../MapServer → formato application/json por patrón conocido, sin peso mencionado.",
       "schema_distribution": [
         {
-          "contentUrl": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
-          "encodingFormat": "application/json",
-          "contentSize": [],
+          "schema:contentUrl": "https://rest-sit.mop.gob.cl/arcgis/rest/services/DGOP/VISOR_OBRA_MOP/MapServer",
+          "schema:encodingFormat": "application/json",
+          "schema:contentSize": [],
           "checksum": "",
           "temporal_resolution": ""
         }
@@ -851,7 +851,7 @@ agents:
     {"reasoning": "No hay ninguna URL de descarga en el texto → no se crea ningún objeto.", "schema_distribution": [], "schema_variable_measured": [], "schema_measurement_technique": [], "dqv_quality_measurement": [], "prov_generated_by": {}}
 
     === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: {"encodingFormat": "application/zip", "contentUrl": ""} — crear un objeto sin ninguna URL real, solo para "completar" el default.
+    ❌ MAL: {"schema:encodingFormat": "application/zip", "schema:contentUrl": ""} — crear un objeto sin ninguna URL real, solo para "completar" el default.
     ✅ BIEN: si no hay URL de descarga real, no crear el objeto — schema_distribution: [].
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
