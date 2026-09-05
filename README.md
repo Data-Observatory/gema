@@ -273,7 +273,7 @@ since it needs that wave's merged output:
 | `core_metadata` | schema_name, schema_description, schema_identifier, schema_additional_type, schema_same_as, schema_related_link, schema_version, schema_in_language, schema_date_created, schema_date_published, schema_copyright_year, schema_conditions_of_access, schema_spatial_coverage |
 | `creators_publishers` | schema_creator, schema_contributor, schema_publisher |
 | `classification` | schema_keywords, schema_about, schema_audience |
-| `rights_funding_citations` | schema_license, schema_conditions_of_access, schema_copyright_holder, schema_funding, schema_citation |
+| `rights_funding_citations` | schema_license, schema_conditions_of_access, schema_copyright_holder, schema_funding, dcterms_bibliographic_citation |
 | `media_files` | schema_distribution, schema_variable_measured, schema_measurement_technique, dqv_quality_measurement, prov_generated_by |
 
 Legacy JSON configurations are preserved at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents) for reference.
