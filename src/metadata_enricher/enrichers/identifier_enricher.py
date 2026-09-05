@@ -31,15 +31,19 @@ these properties via ``@context`` instead of silently dropping a bare key:
                                         # profile's Person def itself.
             "schema:familyName": str,  # Person only -- same extension.
             "schema:identifier": {"schema:propertyID": str, "schema:value": str, "schema:url": str},
-            "schema:sameAs": [ <same PropertyValue shape>, ... ],  # overflow, see below
+            "schema:sameAs": [ {"@id": str}, ... ],  # overflow, see below (Open Question #22)
             "schema:affiliation": [ <Organization entry, same shape> ],
         }
 
-    Each ``schema:identifier``/``schema:sameAs`` entry may also carry
-    ``matched_via``, ``confidence``, ``status`` as bare (non-CURIE) sibling
-    keys -- gema-internal audit trail from this enricher, deliberately
-    outside the JSON-LD graph, never meant to round-trip through real
-    JSON-LD tooling. Left un-prefixed on purpose; don't "fix" them.
+    ``schema:identifier`` may also carry ``matched_via``, ``confidence``,
+    ``status`` as bare (non-CURIE) sibling keys -- gema-internal audit
+    trail from this enricher, deliberately outside the JSON-LD graph,
+    never meant to round-trip through real JSON-LD tooling. Left
+    un-prefixed on purpose; don't "fix" them. ``schema:sameAs`` overflow
+    entries carry none of this (Open Question #22): the vendored schema
+    only allows a bare string/``{"@id": ...}`` reference there, and the
+    provenance is identical to the sibling ``schema:identifier`` entry's
+    anyway (same ``IdentifierMatch``), so nothing is lost by omitting it.
 
     schema:funding entry (MonetaryGrant)::
 
@@ -78,7 +82,16 @@ from metadata_enricher.types import MetadataDocument, first_type_label, jsonld_l
 
 logger = logging.getLogger(__name__)
 
-_SCHEME_URI = {"ROR": "https://ror.org", "ISNI": "https://isni.org", "ORCID": "https://orcid.org"}
+# ISNI's canonical resolver path is "/isni/<id>", not bare "/<id>" -- matches
+# pid_validator.resolve_pid and isni_client's own isni_uri construction.
+# Getting this wrong only mattered cosmetically pre-#22 (schema:value carried
+# the real id regardless); post-#22 this URL is the *only* surviving record
+# for an overflow ISNI written into schema:sameAs, so it must be right.
+_SCHEME_URI = {
+    "ROR": "https://ror.org",
+    "ISNI": "https://isni.org/isni",
+    "ORCID": "https://orcid.org",
+}
 
 # Fixed, stable output order — ROR first (most actionable for orgs), then ISNI,
 # then ORCID (person matches only; never co-occurs with ROR/ISNI on the same match).
@@ -183,12 +196,26 @@ def _write_identifiers(entry: dict[str, Any], entries: list[dict[str, Any]]) -> 
     ``schema:identifier`` slot the vendored Person/Organization/
     MonetaryGrant defs actually want, plus ``schema:sameAs`` overflow for
     anything beyond the first (Open Question #16 -- see module docstring).
-    No-op if *entries* is empty; never writes an empty dict/list."""
+    No-op if *entries* is empty; never writes an empty dict/list.
+
+    Open Question #22, resolved: the vendored ``$defs``' ``schema:sameAs``
+    is ``anyOf: [string, {"@id": string}]`` on these nested entities, not
+    the full PropertyValue shape ``schema:identifier`` itself uses -- an
+    overflow entry here is written as a bare ``{"@id": <resolvable URL>}``
+    reference. Provenance (``matched_via``/``confidence``/``status``) is
+    dropped for overflow entries: every field in *entries* comes from the
+    same single ``IdentifierMatch`` (see ``_identifier_entries``), so the
+    identical triple already lives on the sibling ``schema:identifier``
+    slot -- nothing is lost. ``types.entity_identifiers`` reverse-parses
+    the scheme back out of the URL host for callers that want it."""
     if not entries:
         return
     entry["schema:identifier"] = entries[0]
     if len(entries) > 1:
-        entry["schema:sameAs"] = entries[1:]
+        entry["schema:sameAs"] = [
+            {"@id": overflow["schema:url"] if overflow.get("schema:url") else overflow.get("schema:value", "")}
+            for overflow in entries[1:]
+        ]
 
 
 class IdentifierEnricher:

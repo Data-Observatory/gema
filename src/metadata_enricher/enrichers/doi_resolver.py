@@ -40,10 +40,17 @@ def _date_parts_to_str(date_parts: object) -> str:
 
 
 def _doi_identifier(doc: MetadataDocument) -> str:
-    """The DOI value, if schema:identifier carries one -- else empty."""
-    for entry in doc.get_field("schema:identifier", []) or []:
-        if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
-            return str(entry.get("schema:value", ""))
+    """The DOI value, if schema:identifier carries one -- else empty.
+
+    schema:identifier is singular on a fully-merged document (Open
+    Question #23) -- a bare list is also tolerated defensively (a
+    hand-built/synthetic document, or one that hasn't gone through
+    CDIFDiscoveryProfile.merge_agent_results)."""
+    entry = doc.get_field("schema:identifier")
+    candidates = [entry] if isinstance(entry, dict) else (entry if isinstance(entry, list) else [])
+    for candidate in candidates:
+        if isinstance(candidate, dict) and str(candidate.get("schema:propertyID", "")).upper() == "DOI":
+            return str(candidate.get("schema:value", ""))
     return ""
 
 

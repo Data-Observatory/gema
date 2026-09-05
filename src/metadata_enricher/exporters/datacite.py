@@ -820,10 +820,14 @@ def _build_related_identifiers(document: MetadataDocument) -> list[dict[str, Any
 
 
 def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, Any]]:
+    # entry.get("@id"): the document's own schema:sameAs can carry a bare
+    # {"@id": url} overflow reference (Open Question #23's collapse, same
+    # shape as Open Question #22's nested-entity overflow) alongside the
+    # richer PropertyValue shape agents/enrichers also write here.
     alternates: list[dict[str, Any]] = []
     for entry in _as_list(document.get_field("schema:sameAs")):
-        if isinstance(entry, dict) and entry.get("schema:value"):
-            value = str(entry["schema:value"])
+        if isinstance(entry, dict) and (entry.get("schema:value") or entry.get("@id")):
+            value = str(entry.get("schema:value") or entry.get("@id"))
             alternates.append(
                 {
                     "alternate_name": entry.get("schema:name", ""),
@@ -845,13 +849,17 @@ def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, A
 # ------------------------------------------------------------------
 
 
-def _build_citations(document: MetadataDocument) -> list[dict[str, Any]]:
+def _build_citations(document: MetadataDocument) -> list[Any]:
     # dcterms:bibliographicCitation (Open Question #19, resolved -- was
     # schema:citation, forbidden outright by the vendored shacl.ttl's
-    # cdifd:citationProperty, sh:maxCount 0). Entries already use DataCite's
-    # own key names -- this profile's prompt was written to match Q2's
-    # mapping verbatim, and the rename kept the same structured per
-    # -citation shape (see cdif_discovery.py's field docstring for why).
+    # cdifd:citationProperty, sh:maxCount 0). Open Question #21, resolved:
+    # CDIFDiscoveryProfile.merge_agent_results now renders each structured
+    # dict into a single formatted literal string (DCMI's own range for
+    # this property) -- a bare string is the real shape on a fully-merged
+    # document now, though a structured dict is still accepted (a
+    # hand-built/synthetic fixture, or one built before that formatting
+    # step ran) since DataCiteSchema46._normalize_citations already
+    # handles either shape (folds a bare string into "title").
     # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
     # Backlog): citations are optional bibliography data -- most resources
     # legitimately cite nothing, so an empty result here is silent by
@@ -859,7 +867,8 @@ def _build_citations(document: MetadataDocument) -> list[dict[str, Any]]:
     return [
         entry
         for entry in _as_list(document.get_field("dcterms:bibliographicCitation"))
-        if isinstance(entry, dict) and entry.get("title")
+        if (isinstance(entry, dict) and entry.get("title"))
+        or (isinstance(entry, str) and entry.strip())
     ]
 
 

@@ -136,9 +136,13 @@ def _build_title(document: MetadataDocument, warnings: list[str]) -> str:
         "no schema:name found — Dataverse requires a title; using the resource identifier "
         "as a fallback"
     )
-    identifiers = document.get_field("schema:identifier") or []
-    if identifiers and isinstance(identifiers[0], dict) and identifiers[0].get("schema:value"):
-        return str(identifiers[0]["schema:value"])
+    # schema:identifier is singular on a fully-merged document (Open
+    # Question #23) -- a bare list is also tolerated defensively.
+    identifier = document.get_field("schema:identifier")
+    if isinstance(identifier, list):
+        identifier = identifier[0] if identifier else None
+    if isinstance(identifier, dict) and identifier.get("schema:value"):
+        return str(identifier["schema:value"])
     return "Untitled resource"
 
 
@@ -317,7 +321,13 @@ def _build_alternative_url(document: MetadataDocument) -> dict[str, Any] | None:
     url = document.get_field("schema:url")
     if url:
         return _primitive_field("alternativeURL", str(url))
-    for entry in document.get_field("schema:identifier") or []:
+    # schema:identifier is singular on a fully-merged document (Open
+    # Question #23) -- a bare list is also tolerated defensively.
+    identifier = document.get_field("schema:identifier")
+    candidates = (
+        [identifier] if isinstance(identifier, dict) else (identifier if isinstance(identifier, list) else [])
+    )
+    for entry in candidates:
         if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
             # Prefer the entry's own schema:url (already resolvable) over
             # constructing one -- and never double-prefix a value that's

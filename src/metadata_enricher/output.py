@@ -69,11 +69,19 @@ class OutputWriter:
                 safe = "".join(c for c in filename_hint if c.isalnum() or c in "-_")[:80]
                 filename = f"{safe or 'output'}.json"
             else:
-                identifiers = document.get_field("schema:identifier") or []
+                # schema:identifier is singular on a fully-merged document
+                # (Open Question #23) -- a bare list is also tolerated
+                # defensively.
+                identifier = document.get_field("schema:identifier")
+                candidates = (
+                    [identifier]
+                    if isinstance(identifier, dict)
+                    else (identifier if isinstance(identifier, list) else [])
+                )
                 doi = next(
                     (
                         i.get("schema:value")
-                        for i in identifiers
+                        for i in candidates
                         if isinstance(i, dict)
                         and str(i.get("schema:propertyID", "")).upper() == "DOI"
                     ),

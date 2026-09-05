@@ -146,6 +146,18 @@ class CDIFDiscoveryOutputModel(BaseModel):
 
     # -- Required floor (agent-generated part) --
     schema_name: str = Field(default="", alias="schema:name")
+    # Open Question #23, resolved: the vendored schema.json's own
+    # properties.schema:identifier (the *document's* identifier, not the
+    # nested Person/Organization/MonetaryGrant $defs Open Question #16
+    # already fixed) is singular too (anyOf[Identifier, string]) -- not a
+    # list, even though config/agents.yaml's core_metadata prompt already
+    # only ever asks for one entry. This field stays list[dict[str, Any]]
+    # here (agent-facing shape, unchanged -- zero cache impact) and
+    # merge_agent_results collapses it to singular + schema:sameAs
+    # overflow the same way #16 does one level down; the field_validator
+    # below wraps a singular dict back into a one-element list purely so
+    # this model (validate_output, on an already-collapsed document) still
+    # validates -- nothing reads this attribute off the model instance.
     schema_identifier: list[dict[str, Any]] = Field(
         default_factory=list, alias="schema:identifier"
     )
@@ -197,17 +209,27 @@ class CDIFDiscoveryOutputModel(BaseModel):
     # schema:citation is forbidden outright -- not just unused, a real
     # conformance violation every time it's non-empty (confirmed:
     # sample_input03.json failed exactly this SHACL check in Step 6).
-    # Retargeted to dcterms:bibliographicCitation. Shape kept as the same
-    # structured per-citation dict (title/volume/issue/pages/edition/
-    # conference) rather than collapsing to a single formatted string --
-    # nothing in the vendored schema.json/shacl.ttl constrains this
-    # property's shape the way schema:citation was constrained (it isn't a
-    # first-class property in schema.json at all), and formatting a single
-    # correct citation string across highly variable inputs (journal
-    # article vs. conference paper vs. partial data) is its own nontrivial
-    # judgment call independent of this rename -- deferred; see
-    # docs/cdif_pivot_implementation_plan.md's Open Question #19 writeup.
-    dcterms_bibliographic_citation: list[dict[str, Any]] = Field(
+    # Retargeted to dcterms:bibliographicCitation.
+    #
+    # Open Question #21, resolved: DCMI's own term definition gives
+    # dcterms:bibliographicCitation rdfs:range rdfs:Literal (it is also a
+    # sub-property of dcterms:identifier) -- a structured per-citation
+    # object there is real data sitting under a spec-legal-looking key
+    # that still resolves to a typed blank node under a literal-only
+    # property (verified via a real pyld.jsonld.expand() run: every
+    # sub-key vanished, since none of title/volume/issue/start_page/
+    # end_page/edition/conference_place/conference_date has a @context
+    # term). Fix: merge_agent_results (below) renders each structured
+    # dict the agent still produces (config/agents.yaml's prompt is
+    # unchanged -- the LLM keeps doing the easier structured-extraction
+    # task) into a single formatted literal string, deterministically, in
+    # code -- see _format_bibliographic_citation. The annotation below is
+    # widened to accept a bare str too (not narrowed to it) so this model
+    # still validates a fully-merged, already-formatted document without
+    # changing what build_output_model asks the LLM to produce (the LLM
+    # only ever emits the dict shape; nothing here rejects a str because
+    # nothing generates one directly).
+    dcterms_bibliographic_citation: list[dict[str, Any] | str] = Field(
         default_factory=list, alias="dcterms:bibliographicCitation"
     )
     schema_spatial_coverage: list[dict[str, Any]] = Field(
@@ -234,6 +256,18 @@ class CDIFDiscoveryOutputModel(BaseModel):
     @classmethod
     def _unwrap_creator_for_validation(cls, value: Any) -> Any:
         return jsonld_list_unwrap(value)
+
+    @field_validator("schema_identifier", mode="before")
+    @classmethod
+    def _wrap_singular_identifier_for_validation(cls, value: Any) -> Any:
+        """Open Question #23: a fully-merged document's schema:identifier
+        is a singular dict (or absent) -- wrap it back into a one-element
+        list so this field's list[dict[str, Any]] annotation still
+        validates. A bare list (pre-#23 shape, or a hand-built/synthetic
+        fixture) passes through unchanged."""
+        if isinstance(value, dict):
+            return [value] if value else []
+        return value
 
     @model_validator(mode="after")
     def _check_required_floor(self) -> CDIFDiscoveryOutputModel:
@@ -542,6 +576,48 @@ class CDIFDiscoveryProfile:
     # Merge agent results
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _format_bibliographic_citation(entry: dict[str, Any]) -> str:
+        """Renders one dcterms_bibliographic_citation dict (bare title/
+        volume/issue/start_page/end_page/edition/conference_place/
+        conference_date keys, straight from config/agents.yaml's
+        rights_funding_citations prompt) into the plain literal string
+        DCMI's own term definition requires (Open Question #21) --
+        deterministic, not LLM-produced, so this is free of prompt/cache
+        cost. Real example (sample_input03.json): {"title": "Climatic
+        regionalization of continental Chile", "volume": "13", "issue":
+        "2", "start_page": "66", "end_page": "73"} ->
+        "Climatic regionalization of continental Chile, 13(2), 66-73."
+        """
+        parts: list[str] = []
+        title = str(entry.get("title") or "").strip()
+        if title:
+            parts.append(title)
+        volume = str(entry.get("volume") or "").strip()
+        issue = str(entry.get("issue") or "").strip()
+        if volume and issue:
+            parts.append(f"{volume}({issue})")
+        elif volume:
+            parts.append(volume)
+        start_page = str(entry.get("start_page") or "").strip()
+        end_page = str(entry.get("end_page") or "").strip()
+        if start_page and end_page:
+            parts.append(f"{start_page}-{end_page}")
+        elif start_page:
+            parts.append(start_page)
+        edition = str(entry.get("edition") or "").strip()
+        if edition:
+            parts.append(f"ed. {edition}")
+        conference_place = str(entry.get("conference_place") or "").strip()
+        conference_date = str(entry.get("conference_date") or "").strip()
+        if conference_place and conference_date:
+            parts.append(f"{conference_place}, {conference_date}")
+        elif conference_place:
+            parts.append(conference_place)
+        elif conference_date:
+            parts.append(conference_date)
+        return f"{', '.join(parts)}." if parts else ""
+
     def merge_agent_results(self, results: list[AgentResult]) -> MetadataDocument:
         doc = MetadataDocument()
 
@@ -582,6 +658,43 @@ class CDIFDiscoveryProfile:
         creator_list = doc.get_field("schema:creator")
         if isinstance(creator_list, list):
             doc.set_field("schema:creator", {"@list": creator_list})
+
+        # Open Question #21: render each structured citation dict (the
+        # LLM's actual, unchanged output shape) into the plain literal
+        # string dcterms:bibliographicCitation's own DCMI definition
+        # requires -- see _format_bibliographic_citation.
+        citations = doc.get_field("dcterms:bibliographicCitation")
+        if isinstance(citations, list):
+            formatted = [
+                self._format_bibliographic_citation(c) if isinstance(c, dict) else str(c).strip()
+                for c in citations
+            ]
+            doc.set_field("dcterms:bibliographicCitation", [c for c in formatted if c])
+
+        # Open Question #23: the document's own schema:identifier is
+        # singular in the vendored schema, same as the nested Person/
+        # Organization/MonetaryGrant $defs Open Question #16 already
+        # fixed -- collapse the (normally one-entry) agent-produced list
+        # to a singular dict, overflowing anything beyond the first into
+        # schema:sameAs as a bare {"@id": ...} reference (Open Question
+        # #22's shape), and omit the key entirely when nothing was found
+        # ("absent, not empty", same convention as #16).
+        identifier_list = doc.get_field("schema:identifier")
+        if isinstance(identifier_list, list):
+            if identifier_list:
+                doc.set_field("schema:identifier", identifier_list[0])
+                overflow = identifier_list[1:]
+                if overflow:
+                    same_as = doc.get_field("schema:sameAs")
+                    same_as_list = list(same_as) if isinstance(same_as, list) else []
+                    same_as_list.extend(
+                        {"@id": entry["schema:url"] if entry.get("schema:url") else entry.get("schema:value", "")}
+                        for entry in overflow
+                        if isinstance(entry, dict)
+                    )
+                    doc.set_field("schema:sameAs", same_as_list)
+            else:
+                del doc.fields["schema:identifier"]
 
         # C6: schema:sameAs has minItems: 1 in the vendored schema -- an
         # empty list is invalid, so omit the key entirely rather than
@@ -647,12 +760,16 @@ class CDIFDiscoveryProfile:
     def _derive_id(self, doc: MetadataDocument) -> str:
         """Prefers a resolvable URI from schema:identifier (e.g. a DOI);
         falls back to a generated urn when nothing resolvable was
-        extracted. Never empty -- @id is part of the required floor."""
-        for entry in doc.get_field("schema:identifier", []) or []:
-            if isinstance(entry, dict):
-                candidate = entry.get("schema:url") or entry.get("schema:value") or ""
-                if isinstance(candidate, str) and candidate.startswith(("http://", "https://")):
-                    return candidate
+        extracted. Never empty -- @id is part of the required floor.
+
+        schema:identifier is singular by the time this runs (Open
+        Question #23's collapse, above, runs before _inject_envelope
+        calls this)."""
+        entry = doc.get_field("schema:identifier")
+        if isinstance(entry, dict):
+            candidate = entry.get("schema:url") or entry.get("schema:value") or ""
+            if isinstance(candidate, str) and candidate.startswith(("http://", "https://")):
+                return candidate
         logger.warning("No resolvable identifier found; generating a placeholder @id")
         return f"urn:gema:generated:{uuid.uuid4().hex}"
 
