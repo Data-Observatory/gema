@@ -32,13 +32,11 @@
     ]
   },
   "schema:name": "Active fault database for the Atacama Fault System (N-Chile) as basis for tracking forearc segmentation",
-  "schema:identifier": [
-    {
-      "schema:propertyID": "DOI",
-      "schema:value": "10.5880/GFZ.4.1.2020.012",
-      "schema:url": "https://doi.org/10.5880/GFZ.4.1.2020.012"
-    }
-  ],
+  "schema:identifier": {
+    "schema:propertyID": "DOI",
+    "schema:value": "10.5880/GFZ.4.1.2020.012",
+    "schema:url": "https://doi.org/10.5880/GFZ.4.1.2020.012"
+  },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [],

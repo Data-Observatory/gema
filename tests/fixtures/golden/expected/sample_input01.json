@@ -32,13 +32,11 @@
     ]
   },
   "schema:name": "Gastos municipales (presupuesto abierto)",
-  "schema:identifier": [
-    {
-      "schema:propertyID": "URL",
-      "schema:value": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
-      "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
-    }
-  ],
+  "schema:identifier": {
+    "schema:propertyID": "URL",
+    "schema:value": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
+    "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto"
+  },
   "schema:license": [
     {
       "schema:name": "Datos Abiertos del Estado de Chile",

@@ -32,13 +32,11 @@
     ]
   },
   "schema:name": "Encuesta de Presupuestos Familiares",
-  "schema:identifier": [
-    {
-      "schema:propertyID": "URL",
-      "schema:value": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares",
-      "schema:url": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares"
-    }
-  ],
+  "schema:identifier": {
+    "schema:propertyID": "URL",
+    "schema:value": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares",
+    "schema:url": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares"
+  },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [],
@@ -124,7 +122,7 @@
             "schema:identifier": {
               "schema:propertyID": "ISNI",
               "schema:value": "0000000404784842",
-              "schema:url": "https://isni.org/0000000404784842",
+              "schema:url": "https://isni.org/isni/0000000404784842",
               "matched_via": "isni_sru",
               "confidence": 1.0,
               "status": "auto"
@@ -133,12 +131,7 @@
         ],
         "schema:sameAs": [
           {
-            "schema:propertyID": "ISNI",
-            "schema:value": "0000000122544402",
-            "schema:url": "https://isni.org/0000000122544402",
-            "matched_via": "ror_affiliation",
-            "confidence": 1.0,
-            "status": "auto"
+            "@id": "https://isni.org/isni/0000000122544402"
           }
         ]
       }

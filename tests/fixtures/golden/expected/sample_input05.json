@@ -32,13 +32,11 @@
     ]
   },
   "schema:name": "Censo Agropecuario 2007 Ganado bovino Isla de Pascua",
-  "schema:identifier": [
-    {
-      "schema:propertyID": "URL",
-      "schema:value": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua",
-      "schema:url": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua"
-    }
-  ],
+  "schema:identifier": {
+    "schema:propertyID": "URL",
+    "schema:value": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua",
+    "schema:url": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua"
+  },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [],
@@ -126,24 +124,14 @@
             },
             "schema:sameAs": [
               {
-                "schema:propertyID": "ISNI",
-                "schema:value": "0000000406285553",
-                "schema:url": "https://isni.org/0000000406285553",
-                "matched_via": "ror_affiliation+isni_sru",
-                "confidence": 0.9,
-                "status": "auto"
+                "@id": "https://isni.org/isni/0000000406285553"
               }
             ]
           }
         ],
         "schema:sameAs": [
           {
-            "schema:propertyID": "ISNI",
-            "schema:value": "000000044684986X",
-            "schema:url": "https://isni.org/000000044684986X",
-            "matched_via": "ror_affiliation",
-            "confidence": 1.0,
-            "status": "auto"
+            "@id": "https://isni.org/isni/000000044684986X"
           }
         ]
       }
@@ -165,12 +153,7 @@
     },
     "schema:sameAs": [
       {
-        "schema:propertyID": "ISNI",
-        "schema:value": "000000044684986X",
-        "schema:url": "https://isni.org/000000044684986X",
-        "matched_via": "ror_affiliation",
-        "confidence": 1.0,
-        "status": "auto"
+        "@id": "https://isni.org/isni/000000044684986X"
       }
     ]
   },

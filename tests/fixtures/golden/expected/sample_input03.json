@@ -32,13 +32,11 @@
     ]
   },
   "schema:name": "Zonas climaticas de Chile segun Köppen-Geiger escala 1:1.500.000",
-  "schema:identifier": [
-    {
-      "schema:propertyID": "URL",
-      "schema:value": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
-      "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
-    }
-  ],
+  "schema:identifier": {
+    "schema:propertyID": "URL",
+    "schema:value": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
+    "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
+  },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
   "schema:distribution": [
@@ -229,16 +227,7 @@
   "schema:copyrightHolder": "",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [
-    {
-      "title": "Climatic regionalization of continental Chile",
-      "volume": "13",
-      "issue": "2",
-      "start_page": "66",
-      "end_page": "73",
-      "edition": "",
-      "conference_place": "",
-      "conference_date": ""
-    }
+    "Climatic regionalization of continental Chile, 13(2), 66-73."
   ],
   "schema:spatialCoverage": [
     {
