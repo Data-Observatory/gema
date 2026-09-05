@@ -205,6 +205,42 @@ class TestCreatorsC4Reversal:
         ]
         assert entry["affiliations"][0]["affiliation"] == "Gobierno de Chile"
 
+    def test_same_as_overflow_identifier_included_in_name_identifiers(self):
+        """Open Question #22: an overflow identifier lives in schema:sameAs
+        as a bare {"@id": url} reference, not the full PropertyValue shape
+        -- types.entity_identifiers reconstructs it, so DataCite's
+        name_identifiers (which wants *every* resolved identifier) still
+        includes it."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "schema:creator": [
+                {
+                    "@type": ["schema:Organization"],
+                    "schema:name": "Ministerio de Hacienda",
+                    "schema:identifier": {
+                        "schema:propertyID": "ROR",
+                        "schema:value": "https://ror.org/01h6h5x94",
+                        "schema:url": "https://ror.org/01h6h5x94",
+                    },
+                    "schema:sameAs": [{"@id": "https://isni.org/isni/000000040628717X"}],
+                }
+            ],
+        })
+        result = to_datacite_json(doc)
+        entry = _fields(result)["creators"][0]
+        assert entry["name_identifiers"] == [
+            {
+                "name_identifier": "https://ror.org/01h6h5x94",
+                "name_identifier_scheme": "ROR",
+                "scheme_uri": "https://ror.org/01h6h5x94",
+            },
+            {
+                "name_identifier": "000000040628717X",
+                "name_identifier_scheme": "ISNI",
+                "scheme_uri": "https://isni.org/isni/000000040628717X",
+            },
+        ]
+
     def test_no_creators_warns(self):
         doc = make_document(**{"schema:name": "T", "schema:creator": []})
         result = to_datacite_json(doc)
@@ -600,9 +636,40 @@ class TestCitations:
         assert not any("citation" in w.lower() for w in result.warnings)
 
     def test_entries_without_title_are_skipped(self):
-        doc = make_document(**{"schema:name": "T", "dcterms:bibliographicCitation": [{"volume": "1"}, "not a dict"]})
+        """A dict lacking a "title" key, and any falsy/non-string entry
+        (int, empty string), are skipped -- unlike a non-empty bare
+        string, which is a real citation as of Open Question #21 (see
+        test_formatted_citation_string_passes_through below), not a
+        malformed entry."""
+        doc = make_document(
+            **{"schema:name": "T", "dcterms:bibliographicCitation": [{"volume": "1"}, "", 123, None]}
+        )
         result = to_datacite_json(doc)
         assert _fields(result)["citations"] == []
+
+    def test_formatted_citation_string_passes_through(self):
+        """Open Question #21: CDIFDiscoveryProfile.merge_agent_results
+        renders a real citation into a plain literal string -- the shape
+        this exporter actually receives on a fully-merged document.
+        DataCiteSchema46._normalize_citations folds a bare string into
+        "title", leaving the other DataCite citation fields empty."""
+        doc = make_document(**{
+            "schema:name": "T",
+            "dcterms:bibliographicCitation": ["Climatic regionalization of continental Chile, 13(2), 66-73."],
+        })
+        result = to_datacite_json(doc)
+        assert _fields(result)["citations"] == [
+            {
+                "title": "Climatic regionalization of continental Chile, 13(2), 66-73.",
+                "volume": "",
+                "issue": "",
+                "start_page": "",
+                "end_page": "",
+                "edition": "",
+                "conference_place": "",
+                "conference_date": "",
+            }
+        ]
 
 
 class TestTemporalEvents:

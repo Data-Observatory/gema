@@ -281,6 +281,106 @@ class TestMergeAgentResults:
         doc = schema.merge_agent_results([])
         assert doc.get_field("@id", "").startswith("urn:gema:generated:")
 
+    def test_schema_identifier_collapsed_to_singular(self, schema: CDIFDiscoveryProfile) -> None:
+        """Open Question #23: the document's own schema:identifier is
+        singular in the vendored schema, same as the nested $defs Open
+        Question #16 already fixed -- collapse the (normally one-entry)
+        agent-produced list to a bare dict."""
+        results = [
+            AgentResult(
+                field_name="schema_identifier",
+                value=[{"schema:propertyID": "URL", "schema:value": "https://example.org/x"}],
+            )
+        ]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("schema:identifier") == {
+            "schema:propertyID": "URL",
+            "schema:value": "https://example.org/x",
+        }
+
+    def test_schema_identifier_overflow_goes_to_same_as(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        """A defensive path: config/agents.yaml's core_metadata prompt only
+        ever asks for one entry, but if the LLM (or a future prompt
+        revision) ever produces more than one, the extras overflow into
+        schema:sameAs as bare {"@id": ...} references (Open Question #22's
+        shape), not dropped."""
+        results = [
+            AgentResult(
+                field_name="schema_identifier",
+                value=[
+                    {"schema:propertyID": "DOI", "schema:value": "10.1/x", "schema:url": "https://doi.org/10.1/x"},
+                    {"schema:propertyID": "URL", "schema:value": "https://example.org/x", "schema:url": "https://example.org/x"},
+                ],
+            )
+        ]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("schema:identifier") == {
+            "schema:propertyID": "DOI",
+            "schema:value": "10.1/x",
+            "schema:url": "https://doi.org/10.1/x",
+        }
+        assert doc.get_field("schema:sameAs") == [{"@id": "https://example.org/x"}]
+
+    def test_schema_identifier_absent_when_empty(self, schema: CDIFDiscoveryProfile) -> None:
+        """"Absent, not empty" -- same convention Open Question #16 uses
+        one level down."""
+        doc = schema.merge_agent_results([AgentResult(field_name="schema_identifier", value=[])])
+        assert "schema:identifier" not in doc.fields
+
+    def test_bibliographic_citation_formatted_to_literal_string(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        """Open Question #21: the LLM's structured dict (unchanged prompt
+        shape) is rendered into the plain literal string DCMI's own term
+        definition requires."""
+        results = [
+            AgentResult(
+                field_name="dcterms_bibliographic_citation",
+                value=[
+                    {
+                        "title": "Climatic regionalization of continental Chile",
+                        "volume": "13",
+                        "issue": "2",
+                        "start_page": "66",
+                        "end_page": "73",
+                        "edition": "",
+                        "conference_place": "",
+                        "conference_date": "",
+                    }
+                ],
+            )
+        ]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("dcterms:bibliographicCitation") == [
+            "Climatic regionalization of continental Chile, 13(2), 66-73."
+        ]
+
+    def test_bibliographic_citation_empty_list_stays_empty(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        results = [AgentResult(field_name="dcterms_bibliographic_citation", value=[])]
+        doc = schema.merge_agent_results(results)
+        assert doc.get_field("dcterms:bibliographicCitation") == []
+
+
+class TestFormatBibliographicCitation:
+    def test_title_only(self, schema: CDIFDiscoveryProfile) -> None:
+        assert schema._format_bibliographic_citation({"title": "A Title"}) == "A Title."
+
+    def test_conference_place_and_date(self, schema: CDIFDiscoveryProfile) -> None:
+        result = schema._format_bibliographic_citation(
+            {"title": "A Talk", "conference_place": "Santiago", "conference_date": "2024"}
+        )
+        assert result == "A Talk, Santiago, 2024."
+
+    def test_edition(self, schema: CDIFDiscoveryProfile) -> None:
+        assert schema._format_bibliographic_citation({"title": "A Book", "edition": "2nd"}) == "A Book, ed. 2nd."
+
+    def test_all_fields_empty_returns_empty_string(self, schema: CDIFDiscoveryProfile) -> None:
+        assert schema._format_bibliographic_citation({}) == ""
+
 
 class TestValidateOutput:
     def _valid_raw(self) -> dict[str, object]:
@@ -299,6 +399,15 @@ class TestValidateOutput:
     def test_valid_document_passes(self, schema: CDIFDiscoveryProfile) -> None:
         model = schema.validate_output(self._valid_raw())
         assert model.schema_name == "X"
+
+    def test_singular_schema_identifier_validates(self, schema: CDIFDiscoveryProfile) -> None:
+        """Open Question #23: a fully-merged document's schema:identifier
+        is a singular dict, not a list -- the field_validator wraps it
+        back into a one-element list so this model still validates."""
+        raw = self._valid_raw()
+        raw["schema:identifier"] = {"schema:value": "https://doi.org/10.1/x"}
+        model = schema.validate_output(raw)
+        assert model.schema_identifier == [{"schema:value": "https://doi.org/10.1/x"}]
 
     def test_missing_required_floor_raises(self, schema: CDIFDiscoveryProfile) -> None:
         raw = self._valid_raw()

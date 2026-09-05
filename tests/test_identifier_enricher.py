@@ -93,11 +93,13 @@ class TestEnrichCreators:
         # review). schema:value and schema:url must match exactly here,
         # not accumulate a second prefix.
         assert identifier["schema:url"] == "https://ror.org/01h6h5x94"
+        # Open Question #22: overflow entries are bare {"@id": url}
+        # references, not the full PropertyValue shape -- no scheme label,
+        # no provenance (identical to the primary schema:identifier's
+        # anyway, since both come from the same IdentifierMatch).
         same_as = entry["schema:sameAs"]
         assert len(same_as) == 1
-        assert same_as[0]["schema:value"] == "000000040628717X"
-        assert same_as[0]["schema:propertyID"] == "ISNI"
-        assert same_as[0]["schema:url"] == "https://isni.org/000000040628717X"
+        assert same_as[0] == {"@id": "https://isni.org/isni/000000040628717X"}
 
     def test_wrapped_jsonld_list_creator_is_enriched_in_place(self) -> None:
         """schema:creator arrives as {"@list": [...]} once a real pipeline
@@ -223,7 +225,7 @@ class TestEnrichCreators:
         identifier = doc.get_field("schema:creator")[0]["schema:identifier"]
         assert identifier["schema:value"] == "000000040628717X"
         assert identifier["schema:propertyID"] == "ISNI"
-        assert identifier["schema:url"] == "https://isni.org/000000040628717X"
+        assert identifier["schema:url"] == "https://isni.org/isni/000000040628717X"
         assert "schema:sameAs" not in doc.get_field("schema:creator")[0]
 
     def test_affiliation_isni_only_match_still_written(self) -> None:
@@ -344,8 +346,7 @@ class TestEnrichFunding:
         funder = doc.get_field("schema:funding")[0]["schema:funder"]
         assert funder["schema:identifier"]["schema:value"] == "https://ror.org/01h6h5x94"
         assert len(funder["schema:sameAs"]) == 1
-        assert funder["schema:sameAs"][0]["schema:value"] == "000000040628717X"
-        assert funder["schema:sameAs"][0]["schema:propertyID"] == "ISNI"
+        assert funder["schema:sameAs"][0] == {"@id": "https://isni.org/isni/000000040628717X"}
 
     def test_blank_placeholder_funder_identifiers_still_enriched(self) -> None:
         resolver = _mock_resolver()
