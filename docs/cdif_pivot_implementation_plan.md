@@ -759,6 +759,22 @@ Verified: `ruff check src/ tests/ scripts/ visor/` clean, `mypy src/ scripts/` 0
 
 **Not done in this pass** (still blocked on opencode's quota, tracked together): B0's final "re-run `make live-eval` to see the real number" step — production generation itself runs on opencode, same account the judge fix (previous entry) only decoupled the *judge* from, not generation. B2 (model-swap branch decision) and B3 (prompt-edit batch + `make record-golden`) both need real generation calls too. A cron reminder is set to check opencode's `/usage` endpoint and resume the model-swap experiment once the rolling window actually resets.
 
+## Phase B0 (partial): strip schema:dateModified from live-eval scoring (2026-09-06)
+
+Implemented Finding B-1's fix from the Post-PR#45 investigation above: `schema:dateModified` (injected as "today" by `CDIFDiscoveryProfile._inject_envelope`, not extracted by any agent) was dragging down every one of live-eval's 6 fixture scores for a wall-clock gap that will never close, not a real quality difference. New `eval_common.strip_ignored_fields()` (+ `IGNORED_SCORING_FIELDS` set, currently just this one field) strips it from both `actual_json` and `expected_json` in `run_live_eval.py` before either scorer (GEval or the per-field judge) ever sees it — same fix reaches both, since both read the same two stripped strings. `judge_models.py`/`compare_models.py` don't need this: they score DataCite-shaped output via `extract_*`/`compare_outputs`, and DataCite has no equivalent field.
+
+Verified: `ruff`/`mypy` clean, 4 new tests in `tests/test_eval_common.py`, `--help` smoke-checked.
+
+**Not done in this pass** (needs a decision, see below): B0's other two items — fixing `sample_input05`'s golden publisher fixture (Open Question O-5) and re-running `make live-eval` to see the corrected number — are blocked/paused. `make live-eval` is blocked on opencode's quota exactly like the model-swap experiment (production generation runs on opencode, same account the earlier judge-provider fix only decoupled scoring from, not generation). O-5 turned out to be a bigger finding than a fixture edit — see below.
+
+### O-5 investigation: this is a real ROR false-positive, not just a fixture curation call
+
+Checked ROR's real API (`https://api.ror.org/organizations/04q93ds34`) directly rather than assuming, per this doc's own verify-before-implementing discipline. Result: that ROR ID is **"Instituto de Políticas y Bienes Públicos" (IPP)** — a research **facility in Madrid, Spain**. `sample_input05`'s input `publisher` is `"Oficina de Estudios y Políticas Agrarias"` (ODEPA), Chile's real agricultural-policy office. These are two unrelated institutions in two different countries; the shared token is just "Políticas". `identifier_enricher.py`'s ROR affiliation matcher assigned this **wrong country, wrong institution** match `confidence: 1.0` (`matched_via: "ror_affiliation"`) — full confidence on a false positive.
+
+For contrast, verified the sibling match in the same fixture is correct: the `Ministerio de Agricultura` affiliation resolves to `ror.org/05nqvv719`, confirmed via the same API to be the real Chilean Ministry of Agriculture (aliases include "Chilean Ministry of Agriculture", country: Chile).
+
+This means O-5 isn't "is the fixture right or wrong" (it's wrong) — it's **why did the live ROR fuzzy-matcher pick a wrong country's facility with full confidence**, which is a real bug in `identifier_enricher.py`'s ROR affiliation-matching logic (fuzzy string overlap on a shared word, no country/type sanity check), not a one-off fixture curation slip. Fixing just the fixture value would hide this and reproduce the same wrong match on the next live re-recording. Flagged to the user rather than deciding unilaterally how deep to fix — this is exactly the class of identifier-resolution issue CLAUDE.md calls out as needing a live check before a dev→main PR.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.

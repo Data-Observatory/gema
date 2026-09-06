@@ -58,7 +58,14 @@ from metadata_enricher.pipeline import Pipeline, PipelineResult
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
-from eval_common import find_provider, load_eval_config, parse_model_spec, score_overall_deepeval, score_per_field_raw
+from eval_common import (
+    find_provider,
+    load_eval_config,
+    parse_model_spec,
+    score_overall_deepeval,
+    score_per_field_raw,
+    strip_ignored_fields,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -401,9 +408,12 @@ def main(argv: list[str] | None = None) -> None:
             logger.warning("  No expected output for %s — skipping", stem)
             continue
 
-        # Load expected output
+        # Load expected output. Stripped of fields that should never affect
+        # a judge score (schema:dateModified -- see eval_common's
+        # IGNORED_SCORING_FIELDS docstring, Finding B-1 in
+        # docs/cdif_pivot_implementation_plan.md).
         try:
-            expected_json = expected_file.read_text(encoding="utf-8")
+            expected_json = strip_ignored_fields(expected_file.read_text(encoding="utf-8"))
         except Exception as exc:
             logger.error("  Failed to read expected for %s: %s", stem, exc)
             continue
@@ -435,7 +445,7 @@ def main(argv: list[str] | None = None) -> None:
                     )
                     continue
 
-                actual_json = writer.format_json(result.document)
+                actual_json = strip_ignored_fields(writer.format_json(result.document))
         except Exception as exc:
             logger.error("  Pipeline exception for %s: %s", stem, exc, exc_info=args.verbose)
             continue
