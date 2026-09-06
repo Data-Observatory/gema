@@ -702,6 +702,35 @@ PR #45 (this branch → `dev`) opened with the pivot complete but the live-eval 
 
 A model-swap experiment (`scripts/compare_models.py`/`judge_models.py` against `tests/fixtures/do_catalog/`, candidates: `deepseek-v4-pro`, `glm-5.3`, `gpt-5.6-luna`, `longcat-2.0`, `omen-alpha` vs. the current `deepseek-v4-flash` baseline) was running concurrently with this analysis — see this doc's next changelog entry once it lands for the result and Phase B2's actual branch.
 
+## Model-swap experiment (2026-09-06) — incomplete, blocked on opencode account credits
+
+Ran `scripts/compare_models.py`/`judge_models.py` (both fixed for the CDIF pivot earlier this session, see the eval-tooling fix above) against the real 18-item `tests/fixtures/do_catalog/` corpus, to inform Phase B2 above. **Scope correction mid-run**: the user authorized testing only `gpt-5.6-luna`, `longcat-2.0`, `omen-alpha` against the `deepseek-v4-flash` baseline (the models they'd personally tried) — `deepseek-v4-pro` and `glm-5.3` were an unauthorized addition, stopped once flagged. Reporting the actual damage plainly, not minimizing it: both had already **fully completed** their 6-item screening runs before the correction landed and the process was killed — `deepseek-v4-pro` in ~161s wall-clock (6 real pipeline runs, ~5 agent calls each), `glm-5.3` in ~2775s (~46 min) wall-clock for the same 6 items, real API cost on both, no further use made of either past this screening data.
+
+**Screening (`--limit 6`, structural score) — all 6 candidates + baseline:**
+
+| Model | Avg overall | Status |
+|---|---|---|
+| `deepseek-v4-flash` (baseline) | 0.367 | authorized |
+| `deepseek-v4-pro` | 0.373 | **unauthorized — informational only, excluded from the decision below** |
+| `glm-5.3` | 0.433 | **unauthorized — informational only, excluded from the decision below** |
+| `gpt-5.6-luna` | — | authorized, **0/6 succeeded** — real `Error code: 500 Internal Server Error` from opencode on every item (~80s per failed attempt); provider-side outage/instability for this model, not a code or config issue. Disqualified, not scored. |
+| `longcat-2.0` | 0.408 | authorized |
+| `omen-alpha` | 0.412 | authorized |
+
+**Full 18-item run** (authorized candidates only — `gpt-5.6-luna` excluded per the failure above; the 6 already-screened items reused via `--rescore-only`, zero extra cost, only the remaining 12 items per model cost real calls):
+
+| Model | Avg overall (structural, 18 items) | Judge (GEval, glm-5.3 as judge) |
+|---|---|---|
+| `deepseek-v4-flash` (baseline) | 0.471 | 0.456 |
+| `longcat-2.0` | 0.481 | **not obtained — see below** |
+| `omen-alpha` | 0.507 | **not obtained — see below** |
+
+**Judge correlation incomplete**: `judge_models.py` (judge model `glm-5.3`, its established role from `run_live_eval.py`, not a generation candidate) scored `deepseek-v4-flash`'s 18 items cleanly, then hit `openai.AuthenticationError: 401 — CreditsError: Insufficient balance` partway into `longcat-2.0`'s batch. The opencode account is out of credit; no further live calls are possible until it's topped up. This likely also explains an earlier, seemingly unrelated "401 invalid/expired key" finding reported by a different agent this session (`eval_common.py` fix commit) — same root cause (balance, not the key itself), misdiagnosed at the time.
+
+**Recommendation: do not switch the production model yet.** `omen-alpha` (0.507) and `longcat-2.0` (0.481) both beat the `deepseek-v4-flash` baseline (0.471) structurally, but the margin is small (+0.036/+0.010) and unverified on the judge side for 2 of 3 models — the one judge score obtained so far (baseline, 0.456) can't be compared against anything. Both candidates are also dramatically slower: baseline processed most items in single-digit seconds (warm-path) to ~30-80s (cold), while `longcat-2.0`/`omen-alpha` took 90-400+s *per item*, some single items exceeding 5-8 minutes — a real latency/cost tradeoff a ~0.01-0.04 structural-score gain likely doesn't justify on its own. Revisit once the account has credit again: finish the judge pass on the 2 remaining candidates, then decide.
+
+**Not investigated this round, flagged for whoever picks this back up**: whether `longcat-2.0`/`omen-alpha`'s slowness is model latency, a routing/queueing issue on opencode's side, or retries from transient errors (`omen-alpha` did hit a couple of retried 400s on `rights_funding_citations` mid-run, absorbed by the pipeline's existing retry logic) — not distinguished here.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.
