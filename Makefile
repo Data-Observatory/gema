@@ -1,4 +1,4 @@
-.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt visor live-identifier-check
+.PHONY: install install-visor test test-visor test-visor-live test-regression lint typecheck run build-visor clean record-golden live-eval validate-gt visor live-identifier-check ab-eval
 
 install:
 	uv sync --extra dev
@@ -52,6 +52,13 @@ validate-gt:
 # and before a dev->main PR touching identifier resolution.
 live-identifier-check:
 	uv run pytest tests/test_identifier_resolver_live.py -m live -v
+
+# A/B diagnostic (spec §9, manual, not CI-gating): CDIF-generated-then-
+# DataCite-exported vs. the frozen pre-pivot DataCite-direct-generation
+# baseline. Cache-replay only, no API key needed. See the script's own
+# docstring for what it does and does not re-run.
+ab-eval:
+	uv run python scripts/ab_eval_cdif_vs_datacite.py
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache dist build *.egg-info src/*.egg-info

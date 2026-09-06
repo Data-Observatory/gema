@@ -7,8 +7,8 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from metadata_enricher.schemas import DataCiteSchema46, get_registry
-from metadata_enricher.schemas.base import SchemaRegistry
+from metadata_enricher.schemas import get_registry
+from metadata_enricher.schemas.datacite import DataCiteSchema46
 from metadata_enricher.types import AgentResult, MetadataDocument
 
 
@@ -1191,39 +1191,34 @@ class TestValidateOutput:
         assert model.media_files == []
 
 
-class TestRegistryIntegration:
-    """Schema registered and retrievable via get_registry."""
+class TestExporterOnlyNoLongerRegistered:
+    """DataCiteSchema46 is exporter-only as of the CDIF pivot
+    (docs/codata_mcp_croissant_cdifspecs.md sec 3.5) -- it is deliberately
+    NOT in the Schema registry any more (cdif-discovery is the sole
+    generation-target schema). These tests exercise the class directly,
+    the way exporters/datacite.py (once it exists) will."""
 
-    def test_registered_in_registry(self) -> None:
+    def test_not_registered(self) -> None:
         registry = get_registry()
-        schema = registry.get("datacite-4.6")
+        assert "datacite-4.6" not in registry.list_schemas()
+
+    def test_cdif_discovery_is_the_sole_registered_schema(self) -> None:
+        assert get_registry().list_schemas() == ["cdif-discovery"]
+
+    def test_class_still_works_standalone(self) -> None:
+        schema = DataCiteSchema46()
         assert schema.name == "datacite-4.6"
         assert schema.version == "4.6"
-
-    def test_registry_is_schema_registry_instance(self) -> None:
-        registry = get_registry()
-        assert isinstance(registry, SchemaRegistry)
-
-    def test_datacite_listed_in_registry(self) -> None:
-        registry = get_registry()
-        schemas = registry.list_schemas()
-        assert "datacite-4.6" in schemas
-
-    def test_registry_schema_methods_work(self) -> None:
-        registry = get_registry()
-        schema = registry.get("datacite-4.6")
         assert isinstance(schema.get_field_order(), list)
         assert schema.get_required_fields() == ["titles"]
         result = schema.normalize_field("titles", "Hello")
         assert isinstance(result, list)
         assert result[0]["name"] == "Hello"
 
-    def test_registry_schema_protocol(self) -> None:
+    def test_still_satisfies_the_schema_protocol(self) -> None:
         from metadata_enricher.schemas.base import Schema
 
-        registry = get_registry()
-        schema = registry.get("datacite-4.6")
-        assert isinstance(schema, Schema)
+        assert isinstance(DataCiteSchema46(), Schema)
 
 
 class TestLanguageCodeMap:

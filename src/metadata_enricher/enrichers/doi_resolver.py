@@ -1,6 +1,11 @@
 """Post-merge DOI-resolver enricher — backfills weak/missing fields for
 DOI-identified resources from Crossref's authoritative record, instead of
 relying purely on LLM extraction from title/description text.
+
+Retargeted to CDIF field names as part of the CDIF/Croissant pivot
+(docs/codata_mcp_croissant_cdifspecs.md sec 3.5) — see
+enrichers/identifier_enricher.py's module docstring for the shared
+creator/organization entry shape convention this module also produces.
 """
 
 from __future__ import annotations
@@ -9,7 +14,7 @@ import logging
 from typing import Any
 
 from metadata_enricher.enrichers.crossref_client import CrossrefClient
-from metadata_enricher.types import MetadataDocument
+from metadata_enricher.types import MetadataDocument, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
 
@@ -34,32 +39,41 @@ def _date_parts_to_str(date_parts: object) -> str:
     return ""
 
 
+def _doi_identifier(doc: MetadataDocument) -> str:
+    """The DOI value, if schema:identifier carries one -- else empty.
+
+    schema:identifier is singular on a fully-merged document (Open
+    Question #23) -- a bare list is also tolerated defensively (a
+    hand-built/synthetic document, or one that hasn't gone through
+    CDIFDiscoveryProfile.merge_agent_results)."""
+    entry = doc.get_field("schema:identifier")
+    candidates = [entry] if isinstance(entry, dict) else (entry if isinstance(entry, list) else [])
+    for candidate in candidates:
+        if isinstance(candidate, dict) and str(candidate.get("schema:propertyID", "")).upper() == "DOI":
+            return str(candidate.get("schema:value", ""))
+    return ""
+
+
 class DOIResolverEnricher:
     """Backfills EMPTY fields on DOI-identified resources from Crossref.
 
-    Only acts when ``resource.identifier_type == "DOI"``. Titles/creators/
-    publishers/resource.publication_year are only ever filled when
-    completely empty — a field the LLM agents already populated (even
-    partially) is left untouched, same "preserve LLM values" policy as
-    ``IdentifierEnricher``. ``dates`` is the one exception: an agent-produced
-    date of a different type (e.g. ``Collected``) does not block adding the
-    authoritative Crossref ``Issued`` date alongside it -- only an existing
-    ``Issued``-typed entry blocks it. Scope is deliberately narrow: titles,
-    creators (authors, personal or organizational), publishers, an Issued
-    date, and publication_year — the fields Crossref's public Works API
-    reliably returns. Abstracts are skipped (rare, and often JATS-XML-tagged
-    when present — not worth the parsing complexity for a field most DOI
-    records don't carry anyway).
+    Only acts when ``schema:identifier`` carries a DOI-typed entry.
+    ``schema:name``/``schema:creator``/``schema:publisher``/
+    ``schema:datePublished`` are only ever filled when completely empty — a
+    field the LLM agents already populated (even partially) is left
+    untouched, same "preserve LLM values" policy as ``IdentifierEnricher``.
+    Scope is deliberately narrow: name, creators (authors, personal or
+    organizational), publisher, and the published date — the fields
+    Crossref's public Works API reliably returns. Abstracts are skipped
+    (rare, and often JATS-XML-tagged when present — not worth the parsing
+    complexity for a field most DOI records don't carry anyway).
     """
 
     def __init__(self, client: CrossrefClient) -> None:
         self._client = client
 
     def enrich(self, document: MetadataDocument) -> MetadataDocument:
-        resource = document.get_field("resource")
-        if not isinstance(resource, dict) or resource.get("identifier_type") != "DOI":
-            return document
-        doi = resource.get("identifier", "")
+        doi = _doi_identifier(document)
         if not doi:
             return document
 
@@ -71,29 +85,30 @@ class DOIResolverEnricher:
         if work is None:
             return document
 
-        self._backfill_titles(document, work)
+        self._backfill_name(document, work)
         self._backfill_creators(document, work)
         self._backfill_publisher(document, work)
-        self._backfill_issued_date(document, work)
+        self._backfill_date_published(document, work)
         return document
 
-    def _backfill_titles(self, document: MetadataDocument, work: dict[str, Any]) -> None:
-        if document.get_field("titles"):
+    def _backfill_name(self, document: MetadataDocument, work: dict[str, Any]) -> None:
+        if document.get_field("schema:name"):
             return
         titles = work.get("title")
         if not isinstance(titles, list) or not titles or not titles[0]:
             return
-        document.set_field(
-            "titles", [{"name": titles[0], "title_type": "MainTitle", "language": ""}]
-        )
+        document.set_field("schema:name", str(titles[0]))
 
     def _backfill_creators(self, document: MetadataDocument, work: dict[str, Any]) -> None:
         """Personal authors (family+given) and organizational authors
         (Crossref emits these as a bare {"name": ...}, no family/given) both
         become creators -- institutional DOI authorship is common for the
-        government/agency resources this project targets, and was previously
-        dropped entirely by skipping any author without a `family`."""
-        if document.get_field("creators"):
+        government/agency resources this project targets."""
+        # schema:creator is a {"@list": [...]} JSON-LD construct once the
+        # merge step has run (see jsonld_list_unwrap's docstring) -- check
+        # the unwrapped list's truthiness, not the wrapper dict's (a dict
+        # wrapping an empty list is still a non-empty dict).
+        if jsonld_list_unwrap(document.get_field("schema:creator")):
             return
         authors = work.get("author")
         if not isinstance(authors, list) or not authors:
@@ -102,35 +117,31 @@ class DOIResolverEnricher:
         for author in authors:
             if not isinstance(author, dict):
                 continue
+            # schema:identifier is deliberately omitted here, not written as
+            # an empty placeholder ([] or {}) -- Open Question #16
+            # (docs/cdif_pivot_implementation_plan.md): the vendored schema
+            # models Person/Organization's schema:identifier as a singular
+            # object, and an empty value has no valid representation in
+            # that shape (unlike the pre-#16 list convention, where []
+            # was a harmless placeholder). IdentifierEnricher only fills
+            # an EMPTY identifier field -- an absent key reads as empty
+            # exactly the same way an empty list used to.
             affiliations = [
-                {
-                    "affiliation": affil["name"],
-                    "affiliation_identifier": "",
-                    "affiliation_identifier_scheme": "",
-                }
+                {"@type": ["schema:Organization"], "schema:name": affil["name"]}
                 for affil in author.get("affiliation") or []
                 if isinstance(affil, dict) and affil.get("name")
             ]
             family = author.get("family", "")
             if family:
-                # "Apellido, Nombre" -- matches creators_publishers' own
-                # convention (config/agents.yaml), not Crossref's raw
-                # given/family order, so DOI-backfilled and LLM-produced
-                # creator_name values are directly comparable.
                 given = author.get("given", "")
                 name = f"{family}, {given}" if given else family
                 creators.append(
                     {
-                        "creator_name": name,
-                        "creator_name_type": "Personal",
-                        "given_name": given,
-                        "family_name": family,
-                        "email": "",
-                        "genre": "",
-                        "type": "Person",
-                        "contributor_type": "",
-                        "name_identifiers": [],
-                        "affiliations": affiliations,
+                        "@type": ["schema:Person"],
+                        "schema:name": name,
+                        "schema:givenName": given,
+                        "schema:familyName": family,
+                        "schema:affiliation": affiliations,
                     }
                 )
             else:
@@ -139,46 +150,38 @@ class DOIResolverEnricher:
                     continue
                 creators.append(
                     {
-                        "creator_name": org_name,
-                        "creator_name_type": "Organizational",
-                        "given_name": "",
-                        "family_name": "",
-                        "email": "",
-                        "genre": "",
-                        "type": "Organization",
-                        "contributor_type": "",
-                        "name_identifiers": [],
-                        "affiliations": affiliations,
+                        "@type": ["schema:Organization"],
+                        "schema:name": org_name,
+                        "schema:affiliation": affiliations,
                     }
                 )
         if creators:
-            document.set_field("creators", creators)
+            # Wrap to match the shape merge_agent_results would have
+            # produced had an agent extracted these creators instead of
+            # this Crossref backfill -- schema:creator must stay
+            # consistently {"@list": [...]} regardless of which code path
+            # populated it.
+            document.set_field("schema:creator", {"@list": creators})
 
     def _backfill_publisher(self, document: MetadataDocument, work: dict[str, Any]) -> None:
-        if document.get_field("publishers"):
+        if document.get_field("schema:publisher"):
             return
         publisher = work.get("publisher")
         if not publisher:
             return
+        # schema:identifier omitted, not an empty placeholder -- see the
+        # comment in _backfill_creators above (Open Question #16).
         document.set_field(
-            "publishers",
-            [
-                {
-                    "publisher_name": publisher,
-                    "publisher_identifier": "",
-                    "publisher_identifier_scheme": "",
-                    "publisher_scheme_uri": "",
-                    "lang": "",
-                }
-            ],
+            "schema:publisher",
+            {"@type": ["schema:Organization"], "schema:name": publisher},
         )
 
-    def _backfill_issued_date(self, document: MetadataDocument, work: dict[str, Any]) -> None:
-        """Only skips if an Issued-typed date already exists -- an agent-
-        produced date of a different type (e.g. Collected) must not block
-        backfilling the authoritative Crossref Issued date alongside it.
-        Also backfills resource.publication_year, previously never touched
-        by this enricher despite the year being available right here."""
+    def _backfill_date_published(self, document: MetadataDocument, work: dict[str, Any]) -> None:
+        """Backfills schema:datePublished only if entirely empty -- an
+        agent-produced date of a different kind (e.g. dateCreated) does not
+        block adding the authoritative Crossref issued date here, since
+        they are different CDIF properties, not competing values of one
+        field."""
         issued = work.get("issued")
         if not isinstance(issued, dict):
             return
@@ -186,26 +189,5 @@ class DOIResolverEnricher:
         if not date_str:
             return
 
-        dates = document.get_field("dates")
-        existing_dates = dates if isinstance(dates, list) else []
-        has_issued = any(
-            isinstance(d, dict) and d.get("date_type") == "Issued" for d in existing_dates
-        )
-        if not has_issued:
-            document.set_field(
-                "dates",
-                [
-                    *existing_dates,
-                    {
-                        "date": date_str,
-                        "date_type": "Issued",
-                        "date_information": (
-                            "Fecha de publicación obtenida del registro Crossref para este DOI"
-                        ),
-                    },
-                ],
-            )
-
-        resource = document.get_field("resource")
-        if isinstance(resource, dict) and not resource.get("publication_year"):
-            document.set_field("resource", {**resource, "publication_year": date_str[:4]})
+        if not document.get_field("schema:datePublished"):
+            document.set_field("schema:datePublished", date_str)

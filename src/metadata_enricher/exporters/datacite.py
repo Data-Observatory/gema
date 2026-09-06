@@ -1,0 +1,996 @@
+"""Convert a CDIF-generated MetadataDocument into DataCite 4.6's native shape.
+
+``DataCiteSchema46`` (``schemas/datacite.py``) was deregistered as a
+generation target when this repo pivoted to the CDIF Discovery profile
+(``docs/cdif_pivot_implementation_plan.md`` Step 2) but is kept alive
+specifically to be an *export* target -- this module is that exporter.
+
+This is emphatically NOT "run DataCiteSchema46's normalizers on the CDIF
+document and call it done". Those normalizers coerce a decade of loosely
+-shaped legacy DataCite-agent output (multiple historical key aliases,
+bare strings, etc.) into DataCite's fixed shape -- they have no idea how
+to read a `schema:creator` `{"@list": [...]}` object or turn
+`schema:dateModified` into DataCite's `dates[]` + `resource.publication_year`.
+The real work here is the CDIF -> DataCite field mapping below, built by
+reading ``docs/cdif_pivot_implementation_plan.md``'s "Q2 -- Verified
+DataCite -> CDIF field mapping" table *in reverse*. ``DataCiteSchema46``'s
+normalizers are used only as the LAST step: each mapped field's raw,
+pre-normalization value (the same loosely-typed shape an agent's
+structured output would have produced) is run through
+``DataCiteSchema46.normalize_field`` / ``validate_output`` so the emitted
+JSON gets DataCite's own validation, defaulting, and (notably) its
+intentional ``"Collections"`` capital-C behavior for free, instead of
+duplicating that logic here.
+
+Mirrors ``exporters/dataverse.py``'s contract: function-based module,
+never-throw-always-warn, a plain result dataclass. No LLM call --
+Open Question #8 in the plan doc resolves to "none, pure crosswalk";
+``token_usage`` stays zero but is kept for shape-parity with the other
+exporters (dataverse's optional Subject-classification call, and any
+future exporter that does need one).
+
+Shape conventions read from ``enrichers/identifier_enricher.py``'s module
+docstring: creator/contributor/publisher/funder entries are
+Person/Organization dicts carrying ``schema:identifier`` (a list of
+PropertyValue dicts: ``schema:propertyID``/``schema:value``/``schema:url``),
+and ``schema:funding`` entries are MonetaryGrant dicts nesting a
+``schema:funder`` Organization. ``schema:creator`` is a
+``{"@list": [...]}``-wrapped list, per the vendored CDIF schema.json's own
+field description ("Uset the JSON-LD @list construct to preserve author
+order") -- ``CDIFDiscoveryProfile.merge_agent_results`` wraps it at
+generation time; a bare list is also accepted here, for synthetic fixtures
+or documents built without going through that merge step.
+"""
+
+from __future__ import annotations
+
+import threading
+from dataclasses import dataclass, field
+from typing import Any
+
+from metadata_enricher.schemas.datacite import DataCiteOutputModel, DataCiteSchema46
+from metadata_enricher.types import (
+    MetadataDocument,
+    TokenUsage,
+    entity_identifiers,
+    first_type_label,
+    jsonld_list_unwrap,
+)
+
+# ----------------------------------------------------------------------
+# DataCiteSchema46 singleton (Open Question resolved here, see
+# docs/cdif_pivot_implementation_plan.md Step 3).
+#
+# DataCiteSchema46.__init__ eagerly parses a ~505KB bundled IANA MIME-type
+# JSON file (IANANormalizer), which can itself trigger a network refresh
+# and a non-atomic write to ~/.cache/gema/iana/ (see IANANormalizer._maybe
+# _use_cache). Before the CDIF pivot this cost was paid once because
+# schemas/__init__.py's SchemaRegistry held one process-wide instance. Now
+# that DataCiteSchema46 is deregistered, nothing caches an instance any
+# more -- so this module owns its own module-level singleton, lazily
+# constructed on first use, instead of instantiating one per
+# to_datacite_json() call (which would re-parse the IANA file every time a
+# batch export runs). Guarded by a lock: an unlocked check-then-set here
+# would let two threads (e.g. two concurrent exports, or a future visor
+# integration mirroring exporters/dataverse.py's run_in_executor pattern)
+# both observe None and both construct + refresh-write the cache file at
+# once.
+# ----------------------------------------------------------------------
+_datacite_schema_instance: DataCiteSchema46 | None = None
+_datacite_schema_lock = threading.Lock()
+
+
+def _get_datacite_schema() -> DataCiteSchema46:
+    global _datacite_schema_instance
+    if _datacite_schema_instance is None:
+        with _datacite_schema_lock:
+            if _datacite_schema_instance is None:
+                _datacite_schema_instance = DataCiteSchema46()
+    return _datacite_schema_instance
+
+
+@dataclass
+class DataCiteExportResult:
+    """Result of to_datacite_json() -- mirrors DataverseExportResult's
+    warnings/token_usage shape for consistency across exporters."""
+
+    datacite_json: dict[str, Any]
+    warnings: list[str] = field(default_factory=list)
+    token_usage: TokenUsage = field(default_factory=TokenUsage)
+
+
+# ------------------------------------------------------------------
+# Small shared helpers
+# ------------------------------------------------------------------
+
+
+def _as_list(value: object) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def _creator_list(value: object) -> list[dict[str, Any]]:
+    """``schema:creator`` is a ``{"@list": [...]}`` JSON-LD construct as of
+    ``CDIFDiscoveryProfile.merge_agent_results`` (constraint C4) -- a bare
+    list is also accepted, for synthetic test fixtures or documents built
+    without going through that merge step. See
+    ``types.jsonld_list_unwrap``, which this delegates to."""
+    return jsonld_list_unwrap(value)
+
+
+def _identifier_entries(entity: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Every identifier on a Person/Organization/MonetaryGrant *entity*
+    entry -> DataCite's ``name_identifiers``/``funder_identifiers`` shape
+    (which wants *every* resolved identifier, not just the preferred one).
+
+    ``schema:identifier`` is singular on these entries as of Open Question
+    #16 (docs/cdif_pivot_implementation_plan.md) -- any additional resolved
+    identifier lives in the same entry's ``schema:sameAs`` overflow.
+    ``types.entity_identifiers`` reads both."""
+    out: list[dict[str, Any]] = []
+    for entry in entity_identifiers(entity):
+        value = entry.get("schema:value")
+        if not value:
+            continue
+        out.append(
+            {
+                "name_identifier": value,
+                "name_identifier_scheme": entry.get("schema:propertyID", ""),
+                "scheme_uri": entry.get("schema:url", ""),
+            }
+        )
+    return out
+
+
+def _preferred_identifier(value: object) -> tuple[str, str, str]:
+    """(value, scheme, url) for the singular identifier slots
+    (publisher_identifier, affiliation_identifier) -- *value* is normally
+    already the singular ``schema:identifier`` dict itself (Open Question
+    #16), but a bare list is also accepted defensively (legacy/synthetic
+    shape) -- first entry wins in that case."""
+    if isinstance(value, dict) and value.get("schema:value"):
+        return (
+            str(value["schema:value"]),
+            str(value.get("schema:propertyID", "")),
+            str(value.get("schema:url", "")),
+        )
+    for entry in _as_list(value):
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            return (
+                str(entry["schema:value"]),
+                str(entry.get("schema:propertyID", "")),
+                str(entry.get("schema:url", "")),
+            )
+    return "", "", ""
+
+
+def _year_from_date(value: object) -> str:
+    text = str(value) if value else ""
+    prefix = text[:4]
+    return prefix if prefix.isdigit() else ""
+
+
+# ------------------------------------------------------------------
+# resource
+# ------------------------------------------------------------------
+
+# Known schema:contributor roles that fold into DataCite's singular
+# resource.* actor slots instead of becoming standalone creator entries.
+_RESOURCE_ROLE_MAP: dict[str, str] = {
+    "Producer": "producer",
+    "ContactPerson": "contact",
+    "Editor": "editor",
+    "Maintainer": "maintainer",
+}
+
+
+def _identifier_and_type(document: MetadataDocument) -> tuple[str, str]:
+    identifiers = _as_list(document.get_field("schema:identifier"))
+    for entry in identifiers:
+        if isinstance(entry, dict) and str(entry.get("schema:propertyID", "")).upper() == "DOI":
+            value = entry.get("schema:value")
+            if value:
+                return str(value), "DOI"
+    for entry in identifiers:
+        if isinstance(entry, dict) and entry.get("schema:value"):
+            return str(entry["schema:value"]), str(entry.get("schema:propertyID", "")) or "URL"
+    # schema:url is a first-class CDIFDiscoveryOutputModel field (half of
+    # the required floor's url|distribution OR-group) but used to never be
+    # read here -- a document carrying only schema:url (no
+    # schema:identifier) fell straight through to @id, which is only a
+    # real URL when schema:identifier had one in the first place (see
+    # CDIFDiscoveryProfile._derive_id) -- otherwise it's a synthetic
+    # "urn:gema:generated:..." placeholder, worse than the real URL sitting
+    # right there in schema:url. Checked before the @id fallback for that
+    # reason.
+    url = document.get_field("schema:url")
+    if url:
+        return str(url), "URL"
+    envelope_id = document.get_field("@id")
+    if envelope_id:
+        return str(envelope_id), "URL"
+    return "", ""
+
+
+def _contact_string(entry: dict[str, Any]) -> str:
+    name = str(entry.get("schema:name") or "").strip()
+    email = str(entry.get("schema:email") or "").strip()
+    if name and email:
+        return f"{name} ({email})"
+    return name or email
+
+
+def _role_and_actor(entry: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Splits a ``schema:contributor`` entry into ``(role, actor)``.
+
+    A role-carrying entry is the vendored Role wrapper (``{"@type":
+    ["schema:Role"], "schema:roleName": ..., "schema:contributor":
+    <Person|Organization>}``, Open Question #17, resolved) -- the actor's
+    own name/email live inside that nested ``schema:contributor``, not as
+    flat siblings. A bare Person/Organization/``{@id}`` entry (no role at
+    all -- still valid per the vendored schema's own ``anyOf``) returns
+    ``("", entry)`` unchanged, since there's no wrapper to unwrap.
+
+    Detected by the presence of a nested ``schema:contributor``/
+    ``schema:roleName`` key, not just ``@type == "Role"`` -- an LLM
+    dropping the `@type` tag on an otherwise-correct Role wrapper used to
+    make the whole entry silently vanish (treated as a bare actor with no
+    ``schema:name`` of its own, since the wrapper itself has none). This
+    also matches how exporters/dataverse.py's own contributor-role
+    detection already worked (keyed on ``schema:roleName`` presence, no
+    `@type` check) -- the two exporters read the same document and must
+    agree on what a Role wrapper looks like."""
+    if "schema:contributor" in entry or "schema:roleName" in entry:
+        role = str(entry.get("schema:roleName") or "")
+        actor = entry.get("schema:contributor")
+        return role, (actor if isinstance(actor, dict) else {})
+    return "", entry
+
+
+def _build_resource(
+    document: MetadataDocument, warnings: list[str]
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Returns (raw resource dict, leftover schema:contributor entries
+    whose role isn't one of the known resource.* slots -- the caller
+    folds those into creators instead of silently dropping them)."""
+    identifier, identifier_type = _identifier_and_type(document)
+    if not identifier:
+        warnings.append(
+            "no schema:identifier, schema:url, or @id found -- resource.identifier will be empty"
+        )
+
+    resource_type_general = first_type_label(document.get_field("@type"))
+    publication_year = _year_from_date(
+        document.get_field("schema:datePublished") or document.get_field("schema:dateCreated")
+    )
+
+    resource: dict[str, Any] = {
+        "identifier": identifier,
+        "identifier_type": identifier_type,
+        "editor": "",
+        "maintainer": "",
+        "contact": "",
+        "producer": "",
+        "publication_year": publication_year,
+        "resource_type": document.get_field("schema:additionalType") or "",
+        "resource_type_general": resource_type_general,
+        "version": document.get_field("schema:version") or "",
+        "thumbnail": "",
+        "language": document.get_field("schema:inLanguage") or "",
+    }
+
+    for entry in _as_list(document.get_field("schema:relatedLink")):
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("schema:linkRelationship") == "thumbnail":
+            target = entry.get("schema:target") or {}
+            if isinstance(target, dict) and target.get("schema:url"):
+                resource["thumbnail"] = target["schema:url"]
+
+    # Each entry is split into (role, actor) via _role_and_actor -- see that
+    # helper's docstring for the Role-wrapper shape (Open Question #17).
+    leftover_contributors: list[dict[str, Any]] = []
+    seen_roles: dict[str, list[str]] = {}
+    for entry in _as_list(document.get_field("schema:contributor")):
+        if not isinstance(entry, dict):
+            continue
+        role, actor = _role_and_actor(entry)
+        slot = _RESOURCE_ROLE_MAP.get(role)
+        if slot is None:
+            leftover_contributors.append(entry)
+            continue
+        value = _contact_string(actor) if slot == "contact" else str(actor.get("schema:name") or "")
+        if not value:
+            continue
+        if resource[slot]:
+            seen_roles.setdefault(slot, []).append(value)
+            continue
+        resource[slot] = value
+
+    for slot, extra_values in seen_roles.items():
+        warnings.append(
+            f"multiple schema:contributor entries mapped to resource.{slot}; "
+            f"kept the first, ignored: {', '.join(extra_values)}"
+        )
+
+    return resource, leftover_contributors
+
+
+# ------------------------------------------------------------------
+# titles / descriptions / languages
+# ------------------------------------------------------------------
+
+
+def _build_titles(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
+    name = document.get_field("schema:name")
+    language = document.get_field("schema:inLanguage") or ""
+    if not name:
+        warnings.append("no schema:name found -- DataCite requires at least one title")
+        return []
+    return [{"name": str(name), "title_type": "MainTitle", "language": language}]
+
+
+def _content_size_strings(raw: object) -> list[str]:
+    """DataCite's ``sizes`` field is a list of formatted size strings
+    (e.g. ``["2.5 MB"]``) -- but config/agents.yaml's media_files prompt
+    emits schema:contentSize as either a single dict ({"size", "unit"}) or
+    a list of them, never a pre-formatted string. Passing either raw shape
+    straight through used to produce a dict (or list of dicts) where
+    DataCite expects strings -- the same class of shape mismatch
+    exporters/croissant.py's _build_distribution was fixed for."""
+    entries = raw if isinstance(raw, list) else [raw]
+    sizes: list[str] = []
+    for entry in entries:
+        if isinstance(entry, dict) and entry.get("size") is not None:
+            unit = entry.get("unit", "")
+            sizes.append(f"{entry['size']} {unit}".strip())
+        elif isinstance(entry, str) and entry.strip():
+            # schema.org's own contentSize is canonically a plain Text
+            # value (not the {"size","unit"} object shape above) -- a
+            # hand-built or externally-sourced document using that spec
+            # shape directly used to be silently dropped entirely.
+            sizes.append(entry.strip())
+    return sizes
+
+
+def _has_usable_distribution(document: MetadataDocument) -> bool:
+    """True only if schema:distribution actually produces at least one
+    media_files entry -- i.e. the same filter _build_media_files applies
+    (dict entries carrying schema:contentUrl), not raw truthiness of the
+    field. A distribution list that's non-empty but entirely missing
+    contentUrl (or a bare-string entry CDIFDiscoveryProfile's own
+    normalizer can produce, e.g. from a plain URL string) produces zero
+    media_files entries -- callers gating a fallback on "is there a
+    distribution to attach this to instead" must use this, not
+    `bool(document.get_field("schema:distribution"))`, or data silently
+    vanishes from both branches at once."""
+    for entry in _as_list(document.get_field("schema:distribution")):
+        if isinstance(entry, dict) and entry.get("schema:contentUrl"):
+            return True
+    return False
+
+
+def _build_descriptions(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
+    descriptions: list[dict[str, Any]] = []
+    language = document.get_field("schema:inLanguage") or ""
+    description = document.get_field("schema:description")
+    if description:
+        descriptions.append(
+            {"description": str(description), "description_type": "Abstract", "language": language}
+        )
+    else:
+        warnings.append("no schema:description found")
+
+    # measurementTechnique double-mapping decision (docs/cdif_pivot_
+    # implementation_plan.md Backlog, "Design inconsistencies"): Q2's
+    # mapping table has two independently legitimate reverse routes for
+    # schema:measurementTechnique -- descriptions[Methods] ("Inference,
+    # good fit") and media_files[].measurement_technique ("Verified").
+    # Emitting both unconditionally duplicated the same fact whenever a
+    # document round-trips. media_files[].measurement_technique is the
+    # higher-confidence, per-file-scoped mapping (see _build_media_files
+    # below) and wins whenever there's a distribution to attach it to.
+    # This branch is a fallback, not a duplicate: it only fires when
+    # schema:distribution produces no usable media_files entry (see
+    # _has_usable_distribution -- checking raw field truthiness here was
+    # a real bug: a distribution list present but missing contentUrl on
+    # every entry silently dropped the technique from *both* branches),
+    # so a document with real technique data but no usable distribution
+    # entry (a real recorded shape -- see
+    # tests/fixtures/golden/expected/sample_input06.json) doesn't lose
+    # that data entirely.
+    if not _has_usable_distribution(document):
+        for technique in _as_list(document.get_field("schema:measurementTechnique")):
+            if technique:
+                descriptions.append(
+                    {
+                        "description": str(technique),
+                        "description_type": "Methods",
+                        "language": language,
+                    }
+                )
+
+    return descriptions
+
+
+def _build_languages(document: MetadataDocument) -> list[dict[str, Any]]:
+    languages: list[dict[str, Any]] = []
+    primary = document.get_field("schema:inLanguage")
+    if primary:
+        languages.append({"lang_code": str(primary)})
+    # Overflow slot per the Q2 mapping's C2 constraint -- not produced by
+    # CDIFDiscoveryProfile today, read defensively in case a hand-built or
+    # future document carries it.
+    for extra in _as_list(document.get_field("dcterms:language")):
+        if extra:
+            languages.append({"lang_code": str(extra)})
+    return languages
+
+
+# ------------------------------------------------------------------
+# creators / publishers
+# ------------------------------------------------------------------
+
+
+def _affiliations_from(entries: object) -> list[dict[str, Any]]:
+    affiliations: list[dict[str, Any]] = []
+    for entry in _as_list(entries):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
+            continue
+        aff_id, aff_scheme, _aff_url = _preferred_identifier(entry.get("schema:identifier"))
+        affiliations.append(
+            {
+                "affiliation": entry["schema:name"],
+                "affiliation_identifier": aff_id,
+                "affiliation_identifier_scheme": aff_scheme,
+            }
+        )
+    return affiliations
+
+
+def _build_creators(
+    document: MetadataDocument, leftover_contributors: list[dict[str, Any]], warnings: list[str]
+) -> list[dict[str, Any]]:
+    creators: list[dict[str, Any]] = []
+
+    for entry in _creator_list(document.get_field("schema:creator")):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
+            continue
+        type_label = first_type_label(entry.get("@type"), default="Organization")
+        creators.append(
+            {
+                "creator_name": entry["schema:name"],
+                "creator_name_type": "Personal" if type_label == "Person" else "Organizational",
+                "given_name": entry.get("schema:givenName", ""),
+                "family_name": entry.get("schema:familyName", ""),
+                "email": entry.get("schema:email", ""),
+                "type": type_label,
+                "contributor_type": "",
+                "name_identifiers": _identifier_entries(entry),
+                "affiliations": _affiliations_from(entry.get("schema:affiliation")),
+            }
+        )
+
+    if not creators:
+        warnings.append("no schema:creator entries found")
+
+    # Contributors whose role didn't map to a resource.* slot (see
+    # _RESOURCE_ROLE_MAP) aren't dropped -- DataCite has nowhere purpose
+    # -built for an arbitrary role, so they surface as extra creator
+    # entries carrying their role in contributor_type (Q2 mapping:
+    # creators[].contributor_type <- schema:contributor Role{roleName}).
+    # _role_and_actor unwraps the vendored Role wrapper (Open Question #17,
+    # resolved) -- a bare (role-less) contributor entry, if one ever makes
+    # it this far, is its own actor and folds in with an empty role.
+    for entry in leftover_contributors:
+        role, actor = _role_and_actor(entry)
+        name = actor.get("schema:name")
+        if not name:
+            continue
+        warnings.append(
+            f"schema:contributor entry with unmapped role {role!r} folded into "
+            f"creators as contributor_type (name={name!r})"
+        )
+        creators.append(
+            {
+                "creator_name": name,
+                "creator_name_type": "Organizational",
+                "given_name": "",
+                "family_name": "",
+                "email": actor.get("schema:email", ""),
+                "type": "Organization",
+                "contributor_type": role,
+                "name_identifiers": _identifier_entries(actor),
+                "affiliations": [],
+            }
+        )
+
+    return creators
+
+
+def _build_publishers(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
+    publishers: list[dict[str, Any]] = []
+
+    publisher = document.get_field("schema:publisher")
+    if isinstance(publisher, dict) and publisher.get("schema:name"):
+        pub_id, pub_scheme, pub_scheme_uri = _preferred_identifier(
+            publisher.get("schema:identifier")
+        )
+        publishers.append(
+            {
+                "publisher_name": publisher["schema:name"],
+                "publisher_identifier": pub_id,
+                "publisher_identifier_scheme": pub_scheme,
+                "publisher_scheme_uri": pub_scheme_uri,
+            }
+        )
+
+    # C3 reversal: schema:provider is the array overflow slot a single
+    # schema:publisher couldn't hold on the way out to CDIF -- both come
+    # back into DataCite's own (always-a-list) publishers field.
+    for entry in _as_list(document.get_field("schema:provider")):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
+            continue
+        prov_id, prov_scheme, prov_scheme_uri = _preferred_identifier(
+            entry.get("schema:identifier")
+        )
+        publishers.append(
+            {
+                "publisher_name": entry["schema:name"],
+                "publisher_identifier": prov_id,
+                "publisher_identifier_scheme": prov_scheme,
+                "publisher_scheme_uri": prov_scheme_uri,
+            }
+        )
+
+    if not publishers:
+        # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
+        # Backlog, "Warning-discipline inconsistency"): unlike
+        # subjects/categories/audiences/citations below, DataCite's own
+        # spec makes publisher a mandatory top-level property (Identifier,
+        # Creator, Title, Publisher, PublicationYear, ResourceType) --
+        # a missing publisher is a real gap in the emitted DataCite
+        # document, not a normal/expected absence, so it warrants a
+        # warning the same way _build_creators/_build_titles already warn
+        # on their own required-field misses.
+        warnings.append("no schema:publisher or schema:provider entries found -- DataCite requires a publisher")
+
+    return publishers
+
+
+# ------------------------------------------------------------------
+# subjects / categories / audiences
+# ------------------------------------------------------------------
+
+# Warning-discipline decision for the three builders below (docs/
+# cdif_pivot_implementation_plan.md Backlog): subjects (keywords),
+# categories (about), and audiences are all optional DataCite fields
+# (unlike publisher above) -- a resource genuinely having no keywords,
+# no subject classification, or no defined audience is a normal, non
+# -alarming outcome, not a sign something was dropped. Deliberately
+# left silent, matching exporters/AGENTS.md's own carve-out for
+# legitimately-empty optional fields.
+
+
+def _build_subjects(document: MetadataDocument) -> list[dict[str, Any]]:
+    subjects: list[dict[str, Any]] = []
+    for entry in _as_list(document.get_field("schema:keywords")):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
+            continue
+        subjects.append(
+            {
+                "subject_name": entry["schema:name"],
+                "subject_scheme": entry.get("schema:inDefinedTermSet", ""),
+                "value_uri": entry.get("schema:identifier", ""),
+            }
+        )
+    return subjects
+
+
+def _build_categories(document: MetadataDocument) -> list[dict[str, Any]]:
+    categories: list[dict[str, Any]] = []
+    for entry in _as_list(document.get_field("schema:about")):
+        if not isinstance(entry, dict) or not entry.get("schema:name"):
+            continue
+        categories.append(
+            {"name": entry["schema:name"], "sub_category": entry.get("schema:inDefinedTermSet", "")}
+        )
+    return categories
+
+
+def _build_audiences(document: MetadataDocument) -> list[dict[str, Any]]:
+    # schema:audience entries already use DataCite's own key names
+    # (audience/mediator/education_level/instructional_method) -- this
+    # profile's agent prompt was written to match Q2's mapping exactly,
+    # so this is close to a pass-through, still filtered for junk shapes.
+    return [
+        entry
+        for entry in _as_list(document.get_field("schema:audience"))
+        if isinstance(entry, dict) and entry.get("audience")
+    ]
+
+
+# ------------------------------------------------------------------
+# dates / temporal_events
+# ------------------------------------------------------------------
+
+_DATE_FIELD_TO_TYPE: tuple[tuple[str, str], ...] = (
+    ("schema:dateCreated", "Created"),
+    ("schema:datePublished", "Issued"),
+    ("schema:dateModified", "Updated"),
+    ("schema:copyrightYear", "Copyrighted"),
+    # dcterms date terms aren't produced by CDIFDiscoveryProfile today
+    # (Q2 mapping's "Inference per-term" row) -- read defensively.
+    ("dcterms:dateAccepted", "Accepted"),
+    ("dcterms:dateSubmitted", "Submitted"),
+)
+
+
+def _build_dates(document: MetadataDocument) -> list[dict[str, Any]]:
+    dates: list[dict[str, Any]] = []
+    for field_name, date_type in _DATE_FIELD_TO_TYPE:
+        value = document.get_field(field_name)
+        if value:
+            dates.append({"date": str(value), "date_type": date_type})
+
+    for interval in _as_list(document.get_field("schema:temporalCoverage")):
+        if interval:
+            dates.append({"date": str(interval), "date_type": "Collected"})
+
+    for entry in _as_list(document.get_field("schema:conditionsOfAccess")):
+        if isinstance(entry, dict) and entry.get("date"):
+            dates.append(
+                {
+                    "date": str(entry["date"]),
+                    "date_type": "Available",
+                    "date_information": entry.get("condition", ""),
+                }
+            )
+
+    return dates
+
+
+def _build_temporal_events(document: MetadataDocument) -> list[dict[str, Any]]:
+    # Q2 mapping's flagged judgment call: dcterms:accrualPeriodicity, not
+    # produced by CDIFDiscoveryProfile today -- read defensively so a
+    # hand-built/future document carrying it round-trips correctly.
+    # DataCiteSchema46._normalize_temporal_events only keeps dicts carrying
+    # a "start_date" or "description" *key* (presence, not truthiness) --
+    # a bare {"frequency_type": ...} silently vanished at that step. The
+    # empty "description" key is enough to survive normalization while
+    # correctly reporting no description was extracted.
+    events: list[dict[str, Any]] = []
+    frequency = document.get_field("dcterms:accrualPeriodicity")
+    if frequency:
+        events.append({"frequency_type": str(frequency), "description": ""})
+    return events
+
+
+# ------------------------------------------------------------------
+# geo_locations
+# ------------------------------------------------------------------
+
+
+def _build_geo_locations(document: MetadataDocument) -> list[dict[str, Any]]:
+    locations: list[dict[str, Any]] = []
+    for entry in _as_list(document.get_field("schema:spatialCoverage")):
+        if not isinstance(entry, dict) or not (
+            entry.get("schema:name") or entry.get("schema:description")
+        ):
+            continue
+        geo = entry.get("schema:geo") or {}
+        locations.append(
+            {
+                "geo_location_place": entry.get("schema:name", ""),
+                # "point" was never a real key any agent/enricher emits
+                # under schema:geo (only schema:box is produced today) --
+                # read defensively in case a hand-built document adds one.
+                "geo_location_point": geo.get("schema:point", "") if isinstance(geo, dict) else "",
+                "geo_location_box": geo.get("schema:box", "") if isinstance(geo, dict) else "",
+                "geo_description": entry.get("schema:description", ""),
+            }
+        )
+    return locations
+
+
+# ------------------------------------------------------------------
+# rights
+# ------------------------------------------------------------------
+
+
+def _build_rights(document: MetadataDocument) -> list[dict[str, Any]]:
+    rights: list[dict[str, Any]] = []
+    rights_holder = document.get_field("schema:copyrightHolder") or ""
+
+    for entry in _as_list(document.get_field("schema:license")):
+        if isinstance(entry, dict):
+            rights.append(
+                {
+                    "rights": entry.get("schema:name", ""),
+                    "rights_uri": entry.get("schema:url", ""),
+                    "rights_identifier": entry.get("schema:identifier", ""),
+                    "rights_holder": rights_holder,
+                }
+            )
+        elif isinstance(entry, str) and entry.strip():
+            rights.append(
+                {"rights": entry.strip(), "rights_uri": "", "rights_holder": rights_holder}
+            )
+
+    # NOTE: "condition"/"date" are read bare, not CURIE-keyed -- this
+    # schema:conditionsOfAccess shape doesn't correspond cleanly to the
+    # vendored LabeledLink def (no "condition"/"date" property exists
+    # there), so it's left as-is by this pass rather than force a
+    # semantic-guess CURIE. See docs/cdif_pivot_implementation_plan.md.
+    conditions = [
+        str(entry.get("condition"))
+        for entry in _as_list(document.get_field("schema:conditionsOfAccess"))
+        if isinstance(entry, dict) and entry.get("condition")
+    ]
+    if conditions:
+        combined = "; ".join(conditions)
+        if rights:
+            # Attach to the first entry rather than fabricating a rights
+            # statement out of an access condition -- conditionsOfAccess
+            # describes usage restrictions, not the license itself.
+            rights[0]["rights_condition"] = combined
+        else:
+            rights.append(
+                {"rights": "", "rights_uri": "", "rights_condition": combined, "rights_holder": rights_holder}
+            )
+
+    return rights
+
+
+# ------------------------------------------------------------------
+# funding_references
+# ------------------------------------------------------------------
+
+
+def _build_funding_references(document: MetadataDocument) -> list[dict[str, Any]]:
+    refs: list[dict[str, Any]] = []
+    for entry in _as_list(document.get_field("schema:funding")):
+        if not isinstance(entry, dict):
+            continue
+        funder = entry.get("schema:funder") or {}
+        award_number, _scheme, award_uri = _preferred_identifier(entry.get("schema:identifier"))
+        refs.append(
+            {
+                "funder_name": funder.get("schema:name", "") if isinstance(funder, dict) else "",
+                "funding_stream": entry.get("schema:description", ""),
+                "award_number": award_number,
+                "award_uri": award_uri,
+                "award_title": entry.get("schema:name", ""),
+                "funder_identifiers": _identifier_entries(
+                    funder if isinstance(funder, dict) else None
+                ),
+            }
+        )
+    return refs
+
+
+# ------------------------------------------------------------------
+# related_identifiers / alternate_identifiers
+# ------------------------------------------------------------------
+
+
+def _build_related_identifiers(document: MetadataDocument) -> list[dict[str, Any]]:
+    related: list[dict[str, Any]] = []
+
+    for entry in _as_list(document.get_field("schema:relatedLink")):
+        if not isinstance(entry, dict):
+            continue
+        # thumbnail links are consumed into resource.thumbnail (_build_resource)
+        # -- don't double-represent them here as a generic related identifier.
+        if entry.get("schema:linkRelationship") == "thumbnail":
+            continue
+        target = entry.get("schema:target") or {}
+        url = target.get("schema:url") if isinstance(target, dict) else None
+        if not url:
+            continue
+        related.append(
+            {
+                "related_identifier": url,
+                "related_identifier_type": "URL",
+                "relation_type": entry.get("schema:linkRelationship", "References"),
+            }
+        )
+
+    # CDIF explicitly special-cases IsDerivedFrom onto prov:wasDerivedFrom
+    # rather than folding it into schema:relatedLink -- reverse that here,
+    # not merged with the relatedLink loop above.
+    for entry in _as_list(document.get_field("prov:wasDerivedFrom")):
+        if not isinstance(entry, dict):
+            continue
+        identifier = entry.get("schema:url") or entry.get("@id")
+        if not identifier:
+            continue
+        related.append(
+            {
+                "related_identifier": identifier,
+                "related_identifier_type": "URL",
+                "relation_type": "IsDerivedFrom",
+            }
+        )
+
+    return related
+
+
+def _build_alternate_identifiers(document: MetadataDocument) -> list[dict[str, Any]]:
+    # entry.get("@id"): the document's own schema:sameAs can carry a bare
+    # {"@id": url} overflow reference (Open Question #23's collapse, same
+    # shape as Open Question #22's nested-entity overflow) alongside the
+    # richer PropertyValue shape agents/enrichers also write here.
+    alternates: list[dict[str, Any]] = []
+    for entry in _as_list(document.get_field("schema:sameAs")):
+        if isinstance(entry, dict) and (entry.get("schema:value") or entry.get("@id")):
+            value = str(entry.get("schema:value") or entry.get("@id"))
+            alternates.append(
+                {
+                    "alternate_name": entry.get("schema:name", ""),
+                    "alternate_identifier": value,
+                    "alternate_identifier_type": "URL"
+                    if value.startswith(("http://", "https://"))
+                    else "Local",
+                }
+            )
+        elif isinstance(entry, str) and entry.strip():
+            alternates.append(
+                {"alternate_name": "", "alternate_identifier": entry.strip(), "alternate_identifier_type": "Local"}
+            )
+    return alternates
+
+
+# ------------------------------------------------------------------
+# citations
+# ------------------------------------------------------------------
+
+
+def _build_citations(document: MetadataDocument) -> list[Any]:
+    # dcterms:bibliographicCitation (Open Question #19, resolved -- was
+    # schema:citation, forbidden outright by the vendored shacl.ttl's
+    # cdifd:citationProperty, sh:maxCount 0). Open Question #21, resolved:
+    # CDIFDiscoveryProfile.merge_agent_results now renders each structured
+    # dict into a single formatted literal string (DCMI's own range for
+    # this property) -- a bare string is the real shape on a fully-merged
+    # document now, though a structured dict is still accepted (a
+    # hand-built/synthetic fixture, or one built before that formatting
+    # step ran) since DataCiteSchema46._normalize_citations already
+    # handles either shape (folds a bare string into "title").
+    # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
+    # Backlog): citations are optional bibliography data -- most resources
+    # legitimately cite nothing, so an empty result here is silent by
+    # design, same reasoning as subjects/categories/audiences above.
+    return [
+        entry
+        for entry in _as_list(document.get_field("dcterms:bibliographicCitation"))
+        if (isinstance(entry, dict) and entry.get("title"))
+        or (isinstance(entry, str) and entry.strip())
+    ]
+
+
+# ------------------------------------------------------------------
+# media_files
+# ------------------------------------------------------------------
+
+
+def _build_media_files(document: MetadataDocument, warnings: list[str]) -> list[dict[str, Any]]:
+    distributions = [
+        entry for entry in _as_list(document.get_field("schema:distribution")) if isinstance(entry, dict)
+    ]
+
+    # Resource-level fields the CDIF generation prompt deliberately keeps
+    # OUT of individual distribution entries ("a nivel del recurso, no por
+    # archivo" -- config/agents.yaml's media_files agent prompt) but which
+    # the Q2 mapping's DataCite direction models as per-media_files-item
+    # fields. Broadcast onto every media_file entry produced below.
+    variable_measured = document.get_field("schema:variableMeasured") or []
+    measurement_technique = document.get_field("schema:measurementTechnique") or []
+    data_quality = document.get_field("dqv:hasQualityMeasurement") or []
+    provenance = document.get_field("prov:wasGeneratedBy") or {}
+    top_level_collections = document.get_field("schema:includedInDataCatalog")
+
+    if not _has_usable_distribution(document) and (
+        variable_measured or measurement_technique or data_quality or provenance
+    ):
+        # Covers both "distribution is empty" and "distribution has
+        # entries but none carry schema:contentUrl" (e.g. a bare-string
+        # distribution CDIFDiscoveryProfile's own normalizer can produce)
+        # -- the latter used to fall through this check silently, since
+        # `distributions` (dict-filtered only) was non-empty even though
+        # zero media_files entries would actually be produced below.
+        warnings.append(
+            "resource-level media metadata (schema:variableMeasured/"
+            "measurementTechnique/dqv:hasQualityMeasurement/prov:wasGeneratedBy) "
+            "present but schema:distribution has no usable entry (missing "
+            "schema:contentUrl) -- nothing to attach it to"
+        )
+
+    files: list[dict[str, Any]] = []
+    for entry in distributions:
+        content_url = entry.get("schema:contentUrl")
+        if not content_url:
+            continue
+        collections_source = entry.get("schema:includedInDataCatalog") or top_level_collections
+        # NOTE: "checksum"/"temporal_resolution" are read bare, not CURIE
+        # -keyed -- the vendored schema models checksum as a nested
+        # spdx:checksum{@type, algorithm, checksumValue} object, not a flat
+        # string, and defines no term for temporal_resolution at all,
+        # so a mechanical rename would be misleading. Left as-is; see
+        # docs/cdif_pivot_implementation_plan.md.
+        files.append(
+            {
+                "file_uri": content_url,
+                "format": entry.get("schema:encodingFormat", ""),
+                "sizes": _content_size_strings(entry.get("schema:contentSize")),
+                "checksum": entry.get("checksum", ""),
+                "temporal_resolution": entry.get("temporal_resolution", ""),
+                "variable_measured": variable_measured,
+                "measurement_technique": measurement_technique,
+                "data_quality": data_quality,
+                "provenance": provenance,
+                "Collections": _as_list(collections_source) if collections_source else [],
+            }
+        )
+
+    return files
+
+
+# ------------------------------------------------------------------
+# Main entry point
+# ------------------------------------------------------------------
+
+
+def to_datacite_json(document: MetadataDocument) -> DataCiteExportResult:
+    """Convert *document* (a CDIF Discovery-shaped ``MetadataDocument``,
+    CURIE-keyed) into DataCite 4.6's native dict shape.
+
+    Pure crosswalk -- no LLM call (Open Question #8 resolved: none). Never
+    raises: every builder tolerates missing/malformed input, appending a
+    warning instead, and the final ``DataCiteSchema46.validate_output``
+    call is wrapped so a truly malformed document degrades to an empty-ish
+    but structurally valid DataCite document plus a warning rather than
+    propagating a pydantic ``ValidationError`` to the caller.
+    """
+    warnings: list[str] = []
+    schema = _get_datacite_schema()
+
+    resource_raw, leftover_contributors = _build_resource(document, warnings)
+
+    raw: dict[str, Any] = {
+        "resource": resource_raw,
+        "titles": _build_titles(document, warnings),
+        "descriptions": _build_descriptions(document, warnings),
+        "languages": _build_languages(document),
+        "creators": _build_creators(document, leftover_contributors, warnings),
+        "publishers": _build_publishers(document, warnings),
+        "subjects": _build_subjects(document),
+        "categories": _build_categories(document),
+        "audiences": _build_audiences(document),
+        "dates": _build_dates(document),
+        "temporal_events": _build_temporal_events(document),
+        "geo_locations": _build_geo_locations(document),
+        "rights": _build_rights(document),
+        "funding_references": _build_funding_references(document),
+        "related_identifiers": _build_related_identifiers(document),
+        "alternate_identifiers": _build_alternate_identifiers(document),
+        "citations": _build_citations(document),
+        "media_files": _build_media_files(document, warnings),
+    }
+
+    normalized: dict[str, Any] = {
+        field_name: schema.normalize_field(field_name, value) for field_name, value in raw.items()
+    }
+
+    try:
+        validated: DataCiteOutputModel = schema.validate_output(normalized)
+    except Exception as exc:  # noqa: BLE001 - never propagate, degrade + warn
+        warnings.append(f"DataCite validation failed, emitting an empty document: {exc}")
+        validated = schema.validate_output({})
+
+    datacite_json = validated.model_dump(exclude={"reasoning"})
+
+    return DataCiteExportResult(datacite_json=datacite_json, warnings=warnings, token_usage=TokenUsage())

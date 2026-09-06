@@ -12,6 +12,15 @@ which corpus (Geoportal, do_catalog, golden fixtures, ...) is being scored:
 Nothing here assumes a fixed input/ground-truth directory, a specific
 ground-truth JSON shape, or a specific corpus name — callers pass paths and
 already-unwrapped/adapted dicts.
+
+Post-CDIF-pivot note: the live pipeline's generation target is
+``cdif-discovery`` (``config/agents.yaml``), not ``datacite-4.6`` (deregistered
+-- see ``docs/cdif_pivot_implementation_plan.md``). ``run_pipeline_for_model``
+below runs the real (CDIF) pipeline and then crosswalks the result through
+``exporters.datacite.to_datacite_json`` -- pure, no extra LLM call -- so its
+return value stays DataCite-shaped, matching ``extract_*``/``compare_outputs``
+below and the do_catalog ground-truth corpus, which is deliberately kept
+DataCite-shaped (it's hand-curated against DataCite 4.6, not regenerated).
 """
 
 from __future__ import annotations
@@ -29,7 +38,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path("config/agents.yaml")
-SCHEMA_NAME = "datacite-4.6"
 
 DEFAULT_PROVIDER = "zai-coding-plan"
 
@@ -105,7 +113,6 @@ def run_pipeline_for_model(
     max_attempts: int = 3,
     cache_label: str | None = None,
     config_path: Path = CONFIG_PATH,
-    schema_name: str = SCHEMA_NAME,
 ) -> dict[str, Any] | None:
     """Run pipeline on a single input with the specified provider + model.
 
@@ -115,18 +122,24 @@ def run_pipeline_for_model(
     handles reasoning-model flakiness where reasoning budget exhaustion
     causes empty content → Instructor parse failure.
 
+    The pipeline always generates via *config_path*'s own ``schema_name``
+    (``cdif-discovery`` for the live default) -- there is no other live
+    generation target post-pivot. The returned dict is crosswalked through
+    ``exporters.datacite.to_datacite_json`` (pure, no LLM call) so callers
+    scoring against the DataCite-shaped do_catalog ground truth keep working
+    unchanged; see this module's docstring.
+
     Returns the output with the highest field coverage across all attempts,
     or None if every attempt failed.
     """
     # Lazy imports — avoid heavy startup if just generating a report
     from metadata_enricher.agents.registry import LLMClientFactory
     from metadata_enricher.config.loader import load_config
+    from metadata_enricher.exporters.datacite import to_datacite_json
     from metadata_enricher.input_sources.filesystem import FilesystemInputSource
     from metadata_enricher.llm.base import LLMClient
     from metadata_enricher.llm.factory import create_llm_client
-    from metadata_enricher.output import OutputWriter
     from metadata_enricher.pipeline import Pipeline
-    from metadata_enricher.schemas import get_registry
 
     config = load_config(config_path)
 
@@ -163,9 +176,6 @@ def run_pipeline_for_model(
     )
     source = FilesystemInputSource()
 
-    schema = get_registry().get(schema_name)
-    writer = OutputWriter(schema=schema)
-
     best_output: dict[str, Any] | None = None
     best_field_count = 0
 
@@ -175,8 +185,7 @@ def run_pipeline_for_model(
         if not results or not results[0].success or results[0].document is None:
             continue
 
-        json_str = writer.format_json(results[0].document)
-        output = json.loads(json_str)
+        output = to_datacite_json(results[0].document).datacite_json
         field_count = len(extract_populated_fields(output))
 
         if field_count > best_field_count:
@@ -367,7 +376,8 @@ def compare_outputs(truth: dict[str, Any], actual: dict[str, Any]) -> dict[str, 
 # ---------------------------------------------------------------------------
 
 SCORING_PROMPT = """\
-You are a metadata quality evaluator for DataCite 4.6 metadata records.
+You are a metadata quality evaluator for structured scholarly-resource metadata records
+(DataCite 4.6 or CDIF Discovery JSON-LD, depending on the caller).
 Your task: compare a CANDIDATE metadata output against a REFERENCE (golden) output,
 given the original RESOURCE description as context.
 
@@ -432,7 +442,7 @@ def score_overall_deepeval(
     )
 
     metric = GEval(
-        name="DataCite Semantic Quality",
+        name="Metadata Semantic Quality",
         # Required since deepeval made evaluation_params mandatory — must list
         # every LLMTestCase field this metric actually reads (input/actual_output/
         # expected_output), or GEval raises "requires evaluation_params" at
@@ -443,9 +453,10 @@ def score_overall_deepeval(
             LLMTestCaseParams.EXPECTED_OUTPUT,
         ],
         criteria=(
-            "Evaluate if the candidate DataCite 4.6 metadata is accurate, complete, "
-            "and coherent compared to the reference (golden) output, given the "
-            "original resource description as context."
+            "Evaluate if the candidate structured metadata record (DataCite 4.6 or "
+            "CDIF Discovery JSON-LD) is accurate, complete, and coherent compared to "
+            "the reference (golden) output, given the original resource description "
+            "as context."
         ),
         evaluation_steps=[
             "Read the resource description to understand what metadata should be present.",

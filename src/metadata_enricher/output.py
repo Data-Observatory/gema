@@ -35,6 +35,60 @@ class OutputWriter:
                 ordered[key] = document.fields[key]
         return json.dumps(ordered, indent=2, ensure_ascii=False, default=str)
 
+    def resolve_output_path(
+        self,
+        document: MetadataDocument,
+        output_path: Path | None,
+        filename_hint: str | None = None,
+    ) -> Path | None:
+        """Compute where write() would place *document*, without writing it.
+
+        Same argument semantics as write() -- returns None for the stdout
+        case (output_path is None). Exposed so callers that need to derive
+        a *sibling* path (e.g. an alternate-format export next to the
+        primary output) don't have to duplicate this filename logic.
+        """
+        if output_path is None:
+            return None
+
+        if not output_path.is_dir():
+            return output_path
+
+        if filename_hint:
+            safe = "".join(c for c in filename_hint if c.isalnum() or c in "-_")[:80]
+            filename = f"{safe or 'output'}.json"
+        else:
+            # schema:identifier is singular on a fully-merged document
+            # (Open Question #23) -- a bare list is also tolerated
+            # defensively.
+            identifier = document.get_field("schema:identifier")
+            candidates = (
+                [identifier]
+                if isinstance(identifier, dict)
+                else (identifier if isinstance(identifier, list) else [])
+            )
+            doi = next(
+                (
+                    i.get("schema:value")
+                    for i in candidates
+                    if isinstance(i, dict)
+                    and str(i.get("schema:propertyID", "")).upper() == "DOI"
+                ),
+                None,
+            )
+            name = document.get_field("schema:name")
+            if doi:
+                safe = str(doi).replace("/", "_").replace(":", "-")
+                filename = f"{safe}.json"
+            elif name:
+                safe = (
+                    "".join(c for c in str(name) if c.isalnum() or c in "-_")[:50] or "untitled"
+                )
+                filename = f"{safe}.json"
+            else:
+                filename = "output.json"
+        return output_path / filename
+
     def write(
         self,
         document: MetadataDocument,
@@ -64,32 +118,8 @@ class OutputWriter:
             print(json_str)
             return json_str
 
-        if output_path.is_dir():
-            if filename_hint:
-                safe = "".join(c for c in filename_hint if c.isalnum() or c in "-_")[:80]
-                filename = f"{safe or 'output'}.json"
-            else:
-                doi = document.get_field("doi") or document.get_field("identifiers")
-                title = document.get_field("titles")
-                if doi:
-                    safe = str(doi).replace("/", "_").replace(":", "-")
-                    filename = f"{safe}.json"
-                elif title:
-                    title_str = (
-                        title[0].get("title", "untitled")
-                        if isinstance(title, list) and title
-                        else "untitled"
-                    )
-                    safe = (
-                        "".join(c for c in title_str if c.isalnum() or c in "-_")[:50]
-                        or "untitled"
-                    )
-                    filename = f"{safe}.json"
-                else:
-                    filename = "output.json"
-            target = output_path / filename
-        else:
-            target = output_path
+        target = self.resolve_output_path(document, output_path, filename_hint)
+        assert target is not None  # output_path is not None here
 
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json_str, encoding="utf-8")

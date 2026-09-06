@@ -6,7 +6,7 @@
 
 ## OVERVIEW
 
-`gema` — multi-agent LLM library that generates scholarly metadata (DataCite 4.6 reference impl) from minimal resource descriptions. Python 3.11+, uv-managed, hatchling-built, pydantic-v2 + typer + openai/instructor.
+`gema` — multi-agent LLM library that generates scholarly metadata (CDIF Discovery profile, JSON-LD) from minimal resource descriptions. DataCite 4.6 is exporter-only now (`exporters/datacite.py`, not yet built). Python 3.11+, uv-managed, hatchling-built, pydantic-v2 + typer + openai/instructor.
 
 ## STRUCTURE
 
@@ -66,7 +66,7 @@ gema/
 - **Orchestrator = Kahn topological sort + ThreadPoolExecutor** — agents run in parallel waves respecting `depends_on`. Single-agent waves skip thread pool. Cycle detection raises `ValueError`.
 - **7-day disk cache** — `~/.cache/gema/`, SHA-256 keyed by prompt+model+response_model. See `cache.py`.
 - **`conftest.py` sys.path surgery** — ensures `src/metadata_enricher` shadows any flat-layout original. Lines 6-12.
-- **DataCite `"Collections"` capital C is intentional** — `schemas/datacite.py:628`. Preserves legacy merger behavior.
+- **DataCite `"Collections"` capital C is intentional** — `schemas/datacite.py:724`. Preserves legacy merger behavior. `DataCiteSchema46` no longer registered as a generation target (still importable directly for exporter/A-B-diagnostic use).
 
 ## COMMANDS
 
@@ -89,5 +89,5 @@ uv run pytest -k "not live"                      # Skip live tests
 - **Config search order** — `find_config()`: explicit `--config` → `./config/agents.yaml` → `~/.config/gema/agents.yaml` → `$GEMA_CONFIG`.
 - **YAML env var expansion** — `${VAR}` syntax supported in configs via `os.path.expandvars()` (`loader.py:50`).
 - **Pipeline + CLI work end-to-end** (`pipeline.py`, `cli.py:process`); per-resource error isolation, exit 1 only on total failure.
-- **Only DataCite 4.6 ships** — custom schemas must implement `Schema` Protocol.
+- **`CDIFDiscoveryProfile` (`cdif-discovery`) is the sole registered generation schema** — custom schemas must implement `Schema` Protocol. `DataCiteSchema46` is deregistered (kept as an exporter target, direct-import only).
 - **DSPy teleprompter planned, not implemented** — prompt optimization is future work.

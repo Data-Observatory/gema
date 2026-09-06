@@ -19,6 +19,12 @@ providers:
     # tighter limit (see that file's own comment + git blame on commit
     # 4101ac9).
     max_workers: 5
+    # OpenCode notice (2026-09-03): requests missing this header may start
+    # erroring on 09/06. Must be a fresh, stable-per-conversation ID (their
+    # words) -- a static value defeats their per-conversation optimization,
+    # so this names the header only; the value is generated fresh per LLM
+    # call in llm/instructor_client.py's _build_extra_headers.
+    session_header: x-opencode-session
 
   - name: openai
     api_key_env: OPENAI_API_KEY

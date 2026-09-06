@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid
 from typing import Any, cast
 
 import instructor
@@ -27,6 +28,17 @@ def _build_extra_body(config: LLMConfig) -> dict[str, Any] | None:
     if config.extra_body:
         extra_body.update(config.extra_body)
     return extra_body or None
+
+
+def _build_extra_headers(config: LLMConfig) -> dict[str, str] | None:
+    """Fresh per-conversation header (see LLMConfig.session_header's
+    docstring). Must be called once per complete()/complete_with_usage()/
+    complete_with_tools()/complete_raw() invocation and its result reused
+    across that call's own retries/tool-loop rounds -- never memoized or
+    reused across separate calls, and never fed into cache.py's key."""
+    if not config.session_header:
+        return None
+    return {config.session_header: f"gema-{uuid.uuid4().hex}"}
 
 
 def _patch_instructor_reask_tools_none_crash() -> None:
@@ -138,6 +150,9 @@ class InstructorLLMClient:
         extra_body = _build_extra_body(self._config)
         if extra_body is not None:
             create_kwargs["extra_body"] = extra_body
+        extra_headers = _build_extra_headers(self._config)
+        if extra_headers is not None:
+            create_kwargs["extra_headers"] = extra_headers
         create_kwargs.update(kwargs)
 
         # instructor's create() return type can't be inferred through a
@@ -174,6 +189,9 @@ class InstructorLLMClient:
         extra_body = _build_extra_body(self._config)
         if extra_body is not None:
             create_kwargs["extra_body"] = extra_body
+        extra_headers = _build_extra_headers(self._config)
+        if extra_headers is not None:
+            create_kwargs["extra_headers"] = extra_headers
         create_kwargs.update(kwargs)
 
         result, completion = self._instructor_client.chat.completions.create_with_completion(
@@ -247,6 +265,9 @@ class InstructorLLMClient:
         tool_exchange_log: list[tuple[str, str, str]] = []
 
         extra_body = _build_extra_body(self._config)
+        # Same ID for every round plus the final call below -- one tool loop
+        # is one conversation, even across multiple HTTP requests.
+        extra_headers = _build_extra_headers(self._config)
         schemas = tool_schemas(tools)
         total_usage = TokenUsage()
 
@@ -262,6 +283,8 @@ class InstructorLLMClient:
                 raw_kwargs["max_tokens"] = self._config.max_tokens
             if extra_body is not None:
                 raw_kwargs["extra_body"] = extra_body
+            if extra_headers is not None:
+                raw_kwargs["extra_headers"] = extra_headers
             response = self._raw_client.chat.completions.create(**raw_kwargs)
             usage = getattr(response, "usage", None)
             if usage is not None:
@@ -338,6 +361,8 @@ class InstructorLLMClient:
             create_kwargs["max_tokens"] = self._config.max_tokens
         if extra_body is not None:
             create_kwargs["extra_body"] = extra_body
+        if extra_headers is not None:
+            create_kwargs["extra_headers"] = extra_headers
         create_kwargs.update(kwargs)
 
         result, completion = self._instructor_client.chat.completions.create_with_completion(
@@ -380,6 +405,9 @@ class InstructorLLMClient:
         extra_body = _build_extra_body(self._config)
         if extra_body is not None:
             extra_kwargs["extra_body"] = extra_body
+        extra_headers = _build_extra_headers(self._config)
+        if extra_headers is not None:
+            extra_kwargs["extra_headers"] = extra_headers
         response = self._raw_client.chat.completions.create(
             model=self._config.model,
             messages=cast("list[ChatCompletionMessageParam]", messages),

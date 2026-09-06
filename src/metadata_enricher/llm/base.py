@@ -72,3 +72,4 @@ class LLMConfig(BaseModel):
     max_tokens: int | None = None
     timeout: float = 240.0
     extra_body: dict[str, Any] | None = None
+    session_header: str | None = None

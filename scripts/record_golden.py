@@ -129,8 +129,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-s", "--schema",
-        default="datacite-4.6",
-        help="Schema name to use (default: datacite-4.6)",
+        default=None,
+        help="Schema name for output field ordering (default: the loaded config's "
+        "schema_name). This does NOT affect generation -- only pass it to format "
+        "output using a *different* schema's field order than the one that "
+        "generated it.",
     )
     parser.add_argument(
         "-v", "--verbose",
@@ -178,7 +181,8 @@ def main(argv: list[str] | None = None) -> None:
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     schema_registry = get_registry()
-    schema: Schema = schema_registry.get(args.schema)
+    schema_name = args.schema if args.schema is not None else config.schema_name
+    schema: Schema = schema_registry.get(schema_name)
     logger.info("Using schema: %s v%s", schema.name, schema.version)
 
     writer = OutputWriter(schema)

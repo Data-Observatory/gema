@@ -297,6 +297,34 @@ class Pipeline:
                 models_used=models_used,
             )
 
+        # schema:url fallback (Open Question #20, resolved): no agent's
+        # `fields:` list in config/agents.yaml ever populates schema:url, so
+        # the CDIF required floor's url|distribution OR-group could
+        # previously only ever be satisfied via schema:distribution from
+        # real generated output -- schema:url sat unreachable even though
+        # CDIFDiscoveryOutputModel/exporters/datacite.py/exporters/
+        # croissant.py all already read it. resource.url (the URL this
+        # pipeline run was actually given) is a reasonable, deliberate
+        # default here -- NOT a separately-verified "documented landing
+        # page" the way a real schema:url extraction would be, just the
+        # input page the resource description already carries. Only fires
+        # when no agent produced a schema:url of its own (defensive: no
+        # agent does today, but this must never clobber one that does) and
+        # never invents a URL the resource didn't already have.
+        #
+        # resource.url is only ever a real http(s) URL, not a DOI --
+        # ResourceDescription has a separate `doi` field for that (a bare
+        # DOI like "10.5880/GFZ.4.1.2020.012" is a valid `resource.url`
+        # value for some input sources, though, so this must still be
+        # checked defensively). schema:url is typed `{"format": "uri"}` in
+        # the vendored schema and both exporters treat it as a resolvable
+        # web location, preferring it over their own DOI-to-URL resolution
+        # -- writing a bare DOI there pre-empted that resolution and
+        # regressed two real exporters (found on review).
+        url = resource.url
+        if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
+            document.set_field("schema:url", url)
+
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
             return PipelineResult(
@@ -359,6 +387,20 @@ class Pipeline:
                 warnings += [c.problem for c in pid_checks if c.problem is not None]
             except Exception as exc:
                 logger.warning("PID validation failed: %s", exc)
+
+        # 8. SHACL conformance check — opt-in, non-blocking, mirrors the
+        # PID-validation step above. Duck-typed rather than importing
+        # CDIFDiscoveryProfile directly: only the registered schema knows
+        # whether it has a meaningful conformance check at all (see
+        # PipelineConfig.validate_shacl_conformance's own docstring for why
+        # this defaults off).
+        if self._config.validate_shacl_conformance:
+            shacl_check = getattr(self._schema, "check_shacl_conformance", None)
+            if callable(shacl_check):
+                try:
+                    warnings += shacl_check(document)
+                except Exception as exc:
+                    logger.warning("SHACL conformance check failed: %s", exc)
 
         return PipelineResult(
             resource=resource,

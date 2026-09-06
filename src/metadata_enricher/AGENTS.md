@@ -19,7 +19,7 @@ metadata_enricher/
 ├── agents/                  # BaseAgent + AgentRegistry (see ./agents/)
 ├── config/                  # Pydantic models + YAML loader + migration (see ./config/AGENTS.md)
 ├── llm/                     # LLMClient middleware stack (see ./llm/AGENTS.md)
-├── schemas/                 # Schema Protocol + DataCite 4.6 (see ./schemas/AGENTS.md)
+├── schemas/                 # Schema Protocol + CDIFDiscoveryProfile (generation) + DataCiteSchema46 (exporter-only) (see ./schemas/AGENTS.md)
 ├── enrichers/               # Post-merge enrichment: identifier resolver + IANA/country (see ./enrichers/AGENTS.md)
 ├── exporters/               # Converters to other systems' native formats (currently: dataverse.py)
 └── input_sources/           # InputSource Protocol + FilesystemInputSource

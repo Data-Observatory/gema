@@ -40,11 +40,13 @@ def make_provider(
     name: str = "test-provider",
     base_url: str | None = "http://localhost:8080",
     api_key_env: str = "TEST_API_KEY",
+    session_header: str | None = None,
 ) -> ProviderConfig:
     return ProviderConfig(
         name=name,
         base_url=base_url,
         api_key_env=api_key_env,
+        session_header=session_header,
     )
 
 
@@ -64,6 +66,18 @@ class TestFactory:
         assert hasattr(client, "complete_raw")
         # Conforms to the LLMClient protocol
         assert isinstance(client, LLMClient)
+
+    def test_factory_passes_provider_session_header_to_llm_config(
+        self, monkeypatch: pytest.MonkeyPatch, mock_instructor: MagicMock
+    ) -> None:
+        """provider.session_header reaches InstructorLLMClient's LLMConfig."""
+        monkeypatch.setenv("TEST_API_KEY", "sk-test-123")
+        create_llm_client(
+            provider=make_provider(session_header="x-opencode-session"),
+            model="gpt-4",
+        )
+        called_config = mock_instructor.call_args.kwargs["config"]
+        assert called_config.session_header == "x-opencode-session"
 
     def test_factory_raises_on_missing_key(self) -> None:
         """Raises ValueError when the API key env var is not set."""

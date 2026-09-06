@@ -29,12 +29,12 @@ class FakeLLMClient:
 
 def make_config() -> PipelineConfig:
     return PipelineConfig(
-        schema_name="datacite-4.6",
+        schema_name="cdif-discovery",
         agents=[
             AgentConfig(
                 id="titles-agent",
                 name="Titles Agent",
-                fields=["titles"],
+                fields=["schema_name"],
                 prompt="Extract titles from {url} {title} {description}",
                 provider="mock",
                 model="mock-model",
@@ -88,13 +88,13 @@ class TestRunSingle:
         path = write_temp_input_from_dict(
             {"url": "https://example.com/x", "title": "T", "description": "D"}
         )
-        factory = lambda provider, **kw: FakeLLMClient({"titles": [{"name": "T", "title_type": "MainTitle"}]})  # noqa: E731
+        factory = lambda provider, **kw: FakeLLMClient({"schema_name": "T"})  # noqa: E731
         try:
             result = run_single(make_config(), path, llm_factory=factory)
         finally:
             path.unlink(missing_ok=True)
         assert result.success is True
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_missing_file_raises_clearly(self, tmp_path):
         """Visor always writes the temp file itself right before calling

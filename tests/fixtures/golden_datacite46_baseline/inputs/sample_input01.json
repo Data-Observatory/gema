@@ -1,0 +1,8 @@
+{
+  "url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
+  "title": "Gastos municipales (presupuesto abierto)",
+  "description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
+  "publisher": "Ministerio de Hacienda - Gobierno de Chile",
+  "frequency": "Mensual",
+  "fetched_content": "<html><body><h1>Gastos municipales</h1><p>Base de datos de gastos del sector público local</p><p>Última actualización: 15 de Marzo de 2026</p></body></html>"
+}
