@@ -209,11 +209,23 @@ def generate_report(results: dict[str, Any], ground_truth_dir: Path) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
+    eval_cfg = eval_common.load_eval_config()
+    do_catalog_cfg = eval_cfg.get("corpora", {}).get("do_catalog", {})
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ground-truth-dir", type=Path, required=True)
-    parser.add_argument("--inputs-dir", type=Path, required=True)
+    parser.add_argument(
+        "--ground-truth-dir", type=Path, default=do_catalog_cfg.get("ground_truth_dir"),
+        required="ground_truth_dir" not in do_catalog_cfg,
+    )
+    parser.add_argument(
+        "--inputs-dir", type=Path, default=do_catalog_cfg.get("inputs_dir"),
+        required="inputs_dir" not in do_catalog_cfg,
+    )
     parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--models", required=True, help="Comma-separated provider:model specs")
+    parser.add_argument(
+        "--models", default=None,
+        help="Comma-separated provider:model specs (default: config/eval.yaml's candidates)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="Cap number of inputs (e.g. for a smoke test)")
     parser.add_argument("--enrich", action="store_true", default=False,
                          help="Force identifier enrichment on (it's already on by default via config)")
@@ -227,7 +239,11 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    models = [m.strip() for m in args.models.split(",") if m.strip()]
+    models_arg = args.models or ",".join(eval_cfg.get("candidates", []))
+    models = [m.strip() for m in models_arg.split(",") if m.strip()]
+    if not models:
+        print("No models to compare — pass --models or set candidates in config/eval.yaml", file=sys.stderr)
+        sys.exit(1)
     args.output_root.mkdir(parents=True, exist_ok=True)
 
     print(f"Models: {', '.join(models)}")

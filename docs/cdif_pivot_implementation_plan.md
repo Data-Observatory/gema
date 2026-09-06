@@ -731,6 +731,16 @@ Ran `scripts/compare_models.py`/`judge_models.py` (both fixed for the CDIF pivot
 
 **Not investigated this round, flagged for whoever picks this back up**: whether `longcat-2.0`/`omen-alpha`'s slowness is model latency, a routing/queueing issue on opencode's side, or retries from transient errors (`omen-alpha` did hit a couple of retried 400s on `rights_funding_citations` mid-run, absorbed by the pipeline's existing retry logic) — not distinguished here.
 
+## Eval tooling: judge/candidate quota separation + config/eval.yaml (2026-09-06)
+
+Root cause found for the account lockout during the model-swap experiment above: `run_live_eval.py`'s judge client silently inherited `config/agents.yaml`'s `default_provider` (`opencode`) instead of a separate account, so judging a candidate model competed for the exact same rolling quota the candidate itself was consuming — `eval_common.py` already had the right idea (`DEFAULT_PROVIDER = "zai-coding-plan"`, and `judge_models.py`'s own docstring example always showed a `zai-coding-plan` judge), `run_live_eval.py` was just the outlier that never adopted it.
+
+Fixed: `run_live_eval.py`'s judge argument is now `--judge` (was `--model`), taking a `provider:model` spec string via the existing `eval_common.parse_model_spec()` — same format `compare_models.py --models` and `judge_models.py --judge` already used, just applied consistently everywhere now. Default is `zai-coding-plan:glm-5.3`, resolved independently of production's `default_provider`, so a judge run can no longer cannibalize whatever account a candidate model is being tested against (or vice versa). `judge_models.py`'s duplicate `_find_provider` helper moved to `eval_common.find_provider()`, shared by both scripts.
+
+Also added `config/eval.yaml` (new, dev-tooling-only — never read by `src/metadata_enricher`, production pipeline unaffected): judge spec, PASS/FAIL threshold, default candidate list, and named corpus path presets (`do_catalog`, `golden`) that `run_live_eval.py`, `compare_models.py`, and `judge_models.py` all now read as defaults — every corresponding CLI flag still overrides when passed, so passing a different corpus/model/judge on the command line keeps working exactly as before. This replaces several previously-`required=True` CLI flags (`--ground-truth-dir`, `--inputs-dir`, `--models`, `--judge`) with config-file-backed defaults, shrinking the common-case invocation to zero flags for the two corpora this repo actually uses.
+
+Verified: `ruff check src/ tests/ scripts/ visor/` clean, `mypy src/ scripts/` + `mypy visor --exclude visor/tests` both 0 errors, full `-m "not live"` suite 1254 passed (unchanged) + `--help` smoke-checked on all 3 scripts to confirm config-file defaults resolve without error.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.

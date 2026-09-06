@@ -16,7 +16,7 @@ Usage:
         --inputs-dir tests/fixtures/do_catalog/inputs \
         --output-root reports/do_catalog/pilot \
         --models zai-coding-plan:glm-5.3,zai-coding-plan:glm-5-turbo,opencode:deepseek-v4-flash \
-        --judge opencode:qwen3.7-plus
+        --judge zai-coding-plan:glm-5.3
 """
 
 from __future__ import annotations
@@ -66,14 +66,6 @@ def spearman_correlation(a: list[float], b: list[float]) -> float | None:
     return float(cov / (var_a * var_b) ** 0.5)
 
 
-def _find_provider(config: Any, name: str) -> Any:
-    for p in config.providers:
-        if p.name == name:
-            return p
-    msg = f"Provider '{name}' not found in config"
-    raise ValueError(msg)
-
-
 def run_judging(
     models: list[str], ground_truth_dir: Path, inputs_dir: Path, output_root: Path, judge_spec: str,
 ) -> dict[str, Any]:
@@ -82,7 +74,7 @@ def run_judging(
 
     config = load_config(eval_common.CONFIG_PATH)
     judge_provider_name, judge_model = eval_common.parse_model_spec(judge_spec)
-    judge_provider = _find_provider(config, judge_provider_name)
+    judge_provider = eval_common.find_provider(config, judge_provider_name)
     judge_api_key = os.environ[judge_provider.api_key_env]
 
     # Deliberately NOT applying MODEL_EXTRA_BODY here: that table exists for
@@ -283,16 +275,35 @@ def generate_report(judge_results: dict[str, Any], structural_data_path: Path) -
 
 
 def main(argv: list[str] | None = None) -> None:
+    eval_cfg = eval_common.load_eval_config()
+    do_catalog_cfg = eval_cfg.get("corpora", {}).get("do_catalog", {})
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--ground-truth-dir", type=Path, required=True)
-    parser.add_argument("--inputs-dir", type=Path, required=True)
+    parser.add_argument(
+        "--ground-truth-dir", type=Path, default=do_catalog_cfg.get("ground_truth_dir"),
+        required="ground_truth_dir" not in do_catalog_cfg,
+    )
+    parser.add_argument(
+        "--inputs-dir", type=Path, default=do_catalog_cfg.get("inputs_dir"),
+        required="inputs_dir" not in do_catalog_cfg,
+    )
     parser.add_argument("--output-root", type=Path, required=True,
                          help="Same --output-root passed to compare_models.py — reads its saved outputs")
-    parser.add_argument("--models", required=True, help="Comma-separated provider:model specs")
-    parser.add_argument("--judge", required=True, help="provider:model for the judge")
+    parser.add_argument(
+        "--models", default=None,
+        help="Comma-separated provider:model specs (default: config/eval.yaml's candidates)",
+    )
+    parser.add_argument(
+        "--judge", default=eval_cfg.get("judge"),
+        required="judge" not in eval_cfg, help="provider:model for the judge",
+    )
     args = parser.parse_args(argv)
 
-    models = [m.strip() for m in args.models.split(",") if m.strip()]
+    models_arg = args.models or ",".join(eval_cfg.get("candidates", []))
+    models = [m.strip() for m in models_arg.split(",") if m.strip()]
+    if not models:
+        print("No models to judge — pass --models or set candidates in config/eval.yaml", file=sys.stderr)
+        sys.exit(1)
     args.output_root.mkdir(parents=True, exist_ok=True)
 
     print(f"Judge: {args.judge}")

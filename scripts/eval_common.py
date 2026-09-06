@@ -30,16 +30,43 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+import yaml
+
 from metadata_enricher.enrichers.fuzzy_matcher import fold_accents
 
 if TYPE_CHECKING:
-    from metadata_enricher.config.models import ProviderConfig
+    from metadata_enricher.config.models import PipelineConfig, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path("config/agents.yaml")
+EVAL_CONFIG_PATH = Path("config/eval.yaml")
 
 DEFAULT_PROVIDER = "zai-coding-plan"
+
+
+def load_eval_config(path: Path = EVAL_CONFIG_PATH) -> dict[str, Any]:
+    """Load config/eval.yaml's shared dev-tooling defaults: judge spec,
+    threshold, candidate list, named corpus path presets. Every script here
+    treats these purely as defaults -- the corresponding CLI flag always
+    overrides. A missing file (e.g. a fresh checkout before this existed)
+    returns {}, so callers fall back to their own hardcoded defaults."""
+    if not path.exists():
+        return {}
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return cast("dict[str, Any]", loaded) if loaded else {}
+
+
+def find_provider(config: PipelineConfig, name: str) -> ProviderConfig:
+    """Look up a provider by name in *config*.providers. Shared by every
+    script here that needs to resolve a provider:model spec (parse_model_spec)
+    to an actual ProviderConfig, e.g. for a judge role kept on a different
+    provider than whatever's being tested as a candidate."""
+    for p in config.providers:
+        if p.name == name:
+            return p
+    msg = f"Provider '{name}' not found in config"
+    raise ValueError(msg)
 
 # Model/provider-specific request-body overrides needed to make structured
 # output work at all. Several models default to a "thinking mode" via
