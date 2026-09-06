@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 import yaml
@@ -14,13 +15,60 @@ from dotenv import find_dotenv, load_dotenv
 from metadata_enricher import __version__
 from metadata_enricher.config.loader import load_config, find_config
 from metadata_enricher.config.models import ProviderConfig
+from metadata_enricher.exporters import (
+    CroissantExportResult,
+    DataCiteExportResult,
+    to_croissant_json,
+    to_datacite_json,
+)
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.output import OutputWriter
 from metadata_enricher.pipeline import Pipeline
 from metadata_enricher.schemas import get_registry
+from metadata_enricher.types import MetadataDocument
 from metadata_enricher.validation import PreFlightValidator
 
 logger = logging.getLogger(__name__)
+
+# Additional export formats `process --export` can write alongside the
+# primary CDIF output. Each maps to a pure, never-raising crosswalk in
+# metadata_enricher.exporters -- no LLM call, so requesting one costs
+# nothing beyond a bit of CPU. Keep this in sync with _write_export's
+# if/else below if a third format is ever added.
+_EXPORT_FORMATS = ("datacite", "croissant")
+
+
+def _write_export(fmt: str, document: MetadataDocument, primary_target: Path) -> list[str]:
+    """Run one exporter and write its sibling file next to *primary_target*.
+
+    Never raises -- an export failure is reported as a warning and must
+    never abort or corrupt the primary CDIF output, same fail-soft
+    contract the exporters themselves already follow. Returns warnings
+    (the exporter's own, plus a synthetic one if the exporter itself
+    raised unexpectedly).
+    """
+    export_path = primary_target.with_suffix(f".{fmt}.json")
+    try:
+        payload: dict[str, Any]
+        warnings: list[str]
+        if fmt == "datacite":
+            datacite_result: DataCiteExportResult = to_datacite_json(document)
+            payload = datacite_result.datacite_json
+            warnings = list(datacite_result.warnings)
+        else:
+            croissant_result: CroissantExportResult = to_croissant_json(document)
+            payload = croissant_result.croissant_json
+            warnings = list(croissant_result.warnings)
+        export_path.parent.mkdir(parents=True, exist_ok=True)
+        export_path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+        )
+        logger.info("Wrote %s export to %s", fmt, export_path)
+        return [f"{fmt} export: {w}" for w in warnings]
+    except Exception as exc:  # noqa: BLE001 - never let an export failure touch the primary output
+        logger.warning("Failed to write %s export to %s: %s", fmt, export_path, exc)
+        return [f"{fmt} export failed: {exc}"]
+
 
 app = typer.Typer(
     name="gema",
@@ -222,6 +270,17 @@ def process(
         "max_workers. Lower this if the provider rate-limits (429s).",
         min=1,
     ),
+    export: list[str] = typer.Option(
+        [],
+        "--export",
+        help="Additional export format to write alongside the primary CDIF "
+        f"output, as a sibling file (e.g. <output>.datacite.json). Repeatable "
+        f"-- pass more than once for more than one format. Choices: "
+        f"{', '.join(_EXPORT_FORMATS)}. Requires --output (there's no file to "
+        "place a sibling next to when writing to stdout). A single export "
+        "failure never blocks the primary output -- it's reported as a "
+        "warning instead.",
+    ),
 ) -> None:
     """Process input resources and generate metadata.
 
@@ -230,6 +289,22 @@ def process(
     """
     if not input_path.exists():
         typer.echo(f"Error: Input not found: {input_path}", err=True)
+        raise typer.Exit(1)
+
+    invalid_formats = [fmt for fmt in export if fmt not in _EXPORT_FORMATS]
+    if invalid_formats:
+        typer.echo(
+            f"Error: unknown --export format(s): {', '.join(invalid_formats)}. "
+            f"Choices: {', '.join(_EXPORT_FORMATS)}.",
+            err=True,
+        )
+        raise typer.Exit(1)
+    if export and output is None:
+        typer.echo(
+            "Error: --export requires --output (there's no file to place a sibling "
+            "export next to when writing to stdout).",
+            err=True,
+        )
         raise typer.Exit(1)
 
     ctx_config = ctx.obj.get("config_path") if ctx.obj else None
@@ -294,11 +369,19 @@ def process(
             assert result.document is not None
             output_writer.write(result.document, output_path=output, filename_hint=stem)
             success_count += 1
-            if result.warnings:
+            export_warnings: list[str] = []
+            if export:
+                primary_target = output_writer.resolve_output_path(
+                    result.document, output, filename_hint=stem
+                )
+                assert primary_target is not None  # export requires --output, checked above
+                for fmt in export:
+                    export_warnings.extend(_write_export(fmt, result.document, primary_target))
+            if result.warnings or export_warnings:
                 incomplete_count += 1
                 source = source_path or result.resource.url or "unknown"
                 typer.echo(f"Warning: {source} has incomplete fields:", err=True)
-                for w in result.warnings:
+                for w in [*result.warnings, *export_warnings]:
                     typer.echo(f"  - {w}", err=True)
         else:
             source = source_path or result.resource.url or "unknown"

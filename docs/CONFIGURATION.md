@@ -21,16 +21,25 @@ auto-discovery), `--verbose/-v` (DEBUG logging), `--quiet/-q` (WARNING-only),
 | `list-schemas` | — | Lists registered schemas |
 | `list-providers` | `--config/-c` | Lists providers from a config |
 | `validate <file>` | `--schema/-s` | Pre-flight only, no LLM call, no API key needed |
-| `process <input_path>` | `--output/-o`, `--schema/-s`, `--config/-c`, `--allow-partial`, `--max-workers N` | The real run — costs API tokens |
+| `process <input_path>` | `--output/-o`, `--schema/-s`, `--config/-c`, `--allow-partial`, `--max-workers N`, `--export FORMAT` | The real run — costs API tokens |
 
 `process` is the one command that calls the LLM for real. `--allow-partial` writes
 best-effort output even when some agents failed on a resource, instead of treating
 any partial failure as a hard failure. `--max-workers` overrides the config's
 `max_workers` for this run — lower it first if a provider is rate-limiting (429s).
 
+`--export FORMAT` (repeatable; choices `datacite`, `croissant`) writes an
+additional export alongside the primary CDIF output — a pure, no-LLM-call
+crosswalk (`metadata_enricher.exporters`) — as a sibling file next to the
+primary one (`<output>.datacite.json`, `<output>.croissant.json`). Requires
+`--output` (there's no file to place a sibling next to when writing to
+stdout). A single export failing never blocks or corrupts the primary
+output — it's reported as a warning instead. Not yet wired into Visor's UI.
+
 ```bash
 uv run gema process examples/sample_input01.json -o output.json
 uv run gema process tests/fixtures/geoportal/inputs -o reports/manual/ --max-workers 1
+uv run gema process examples/sample_input01.json -o output.json --export datacite --export croissant
 ```
 
 Exit codes for `process`: `0` all resources fully succeeded · `1` every resource
