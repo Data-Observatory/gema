@@ -741,6 +741,24 @@ Also added `config/eval.yaml` (new, dev-tooling-only — never read by `src/meta
 
 Verified: `ruff check src/ tests/ scripts/ visor/` clean, `mypy src/ scripts/` + `mypy visor --exclude visor/tests` both 0 errors, full `-m "not live"` suite 1254 passed (unchanged) + `--help` smoke-checked on all 3 scripts to confirm config-file defaults resolve without error.
 
+## Phase B1: deterministic actor fallback cascade (2026-09-06)
+
+Implemented the Opus plan's Phase B1 (Post-PR#45 investigation section above) while opencode's rolling quota was rate-limited — zero live calls needed, pure code + mechanical fixture updates, same class of fix as Open Question #20's `schema:url` fallback.
+
+`pipeline.py::_process_resource`, right after the `schema:url` fallback: a deterministic cascade fires only on genuinely-empty slots, never overriding a real agent-produced value —
+1. `resource.publisher` → `schema:publisher`, when no agent produced one. Normalizes two known trailing-suffix forms first (`" - Gobierno de Chile"`, `" (Chile)"`) so the fallback doesn't reintroduce exactly what the shared system prompt already forbids agents from including (Open Question O-4's default resolution — narrow, documented, easy to extend if more forms turn up).
+2. `schema:publisher` → `schema:creator`, when creator is empty (`schema:creator` is always `{"@list": [...]}`-wrapped by this point in the method; unwrapped via `types.jsonld_list_unwrap()` to check).
+3. `schema:publisher` → `schema:copyrightHolder`, when empty (`schema:copyrightHolder` is a plain string field, unlike the other two).
+4. `"Datos Abiertos del Estado de Chile"` license entry → `schema:copyrightHolder: "Estado de Chile"`, mirroring the `rights_funding_citations` prompt's own PRIORIDAD 3 rule (`config/agents.yaml`) made deterministic, checked only if steps 1-3 left the slot empty.
+
+**Found while implementing, not assumed**: 4 of the 6 committed golden fixtures (`sample_input02`, `03`, `05`, `06`) already had `schema:copyrightHolder: ""` despite a fully-populated `schema:publisher` — i.e. this exact gap was already sitting in the cache-replayed regression suite, not just a live-only symptom. Updated those 4 `expected/*.json` files mechanically (copyrightHolder set to the publisher's own `schema:name`) — no cache-key impact (this fallback isn't part of any agent's LLM response or `build_output_model`'s digest, same as #20), no live re-recording needed. `sample_input01`/`04` already had a non-empty `schema:copyrightHolder` and are untouched, matching the never-override guarantee.
+
+Tests: new `TestPipelineActorFallbacks` in `tests/test_pipeline_integration.py` (6 tests) — fires-and-cascades, both suffix-normalization forms, doesn't-override for an agent-produced publisher, doesn't-override for agent-produced creator/copyrightHolder, the license-based rule, and the no-fallback-fires case.
+
+Verified: `ruff check src/ tests/ scripts/ visor/` clean, `mypy src/ scripts/` 0 errors, `-m regression` 10 passed (cache-replay confirms the updated fixtures match the new fallback behavior exactly), full `-m "not live"` suite 1260 passed (+6 new).
+
+**Not done in this pass** (still blocked on opencode's quota, tracked together): B0's final "re-run `make live-eval` to see the real number" step — production generation itself runs on opencode, same account the judge fix (previous entry) only decoupled the *judge* from, not generation. B2 (model-swap branch decision) and B3 (prompt-edit batch + `make record-golden`) both need real generation calls too. A cron reminder is set to check opencode's `/usage` endpoint and resume the model-swap experiment once the rolling window actually resets.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.

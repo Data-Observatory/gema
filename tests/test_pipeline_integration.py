@@ -92,6 +92,51 @@ def make_publisher_config() -> PipelineConfig:
     )
 
 
+def make_creator_copyright_config() -> PipelineConfig:
+    """Config whose one agent produces both schema_creator and
+    schema_copyright_holder, for the B1 actor-fallback's
+    'don't override an already-populated slot' tests."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="creator-agent",
+                name="Creator Agent",
+                fields=["schema_creator", "schema_copyright_holder"],
+                prompt="Extract creator from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
+def make_license_config() -> PipelineConfig:
+    """Config whose one agent produces schema_license, for the B1
+    'Datos Abiertos del Estado de Chile' -> copyrightHolder fallback test."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="license-agent",
+                name="License Agent",
+                fields=["schema_license"],
+                prompt="Extract license from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
 def make_url_config() -> PipelineConfig:
     """Config whose one agent produces schema_url, for the #20 fallback's
     'don't clobber an agent-produced value' test."""
@@ -1133,3 +1178,163 @@ class TestPipelineSchemaUrlFallback:
         assert result.success is True
         assert result.document is not None
         assert not result.document.get_field("schema:url")
+
+
+class TestPipelineActorFallbacks:
+    """Phase B1 (live-eval quality gap, docs/cdif_pivot_implementation_plan.md's
+    "Post-PR#45 investigation" section): schema:publisher/schema:creator/
+    schema:copyrightHolder came back empty on a real live run despite
+    resource.publisher carrying a hand-verified name -- a deterministic
+    fallback cascade in pipeline.py, same class of fix as
+    TestPipelineSchemaUrlFallback above. Fires only on genuinely empty
+    slots, never overrides a real agent-produced value."""
+
+    def test_publisher_fallback_fires_and_cascades_to_creator_and_copyright_holder(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """make_test_config's one agent only ever produces schema_name --
+        publisher/creator/copyrightHolder are never populated by any agent
+        here, so the full cascade should fire from resource.publisher alone.
+        Also exercises the suffix-stripping normalization (Open Question O-4)."""
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Ministerio de Hacienda - Gobierno de Chile",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        expected_publisher = {"@type": ["schema:Organization"], "schema:name": "Ministerio de Hacienda"}
+        assert result.document.get_field("schema:publisher") == expected_publisher
+        assert result.document.get_field("schema:creator") == {"@list": [expected_publisher]}
+        assert result.document.get_field("schema:copyrightHolder") == "Ministerio de Hacienda"
+
+    def test_publisher_fallback_strips_trailing_country_parenthetical(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Instituto Nacional de Estadísticas (Chile)",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Instituto Nacional de Estadísticas",
+        }
+
+    def test_publisher_fallback_does_not_override_an_agent_produced_publisher(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Real Publisher"}}}
+        )
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Fallback Publisher (Chile)",
+            },
+        )
+        pipeline = Pipeline(config=make_publisher_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        # Agent's own publisher survives untouched -- the fallback text
+        # ("Fallback Publisher") never appears anywhere.
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Real Publisher",
+        }
+        # Creator/copyrightHolder were still empty, so they cascade from the
+        # real (agent-produced) publisher, not the unused fallback text.
+        assert result.document.get_field("schema:creator") == {
+            "@list": [{"@type": ["schema:Organization"], "schema:name": "Real Publisher"}]
+        }
+        assert result.document.get_field("schema:copyrightHolder") == "Real Publisher"
+
+    def test_creator_and_copyright_holder_not_overridden_when_agent_produced(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {
+                "fields": {
+                    "schema_creator": [{"@type": ["schema:Person"], "schema:name": "Jane Doe"}],
+                    "schema_copyright_holder": "Jane Doe",
+                }
+            }
+        )
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Some Publisher",
+            },
+        )
+        pipeline = Pipeline(config=make_creator_copyright_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        # publisher fallback still fires (this config's agent never produces
+        # schema_publisher), but creator/copyrightHolder are untouched since
+        # they already had real agent values.
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Some Publisher",
+        }
+        assert result.document.get_field("schema:creator") == {
+            "@list": [{"@type": ["schema:Person"], "schema:name": "Jane Doe"}]
+        }
+        assert result.document.get_field("schema:copyrightHolder") == "Jane Doe"
+
+    def test_datos_abiertos_license_sets_estado_de_chile_copyright_holder(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_license": [{"schema:name": "Datos Abiertos del Estado de Chile"}]}}
+        )
+        make_input_file(tmp_path, {"url": "https://example.com/x", "title": "T", "description": "D"})
+        pipeline = Pipeline(config=make_license_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
+
+    def test_no_fallback_when_no_resource_publisher_and_no_matching_license(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(tmp_path, {"url": "https://example.com/x", "title": "T", "description": "D"})
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert not result.document.get_field("schema:publisher")
+        # No agent produced schema:creator and no fallback fired -- the key
+        # never gets set at all (merge_agent_results' own {"@list": [...]}
+        # wrap only fires when get_field returns an actual list).
+        assert result.document.get_field("schema:creator") is None
+        assert not result.document.get_field("schema:copyrightHolder")

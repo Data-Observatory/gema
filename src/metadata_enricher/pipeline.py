@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,7 +15,13 @@ from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.orchestrator import Orchestrator
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema, SchemaRegistry
-from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescription, TokenUsage
+from metadata_enricher.types import (
+    AgentResult,
+    MetadataDocument,
+    ResourceDescription,
+    TokenUsage,
+    jsonld_list_unwrap,
+)
 from metadata_enricher.validation import PreFlightValidator
 
 if TYPE_CHECKING:
@@ -26,6 +33,25 @@ logger = logging.getLogger(__name__)
 # Same instance/behavior as agents/base.py's — reused here so identifier
 # enrichment sees the same country hint the agents' own prompts were given.
 _country_extractor = CountryExtractor()
+
+# Trailing qualifiers config/agents.yaml's shared system prompt explicitly
+# tells agents to strip from an org name (e.g. "Ministerio de Hacienda -
+# Gobierno de Chile" -> "Ministerio de Hacienda") before it becomes
+# schema:publisher/schema:creator's schema:name. resource.publisher (an
+# input-supplied, unprocessed string) can carry these when used as a
+# fallback below -- reapplying the same normalization keeps the fallback
+# from reintroducing exactly what the prompt already forbids. Deliberately
+# narrow (only the two forms observed in real fixtures) rather than a
+# general free-text cleanup -- see Open Question O-4 in
+# docs/cdif_pivot_implementation_plan.md if this needs to grow.
+_TRAILING_GOBIERNO_SUFFIX_RE = re.compile(r"\s*-\s*Gobierno de Chile\s*$", re.IGNORECASE)
+_TRAILING_COUNTRY_PAREN_RE = re.compile(r"\s*\(Chile\)\s*$", re.IGNORECASE)
+
+
+def _normalize_fallback_org_name(name: str) -> str:
+    name = _TRAILING_GOBIERNO_SUFFIX_RE.sub("", name)
+    name = _TRAILING_COUNTRY_PAREN_RE.sub("", name)
+    return name.strip()
 
 
 class PipelineResult:
@@ -324,6 +350,54 @@ class Pipeline:
         url = resource.url
         if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
             document.set_field("schema:url", url)
+
+        # Actor fallback cascade (Phase B1, live-eval quality gap — see
+        # docs/cdif_pivot_implementation_plan.md's "Post-PR#45 investigation"
+        # section): schema:publisher, schema:creator, and
+        # schema:copyrightHolder came back empty on a real live run
+        # (sample_input04) despite resource.publisher carrying a
+        # hand-verified name — the shared system prompt already tells every
+        # agent this field is authoritative when present, but a live model
+        # doesn't always apply that reliably. This is the same class of
+        # fix as the schema:url fallback above: fires only when the slot is
+        # genuinely empty, never overrides a real agent-produced value, and
+        # is deterministic (no extra LLM call).
+        #
+        # 1. resource.publisher -> schema:publisher, when no agent produced one.
+        publisher = document.get_field("schema:publisher")
+        if not publisher and resource.model_extra:
+            raw_publisher = resource.model_extra.get("publisher")
+            if isinstance(raw_publisher, str) and raw_publisher.strip():
+                publisher_name = _normalize_fallback_org_name(raw_publisher)
+                if publisher_name:
+                    publisher = {"@type": ["schema:Organization"], "schema:name": publisher_name}
+                    document.set_field("schema:publisher", publisher)
+
+        publisher_display_name = publisher.get("schema:name") if isinstance(publisher, dict) else None
+        if publisher_display_name:
+            # 2. schema:publisher -> schema:creator, when creator is empty.
+            # schema:creator is always {"@list": [...]}-wrapped by this point
+            # (injected above in this same method — see the C4 comment).
+            if not jsonld_list_unwrap(document.get_field("schema:creator")):
+                document.set_field("schema:creator", {"@list": [dict(publisher)]})
+
+            # 3. schema:publisher -> schema:copyrightHolder, when empty.
+            # schema:copyrightHolder is a plain string field, not a dict.
+            if not document.get_field("schema:copyrightHolder"):
+                document.set_field("schema:copyrightHolder", publisher_display_name)
+
+        # 4. "Datos Abiertos del Estado de Chile" license -> deterministic
+        # copyrightHolder, mirroring rights_funding_citations's own prompt
+        # rule (config/agents.yaml PRIORIDAD 3) made code so it still fires
+        # when a live model forgets to apply its own instruction. Only
+        # checked if steps 1-3 left copyrightHolder empty.
+        if not document.get_field("schema:copyrightHolder"):
+            licenses = document.get_field("schema:license")
+            if isinstance(licenses, list) and any(
+                isinstance(entry, dict) and entry.get("schema:name") == "Datos Abiertos del Estado de Chile"
+                for entry in licenses
+            ):
+                document.set_field("schema:copyrightHolder", "Estado de Chile")
 
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
