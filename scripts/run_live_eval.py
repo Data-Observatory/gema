@@ -186,8 +186,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-s", "--schema",
-        default="datacite-4.6",
-        help="Schema name to use (default: datacite-4.6)",
+        default="cdif-discovery",
+        help="Schema name to use (default: cdif-discovery, the live generation target)",
     )
     parser.add_argument(
         "--model",
