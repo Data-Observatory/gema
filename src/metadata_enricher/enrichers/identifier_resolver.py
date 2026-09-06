@@ -87,11 +87,16 @@ class IdentifierResolver:
         """Resolve an organization name, optionally boosted by a country hint.
 
         *country* (ISO 3166-1 alpha-2, e.g. ``"CL"`` — typically from
-        ``country_extractor.CountryExtractor``) is a HINT for the ROR
-        ``?query=``+fuzzy fallback path only, never a hard filter: a
-        candidate whose own country disagrees is deprioritized, not
-        eliminated (see ``fuzzy_matcher.match_organization``). It does not
-        reach ISNI matching — ISNI SRU results carry no country field.
+        ``country_extractor.CountryExtractor``) is a HINT, never a hard
+        filter, reaching two different places with two different effects:
+        on the ROR ``?query=``+fuzzy fallback path, a candidate whose own
+        country disagrees is deprioritized during scoring (see
+        ``fuzzy_matcher.match_organization``); on the ROR ``?affiliation=``
+        path, it's a post-hoc sanity check on ROR's own ``chosen`` pick (see
+        ``_try_ror_affiliation``) -- ROR's own disambiguation is still
+        trusted over its ``score`` field per ROR's own guidance, a country
+        mismatch only demotes confidence, never overrides the pick. Neither
+        path reaches ISNI matching — ISNI SRU results carry no country field.
 
         A human-curated override (see ``IdentifierOverrides``) is checked
         first, before the disk cache and before any network call — it
@@ -183,7 +188,7 @@ class IdentifierResolver:
     def _try_resolve(
         self, original_name: str, normalized_name: str, country: str | None = None
     ) -> IdentifierMatch | None:
-        ror_match = self._try_ror_affiliation(original_name)
+        ror_match = self._try_ror_affiliation(original_name, country)
         if ror_match is None:
             ror_match = self._try_ror_query(original_name, normalized_name, country)
 
@@ -234,7 +239,29 @@ class IdentifierResolver:
             status="review" if "review" in (ror_match.status, isni_match.status) else "auto",
         )
 
-    def _try_ror_affiliation(self, name: str) -> IdentifierMatch | None:
+    def _try_ror_affiliation(
+        self, name: str, country: str | None = None
+    ) -> IdentifierMatch | None:
+        """ROR's own ``?affiliation=`` disambiguation service -- its
+        ``chosen: True`` pick is trusted over its own ``score`` field per
+        ROR's own guidance (see ``ror_client.RORClient.search_affiliation``),
+        so this never re-ranks or overrides that choice. But a real, verified
+        bug (docs/cdif_pivot_implementation_plan.md's Post-PR#45
+        investigation, Open Question O-5): ROR's own affiliation service can
+        confidently pick a wrong-country organization when names share a
+        distinctive word (e.g. "Oficina de Estudios y Políticas Agrarias",
+        Chile's real agricultural-policy office, matched to "Instituto de
+        Políticas y Bienes Públicos", an unrelated research facility in
+        Madrid -- verified against ROR's real API, not assumed). *country*
+        (the same hint threaded to the ``?query=`` fallback) is used here
+        only as a post-hoc sanity check: a known country mismatch demotes
+        the match to ``status="review"`` (never auto-attached downstream,
+        see ``identifier_enricher._is_auto``) rather than silently embedding
+        a wrong PID. A candidate with no known country (locations missing/
+        empty) is never penalized -- unknown is not a mismatch, same
+        philosophy ``fuzzy_matcher.match_organization``'s country_hint
+        already uses.
+        """
         try:
             org = self._ror.search_affiliation(name)
         except Exception as exc:
@@ -242,6 +269,18 @@ class IdentifierResolver:
             return None
         if org is None:
             return None
+
+        # extract_country() and the caller's *country* are both already
+        # normalized uppercase -- direct comparison, no re-normalizing here.
+        org_country = extract_country(org)
+        if country and org_country and org_country != country:
+            logger.info(
+                "ROR affiliation match for %r has country %s, hint was %s — "
+                "demoting to review rather than auto-attaching",
+                name, org_country, country,
+            )
+            return self._build_match_from_ror(org, "ror_affiliation", confidence=0.5, status="review")
+
         return self._build_match_from_ror(org, "ror_affiliation")
 
     def _try_ror_query(
