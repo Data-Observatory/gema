@@ -6,7 +6,12 @@ import logging
 from typing import Any, Protocol
 
 from metadata_enricher.agents.base import BaseAgent
-from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import (
+    AgentConfig,
+    PipelineConfig,
+    ProviderConfig,
+    ReasoningEffort,
+)
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client
 from metadata_enricher.schemas import get_registry as get_schema_registry
@@ -28,6 +33,7 @@ class LLMClientFactory(Protocol):
         temperature: float = ...,
         max_tokens: int | None = ...,
         extra_body: dict[str, Any] | None = ...,
+        reasoning_effort: ReasoningEffort | None = ...,
     ) -> LLMClient: ...
 
 
@@ -83,6 +89,8 @@ class AgentRegistry:
             # (tests, scripts) that predate this field don't need updating.
             if agent_config.extra_body is not None:
                 factory_kwargs["extra_body"] = agent_config.extra_body
+            if agent_config.reasoning_effort is not None:
+                factory_kwargs["reasoning_effort"] = agent_config.reasoning_effort
             llm_client = self._llm_factory(provider, **factory_kwargs)
 
             agent = BaseAgent(

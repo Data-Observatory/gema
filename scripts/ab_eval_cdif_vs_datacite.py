@@ -85,7 +85,7 @@ import json_semantic_diff
 
 from metadata_enricher.agents.registry import LLMClientFactory
 from metadata_enricher.config.loader import load_config
-from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig, ReasoningEffort
 from metadata_enricher.exporters.datacite import to_datacite_json
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.llm.base import LLMClient
@@ -118,6 +118,7 @@ def _cache_only_factory(cache_dir: Path) -> LLMClientFactory:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         extra_body: dict[str, object] | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
@@ -125,6 +126,7 @@ def _cache_only_factory(cache_dir: Path) -> LLMClientFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             extra_body=extra_body,
+            reasoning_effort=reasoning_effort,
             cache_dir=cache_dir,
         )
 

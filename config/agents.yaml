@@ -886,6 +886,23 @@ providers:
   # so this names the header only; the value is generated fresh per LLM
   # call in llm/instructor_client.py's _build_extra_headers.
   session_header: x-opencode-session
+  # None of the 5 production agents use this model -- deepseek-v4-flash
+  # stays the default per explicit prior instruction. This override exists
+  # purely so muse-spark-1.3-contributor is a usable, config-recognized
+  # model on this provider (e.g. via scripts/compare_models.py's in-place
+  # model-swap mechanism), config-driven rather than special-cased in
+  # Python anywhere. Confirmed 2026-09-06: muse-spark returns HTTP 500 on
+  # this provider's default chat_completions wire format; HTTP 200 on the
+  # Responses API with native json_schema structured output. A *forced*
+  # tool_choice is also rejected there (400), which is one more reason this
+  # model needs the Responses client's unforced tool_choice="auto" path
+  # rather than the chat_completions default. reasoning_effort: medium
+  # matches this branch's corrected DEFAULT_RESPONSES_REASONING_EFFORT --
+  # not a separately chosen value.
+  model_overrides:
+  - model: muse-spark-1.3-contributor
+    api_style: responses
+    reasoning_effort: medium
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
 - name: zai-coding-plan
