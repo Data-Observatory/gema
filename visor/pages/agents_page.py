@@ -16,8 +16,9 @@ agent is set to here is what Settings' "used by: ..." captions reflect —
 the two tabs describe the same underlying assignment from two different
 angles.
 
-Prompt/fields/depends_on (and tools/extra_body, when an agent sets them)
-are read-only in a collapsed "Advanced" section for transparency.
+Prompt/fields/depends_on (and tools/extra_body/reasoning_effort, when an
+agent sets them) are read-only in a collapsed "Advanced" section for
+transparency.
 
 A "switch provider for all agents" card above everything else sets every
 agent card's provider select (and, if checked, the Dataverse card's) in
@@ -28,9 +29,9 @@ provider and produces a confusing multi-provider Run-tab gate.
 
 A "Pipeline behavior" card above the agent cards exposes the
 PipelineConfig-level toggles (enable_content_fetch, enable_doi_resolution,
-enable_identifier_enrichment, validate_pids, validate_pids_live) as plain
-checkboxes — previously only reachable by hand-editing the downloaded
-JSON and re-uploading it.
+enable_identifier_enrichment, validate_pids, validate_pids_live,
+validate_shacl_conformance) as plain checkboxes — previously only
+reachable by hand-editing the downloaded JSON and re-uploading it.
 
 Download/Upload operate on the *entire* PipelineConfig,
 not just what the cards expose — a user can download, hand-edit anything
@@ -145,6 +146,7 @@ def _persist_overrides(
                 "enable_identifier_enrichment": pipeline_config.enable_identifier_enrichment,
                 "validate_pids": pipeline_config.validate_pids,
                 "validate_pids_live": pipeline_config.validate_pids_live,
+                "validate_shacl_conformance": pipeline_config.validate_shacl_conformance,
             },
         )
     )
@@ -433,6 +435,13 @@ def render_agents(
                     )
                     .mark("pipeline-validate-pids-live")
                 )
+                validate_shacl_conformance_checkbox = (
+                    ui.checkbox(
+                        t("agents.checkbox.validate_shacl_conformance"),
+                        value=pipeline_config.validate_shacl_conformance,
+                    )
+                    .mark("pipeline-validate-shacl-conformance")
+                )
 
             for agent in pipeline_config.agents:
                 with ui.card().classes("w-full q-mt-md"):
@@ -495,6 +504,13 @@ def render_agents(
                             ui.label(t("agents.tools", tools=", ".join(agent.tools)))
                         if agent.extra_body:
                             ui.label(t("agents.extra_body", extra_body=agent.extra_body))
+                        if agent.reasoning_effort:
+                            ui.label(
+                                t(
+                                    "agents.reasoning_effort",
+                                    reasoning_effort=agent.reasoning_effort,
+                                )
+                            )
                         ui.label(t("agents.prompt_readonly")).classes("text-caption q-mt-sm")
                         ui.code(agent.prompt, language=None).classes("w-full")
 
@@ -571,6 +587,9 @@ def render_agents(
                 pipeline_config.enable_identifier_enrichment = identifier_enrichment_checkbox.value
                 pipeline_config.validate_pids = validate_pids_checkbox.value
                 pipeline_config.validate_pids_live = validate_pids_live_checkbox.value
+                pipeline_config.validate_shacl_conformance = (
+                    validate_shacl_conformance_checkbox.value
+                )
                 for agent in pipeline_config.agents:
                     agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None

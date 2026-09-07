@@ -814,6 +814,10 @@ async def test_agents_tab_pipeline_behavior_toggles_persist(
     assert doi_checkbox.value is False  # config/agents.yaml never sets this -- model default
     doi_checkbox.value = True
 
+    shacl_checkbox = list(user.find(marker="pipeline-validate-shacl-conformance").elements)[0]
+    assert shacl_checkbox.value is False  # PipelineConfig default, never set in agents.yaml
+    shacl_checkbox.value = True
+
     user.find(marker="agents-save").click()
     user.find(marker="agents-download").click()
 
@@ -822,6 +826,7 @@ async def test_agents_tab_pipeline_behavior_toggles_persist(
     payload = json.loads(response.content)
     assert payload["enable_content_fetch"] is False
     assert payload["enable_doi_resolution"] is True
+    assert payload["validate_shacl_conformance"] is True
 
 
 async def test_run_form_shows_fetched_content_auto_fetch_hint(
@@ -913,6 +918,93 @@ async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path)
     await user.should_see(marker="result-models-used")
     await user.should_see("core_metadata")
     await user.should_see("deepseek/deepseek-v4-flash-2508")
+
+
+async def test_result_phase_downloads_datacite_export(user: User, monkeypatch, tmp_path) -> None:
+    """DataCite is exporter-only after the CDIF pivot and was reachable
+    only via `gema process --export datacite` on the CLI -- the Run tab
+    never offered it. Unlike the Dataverse button it needs no provider and
+    no enabled-gate: to_datacite_json() is a pure crosswalk with no LLM
+    call, so the button is always shown on a successful result."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        document=MetadataDocument(
+            fields={
+                "@id": "https://example.org/x",
+                "schema:name": "Visor Export Smoke Test Dataset",
+                "schema:description": "A synthetic CDIF document used to exercise the export button.",
+            }
+        ),
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-success")
+    user.find(marker="result-download-datacite").click()
+
+    response = await user.download.next(timeout=5)
+    assert response.status_code == 200
+    payload = json.loads(response.content)
+    assert payload["titles"][0]["name"] == "Visor Export Smoke Test Dataset"
+
+
+async def test_result_phase_downloads_croissant_export(user: User, monkeypatch, tmp_path) -> None:
+    """Same as the DataCite button above, for MLCommons Croissant --
+    to_croissant_json() is likewise a pure crosswalk (no LLM call, no
+    provider), so the button carries no gate either."""
+    from metadata_enricher.pipeline import PipelineResult
+    from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    fake_result = PipelineResult(
+        resource=ResourceDescription(url="https://example.org/x"),
+        document=MetadataDocument(
+            fields={
+                "@id": "https://example.org/x",
+                "schema:name": "Visor Export Smoke Test Dataset",
+                "schema:description": "A synthetic CDIF document used to exercise the export button.",
+            }
+        ),
+    )
+    monkeypatch.setattr("visor.pages.run_page.run_single", lambda *a, **kw: fake_result)
+
+    await user.open("/")
+    user.find(marker="tab-settings").click()
+    await user.should_see(marker="settings-save")
+    user.find(marker="settings-provider-edit-openrouter").click()
+    await user.should_see(marker="settings-input-OPENROUTER_API_KEY")
+    user.find(marker="settings-input-OPENROUTER_API_KEY").type("fake-key-for-render-test")
+    user.find(marker="settings-save").click()
+
+    await user.should_see(marker="run-input-url")
+    user.find(marker="run-input-url").type("https://example.org/x")
+    user.find(marker="run-submit").click()
+
+    await user.should_see(marker="result-success")
+    user.find(marker="result-download-croissant").click()
+
+    response = await user.download.next(timeout=5)
+    assert response.status_code == 200
+    payload = json.loads(response.content)
+    assert payload["@type"] == "sc:Dataset"
+    assert payload["name"] == "Visor Export Smoke Test Dataset"
 
 
 async def test_result_phase_shows_elapsed_time(user: User, monkeypatch, tmp_path) -> None:

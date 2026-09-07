@@ -21,6 +21,8 @@ from typing import Any, Callable
 from nicegui import events, run, ui
 
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig
+from metadata_enricher.exporters.croissant import to_croissant_json
+from metadata_enricher.exporters.datacite import to_datacite_json
 from metadata_enricher.exporters.dataverse import to_dataverse_json
 from metadata_enricher.llm.factory import clear_response_cache
 from metadata_enricher.output import OutputWriter
@@ -483,6 +485,17 @@ def _render_result_phase(
             ui.button(
                 t("run.result.download_json"), on_click=lambda: _download(schema, state)
             ).mark("result-download")
+            # DataCite and Croissant are pure crosswalks — no LLM call, no
+            # provider, no config — so unlike Dataverse below they need no
+            # run.io_bound offload and no enabled-gate.
+            ui.button(
+                t("run.result.download_datacite"),
+                on_click=lambda: _download_datacite(state),
+            ).props("outline").mark("result-download-datacite")
+            ui.button(
+                t("run.result.download_croissant"),
+                on_click=lambda: _download_croissant(state),
+            ).props("outline").mark("result-download-croissant")
             if dataverse_export_config is not None:
                 ui.button(
                     t("run.result.download_dataverse"),
@@ -537,6 +550,50 @@ def _download(schema: Schema, state: _RunViewState) -> None:
     # caught by visor/tests/test_app_e2e.py's real click-through test.
     ui.download.content(
         json_str.encode("utf-8"), filename="metadata.json", media_type="application/json"
+    )
+
+
+def _download_datacite(state: _RunViewState) -> None:
+    assert state.result is not None and state.result.document is not None
+
+    try:
+        # Pure crosswalk, documented as never raising — the try/except is
+        # UI robustness, not an expected path.
+        export_result = to_datacite_json(state.result.document)
+    except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
+        ui.notify(t("run.datacite.build_failed", error=exc), type="negative")
+        return
+
+    for warning in export_result.warnings:
+        ui.notify(warning, type="warning")
+
+    # default=str mirrors cli.py's _write_export: the DataCite payload comes
+    # from a pydantic model_dump() that can carry non-JSON-native scalars.
+    json_str = json.dumps(
+        export_result.datacite_json, ensure_ascii=False, indent=2, default=str
+    )
+    ui.download.content(
+        json_str.encode("utf-8"), filename="datacite.json", media_type="application/json"
+    )
+
+
+def _download_croissant(state: _RunViewState) -> None:
+    assert state.result is not None and state.result.document is not None
+
+    try:
+        export_result = to_croissant_json(state.result.document)
+    except Exception as exc:  # noqa: BLE001 - surfaced to the user, not hidden
+        ui.notify(t("run.croissant.build_failed", error=exc), type="negative")
+        return
+
+    for warning in export_result.warnings:
+        ui.notify(warning, type="warning")
+
+    json_str = json.dumps(
+        export_result.croissant_json, ensure_ascii=False, indent=2, default=str
+    )
+    ui.download.content(
+        json_str.encode("utf-8"), filename="croissant.json", media_type="application/json"
     )
 
 
