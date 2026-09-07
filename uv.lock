@@ -793,7 +793,7 @@ requires-dist = [
     { name = "json-semantic-diff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10.0" },
     { name = "nicegui", marker = "extra == 'visor'", specifier = ">=1.4.0" },
-    { name = "openai", specifier = ">=1.0.0" },
+    { name = "openai", specifier = ">=1.40.0" },
     { name = "platformdirs", marker = "extra == 'visor'", specifier = ">=4.0.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
