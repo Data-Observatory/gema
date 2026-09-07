@@ -170,6 +170,27 @@ def _responses_tool_schemas(names: list[str]) -> list[dict[str, Any]]:
     return [_to_responses_tool_schema(schema) for schema in tool_schemas(names)]
 
 
+def _safe_execute_tool(name: str, arguments_raw: str) -> str:
+    """Wrap execute_tool()'s dict-arguments call: unlike an unknown tool
+    name (already handled inside execute_tool itself), malformed JSON
+    arguments from the model, or an exception raised by the tool's own
+    executor, would otherwise propagate straight out of the tool loop and
+    abort the whole agent call. Feed the error back to the model as the
+    tool's result instead -- same "never raises" contract execute_tool
+    already promises for an unknown tool name, extended to cover these two
+    additional failure modes."""
+    try:
+        arguments = json.loads(arguments_raw)
+    except json.JSONDecodeError as exc:
+        logger.warning("Tool %r called with malformed JSON arguments: %s", name, exc)
+        return json.dumps({"found": False, "error": f"malformed arguments JSON: {exc}"})
+    try:
+        return execute_tool(name, arguments)
+    except Exception as exc:  # tool executors are not guaranteed exception-free
+        logger.warning("Tool %r raised during execution: %s", name, exc)
+        return json.dumps({"found": False, "error": str(exc)})
+
+
 class ResponsesLLMClient:
     """LLM client using OpenAI's Responses API (``POST /responses``) with
     native json_schema structured output.
@@ -449,7 +470,7 @@ class ResponsesLLMClient:
 
             for call in function_calls:
                 arguments_raw = getattr(call, "arguments", None) or "{}"
-                result = execute_tool(call.name, json.loads(arguments_raw))
+                result = _safe_execute_tool(call.name, arguments_raw)
                 loop_input.append(
                     {
                         "type": "function_call",

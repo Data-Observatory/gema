@@ -555,6 +555,56 @@ class TestSessionHeader:
 class TestCompleteWithTools:
     @patch("metadata_enricher.llm.responses_client.execute_tool")
     @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_malformed_tool_arguments_do_not_crash_the_loop(
+        self, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """Regression: malformed JSON tool-call arguments from the model
+        must feed an error back as the tool result, not raise out of the
+        tool loop and abort the whole agent call."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = ResponsesLLMClient(config=config)
+
+        call = _function_call("call_1", "lookup_organization", "{not valid json")
+        client._raw_client.responses.create.side_effect = [
+            _response(output_text="", status="completed", usage=_usage(), output=[call]),
+            _response(output_text='{"name": "Alice"}', usage=_usage()),
+        ]
+
+        result, _usage_result = client.complete_with_tools(
+            prompt="hi", response_model=SimpleOutput, tools=["lookup_organization"],
+            max_tool_rounds=1,
+        )
+
+        assert result == SimpleOutput(name="Alice")
+        mock_execute_tool.assert_not_called()
+
+    @patch("metadata_enricher.llm.responses_client.execute_tool")
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_tool_executor_exception_does_not_crash_the_loop(
+        self, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """Regression: an exception raised by a tool's own executor (e.g. a
+        network error in lookup_organization) must feed an error back as
+        the tool result, not raise out of the tool loop."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = ResponsesLLMClient(config=config)
+        mock_execute_tool.side_effect = RuntimeError("boom")
+
+        call = _function_call("call_1", "lookup_organization", '{"name": "X"}')
+        client._raw_client.responses.create.side_effect = [
+            _response(output_text="", status="completed", usage=_usage(), output=[call]),
+            _response(output_text='{"name": "Alice"}', usage=_usage()),
+        ]
+
+        result, _usage_result = client.complete_with_tools(
+            prompt="hi", response_model=SimpleOutput, tools=["lookup_organization"],
+            max_tool_rounds=1,
+        )
+
+        assert result == SimpleOutput(name="Alice")
+
+    @patch("metadata_enricher.llm.responses_client.execute_tool")
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
     def test_tool_call_executed_and_fed_back(
         self, mock_openai: MagicMock, mock_execute_tool: MagicMock
     ) -> None:
