@@ -868,6 +868,16 @@ Ran the real `clean_html_to_text()` extractor against this same raw content dire
 
 **O-1 and O-3 reaffirmed as open, not touched by this session.** `schema:dateModified` semantics (O-1: stay "today," or extract a real resource date) and whether `schema:audience`'s `mediator`/`education_level`/`instructional_method` sub-fields should be scored at all (O-3) are both still open, owner-only questions per their original entries in the Open Questions table above — neither Task 1's re-record, Task 2's prompt batch, nor this Phase B4 investigation resolved or touched either. Flagged here explicitly so they don't read as quietly closed just because nearby sections (B0's `schema:dateModified` stripping-from-scoring fix, B3's classification/audience-adjacent edits) touch related surface area without deciding these two questions.
 
+## Phase B0/B3 resolved: real live-eval number obtained (2026-09-07)
+
+`ZAI_API_KEY` rotated by the user; verified independently before re-running anything (`curl` to `https://api.z.ai/api/coding/paas/v4/chat/completions` → `200`, same check that previously reproduced the `401`). Re-ran `make live-eval` against the current, already-Phase-B3-edited golden set (`opencode:deepseek-v4-flash` production, `zai-coding-plan:glm-5.3` judge, both now real).
+
+**Result: mean overall score 0.767 across all 6 fixtures — PASS against the 0.75 threshold** (`reports/live_eval_20260907_093322.md`). Per-fixture: `sample_input01` 0.900, `sample_input02` 0.900, `sample_input03` 0.700, `sample_input04` 0.700, `sample_input05` 0.700, `sample_input06` 0.700. Each score carries a distinct, real GEval judge reason (spot-checked, not a clamp artifact) — e.g. `sample_input01`'s 0.900 cites a near-field-for-field match with only audience/spatialCoverage phrasing deviations; `sample_input03`'s 0.700 is consistent with the Phase B4 finding above (raw-HTML `fetched_content` making distribution/variableMeasured extraction harder).
+
+**This is a post-B3 number only — no separate pre-B3 baseline was ever obtained** (the credential was dead for both of Task 1's and Task 2's live-eval attempts), so this cannot be reported as a measured "before/after delta." It stands as the first real, current quality number for the CDIF pivot as it exists today, superseding the two all-zero-fallback reports (`reports/live_eval_20260906_230815.md`, `reports/live_eval_20260906_233721.md`) which reflected the dead credential, not model/prompt quality, and should not be read as historical baselines.
+
+Report committed: `reports/live_eval_20260907_093322.md`.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.
