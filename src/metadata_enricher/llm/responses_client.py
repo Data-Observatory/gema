@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid
 from typing import Any
 
 from openai import OpenAI
@@ -74,6 +75,21 @@ def _build_responses_extra_body(config: LLMConfig) -> dict[str, Any] | None:
                 config.model,
             )
     return extra_body or None
+
+
+def _build_extra_headers(config: LLMConfig) -> dict[str, str] | None:
+    """Fresh per-conversation header (see LLMConfig.session_header's
+    docstring / instructor_client._build_extra_headers, whose contract this
+    mirrors exactly). Must be called once per complete()/complete_with_usage()
+    /complete_with_tools()/complete_raw() invocation and its result reused
+    across that call's own retries/tool-loop rounds -- never memoized or
+    reused across separate calls, and never fed into cache.py's key.
+
+    Duplicated rather than imported from instructor_client on purpose --
+    this module is a sibling, not a subclass (see module docstring)."""
+    if not config.session_header:
+        return None
+    return {config.session_header: f"gema-{uuid.uuid4().hex}"}
 
 
 def _text_format(response_model: type[BaseModel]) -> dict[str, Any]:
@@ -242,6 +258,7 @@ class ResponsesLLMClient:
         self,
         input_items: list[dict[str, Any]],
         response_model: type[BaseModel],
+        extra_headers: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> tuple[BaseModel, TokenUsage]:
         """Shared by complete()/complete_with_usage()/complete_with_tools()'s
@@ -251,9 +268,16 @@ class ResponsesLLMClient:
         format). Reused ``max_retries`` constructor param is *total
         attempts* (matching how instructor's own max_retries is
         documented), not a separate retry-count knob.
+
+        ``extra_headers``: pass a pre-built header (from complete_with_tools,
+        so the whole tool loop + this final call share one session ID) --
+        when omitted, one is built fresh for this call alone, reused across
+        just this call's own retry attempts.
         """
         text = _text_format(response_model)
         extra_body = _build_responses_extra_body(self._config)
+        if extra_headers is None:
+            extra_headers = _build_extra_headers(self._config)
         running_input = list(input_items)
         total_usage = TokenUsage()
         last_exc: ValidationError | ValueError | None = None
@@ -270,6 +294,8 @@ class ResponsesLLMClient:
             create_kwargs.update(self._reasoning_kwargs())
             if extra_body is not None:
                 create_kwargs["extra_body"] = extra_body
+            if extra_headers is not None:
+                create_kwargs["extra_headers"] = extra_headers
             create_kwargs.update(kwargs)
 
             response = self._raw_client.responses.create(**create_kwargs)
@@ -379,6 +405,10 @@ class ResponsesLLMClient:
         tool_exchange_log: list[tuple[str, str, str]] = []
 
         extra_body = _build_responses_extra_body(self._config)
+        # Same ID for every round plus the final _complete_structured call
+        # below -- one tool loop is one conversation, even across multiple
+        # HTTP requests (mirrors instructor_client.complete_with_tools).
+        extra_headers = _build_extra_headers(self._config)
         schemas = _responses_tool_schemas(tools)
         total_usage = TokenUsage()
 
@@ -395,6 +425,8 @@ class ResponsesLLMClient:
             raw_kwargs.update(self._reasoning_kwargs())
             if extra_body is not None:
                 raw_kwargs["extra_body"] = extra_body
+            if extra_headers is not None:
+                raw_kwargs["extra_headers"] = extra_headers
 
             response = self._raw_client.responses.create(**raw_kwargs)
             total_usage = _accumulate_usage(total_usage, response)
@@ -450,7 +482,7 @@ class ResponsesLLMClient:
             )
 
         final_result, final_usage = self._complete_structured(
-            final_input, response_model, **kwargs
+            final_input, response_model, extra_headers=extra_headers, **kwargs
         )
         total_usage = TokenUsage(
             prompt_tokens=total_usage.prompt_tokens + final_usage.prompt_tokens,
@@ -469,6 +501,7 @@ class ResponsesLLMClient:
         """Send prompt and return raw text response. Bypasses structured
         output entirely -- no ``text=`` param at all."""
         extra_body = _build_responses_extra_body(self._config)
+        extra_headers = _build_extra_headers(self._config)
         create_kwargs: dict[str, Any] = {
             "model": self._config.model,
             "input": self._build_input(prompt, system_prompt),
@@ -479,6 +512,8 @@ class ResponsesLLMClient:
         create_kwargs.update(self._reasoning_kwargs())
         if extra_body is not None:
             create_kwargs["extra_body"] = extra_body
+        if extra_headers is not None:
+            create_kwargs["extra_headers"] = extra_headers
         create_kwargs.update(kwargs)
 
         response = self._raw_client.responses.create(**create_kwargs)

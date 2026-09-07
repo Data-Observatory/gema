@@ -440,6 +440,113 @@ class TestToolSchemaReshape:
         assert "function" not in flat
 
 
+class TestSessionHeader:
+    """ResponsesLLMClient must send OpenCode's required x-opencode-session
+    header exactly like InstructorLLMClient does (see that client's own
+    TestSessionHeader in test_instructor_client.py) -- fresh ID per
+    top-level call, absent when unset, one shared ID across a tool loop's
+    rounds plus its final call. Regression coverage: this client shipped
+    with no session_header support at all until this test file added it."""
+
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_complete_sends_extra_headers_when_configured(self, mock_openai: MagicMock) -> None:
+        config = LLMConfig(
+            model="my-model", api_key="sk-test", session_header="x-opencode-session"
+        )
+        client = ResponsesLLMClient(config=config)
+        client._raw_client.responses.create.return_value = _response(
+            output_text='{"name": "x"}', usage=_usage()
+        )
+
+        client.complete(prompt="hello", response_model=SimpleOutput)
+
+        call_kwargs = client._raw_client.responses.create.call_args.kwargs
+        assert "x-opencode-session" in call_kwargs["extra_headers"]
+        assert call_kwargs["extra_headers"]["x-opencode-session"]
+
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_complete_omits_extra_headers_when_not_configured(
+        self, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = ResponsesLLMClient(config=config)
+        client._raw_client.responses.create.return_value = _response(
+            output_text='{"name": "x"}', usage=_usage()
+        )
+
+        client.complete(prompt="hello", response_model=SimpleOutput)
+
+        call_kwargs = client._raw_client.responses.create.call_args.kwargs
+        assert "extra_headers" not in call_kwargs
+
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_separate_calls_get_different_ids(self, mock_openai: MagicMock) -> None:
+        config = LLMConfig(
+            model="my-model", api_key="sk-test", session_header="x-opencode-session"
+        )
+        client = ResponsesLLMClient(config=config)
+        client._raw_client.responses.create.return_value = _response(
+            output_text='{"name": "x"}', usage=_usage()
+        )
+
+        client.complete(prompt="first", response_model=SimpleOutput)
+        first_id = client._raw_client.responses.create.call_args.kwargs["extra_headers"][
+            "x-opencode-session"
+        ]
+        client.complete(prompt="second", response_model=SimpleOutput)
+        second_id = client._raw_client.responses.create.call_args.kwargs["extra_headers"][
+            "x-opencode-session"
+        ]
+
+        assert first_id != second_id
+
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_complete_raw_sends_extra_headers_when_configured(
+        self, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(
+            model="my-model", api_key="sk-test", session_header="x-opencode-session"
+        )
+        client = ResponsesLLMClient(config=config)
+        client._raw_client.responses.create.return_value = _response(output_text="hi")
+
+        client.complete_raw(prompt="hello")
+
+        call_kwargs = client._raw_client.responses.create.call_args.kwargs
+        assert "x-opencode-session" in call_kwargs["extra_headers"]
+
+    @patch("metadata_enricher.llm.responses_client.execute_tool")
+    @patch("metadata_enricher.llm.responses_client.OpenAI")
+    def test_complete_with_tools_reuses_same_id_across_rounds_and_final_call(
+        self, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """One tool loop is one conversation, even across several HTTP
+        requests -- every round plus the final call must share one ID."""
+        config = LLMConfig(
+            model="my-model", api_key="sk-test", session_header="x-opencode-session"
+        )
+        client = ResponsesLLMClient(config=config)
+        mock_execute_tool.return_value = "{}"
+
+        call = _function_call("call_1", "lookup_organization", "{}")
+        client._raw_client.responses.create.side_effect = [
+            _response(output_text="", status="completed", usage=_usage(), output=[call]),
+            _response(output_text='{"name": "Alice"}', usage=_usage()),
+        ]
+
+        client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"],
+            max_tool_rounds=1,
+        )
+
+        round_ids = [
+            call.kwargs["extra_headers"]["x-opencode-session"]
+            for call in client._raw_client.responses.create.call_args_list
+        ]
+        assert len(round_ids) == 2
+        assert round_ids[0] == round_ids[1]
+
+
 class TestCompleteWithTools:
     @patch("metadata_enricher.llm.responses_client.execute_tool")
     @patch("metadata_enricher.llm.responses_client.OpenAI")
@@ -639,6 +746,7 @@ class TestLiveResponsesApi:
             api_key=SecretStr(api_key),
             base_url="https://opencode.ai/zen/go/v1",
             reasoning_effort="medium",
+            session_header="x-opencode-session",
         )
         client = ResponsesLLMClient(config=config)
         result = client.complete(
