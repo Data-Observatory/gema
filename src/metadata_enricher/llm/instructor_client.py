@@ -97,6 +97,29 @@ def _patch_instructor_reask_tools_none_crash() -> None:
 _patch_instructor_reask_tools_none_crash()
 
 
+def _safe_execute_tool(name: str, arguments_raw: str) -> str:
+    """Wrap execute_tool()'s dict-arguments call: unlike an unknown tool
+    name (already handled inside execute_tool itself), malformed JSON
+    arguments from the model, or an exception raised by the tool's own
+    executor, would otherwise propagate straight out of the tool loop and
+    abort the whole agent call. Feed the error back to the model as the
+    tool's result instead -- same "never raises" contract execute_tool
+    already promises for an unknown tool name, extended to cover these two
+    additional failure modes. Duplicated in responses_client.py rather
+    than shared -- these two clients are siblings, not subclasses (see
+    that module's docstring)."""
+    try:
+        arguments = json.loads(arguments_raw)
+    except json.JSONDecodeError as exc:
+        logger.warning("Tool %r called with malformed JSON arguments: %s", name, exc)
+        return json.dumps({"found": False, "error": f"malformed arguments JSON: {exc}"})
+    try:
+        return execute_tool(name, arguments)
+    except Exception as exc:  # tool executors are not guaranteed exception-free
+        logger.warning("Tool %r raised during execution: %s", name, exc)
+        return json.dumps({"found": False, "error": str(exc)})
+
+
 class InstructorLLMClient:
     """LLM client using Instructor for structured outputs.
 
@@ -321,7 +344,7 @@ class InstructorLLMClient:
             )
             for tool_call in message.tool_calls:
                 arguments_raw = tool_call.function.arguments or "{}"
-                result = execute_tool(tool_call.function.name, json.loads(arguments_raw))
+                result = _safe_execute_tool(tool_call.function.name, arguments_raw)
                 loop_messages.append(
                     {"role": "tool", "tool_call_id": tool_call.id, "content": result}
                 )

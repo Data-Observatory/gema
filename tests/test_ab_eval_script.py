@@ -16,6 +16,7 @@ threshold.
 
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 
@@ -23,8 +24,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
+import ab_eval_cdif_vs_datacite as ab_eval_module  # noqa: E402
 from ab_eval_cdif_vs_datacite import (  # noqa: E402
     BASELINE_EXPECTED,
+    CDIF_CACHE,
     CDIF_INPUTS,
     _load_baseline,
     _run_cdif_as_datacite,
@@ -35,6 +38,24 @@ pytestmark = [pytest.mark.regression]
 
 _STEMS = sorted(p.stem for p in BASELINE_EXPECTED.glob("*.json")) if BASELINE_EXPECTED.exists() else []
 _HAS_BASELINE = len(_STEMS) > 0 and CDIF_INPUTS.exists()
+
+
+@pytest.fixture(autouse=True)
+def _readonly_cdif_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Redirect CDIF_CACHE to a scratch copy for the duration of each test.
+
+    diskcache opens cache.db read-write even for a pure hit, rewriting
+    internal SQLite bookkeeping -- so every run of this test file left the
+    committed fixture showing as modified in `git status` (Bin X -> X
+    bytes, zero real content change), found in review 2026-09-07.
+    _run_cdif_as_datacite/main() read the module-level CDIF_CACHE global
+    at call time, so monkeypatching the module attribute (not the
+    already-imported name above) is what actually redirects them."""
+    if not CDIF_CACHE.exists():
+        return
+    dest = tmp_path / "cache"
+    shutil.copytree(CDIF_CACHE, dest)
+    monkeypatch.setattr(ab_eval_module, "CDIF_CACHE", dest)
 
 
 @pytest.mark.skipif(not _HAS_BASELINE, reason="Baseline fixtures not present.")

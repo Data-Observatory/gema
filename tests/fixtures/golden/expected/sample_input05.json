@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-09-04",
+  "schema:dateModified": "2026-09-07",
   "schema:subjectOf": {
     "@id": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua#metadata",
     "@type": [
@@ -39,6 +39,7 @@
   },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
+  "schema:url": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua",
   "schema:distribution": [],
   "schema:description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE. El trazado de límites no es oficial de la República de Chile. Trazado de límites actualizado según modificaciones efectuadas el año 2014. Los límites internacionales fueron revisados por la Dirección de Fronteras y Límites (Difrol), y autorizados para su uso en elaboración de cartografía, mediante Resolución No. 255 del 2 de febrero de 2001. No obstante lo anterior, cada producto cartográfico elaborado con esta capa de información, y que involucre la representación de los límites internacionales del país, deben obtener una autorización de circulación, mediante resolución de la Difrol. Cobertura que permite la asociación de cifras estadísticas y/o temáticas, referidas a las unidades administrativas del país y distritos censales INE.",
   "schema:additionalType": "Capa geoespacial",
@@ -55,12 +56,12 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Distritos censales INE",
+      "schema:name": "VII Censo Nacional Agropecuario",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "División administrativa -- Chile",
+      "schema:name": "Distritos censales INE",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -89,6 +90,12 @@
       "mediator": "Gerente",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     }
   ],
   "schema:creator": {
@@ -97,43 +104,15 @@
         "@type": [
           "schema:Organization"
         ],
-        "schema:name": "Instituto de Políticas y Bienes Públicos",
-        "schema:givenName": "",
-        "schema:familyName": "",
+        "schema:name": "Oficina de Estudios y Políticas Agrarias",
         "schema:identifier": {
-          "schema:propertyID": "ROR",
-          "schema:value": "https://ror.org/04q93ds34",
-          "schema:url": "https://ror.org/04q93ds34",
-          "matched_via": "ror_affiliation",
+          "schema:propertyID": "ISNI",
+          "schema:value": "0000000119427969",
+          "schema:url": "https://isni.org/isni/0000000119427969",
+          "matched_via": "isni_sru",
           "confidence": 1.0,
           "status": "auto"
-        },
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Ministerio de Agricultura",
-            "schema:identifier": {
-              "schema:propertyID": "ROR",
-              "schema:value": "https://ror.org/05nqvv719",
-              "schema:url": "https://ror.org/05nqvv719",
-              "matched_via": "ror_affiliation+isni_sru",
-              "confidence": 0.9,
-              "status": "auto"
-            },
-            "schema:sameAs": [
-              {
-                "@id": "https://isni.org/isni/0000000406285553"
-              }
-            ]
-          }
-        ],
-        "schema:sameAs": [
-          {
-            "@id": "https://isni.org/isni/000000044684986X"
-          }
-        ]
+        }
       }
     ]
   },
@@ -142,35 +121,29 @@
     "@type": [
       "schema:Organization"
     ],
-    "schema:name": "Instituto de Políticas y Bienes Públicos",
+    "schema:name": "Oficina de Estudios y Políticas Agrarias",
     "schema:identifier": {
-      "schema:propertyID": "ROR",
-      "schema:value": "https://ror.org/04q93ds34",
-      "schema:url": "https://ror.org/04q93ds34",
-      "matched_via": "ror_affiliation",
+      "schema:propertyID": "ISNI",
+      "schema:value": "0000000119427969",
+      "schema:url": "https://isni.org/isni/0000000119427969",
+      "matched_via": "isni_sru",
       "confidence": 1.0,
       "status": "auto"
-    },
-    "schema:sameAs": [
-      {
-        "@id": "https://isni.org/isni/000000044684986X"
-      }
-    ]
+    }
   },
-  "schema:copyrightHolder": "",
+  "schema:copyrightHolder": "Oficina de Estudios y Políticas Agrarias",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
       "schema:name": "Isla de Pascua",
-      "schema:description": "Cobertura de la Isla de Pascua, con polígonos de división administrativa vigente y distritos censales INE"
+      "schema:description": "Cobertura de la capa vectorial para la Isla de Pascua, con polígonos de división administrativa vigente y distritos censales INE"
     }
   ],
   "schema:measurementTechnique": [],
   "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
   "prov:wasGeneratedBy": {
-    "schema:description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007. Capa vectorial con polígonos de división administrativa vigente, más distritos censales INE."
-  },
-  "schema:url": "https://geoportal.cl/geoportal/catalog/35497/Censo%20Agropecuario%202007%20Ganado%20bovino%20Isla%20de%20Pascua"
+    "schema:description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007"
+  }
 }

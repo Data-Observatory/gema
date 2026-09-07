@@ -30,16 +30,43 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+import yaml
+
 from metadata_enricher.enrichers.fuzzy_matcher import fold_accents
 
 if TYPE_CHECKING:
-    from metadata_enricher.config.models import ProviderConfig
+    from metadata_enricher.config.models import PipelineConfig, ProviderConfig
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path("config/agents.yaml")
+EVAL_CONFIG_PATH = Path("config/eval.yaml")
 
 DEFAULT_PROVIDER = "zai-coding-plan"
+
+
+def load_eval_config(path: Path = EVAL_CONFIG_PATH) -> dict[str, Any]:
+    """Load config/eval.yaml's shared dev-tooling defaults: judge spec,
+    threshold, candidate list, named corpus path presets. Every script here
+    treats these purely as defaults -- the corresponding CLI flag always
+    overrides. A missing file (e.g. a fresh checkout before this existed)
+    returns {}, so callers fall back to their own hardcoded defaults."""
+    if not path.exists():
+        return {}
+    loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return cast("dict[str, Any]", loaded) if loaded else {}
+
+
+def find_provider(config: PipelineConfig, name: str) -> ProviderConfig:
+    """Look up a provider by name in *config*.providers. Shared by every
+    script here that needs to resolve a provider:model spec (parse_model_spec)
+    to an actual ProviderConfig, e.g. for a judge role kept on a different
+    provider than whatever's being tested as a candidate."""
+    for p in config.providers:
+        if p.name == name:
+            return p
+    msg = f"Provider '{name}' not found in config"
+    raise ValueError(msg)
 
 # Model/provider-specific request-body overrides needed to make structured
 # output work at all. Several models default to a "thinking mode" via
@@ -374,6 +401,33 @@ def compare_outputs(truth: dict[str, Any], actual: dict[str, Any]) -> dict[str, 
 # ---------------------------------------------------------------------------
 # LLM-as-judge scoring (DeepEval GEval + hand-rolled per-field judge)
 # ---------------------------------------------------------------------------
+
+# Fields that must never affect an LLM-as-judge score because they aren't
+# extracted from the resource at all. schema:dateModified is injected in
+# code as "today" by CDIFDiscoveryProfile._inject_envelope (a processing-time
+# fact, not an agent output) -- scoring it penalizes every run for the
+# wall-clock gap between when a fixture was recorded and when the live eval
+# actually runs, not for any real quality difference. Found as Finding B-1 in
+# docs/cdif_pivot_implementation_plan.md's Post-PR#45 investigation: it
+# accounted for a real, measurable chunk of every one of live-eval's 6
+# fixtures scoring below threshold.
+IGNORED_SCORING_FIELDS = frozenset({"schema:dateModified"})
+
+
+def strip_ignored_fields(json_str: str) -> str:
+    """Remove IGNORED_SCORING_FIELDS from a JSON document string before it
+    reaches either LLM-as-judge scorer below. Malformed JSON is returned
+    unchanged -- scoring on unparseable input is the caller's problem, not
+    this function's."""
+    try:
+        doc = json.loads(json_str)
+    except (json.JSONDecodeError, TypeError):
+        return json_str
+    if isinstance(doc, dict):
+        for field_name in IGNORED_SCORING_FIELDS:
+            doc.pop(field_name, None)
+    return json.dumps(doc, ensure_ascii=False)
+
 
 SCORING_PROMPT = """\
 You are a metadata quality evaluator for structured scholarly-resource metadata records

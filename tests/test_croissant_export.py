@@ -455,10 +455,13 @@ GOLDEN_FIXTURE_PATHS = sorted(GOLDEN_FIXTURES_DIR.glob("sample_input0*.json"))
 # Real, per-fixture expected values -- confirmed by reading each fixture's
 # actual schema:name/schema:creator/schema:license before writing these
 # (not guessed), so a broken mapping on any one fixture can't pass
-# silently. sample_input02.json is a real, fully-degenerate recording (no
-# schema:name/creator/license/identifier at all) -- its expectations
-# assert the documented fallback behavior, not a mapped value, since
-# there's nothing real to map.
+# silently. sample_input02.json's recording used to be fully degenerate
+# (no schema:name/creator/license/identifier at all); a real
+# `make record-golden` re-run (2026-09-07, no code changes -- opencode has
+# no seed) produced a populated recording instead. Kept as a live example
+# that this corpus's non-determinism can turn a degenerate case into a
+# populated one between recordings, not because the earlier expectations
+# were wrong for the fixture they described at the time.
 GOLDEN_EXPECTATIONS: dict[str, dict] = {
     "sample_input01": {
         "name": "Gastos municipales (presupuesto abierto)",
@@ -466,8 +469,11 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
         "license": ["Datos Abiertos del Estado de Chile"],
     },
     "sample_input02": {
-        "name": "Untitled resource",
-        "creator_names": [],
+        "name": (
+            "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad "
+            "de Plantas en Chile"
+        ),
+        "creator_names": ["Data Observatory Foundation"],
         "license": None,
     },
     "sample_input03": {
@@ -482,7 +488,13 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
     },
     "sample_input05": {
         "name": "Censo Agropecuario 2007 Ganado bovino Isla de Pascua",
-        "creator_names": ["Instituto de Políticas y Bienes Públicos"],
+        # Was "Instituto de Políticas y Bienes Públicos" (a Madrid research
+        # facility, wrong country/institution) before the O-5 ROR
+        # affiliation-match country sanity check fix -- this real
+        # re-recording (2026-09-07) now resolves the actual Chilean
+        # publisher (ODEPA) via ISNI instead, confirming the fix. See
+        # docs/cdif_pivot_implementation_plan.md's O-5 section.
+        "creator_names": ["Oficina de Estudios y Políticas Agrarias"],
         "license": None,
     },
     "sample_input06": {

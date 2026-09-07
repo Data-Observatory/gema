@@ -6,6 +6,8 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, SecretStr
 
+from metadata_enricher.config.models import ApiStyle, ReasoningEffort
+
 
 @runtime_checkable
 class LLMClient(Protocol):
@@ -73,3 +75,11 @@ class LLMConfig(BaseModel):
     timeout: float = 240.0
     extra_body: dict[str, Any] | None = None
     session_header: str | None = None
+    # Which wire format this client speaks -- "chat_completions" (the
+    # universal default every existing client/test predates and stays
+    # pinned to) or "responses" (ResponsesLLMClient only). See
+    # config/models.py's ApiStyle docstring for why this exists.
+    api_style: ApiStyle = "chat_completions"
+    # Only meaningful when api_style == "responses"; ignored (never sent)
+    # by InstructorLLMClient regardless of what it's set to here.
+    reasoning_effort: ReasoningEffort | None = None

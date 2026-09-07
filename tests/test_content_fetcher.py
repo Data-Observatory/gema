@@ -117,6 +117,75 @@ class TestCleanHtmlToText:
         result = clean_html_to_text(html)
         assert isinstance(result, str)
 
+    def test_small_form_widget_is_dropped(self) -> None:
+        """A short search/login form's own text stays discarded -- the
+        original _SKIP_TAGS behavior, now gated on size instead of
+        unconditional."""
+        html = (
+            "<form><input type='text'/><label>Search</label>"
+            "<button>Go</button></form>"
+            "<div>" + ("Real page content here. " * 20) + "</div>"
+        )
+        result = clean_html_to_text(html)
+        assert "Search" not in result
+        assert "Real page content" in result
+
+    def test_substantial_form_content_is_kept(self) -> None:
+        """A page-wide <form> wrapping the real article (e.g. an ASP.NET
+        postback wrapper) must not be discarded just for being a <form> --
+        regression test for the 2026-09-06 sample04/INE finding."""
+        html = "<form>" + ("Real survey methodology text. " * 20) + "</form>"
+        result = clean_html_to_text(html)
+        assert "Real survey methodology text" in result
+
+    def test_nav_inside_form_still_stripped(self) -> None:
+        """A skip tag nested inside a kept <form> is still excluded --
+        form-buffering must not bypass the ordinary skip-tag rules."""
+        html = "<form><nav>Site nav junk</nav>" + ("Real form content. " * 20) + "</form>"
+        result = clean_html_to_text(html)
+        assert "Site nav junk" not in result
+        assert "Real form content" in result
+
+    def test_substantial_form_inside_main_counts_toward_main(self) -> None:
+        """A kept form nested inside <main> must still be preferred over
+        surrounding chrome, same as any other main-tag content."""
+        html = (
+            "<header>Site chrome text here</header>"
+            "<main><form>" + ("Real form-wrapped article text. " * 20) + "</form></main>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real form-wrapped article text" in result
+        assert "Site chrome text" not in result
+
+    def test_main_inside_form_still_counts_toward_main(self) -> None:
+        """Reverse nesting order from the test above: a <main> wrapped
+        entirely inside a <form> (<form><main>...</main></form>) must still
+        count toward main_chunks. Regression test: the close-time check
+        used to sample self._main_depth only when </form> fired, which is
+        always 0 in this ordering since </main> has already closed by
+        then -- silently losing the form's text from main preference even
+        though its size cleared the keep threshold."""
+        html = (
+            "<header>Site chrome text here</header>"
+            "<form><main>" + ("Real main-in-form article text. " * 20) + "</main></form>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real main-in-form article text" in result
+        assert "Site chrome text" not in result
+
+    def test_unclosed_form_does_not_swallow_rest_of_document(self) -> None:
+        """Malformed/truncated HTML with a <form> that never closes must
+        not lose every bit of text after it to EOF. Regression test: before
+        finalize()'s force-close, handle_data's unconditional
+        "buffer into the open form" branch had no way to ever flush once
+        the form never received its closing tag."""
+        html = (
+            "<form>" + ("Real unclosed form text. " * 20) + "<p>Trailing paragraph text here.</p>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real unclosed form text" in result
+        assert "Trailing paragraph text here" in result
+
 
 class TestResolveUrl:
     """Bare-DOI detection and doi.org resolution."""

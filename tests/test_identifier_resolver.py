@@ -37,6 +37,27 @@ MOCK_ISNI_RESULT = {
     "org_type": "Government",
 }
 
+MOCK_ROR_ORG_ES = {
+    # Real record shape (verified against https://api.ror.org/organizations/04q93ds34
+    # directly, not assumed): "Instituto de Políticas y Bienes Públicos", a
+    # research facility in Madrid, Spain -- the actual wrong-country match
+    # ROR's own ?affiliation= endpoint returned for a Chilean input in a real
+    # golden fixture (docs/cdif_pivot_implementation_plan.md's Post-PR#45
+    # investigation, Open Question O-5).
+    "id": "https://ror.org/04q93ds34",
+    "names": [
+        {"lang": "es", "types": ["ror_display", "label"], "value": "Instituto de Políticas y Bienes Públicos"},
+    ],
+    "external_ids": [],
+    "relationships": [],
+    "locations": [{"geonames_details": {"country_code": "ES"}}],
+}
+
+MOCK_ROR_ORG_CL = {
+    **MOCK_ROR_ORG,
+    "locations": [{"geonames_details": {"country_code": "CL"}}],
+}
+
 MOCK_ROR_QUERY_ORG_AR = {
     **MOCK_ROR_QUERY_ORG,
     "id": "https://ror.org/aaaa1111",
@@ -118,6 +139,102 @@ class TestResolveRORAffiliation:
 # --------------------------------------------------------------------------
 
 
+class TestRORAffiliationCountryMismatch:
+    """IdentifierResolver: a real, verified bug (Open Question O-5) — ROR's
+    own ?affiliation= endpoint can confidently pick a wrong-country
+    organization when names share a distinctive word. Its "chosen" pick is
+    still trusted over its own score field (never re-ranked, never
+    overridden) — a known country mismatch only demotes the match to
+    status="review", which identifier_enricher.py's existing status=="auto"
+    gate already refuses to auto-attach (no changes needed there)."""
+
+    def test_country_mismatch_demotes_to_review(self, tmp_path: Path) -> None:
+        resolver, _, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG_ES, isni_results=[])
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias", country="CL")
+        assert result is not None
+        assert result.status == "review"
+        assert result.confidence == 0.5
+        # ROR's own pick is still surfaced (for logging/review), just not
+        # trusted enough to auto-attach -- never silently substituted.
+        assert result.ror_id == "https://ror.org/04q93ds34"
+
+    def test_country_match_stays_auto(self, tmp_path: Path) -> None:
+        resolver, _, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG_CL, isni_results=[])
+        result = resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert result is not None
+        assert result.status == "auto"
+        assert result.confidence == 1.0
+
+    def test_no_country_hint_stays_auto(self, tmp_path: Path) -> None:
+        """No hint at all -- nothing to compare against, ROR's chosen pick
+        is trusted as before this fix existed."""
+        resolver, _, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG_ES, isni_results=[])
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias")
+        assert result is not None
+        assert result.status == "auto"
+        assert result.confidence == 1.0
+
+    def test_org_with_no_known_country_not_penalized(self, tmp_path: Path) -> None:
+        """MOCK_ROR_ORG carries no locations/country at all -- unknown is
+        not a mismatch, same philosophy fuzzy_matcher.match_organization's
+        country_hint already uses for the ?query= path."""
+        resolver, _, _, _ = _make_resolver(tmp_path, ror_org=MOCK_ROR_ORG, isni_results=[])
+        result = resolver.resolve("Ministerio de Hacienda", country="CL")
+        assert result is not None
+        assert result.status == "auto"
+        assert result.confidence == 1.0
+
+    def test_demoted_affiliation_match_falls_through_to_ror_query(self, tmp_path: Path) -> None:
+        """Regression: a country-demoted ?affiliation= match must not
+        silently win by default -- ?query= (which DOES apply country as a
+        fuzzy-match deprioritizer) gets a real chance to find the correct
+        org instead. Here it does: the wrong-country Madrid pick is
+        replaced by a correctly-scored Chilean ?query= candidate for the
+        same real organization (ODEPA)."""
+        mock_odepa_query_org = {
+            "id": "https://ror.org/bbbb2222",
+            "names": [
+                {
+                    "lang": "es",
+                    "types": ["ror_display"],
+                    "value": "Oficina de Estudios y Políticas Agrarias",
+                }
+            ],
+            "external_ids": [],
+            "relationships": [],
+            "locations": [{"geonames_details": {"country_code": "CL"}}],
+        }
+        resolver, _, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=MOCK_ROR_ORG_ES,
+            ror_query_results=[mock_odepa_query_org],
+            isni_results=[],
+        )
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/bbbb2222"
+        assert result.status == "auto"
+        assert result.matched_via == "ror_query_fuzzy"
+
+    def test_demoted_affiliation_match_kept_when_query_finds_nothing_better(
+        self, tmp_path: Path
+    ) -> None:
+        """When ?query= also comes back empty/no-better, the demoted
+        ?affiliation= match is still surfaced (status="review", never
+        silently dropped) rather than losing the match entirely --
+        matches the pre-fix behavior for this specific sub-case."""
+        resolver, _, _, _ = _make_resolver(
+            tmp_path, ror_org=MOCK_ROR_ORG_ES, ror_query_results=[], isni_results=[]
+        )
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias", country="CL")
+        assert result is not None
+        assert result.status == "review"
+        assert result.ror_id == "https://ror.org/04q93ds34"
+
+
+# --------------------------------------------------------------------------
+
+
 class TestResolveRORQuery:
     """IdentifierResolver: ROR query endpoint with fuzzy matching."""
 
@@ -148,7 +265,10 @@ class TestResolveRORQuery:
 
 
 class TestCountryHint:
-    """IdentifierResolver: the optional country hint reaches ROR ?query= only."""
+    """IdentifierResolver: the optional country hint reaches ROR ?query=
+    (disambiguates/deprioritizes during scoring) and ROR ?affiliation=
+    (post-hoc sanity check on ROR's own "chosen" pick — see
+    TestRORAffiliationCountryMismatch below for that path specifically)."""
 
     def test_country_disambiguates_tied_ror_query_candidates(self, tmp_path: Path) -> None:
         resolver, ror, _, _ = _make_resolver(

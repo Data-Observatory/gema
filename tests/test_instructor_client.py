@@ -369,6 +369,75 @@ class TestSessionHeader:
         assert round_ids[0] == round_ids[1] == final_id
 
 
+class TestReasoningEffortIsInert:
+    """LLMConfig.reasoning_effort exists for ResponsesLLMClient only --
+    InstructorLLMClient must never forward it (or a bare "reasoning" key)
+    in any request kwargs, on any of its call shapes, even when the field is
+    set. Pins the new field as properly inert on the old client."""
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_never_sends_reasoning(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test", reasoning_effort="medium")
+        client = InstructorLLMClient(config=config)
+
+        fake_response = SimpleOutput(name="test")
+        client._instructor_client.chat.completions.create.return_value = fake_response
+
+        client.complete(prompt="hello", response_model=SimpleOutput)
+
+        call_kwargs = client._instructor_client.chat.completions.create.call_args.kwargs
+        assert "reasoning" not in call_kwargs
+        assert "reasoning_effort" not in call_kwargs
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_with_usage_never_sends_reasoning(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test", reasoning_effort="high")
+        client = InstructorLLMClient(config=config)
+
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            SimpleOutput(name="test"),
+            fake_completion,
+        )
+
+        client.complete_with_usage(prompt="hello", response_model=SimpleOutput)
+
+        call_kwargs = (
+            client._instructor_client.chat.completions.create_with_completion.call_args.kwargs
+        )
+        assert "reasoning" not in call_kwargs
+        assert "reasoning_effort" not in call_kwargs
+
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_complete_raw_never_sends_reasoning(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock
+    ) -> None:
+        config = LLMConfig(model="my-model", api_key="sk-test", reasoning_effort="low")
+        client = InstructorLLMClient(config=config)
+
+        mock_message = MagicMock()
+        mock_message.content = "raw"
+        mock_choice = MagicMock()
+        mock_choice.message = mock_message
+        mock_response = MagicMock()
+        mock_response.choices = [mock_choice]
+        client._raw_client.chat.completions.create.return_value = mock_response
+
+        client.complete_raw(prompt="hello")
+
+        call_kwargs = client._raw_client.chat.completions.create.call_args.kwargs
+        assert "reasoning" not in call_kwargs
+        assert "reasoning_effort" not in call_kwargs
+
+
 class TestCompleteWithTools:
     """Tests for InstructorLLMClient.complete_with_tools's tool-call loop."""
 
@@ -478,6 +547,69 @@ class TestCompleteWithTools:
                 ),
             },
         ]
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_malformed_tool_arguments_do_not_crash_the_loop(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """Regression: malformed JSON tool-call arguments from the model
+        must feed an error back as the tool result, not raise out of the
+        tool loop and abort the whole agent call."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+
+        tool_call = self._tool_call("call_1", "lookup_organization", "{not valid json")
+        client._raw_client.chat.completions.create.side_effect = [
+            self._raw_response([tool_call]),
+            self._raw_response(None),
+        ]
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        result, _usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"]
+        )
+
+        assert result is fake_result
+        mock_execute_tool.assert_not_called()
+
+    @patch("metadata_enricher.llm.instructor_client.execute_tool")
+    @patch("metadata_enricher.llm.instructor_client.OpenAI")
+    @patch("metadata_enricher.llm.instructor_client.instructor")
+    def test_tool_executor_exception_does_not_crash_the_loop(
+        self, mock_instructor: MagicMock, mock_openai: MagicMock, mock_execute_tool: MagicMock
+    ) -> None:
+        """Regression: an exception raised by a tool's own executor must
+        feed an error back as the tool result, not raise out of the loop."""
+        config = LLMConfig(model="my-model", api_key="sk-test")
+        client = InstructorLLMClient(config=config)
+        mock_execute_tool.side_effect = RuntimeError("boom")
+
+        tool_call = self._tool_call("call_1", "lookup_organization", '{"name": "X"}')
+        client._raw_client.chat.completions.create.side_effect = [
+            self._raw_response([tool_call]),
+            self._raw_response(None),
+        ]
+        fake_result = SimpleOutput(name="test")
+        fake_completion = MagicMock()
+        fake_completion.usage = None
+        client._instructor_client.chat.completions.create_with_completion.return_value = (
+            fake_result,
+            fake_completion,
+        )
+
+        result, _usage = client.complete_with_tools(
+            prompt="hello", response_model=SimpleOutput, tools=["lookup_organization"]
+        )
+
+        assert result is fake_result
 
     @patch("metadata_enricher.llm.instructor_client.execute_tool")
     @patch("metadata_enricher.llm.instructor_client.OpenAI")

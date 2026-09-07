@@ -49,7 +49,10 @@ agents:
 
     PASO 1 — IDENTIFICADOR Y TIPO
       - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
-      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico (ej. "Encuesta", "Serie de tiempo", "Capa geoespacial"); vacío si no hay evidencia clara.
+      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Ejemplos reales (usa el tipo que mejor describa el recurso, esta lista NO es cerrada):
+        - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Encuesta"
+        - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Capa geoespacial"
+        - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Serie de tiempo"
       - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
 
     PASO 2 — NOMBRE Y DESCRIPCIÓN
@@ -419,6 +422,7 @@ agents:
       - ¿Qué disciplina científica abarca?
       - ¿Cuáles son las palabras clave más representativas mencionadas en el texto?
       - "Contexto suficiente" para clasificar = puedes nombrar el tema del recurso en una frase a partir del texto. Si el texto no dice de qué trata el recurso (título/descripción genéricos, sin tema identificable) → schema_about, schema_keywords y schema_audience quedan todos vacíos.
+      - Este criterio depende ÚNICAMENTE de si el tema es identificable en el texto — NUNCA del idioma del recurso ni de si trata sobre Chile. Un recurso en inglés, o de una institución extranjera, con un tema científico claro (ej. una base de datos alemana sobre fallas geológicas) tiene TANTO contexto suficiente como uno en español sobre Chile: clasifícalo igual de completo, usando las categorías/audiencias validadas EN ESPAÑOL (ya son la lista de PASO 2/4, sin importar el idioma del recurso — ver regla compartida al inicio del prompt). El idioma o el país de origen NUNCA son, por sí solos, motivo para vaciar schema_about/schema_keywords/schema_audience.
 
     PASO 2 — CLASIFICA LA CATEGORÍA (schema_about)
       - Elige SOLO UNA categoría principal de la lista validada (en español)
@@ -437,6 +441,10 @@ agents:
       - Usa SOLO términos que aparecen explícitamente en el texto fuente. Puedes normalizar o combinar términos de la fuente (ej. "Tema -- Subtema -- País"), pero NUNCA introducir un concepto que no esté en el texto.
       - Formato: {"schema:name": "<término>", "schema:inDefinedTermSet": "", "schema:identifier": ""}
       - schema:inDefinedTermSet e schema:identifier: déjalos VACÍOS por defecto. Solo complétalos si el recurso declara EXPLÍCITAMENTE a qué esquema de clasificación pertenece el término (ej. el texto cita un código o URI de LCSH/UNESCO/JEL) — un término con formato de encabezado de materia NO es automáticamente un término de ese esquema.
+      - CALIFICADOR GEOGRÁFICO (forma facetada "Tema -- Subtema -- País/Región"): si decides agregar el país o región como facet final de un keyword porque el recurso tiene una cobertura geográfica clara, agrégalo de forma CONSISTENTE a TODOS los keywords de ese recurso que compartan la misma cobertura — nunca a unos sí y a otros no dentro de la misma lista. Si prefieres no repetir el calificador geográfico en los keywords (porque ya queda expresado en schema_spatial_coverage), tampoco lo agregues a ninguno. La decisión es por-recurso, no por-keyword.
+        Ejemplo (recurso con cobertura nacional de Chile, keywords "Gastos municipales", "Presupuesto público", "Egresos ejecutados"):
+        ❌ MAL: ["Gastos municipales -- Presupuesto público -- Chile", "Egresos ejecutados"] — el facet "-- Chile" aparece en el primer término y desaparece en el segundo, sin ninguna razón temática para la diferencia.
+        ✅ BIEN: ["Gastos municipales -- Presupuesto público -- Chile", "Egresos ejecutados -- Chile"] (agregándolo a todos) — o, igual de válido, ["Gastos municipales -- Presupuesto público", "Egresos ejecutados"] (omitiéndolo en todos). Cualquiera de las dos es aceptable; lo que nunca es aceptable es mezclarlas.
       - Si no hay keywords explícitos → schema_keywords = []
       - NUNCA generar keywords no mencionados en la fuente
 
@@ -542,6 +550,9 @@ agents:
     === ERRORES COMUNES A EVITAR ===
     ❌ MAL: {"schema:name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "schema:inDefinedTermSet": "LCSH", "schema:identifier": "https://id.loc.gov/authorities/subjects.html"} — declara un esquema de autoridad real sin evidencia, solo porque el término TIENE el formato de un encabezado LCSH.
     ✅ BIEN: {"schema:name": "Rasgos funcionales (Biología) -- Plantas -- Chile", "schema:inDefinedTermSet": "", "schema:identifier": ""} — mismo término, sin inventar una pertenencia a un esquema de autoridad que el texto no confirma.
+
+    ❌ MAL: dejar schema_about, schema_keywords y schema_audience los tres vacíos solo porque el recurso está en inglés o proviene de una institución extranjera (ej. "Active fault database for the Atacama Fault System", de un centro de investigación alemán) — el texto SÍ tiene un tema identificable (fallas geológicas activas), así que hay contexto suficiente sin importar el idioma ni el país.
+    ✅ BIEN: {"schema_about": [{"schema:name": "Ciencias de la Tierra", "schema:inDefinedTermSet": "Ciencias Naturales y Exactas"}], "schema_keywords": [{"schema:name": "Active faults", "schema:inDefinedTermSet": "", "schema:identifier": ""}], "schema_audience": [{"audience": "Investigadores", "mediator": "Autodirigido", "education_level": "Postgrado", "instructional_method": "Análisis"}]} — clasificado igual de completo que un recurso chileno en español; las categorías/audiencias van en español (regla ya establecida), el resto respeta el idioma original del recurso.
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
@@ -886,6 +897,23 @@ providers:
   # so this names the header only; the value is generated fresh per LLM
   # call in llm/instructor_client.py's _build_extra_headers.
   session_header: x-opencode-session
+  # None of the 5 production agents use this model -- deepseek-v4-flash
+  # stays the default per explicit prior instruction. This override exists
+  # purely so muse-spark-1.3-contributor is a usable, config-recognized
+  # model on this provider (e.g. via scripts/compare_models.py's in-place
+  # model-swap mechanism), config-driven rather than special-cased in
+  # Python anywhere. Confirmed 2026-09-06: muse-spark returns HTTP 500 on
+  # this provider's default chat_completions wire format; HTTP 200 on the
+  # Responses API with native json_schema structured output. A *forced*
+  # tool_choice is also rejected there (400), which is one more reason this
+  # model needs the Responses client's unforced tool_choice="auto" path
+  # rather than the chat_completions default. reasoning_effort: medium
+  # matches this branch's corrected DEFAULT_RESPONSES_REASONING_EFFORT --
+  # not a separately chosen value.
+  model_overrides:
+  - model: muse-spark-1.3-contributor
+    api_style: responses
+    reasoning_effort: medium
 - name: anthropic
   api_key_env: ANTHROPIC_API_KEY
 - name: zai-coding-plan
@@ -917,3 +945,7 @@ enable_identifier_enrichment: true
 # so a rare page can dilute rather than help (BACKLOG.md's media_formats
 # entry).
 enable_content_fetch: true
+# Human-curated ROR/ISNI overrides (scripts/curate_ror_isni.py --promote-to),
+# checked before any network call. A missing file is not an error -- this
+# stays a no-op until someone actually promotes a curation batch to it.
+identifier_overrides_path: config/overrides.yaml

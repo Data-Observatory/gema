@@ -85,14 +85,24 @@ above), and writes a Markdown report.
    uv run python scripts/record_golden.py  # or: make record-golden
    ```
 
+**Judge provider is deliberately separate from production.** `--judge` takes a
+`provider:model` spec (e.g. `zai-coding-plan:glm-5.3`), not a bare model name —
+the judge always resolves its own provider this way rather than inheriting
+`config/agents.yaml`'s `default_provider`, so scoring never competes for the
+same account/quota as whatever model is being generated or compared. Defaults
+for `--judge`, `--threshold`, and `--inputs`/`--expected` all come from
+`config/eval.yaml` (repo root, shared by this script and `compare_models.py`/
+`judge_models.py`) when not passed explicitly — see that file for the actual
+defaults and how to change them.
+
 **Usage:**
 
 ```bash
-# Default paths, threshold 0.75
+# Defaults from config/eval.yaml (judge, threshold, golden corpus paths)
 uv run python scripts/run_live_eval.py
 
-# Custom threshold + judge model
-uv run python scripts/run_live_eval.py --threshold 0.80 --model glm-5.3
+# Custom threshold + judge (provider:model)
+uv run python scripts/run_live_eval.py --threshold 0.80 --judge zai-coding-plan:glm-5.3
 
 # Verbose mode
 uv run python scripts/run_live_eval.py -v
@@ -104,7 +114,7 @@ uv run python scripts/run_live_eval.py \
     --expected tests/fixtures/golden/expected \
     --reports-dir reports \
     --schema cdif-discovery \
-    --model glm-5.3 \
+    --judge zai-coding-plan:glm-5.3 \
     --threshold 0.75 \
     --verbose
 ```
