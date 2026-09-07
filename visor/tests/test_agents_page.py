@@ -108,3 +108,51 @@ class TestHandleUpload:
 
         assert pipeline_config.enable_content_fetch is False
         assert refreshed == []
+
+
+class TestAdvancedSection:
+    """The read-only "Advanced" expansion. Rendered here against a
+    hand-built PipelineConfig rather than in test_ui_navigation.py's
+    click-through: the real config/agents.yaml sets no agent-level
+    reasoning_effort, and the app-boot harness (runpy of visor/app.py at
+    fixture-setup time) leaves no seam to inject one from a test body."""
+
+    async def test_shows_reasoning_effort_when_an_agent_sets_it(self) -> None:
+        """AgentConfig.reasoning_effort is a real, settable per-agent field
+        (config/agents.yaml uses it on a provider model override today) that
+        had zero visibility in visor -- not even read-only, unlike its
+        neighbours tools/extra_body."""
+        from nicegui import ui
+        from nicegui.testing import user_simulation
+
+        from visor.pages.agents_page import render_agents
+
+        raw = _minimal_config_dict()
+        raw["agents"][0]["reasoning_effort"] = "high"
+        pipeline_config = PipelineConfig(**raw)
+
+        def _root() -> None:
+            render_agents(ui.column(), pipeline_config)
+
+        async with user_simulation(root=_root) as user:
+            await user.open("/")
+            await user.should_see("Reasoning effort: high")
+
+    async def test_omits_reasoning_effort_when_unset(self) -> None:
+        """Same conditional treatment as tools/extra_body -- an agent that
+        never sets it must not grow an empty line."""
+        from nicegui import ui
+        from nicegui.testing import user_simulation
+
+        from visor.pages.agents_page import render_agents
+
+        pipeline_config = PipelineConfig(**_minimal_config_dict())
+        assert pipeline_config.agents[0].reasoning_effort is None
+
+        def _root() -> None:
+            render_agents(ui.column(), pipeline_config)
+
+        async with user_simulation(root=_root) as user:
+            await user.open("/")
+            await user.should_see("Agent 0")
+            await user.should_not_see("Reasoning effort")

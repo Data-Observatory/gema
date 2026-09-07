@@ -256,6 +256,7 @@ PIPELINE_BEHAVIOR_FLAGS = (
     "enable_identifier_enrichment",
     "validate_pids",
     "validate_pids_live",
+    "validate_shacl_conformance",
 )
 
 
