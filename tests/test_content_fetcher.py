@@ -157,6 +157,35 @@ class TestCleanHtmlToText:
         assert "Real form-wrapped article text" in result
         assert "Site chrome text" not in result
 
+    def test_main_inside_form_still_counts_toward_main(self) -> None:
+        """Reverse nesting order from the test above: a <main> wrapped
+        entirely inside a <form> (<form><main>...</main></form>) must still
+        count toward main_chunks. Regression test: the close-time check
+        used to sample self._main_depth only when </form> fired, which is
+        always 0 in this ordering since </main> has already closed by
+        then -- silently losing the form's text from main preference even
+        though its size cleared the keep threshold."""
+        html = (
+            "<header>Site chrome text here</header>"
+            "<form><main>" + ("Real main-in-form article text. " * 20) + "</main></form>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real main-in-form article text" in result
+        assert "Site chrome text" not in result
+
+    def test_unclosed_form_does_not_swallow_rest_of_document(self) -> None:
+        """Malformed/truncated HTML with a <form> that never closes must
+        not lose every bit of text after it to EOF. Regression test: before
+        finalize()'s force-close, handle_data's unconditional
+        "buffer into the open form" branch had no way to ever flush once
+        the form never received its closing tag."""
+        html = (
+            "<form>" + ("Real unclosed form text. " * 20) + "<p>Trailing paragraph text here.</p>"
+        )
+        result = clean_html_to_text(html)
+        assert "Real unclosed form text" in result
+        assert "Trailing paragraph text here" in result
+
 
 class TestResolveUrl:
     """Bare-DOI detection and doi.org resolution."""
