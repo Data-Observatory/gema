@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 import re
 from pathlib import Path
@@ -377,9 +378,16 @@ class Pipeline:
         if publisher_display_name:
             # 2. schema:publisher -> schema:creator, when creator is empty.
             # schema:creator is always {"@list": [...]}-wrapped by this point
-            # (injected above in this same method — see the C4 comment).
+            # (done in CDIFDiscoveryProfile.merge_agent_results, one layer
+            # up from this method). Deep-copy publisher -- it can be the
+            # very object already stored at schema:publisher (the fallback
+            # branch above) or an agent-produced dict with nested values
+            # (schema:identifier, schema:address, ...); a shallow dict()
+            # would alias those nested values between the two fields, so a
+            # future in-place mutation of one (e.g. an enricher appending
+            # to a shared "@type" list) would silently corrupt the other.
             if not jsonld_list_unwrap(document.get_field("schema:creator")):
-                document.set_field("schema:creator", {"@list": [dict(publisher)]})
+                document.set_field("schema:creator", {"@list": [copy.deepcopy(publisher)]})
 
             # 3. schema:publisher -> schema:copyrightHolder, when empty.
             # schema:copyrightHolder is a plain string field, not a dict.

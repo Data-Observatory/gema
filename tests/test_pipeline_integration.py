@@ -11,7 +11,7 @@ import pytest
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.pipeline import Pipeline, _aggregate_token_usage
-from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
+from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage, jsonld_list_unwrap
 
 
 class FakeLLMClient:
@@ -1216,6 +1216,35 @@ class TestPipelineActorFallbacks:
         assert result.document.get_field("schema:publisher") == expected_publisher
         assert result.document.get_field("schema:creator") == {"@list": [expected_publisher]}
         assert result.document.get_field("schema:copyrightHolder") == "Ministerio de Hacienda"
+
+    def test_publisher_fallback_creator_does_not_alias_publisher(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Regression: schema:creator's fallback dict must be a deep copy of
+        schema:publisher, not a shallow dict(publisher) -- a shallow copy
+        aliases every nested value (e.g. "@type") between the two fields,
+        so mutating one in place would silently corrupt the other."""
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Ministerio de Hacienda - Gobierno de Chile",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        publisher = result.document.get_field("schema:publisher")
+        creator = jsonld_list_unwrap(result.document.get_field("schema:creator"))[0]
+        assert creator is not publisher
+        assert creator["@type"] is not publisher["@type"]
+
+        creator["@type"].append("schema:Corporation")
+        assert publisher["@type"] == ["schema:Organization"]
 
     def test_publisher_fallback_strips_trailing_country_parenthetical(
         self, tmp_path, llm_factory
