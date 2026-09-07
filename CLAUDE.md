@@ -71,7 +71,7 @@ Built by `llm/factory.py:create_llm_client()`, bottom-up: `InstructorLLMClient` 
 
 ### Determinism / caching
 
-`cache.py:_make_key` hashes provider+model+temperature+seed+response_model+prompt — all of these must stay in the key or stale cached outputs can leak across configs. `seed` flows `ProviderConfig` -> `LLMConfig` -> `extra_body={"seed": ...}` on the wire.
+`cache.py:_make_key` hashes model+response_model+temperature+seed+prompt (plus extra_body/tools/api_style/reasoning_effort, each appended only when set so pre-existing keys stay unchanged) — **not** provider: two providers serving the same model name under the same prompt/temperature/seed would collide. All of these must stay in the key or stale cached outputs can leak across configs. `seed` flows `ProviderConfig` -> `LLMConfig` -> `extra_body={"seed": ...}` on the wire.
 
 ## Conventions (deviations from generic Python)
 
