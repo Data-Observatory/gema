@@ -49,7 +49,7 @@ from pathlib import Path
 
 from metadata_enricher.agents.registry import LLMClientFactory
 from metadata_enricher.config.loader import load_config
-from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig, ReasoningEffort
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client, reset_client_cache
@@ -58,7 +58,14 @@ from metadata_enricher.pipeline import Pipeline, PipelineResult
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema
 
-from eval_common import score_overall_deepeval, score_per_field_raw
+from eval_common import (
+    find_provider,
+    load_eval_config,
+    parse_model_spec,
+    score_overall_deepeval,
+    score_per_field_raw,
+    strip_ignored_fields,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +90,7 @@ class EvalReport:
     production_model: str
     judge_model: str
     provider_name: str
+    judge_provider_name: str
     config_path: str
     inputs_dir: str
     threshold: float
@@ -115,6 +123,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         extra_body: dict[str, object] | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
@@ -122,6 +131,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             extra_body=extra_body,
+            reasoning_effort=reasoning_effort,
             cache_dir=cache_dir,
         )
 
@@ -159,6 +169,9 @@ def _check_api_key(provider: ProviderConfig) -> None:
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    eval_cfg = load_eval_config()
+    golden_cfg = eval_cfg.get("corpora", {}).get("golden", {})
+
     parser = argparse.ArgumentParser(
         description="Live evaluator: run Pipeline with real API, score vs golden outputs.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -171,13 +184,13 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-i", "--inputs",
-        default="tests/fixtures/golden/inputs",
-        help="Directory with input JSON files (default: tests/fixtures/golden/inputs)",
+        default=golden_cfg.get("inputs_dir", "tests/fixtures/golden/inputs"),
+        help="Directory with input JSON files (default: config/eval.yaml's corpora.golden.inputs_dir)",
     )
     parser.add_argument(
         "-e", "--expected",
-        default="tests/fixtures/golden/expected",
-        help="Directory with expected golden outputs (default: tests/fixtures/golden/expected)",
+        default=golden_cfg.get("expected_dir", "tests/fixtures/golden/expected"),
+        help="Directory with expected golden outputs (default: config/eval.yaml's corpora.golden.expected_dir)",
     )
     parser.add_argument(
         "--reports-dir",
@@ -186,19 +199,24 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-s", "--schema",
-        default="datacite-4.6",
-        help="Schema name to use (default: datacite-4.6)",
+        default="cdif-discovery",
+        help="Schema name to use (default: cdif-discovery, the live generation target)",
     )
     parser.add_argument(
-        "--model",
-        default="glm-5.3",
-        help="Model for the judge LLM — may differ from production model (default: glm-5.3)",
+        "--judge",
+        default=eval_cfg.get("judge", "zai-coding-plan:glm-5.3"),
+        help=(
+            "provider:model spec for the judge LLM -- deliberately a separate "
+            "provider from whatever's under test as production/candidate, so "
+            "judging never competes for the same account quota (default: "
+            "config/eval.yaml's judge, zai-coding-plan:glm-5.3)"
+        ),
     )
     parser.add_argument(
         "--threshold",
         type=float,
-        default=0.75,
-        help="PASS/FAIL threshold for mean overall score (default: 0.75)",
+        default=eval_cfg.get("threshold", 0.75),
+        help="PASS/FAIL threshold for mean overall score (default: config/eval.yaml's threshold, 0.75)",
     )
     parser.add_argument(
         "-v", "--verbose",
@@ -220,8 +238,9 @@ def _write_report(report: EvalReport, reports_dir: Path) -> Path:
     lines.append(f"# Live Evaluation Report — {report.timestamp}")
     lines.append("")
     lines.append(f"**Model (production):** {report.production_model}")
+    lines.append(f"**Provider (production):** {report.provider_name}")
     lines.append(f"**Model (judge):** {report.judge_model}")
-    lines.append(f"**Provider:** {report.provider_name}")
+    lines.append(f"**Provider (judge):** {report.judge_provider_name}")
     lines.append(f"**Inputs evaluated:** {len(report.results)}")
     lines.append("")
 
@@ -311,11 +330,23 @@ def main(argv: list[str] | None = None) -> None:
         logger.error("Failed to load config: %s", exc)
         sys.exit(1)
 
-    # 2. Check API key
+    # 2. Check API keys — production provider (generates the candidate output)
+    # and judge provider (scores it) are resolved and checked independently.
+    # Deliberately separate: the judge is meant to run on its own account/quota
+    # so a model comparison never leaves the judge itself unable to run.
     default_provider = _find_default_provider(config)
     _check_api_key(default_provider)
-    api_key = os.environ[default_provider.api_key_env]
-    logger.info("Default provider: %s (env: %s)", default_provider.name, default_provider.api_key_env)
+    logger.info("Production provider: %s (env: %s)", default_provider.name, default_provider.api_key_env)
+
+    judge_provider_name, judge_model = parse_model_spec(args.judge)
+    try:
+        judge_provider = find_provider(config, judge_provider_name)
+    except ValueError as exc:
+        logger.error("%s", exc)
+        sys.exit(2)
+    _check_api_key(judge_provider)
+    judge_api_key = os.environ[judge_provider.api_key_env]
+    logger.info("Judge provider: %s (env: %s)", judge_provider.name, judge_provider.api_key_env)
 
     # 3. Validate paths
     inputs_dir = Path(args.inputs)
@@ -351,12 +382,13 @@ def main(argv: list[str] | None = None) -> None:
     # 5. Determine production model from config (first agent's model, or "unknown")
     production_model = config.agents[0].model if config.agents[0].model else "unknown"
     logger.info("Production model: %s", production_model)
-    logger.info("Judge model: %s", args.model)
+    logger.info("Judge model: %s (provider: %s)", judge_model, judge_provider.name)
 
-    # 6. Build judge LLM client (fresh, no cache)
+    # 6. Build judge LLM client (fresh, no cache) — on judge_provider, not
+    # default_provider, so judging never shares production's account quota.
     judge_client = create_llm_client(
-        default_provider,
-        model=args.model,
+        judge_provider,
+        model=judge_model,
         temperature=0.0,
         max_tokens=4096,
         use_cache=False,
@@ -378,9 +410,12 @@ def main(argv: list[str] | None = None) -> None:
             logger.warning("  No expected output for %s — skipping", stem)
             continue
 
-        # Load expected output
+        # Load expected output. Stripped of fields that should never affect
+        # a judge score (schema:dateModified -- see eval_common's
+        # IGNORED_SCORING_FIELDS docstring, Finding B-1 in
+        # docs/cdif_pivot_implementation_plan.md).
         try:
-            expected_json = expected_file.read_text(encoding="utf-8")
+            expected_json = strip_ignored_fields(expected_file.read_text(encoding="utf-8"))
         except Exception as exc:
             logger.error("  Failed to read expected for %s: %s", stem, exc)
             continue
@@ -412,7 +447,7 @@ def main(argv: list[str] | None = None) -> None:
                     )
                     continue
 
-                actual_json = writer.format_json(result.document)
+                actual_json = strip_ignored_fields(writer.format_json(result.document))
         except Exception as exc:
             logger.error("  Pipeline exception for %s: %s", stem, exc, exc_info=args.verbose)
             continue
@@ -432,9 +467,9 @@ def main(argv: list[str] | None = None) -> None:
                 actual_json=actual_json,
                 expected_json=expected_json,
                 resource_json=resource_json,
-                judge_model=args.model,
-                api_key=api_key,
-                base_url=default_provider.base_url,
+                judge_model=judge_model,
+                api_key=judge_api_key,
+                base_url=judge_provider.base_url,
             )
             logger.info("  DeepEval overall score: %.3f", deepeval_score)
         except Exception as exc:
@@ -472,8 +507,9 @@ def main(argv: list[str] | None = None) -> None:
     report = EvalReport(
         timestamp=timestamp,
         production_model=production_model,
-        judge_model=args.model,
+        judge_model=judge_model,
         provider_name=default_provider.name,
+        judge_provider_name=judge_provider.name,
         config_path=str(config_path),
         inputs_dir=str(inputs_dir),
         threshold=args.threshold,

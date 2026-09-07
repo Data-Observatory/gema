@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import copy
 import logging
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,7 +16,13 @@ from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.orchestrator import Orchestrator
 from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema, SchemaRegistry
-from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescription, TokenUsage
+from metadata_enricher.types import (
+    AgentResult,
+    MetadataDocument,
+    ResourceDescription,
+    TokenUsage,
+    jsonld_list_unwrap,
+)
 from metadata_enricher.validation import PreFlightValidator
 
 if TYPE_CHECKING:
@@ -26,6 +34,25 @@ logger = logging.getLogger(__name__)
 # Same instance/behavior as agents/base.py's — reused here so identifier
 # enrichment sees the same country hint the agents' own prompts were given.
 _country_extractor = CountryExtractor()
+
+# Trailing qualifiers config/agents.yaml's shared system prompt explicitly
+# tells agents to strip from an org name (e.g. "Ministerio de Hacienda -
+# Gobierno de Chile" -> "Ministerio de Hacienda") before it becomes
+# schema:publisher/schema:creator's schema:name. resource.publisher (an
+# input-supplied, unprocessed string) can carry these when used as a
+# fallback below -- reapplying the same normalization keeps the fallback
+# from reintroducing exactly what the prompt already forbids. Deliberately
+# narrow (only the two forms observed in real fixtures) rather than a
+# general free-text cleanup -- see Open Question O-4 in
+# docs/cdif_pivot_implementation_plan.md if this needs to grow.
+_TRAILING_GOBIERNO_SUFFIX_RE = re.compile(r"\s*-\s*Gobierno de Chile\s*$", re.IGNORECASE)
+_TRAILING_COUNTRY_PAREN_RE = re.compile(r"\s*\(Chile\)\s*$", re.IGNORECASE)
+
+
+def _normalize_fallback_org_name(name: str) -> str:
+    name = _TRAILING_GOBIERNO_SUFFIX_RE.sub("", name)
+    name = _TRAILING_COUNTRY_PAREN_RE.sub("", name)
+    return name.strip()
 
 
 class PipelineResult:
@@ -297,6 +324,89 @@ class Pipeline:
                 models_used=models_used,
             )
 
+        # schema:url fallback (Open Question #20, resolved): no agent's
+        # `fields:` list in config/agents.yaml ever populates schema:url, so
+        # the CDIF required floor's url|distribution OR-group could
+        # previously only ever be satisfied via schema:distribution from
+        # real generated output -- schema:url sat unreachable even though
+        # CDIFDiscoveryOutputModel/exporters/datacite.py/exporters/
+        # croissant.py all already read it. resource.url (the URL this
+        # pipeline run was actually given) is a reasonable, deliberate
+        # default here -- NOT a separately-verified "documented landing
+        # page" the way a real schema:url extraction would be, just the
+        # input page the resource description already carries. Only fires
+        # when no agent produced a schema:url of its own (defensive: no
+        # agent does today, but this must never clobber one that does) and
+        # never invents a URL the resource didn't already have.
+        #
+        # resource.url is only ever a real http(s) URL, not a DOI --
+        # ResourceDescription has a separate `doi` field for that (a bare
+        # DOI like "10.5880/GFZ.4.1.2020.012" is a valid `resource.url`
+        # value for some input sources, though, so this must still be
+        # checked defensively). schema:url is typed `{"format": "uri"}` in
+        # the vendored schema and both exporters treat it as a resolvable
+        # web location, preferring it over their own DOI-to-URL resolution
+        # -- writing a bare DOI there pre-empted that resolution and
+        # regressed two real exporters (found on review).
+        url = resource.url
+        if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
+            document.set_field("schema:url", url)
+
+        # Actor fallback cascade (Phase B1, live-eval quality gap — see
+        # docs/cdif_pivot_implementation_plan.md's "Post-PR#45 investigation"
+        # section): schema:publisher, schema:creator, and
+        # schema:copyrightHolder came back empty on a real live run
+        # (sample_input04) despite resource.publisher carrying a
+        # hand-verified name — the shared system prompt already tells every
+        # agent this field is authoritative when present, but a live model
+        # doesn't always apply that reliably. This is the same class of
+        # fix as the schema:url fallback above: fires only when the slot is
+        # genuinely empty, never overrides a real agent-produced value, and
+        # is deterministic (no extra LLM call).
+        #
+        # 1. resource.publisher -> schema:publisher, when no agent produced one.
+        publisher = document.get_field("schema:publisher")
+        if not publisher and resource.model_extra:
+            raw_publisher = resource.model_extra.get("publisher")
+            if isinstance(raw_publisher, str) and raw_publisher.strip():
+                publisher_name = _normalize_fallback_org_name(raw_publisher)
+                if publisher_name:
+                    publisher = {"@type": ["schema:Organization"], "schema:name": publisher_name}
+                    document.set_field("schema:publisher", publisher)
+
+        publisher_display_name = publisher.get("schema:name") if isinstance(publisher, dict) else None
+        if publisher_display_name:
+            # 2. schema:publisher -> schema:creator, when creator is empty.
+            # schema:creator is always {"@list": [...]}-wrapped by this point
+            # (done in CDIFDiscoveryProfile.merge_agent_results, one layer
+            # up from this method). Deep-copy publisher -- it can be the
+            # very object already stored at schema:publisher (the fallback
+            # branch above) or an agent-produced dict with nested values
+            # (schema:identifier, schema:address, ...); a shallow dict()
+            # would alias those nested values between the two fields, so a
+            # future in-place mutation of one (e.g. an enricher appending
+            # to a shared "@type" list) would silently corrupt the other.
+            if not jsonld_list_unwrap(document.get_field("schema:creator")):
+                document.set_field("schema:creator", {"@list": [copy.deepcopy(publisher)]})
+
+            # 3. schema:publisher -> schema:copyrightHolder, when empty.
+            # schema:copyrightHolder is a plain string field, not a dict.
+            if not document.get_field("schema:copyrightHolder"):
+                document.set_field("schema:copyrightHolder", publisher_display_name)
+
+        # 4. "Datos Abiertos del Estado de Chile" license -> deterministic
+        # copyrightHolder, mirroring rights_funding_citations's own prompt
+        # rule (config/agents.yaml PRIORIDAD 3) made code so it still fires
+        # when a live model forgets to apply its own instruction. Only
+        # checked if steps 1-3 left copyrightHolder empty.
+        if not document.get_field("schema:copyrightHolder"):
+            licenses = document.get_field("schema:license")
+            if isinstance(licenses, list) and any(
+                isinstance(entry, dict) and entry.get("schema:name") == "Datos Abiertos del Estado de Chile"
+                for entry in licenses
+            ):
+                document.set_field("schema:copyrightHolder", "Estado de Chile")
+
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
             return PipelineResult(
@@ -359,6 +469,20 @@ class Pipeline:
                 warnings += [c.problem for c in pid_checks if c.problem is not None]
             except Exception as exc:
                 logger.warning("PID validation failed: %s", exc)
+
+        # 8. SHACL conformance check — opt-in, non-blocking, mirrors the
+        # PID-validation step above. Duck-typed rather than importing
+        # CDIFDiscoveryProfile directly: only the registered schema knows
+        # whether it has a meaningful conformance check at all (see
+        # PipelineConfig.validate_shacl_conformance's own docstring for why
+        # this defaults off).
+        if self._config.validate_shacl_conformance:
+            shacl_check = getattr(self._schema, "check_shacl_conformance", None)
+            if callable(shacl_check):
+                try:
+                    warnings += shacl_check(document)
+                except Exception as exc:
+                    logger.warning("SHACL conformance check failed: %s", exc)
 
         return PipelineResult(
             resource=resource,

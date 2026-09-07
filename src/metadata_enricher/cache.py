@@ -55,6 +55,8 @@ class CacheManager:
         seed: int | None,
         extra_body: dict[str, Any] | None = None,
         tools: list[str] | None = None,
+        api_style: str = "chat_completions",
+        reasoning_effort: str | None = None,
     ) -> str:
         raw = f"{prompt}:{model}:{response_model_name}:{temperature}:{seed}"
         # Appended only when set, so keys for the (overwhelmingly common) no-override
@@ -64,6 +66,11 @@ class CacheManager:
             raw += f":{json.dumps(extra_body, sort_keys=True)}"
         if tools:
             raw += f":tools={','.join(sorted(tools))}"
+        # Same "only append when non-default" convention as extra_body/tools
+        # above -- every provider/model still on chat_completions (everyone,
+        # today) gets a byte-identical key to before these fields existed.
+        if api_style != "chat_completions":
+            raw += f":api={api_style}:effort={reasoning_effort}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def get(self, key: str) -> dict[str, Any] | None:
@@ -104,12 +111,15 @@ class CachedLLMClient:
             msg = (
                 f"Could not locate LLMConfig in middleware chain "
                 f"(leaf type: {type(candidate).__name__}). "
-                f"Ensure the chain terminates with an InstructorLLMClient."
+                f"Ensure the chain terminates with an InstructorLLMClient "
+                f"or a ResponsesLLMClient."
             )
             raise RuntimeError(msg)
         self._temperature: float = getattr(config, "temperature", 0.0)
         self._seed: int | None = getattr(config, "seed", None)
         self._extra_body: dict[str, Any] | None = getattr(config, "extra_body", None)
+        self._api_style: str = getattr(config, "api_style", "chat_completions") or "chat_completions"
+        self._reasoning_effort: str | None = getattr(config, "reasoning_effort", None)
 
     @property
     def model(self) -> str:
@@ -124,7 +134,7 @@ class CachedLLMClient:
     ) -> BaseModel:
         key = self._cache._make_key(
             prompt, self.model, response_model.__name__, self._temperature, self._seed,
-            self._extra_body,
+            self._extra_body, api_style=self._api_style, reasoning_effort=self._reasoning_effort,
         )
         cached = self._cache.get(key)
         if cached is not None:
@@ -149,7 +159,7 @@ class CachedLLMClient:
         call recorded; only a real cache miss reports real usage."""
         key = self._cache._make_key(
             prompt, self.model, response_model.__name__, self._temperature, self._seed,
-            self._extra_body,
+            self._extra_body, api_style=self._api_style, reasoning_effort=self._reasoning_effort,
         )
         cached = self._cache.get(key)
         if cached is not None:
@@ -181,6 +191,7 @@ class CachedLLMClient:
         key = self._cache._make_key(
             prompt, self.model, response_model.__name__, self._temperature, self._seed,
             self._extra_body, tools=tools,
+            api_style=self._api_style, reasoning_effort=self._reasoning_effort,
         )
         cached = self._cache.get(key)
         if cached is not None:
@@ -203,7 +214,10 @@ class CachedLLMClient:
         system_prompt: str | None = None,
         **kwargs: object,
     ) -> str:
-        key = self._cache._make_key(prompt, self.model, "raw", self._temperature, self._seed)
+        key = self._cache._make_key(
+            prompt, self.model, "raw", self._temperature, self._seed,
+            api_style=self._api_style, reasoning_effort=self._reasoning_effort,
+        )
         cached = self._cache.get(key)
         if cached is not None:
             logger.debug("Cache HIT for key=%s (raw)", key[:12])

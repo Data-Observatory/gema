@@ -1,0 +1,41 @@
+# Shared defaults for dev-only eval tooling (scripts/eval_common.py,
+# run_live_eval.py, compare_models.py, judge_models.py). Never read by
+# src/metadata_enricher -- the production pipeline is entirely unaffected by
+# this file; config/agents.yaml and config/providers.yaml remain the only
+# config that matters for `gema process`.
+#
+# Every value here is a default only -- every corresponding CLI flag
+# overrides it when passed. A missing file (e.g. a fresh checkout before
+# this existed) is treated as {} by eval_common.load_eval_config(), so
+# scripts keep their own hardcoded fallbacks.
+
+# provider:model spec for the LLM-as-judge role. Deliberately kept on a
+# provider separate from whatever is being tested as a production/candidate
+# model (see docs/cdif_pivot_implementation_plan.md's 2026-09-06 model-swap
+# entry) -- run_live_eval.py and judge_models.py both used to silently
+# resolve the judge onto config/agents.yaml's default_provider (opencode),
+# which meant judging competed for the same account/quota as whatever
+# candidate model was being screened. zai-coding-plan is a separate account
+# (ZAI_API_KEY) precisely so the judge role never runs out of budget because
+# a model comparison used it up.
+judge: zai-coding-plan:glm-5.3
+
+# PASS/FAIL threshold for run_live_eval.py's mean overall score.
+threshold: 0.75
+
+# Default candidate list for compare_models.py/judge_models.py's --models,
+# when not passed explicitly. Just the current production baseline -- add
+# real candidates on the command line for an actual comparison run.
+candidates:
+  - opencode:deepseek-v4-flash
+
+# Named corpus path presets, so --ground-truth-dir/--inputs-dir/--expected
+# don't need to be retyped for the two corpora these scripts actually use
+# today. Any other corpus still works by passing explicit paths on the CLI.
+corpora:
+  do_catalog:
+    ground_truth_dir: tests/fixtures/do_catalog/ground_truth
+    inputs_dir: tests/fixtures/do_catalog/inputs
+  golden:
+    inputs_dir: tests/fixtures/golden/inputs
+    expected_dir: tests/fixtures/golden/expected

@@ -23,6 +23,7 @@
 python-version text eol=lf
 
 # Generated exports: never normalize, never diff.
+*.db   binary
 *.csv  binary
 *.tsv  binary
 *.parquet binary

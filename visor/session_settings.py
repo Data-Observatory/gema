@@ -41,7 +41,7 @@ from typing import Any
 
 from nicegui import app
 
-from metadata_enricher.config.models import ProviderConfig
+from metadata_enricher.config.models import ProviderConfig, ReasoningEffort
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client
 from visor.settings import VisorSettings, load_settings, save_settings
@@ -91,6 +91,7 @@ def build_llm_factory(settings: VisorSettings) -> Any:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         extra_body: dict[str, Any] | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
@@ -98,6 +99,7 @@ def build_llm_factory(settings: VisorSettings) -> Any:
             temperature=temperature,
             max_tokens=max_tokens,
             extra_body=extra_body,
+            reasoning_effort=reasoning_effort,
             api_key=settings.env.get(provider.api_key_env) or None,
         )
 

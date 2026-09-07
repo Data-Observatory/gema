@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = Path("config/agents.yaml")
 DEFAULT_INPUT = Path("examples/sample_input01.json")
-DEFAULT_SCHEMA = "datacite-4.6"
+DEFAULT_SCHEMA = "cdif-discovery"
 
 Status = Literal["PASS", "WARN", "FAIL"]
 
@@ -101,92 +101,95 @@ def _is_placeholder(text: str) -> bool:
 
 
 def check_structure(output: dict[str, Any]) -> list[Check]:
+    """CDIF-shaped checks (post-pivot) -- ``output`` is the live pipeline's
+    real CDIF Discovery JSON-LD, keyed by CURIE, per
+    ``docs/cdif_pivot_implementation_plan.md``'s Q2 field mapping. Not the
+    DataCite shape -- there is no crosswalk here, this validates the actual
+    generation target as it will really ship."""
     checks: list[Check] = []
 
-    titles = output.get("titles") or []
-    names = [t.get("name", "") for t in titles if isinstance(t, dict)]
-    names = [n for n in names if n and not _is_placeholder(n)]
-    if names:
-        checks.append(Check("titles", "PASS", f"{len(names)} title(s), e.g. {names[0]!r}"))
+    name = str(output.get("schema:name", "") or "")
+    if name and not _is_placeholder(name):
+        checks.append(Check("schema:name", "PASS", f"{name!r}"))
     else:
-        checks.append(Check("titles", "FAIL", "no non-placeholder title found"))
+        checks.append(Check("schema:name", "FAIL", "no non-placeholder title found"))
 
-    creators = output.get("creators") or []
+    creator_list = ((output.get("schema:creator") or {}).get("@list")) or []
     creator_names = [
-        c.get("creator_name", "") for c in creators if isinstance(c, dict) and c.get("creator_name")
+        str(c.get("schema:name", "")) for c in creator_list if isinstance(c, dict) and c.get("schema:name")
     ]
     if creator_names:
-        checks.append(Check("creators", "PASS", f"{len(creator_names)} creator(s)"))
+        checks.append(Check("schema:creator", "PASS", f"{len(creator_names)} creator(s)"))
     else:
-        checks.append(Check("creators", "WARN", "no creators extracted"))
+        checks.append(Check("schema:creator", "WARN", "no creators extracted"))
 
-    dates = output.get("dates") or []
-    if dates:
-        checks.append(Check("dates", "PASS", f"{len(dates)} date(s)"))
+    date_published = str(output.get("schema:datePublished", "") or "")
+    date_created = str(output.get("schema:dateCreated", "") or "")
+    if date_published or date_created:
+        checks.append(
+            Check("dates", "PASS", f"datePublished={date_published!r} dateCreated={date_created!r}")
+        )
     else:
-        checks.append(Check("dates", "WARN", "no dates extracted"))
+        checks.append(Check("dates", "WARN", "no schema:datePublished/dateCreated extracted"))
 
-    resource = output.get("resource") or {}
-    rtype = str(resource.get("resource_type", ""))
-    year = str(resource.get("publication_year", ""))
-    if rtype:
-        checks.append(Check("resource.resource_type", "PASS", rtype))
+    additional_type = str(output.get("schema:additionalType", "") or "")
+    if additional_type:
+        checks.append(Check("schema:additionalType", "PASS", additional_type))
     else:
-        checks.append(Check("resource.resource_type", "WARN", "empty resource_type"))
-    if re.match(r"^(19|20)\d{2}$", year):
-        checks.append(Check("resource.publication_year", "PASS", year))
-    elif year:
-        checks.append(Check("resource.publication_year", "WARN", f"implausible year: {year!r}"))
+        checks.append(Check("schema:additionalType", "WARN", "empty schema:additionalType"))
+
+    year_match = re.match(r"^(19|20)\d{2}", date_published) or re.match(r"^(19|20)\d{2}", date_created)
+    if year_match:
+        checks.append(Check("publication_year", "PASS", year_match.group(0)))
+    elif date_published or date_created:
+        checks.append(
+            Check("publication_year", "WARN", f"implausible date: {date_published or date_created!r}")
+        )
     else:
-        checks.append(Check("resource.publication_year", "WARN", "empty publication_year"))
+        checks.append(Check("publication_year", "WARN", "no date to derive a publication year from"))
 
     return checks
 
 
 def check_abstract(output: dict[str, Any]) -> Check:
-    descriptions = output.get("descriptions") or []
-    titles = {t.get("name", "").strip().lower() for t in output.get("titles") or [] if isinstance(t, dict)}
+    """``schema:description`` is single-valued in CDIF (C1) -- no
+    description_type to filter on, unlike DataCite's descriptions[]."""
+    description = str(output.get("schema:description", "") or "").strip()
+    title = str(output.get("schema:name", "") or "").strip().lower()
 
-    abstracts = [
-        d.get("description", "").strip()
-        for d in descriptions
-        if isinstance(d, dict) and str(d.get("description_type", "")).lower() == "abstract"
-    ]
-    abstracts = [a for a in abstracts if a and not _is_placeholder(a)]
-
-    if not abstracts:
-        return Check("abstract", "FAIL", "no Abstract-type description found")
-
-    best = max(abstracts, key=len)
-    if len(best) < MIN_ABSTRACT_LEN:
-        return Check("abstract", "FAIL", f"abstract too short ({len(best)} chars): {best!r}")
-    if best.strip().lower() in titles:
-        return Check("abstract", "WARN", "abstract is a verbatim copy of the title")
-    return Check("abstract", "PASS", f"{len(best)} chars: {best[:80]!r}...")
+    if not description or _is_placeholder(description):
+        return Check("schema:description", "FAIL", "no non-placeholder description found")
+    if len(description) < MIN_ABSTRACT_LEN:
+        return Check("schema:description", "FAIL", f"description too short ({len(description)} chars): {description!r}")
+    if description.lower() == title:
+        return Check("schema:description", "WARN", "description is a verbatim copy of the title")
+    return Check("schema:description", "PASS", f"{len(description)} chars: {description[:80]!r}...")
 
 
 def check_subjects_topics(output: dict[str, Any]) -> list[Check]:
+    """``schema:keywords[]`` (subjects) and ``schema:about[]`` (categories) --
+    both ``DefinedTerm``-shaped, ``schema:name`` per entry (Q2 mapping)."""
     checks: list[Check] = []
 
-    subjects = output.get("subjects") or []
-    subj_names = [
-        s.get("subject_name", "") for s in subjects if isinstance(s, dict) and s.get("subject_name")
+    keywords = output.get("schema:keywords") or []
+    keyword_names = [
+        str(k.get("schema:name", "")) for k in keywords if isinstance(k, dict) and k.get("schema:name")
     ]
-    subj_names = [s for s in subj_names if not _is_placeholder(s)]
-    if subj_names:
-        checks.append(Check("subjects", "PASS", f"{len(subj_names)}: {subj_names[:5]}"))
+    keyword_names = [k for k in keyword_names if not _is_placeholder(k)]
+    if keyword_names:
+        checks.append(Check("schema:keywords", "PASS", f"{len(keyword_names)}: {keyword_names[:5]}"))
     else:
-        checks.append(Check("subjects", "WARN", "no subjects extracted"))
+        checks.append(Check("schema:keywords", "WARN", "no keywords extracted"))
 
-    categories = output.get("categories") or []
-    cat_names = [
-        c.get("name", "") for c in categories if isinstance(c, dict) and c.get("name")
+    about = output.get("schema:about") or []
+    about_names = [
+        str(a.get("schema:name", "")) for a in about if isinstance(a, dict) and a.get("schema:name")
     ]
-    cat_names = [c for c in cat_names if not _is_placeholder(c)]
-    if cat_names:
-        checks.append(Check("topics/categories", "PASS", f"{len(cat_names)}: {cat_names[:5]}"))
+    about_names = [a for a in about_names if not _is_placeholder(a)]
+    if about_names:
+        checks.append(Check("schema:about", "PASS", f"{len(about_names)}: {about_names[:5]}"))
     else:
-        checks.append(Check("topics/categories", "WARN", "no categories extracted"))
+        checks.append(Check("schema:about", "WARN", "no topics/categories extracted"))
 
     return checks
 
@@ -257,7 +260,7 @@ def run_pipeline_on(
         llm_factory = None
         if cache_dir is not None:
             from metadata_enricher.agents.registry import LLMClientFactory  # noqa: F401
-            from metadata_enricher.config.models import ProviderConfig
+            from metadata_enricher.config.models import ProviderConfig, ReasoningEffort
             from metadata_enricher.llm.base import LLMClient
             from metadata_enricher.llm.factory import create_llm_client
 
@@ -267,10 +270,11 @@ def run_pipeline_on(
                 temperature: float = 0.0,
                 max_tokens: int | None = None,
                 extra_body: dict[str, Any] | None = None,
+                reasoning_effort: ReasoningEffort | None = None,
             ) -> LLMClient:
                 return create_llm_client(
                     provider, model=model, temperature=temperature, max_tokens=max_tokens,
-                    extra_body=extra_body, cache_dir=cache_dir,
+                    extra_body=extra_body, reasoning_effort=reasoning_effort, cache_dir=cache_dir,
                 )
 
         pipeline = Pipeline(config=config, llm_factory=llm_factory, max_workers=config.max_workers)

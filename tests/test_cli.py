@@ -22,12 +22,12 @@ runner = CliRunner()
 def _write_temp_config(**overrides: object) -> str:
     """Write a minimal valid YAML config to a temp file and return its path."""
     config_data: dict[str, object] = {
-        "schema_name": "datacite-4.6",
+        "schema_name": "cdif-discovery",
         "agents": [
             {
                 "id": "a1",
                 "name": "Test",
-                "fields": ["titles"],
+                "fields": ["schema_name"],
                 "prompt": "Test prompt",
                 "provider": "p1",
                 "model": "test-model",
@@ -86,10 +86,10 @@ class TestHelpOption:
 class TestListSchemasCommand:
     """list-schemas subcommand."""
 
-    def test_list_schemas_shows_datacite(self) -> None:
+    def test_list_schemas_shows_cdif_discovery(self) -> None:
         result = runner.invoke(app, ["list-schemas"])
         assert result.exit_code == 0
-        assert "datacite-4.6" in result.stdout
+        assert "cdif-discovery" in result.stdout
 
 
 class TestValidateCommand:
@@ -461,6 +461,194 @@ class TestProcessCommand:
             assert result.exit_code == 1
             assert "directory" in result.stderr.lower()
         finally:
+            os.unlink(config_path)
+
+    def test_process_export_invalid_format_errors(self) -> None:
+        """Unknown --export value exits 1 before the pipeline ever runs."""
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        try:
+            result = runner.invoke(
+                app,
+                ["process", input_path, "--config", config_path, "--export", "bogus"],
+            )
+            assert result.exit_code == 1
+            assert "unknown --export format" in result.stderr.lower()
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_export_without_output_errors(self) -> None:
+        """--export needs a real file to place a sibling next to -- reject
+        stdout mode (no --output) before the pipeline runs."""
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        try:
+            result = runner.invoke(
+                app,
+                ["process", input_path, "--config", config_path, "--export", "datacite"],
+            )
+            assert result.exit_code == 1
+            assert "--export requires --output" in result.stderr
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_export_single_format_writes_sibling_file(self, tmp_path) -> None:
+        """--export datacite writes <output>.datacite.json next to the primary
+        CDIF output, without disturbing it."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        output_path = tmp_path / "output.json"
+        try:
+            doc = MetadataDocument()
+            doc.set_field("schema:name", "Test Dataset")
+            success_result = MagicMock()
+            success_result.configure_mock(
+                success=True,
+                warnings=[],
+                document=doc,
+                resource=ResourceDescription(url="test://good"),
+                error=None,
+            )
+
+            with patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls:
+                mock_pipeline_cls.return_value.run.return_value = [success_result]
+
+                result = runner.invoke(
+                    app,
+                    [
+                        "process",
+                        input_path,
+                        "--config",
+                        config_path,
+                        "--output",
+                        str(output_path),
+                        "--export",
+                        "datacite",
+                    ],
+                )
+
+            # A bare-bones document (title only) is missing plenty of fields
+            # both exporters require -- each reports that as a warning
+            # rather than failing, which is correct, not a test bug -- so
+            # exit code is 2 ("incomplete"), not 0.
+            assert result.exit_code == 2, result.stderr
+            assert output_path.is_file()
+            sibling = tmp_path / "output.datacite.json"
+            assert sibling.is_file()
+            import json as jsonlib
+
+            payload = jsonlib.loads(sibling.read_text())
+            assert isinstance(payload, dict)
+            assert "Test Dataset" in jsonlib.dumps(payload)
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_export_both_formats_write_both_siblings(self, tmp_path) -> None:
+        """--export can be repeated to request more than one format at once."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        output_path = tmp_path / "output.json"
+        try:
+            doc = MetadataDocument()
+            doc.set_field("schema:name", "Test Dataset")
+            success_result = MagicMock()
+            success_result.configure_mock(
+                success=True,
+                warnings=[],
+                document=doc,
+                resource=ResourceDescription(url="test://good"),
+                error=None,
+            )
+
+            with patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls:
+                mock_pipeline_cls.return_value.run.return_value = [success_result]
+
+                result = runner.invoke(
+                    app,
+                    [
+                        "process",
+                        input_path,
+                        "--config",
+                        config_path,
+                        "--output",
+                        str(output_path),
+                        "--export",
+                        "datacite",
+                        "--export",
+                        "croissant",
+                    ],
+                )
+
+            # Same "incomplete, not failed" reasoning as the single-format
+            # test above -- exit code 2, not 0.
+            assert result.exit_code == 2, result.stderr
+            assert (tmp_path / "output.datacite.json").is_file()
+            assert (tmp_path / "output.croissant.json").is_file()
+        finally:
+            os.unlink(input_path)
+            os.unlink(config_path)
+
+    def test_process_export_failure_does_not_block_primary_output(self, tmp_path) -> None:
+        """An exporter raising unexpectedly is caught and reported as a warning
+        -- the primary CDIF output must still be written intact."""
+        from unittest.mock import patch, MagicMock
+        from metadata_enricher.types import MetadataDocument, ResourceDescription
+
+        input_path = _write_temp_input()
+        config_path = _write_temp_config()
+        output_path = tmp_path / "output.json"
+        try:
+            doc = MetadataDocument()
+            doc.set_field("schema:name", "Test Dataset")
+            success_result = MagicMock()
+            success_result.configure_mock(
+                success=True,
+                warnings=[],
+                document=doc,
+                resource=ResourceDescription(url="test://good"),
+                error=None,
+            )
+
+            with (
+                patch("metadata_enricher.cli.Pipeline") as mock_pipeline_cls,
+                patch(
+                    "metadata_enricher.cli.to_datacite_json",
+                    side_effect=RuntimeError("boom"),
+                ),
+            ):
+                mock_pipeline_cls.return_value.run.return_value = [success_result]
+
+                result = runner.invoke(
+                    app,
+                    [
+                        "process",
+                        input_path,
+                        "--config",
+                        config_path,
+                        "--output",
+                        str(output_path),
+                        "--export",
+                        "datacite",
+                    ],
+                )
+
+            # A failed export still counts as an "incomplete" resource (exit 2),
+            # but the primary output must exist and the sibling must not.
+            assert result.exit_code == 2, result.stderr
+            assert output_path.is_file()
+            assert not (tmp_path / "output.datacite.json").is_file()
+            assert "datacite export failed: boom" in result.stderr
+        finally:
+            os.unlink(input_path)
             os.unlink(config_path)
 
 

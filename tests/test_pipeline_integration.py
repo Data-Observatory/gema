@@ -11,7 +11,7 @@ import pytest
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.pipeline import Pipeline, _aggregate_token_usage
-from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage
+from metadata_enricher.types import AgentResult, ResourceDescription, TokenUsage, jsonld_list_unwrap
 
 
 class FakeLLMClient:
@@ -53,12 +53,12 @@ class AlwaysFailingLLMClient:
 def make_test_config() -> PipelineConfig:
     """Create minimal PipelineConfig for testing."""
     return PipelineConfig(
-        schema_name="datacite-4.6",
+        schema_name="cdif-discovery",
         agents=[
             AgentConfig(
                 id="titles-agent",
                 name="Titles Agent",
-                fields=["titles"],
+                fields=["schema_name"],
                 prompt="Extract titles from {url} {title} {description}",
                 provider="mock",
                 model="mock-model",
@@ -72,15 +72,82 @@ def make_test_config() -> PipelineConfig:
 
 
 def make_publisher_config() -> PipelineConfig:
-    """Config whose one agent produces the 'publishers' field, for PID-validation tests."""
+    """Config whose one agent produces schema_publisher, for PID-validation tests."""
     return PipelineConfig(
-        schema_name="datacite-4.6",
+        schema_name="cdif-discovery",
         agents=[
             AgentConfig(
-                id="publishers-agent",
-                name="Publishers Agent",
-                fields=["publishers"],
+                id="publisher-agent",
+                name="Publisher Agent",
+                fields=["schema_publisher"],
                 prompt="Extract publisher from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
+def make_creator_copyright_config() -> PipelineConfig:
+    """Config whose one agent produces both schema_creator and
+    schema_copyright_holder, for the B1 actor-fallback's
+    'don't override an already-populated slot' tests."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="creator-agent",
+                name="Creator Agent",
+                fields=["schema_creator", "schema_copyright_holder"],
+                prompt="Extract creator from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
+def make_license_config() -> PipelineConfig:
+    """Config whose one agent produces schema_license, for the B1
+    'Datos Abiertos del Estado de Chile' -> copyrightHolder fallback test."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="license-agent",
+                name="License Agent",
+                fields=["schema_license"],
+                prompt="Extract license from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
+def make_url_config() -> PipelineConfig:
+    """Config whose one agent produces schema_url, for the #20 fallback's
+    'don't clobber an agent-produced value' test."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="url-agent",
+                name="URL Agent",
+                fields=["schema_url"],
+                prompt="Extract url from {url} {title} {description}",
                 provider="mock",
                 model="mock-model",
             ),
@@ -139,7 +206,7 @@ class TestPipelineIntegration:
         assert result.success is True
         assert result.error is None
         assert result.document is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_pipeline_invalid_resource(self, tmp_path, llm_factory):
         """Input with no url/title/description -> validation fails."""
@@ -230,12 +297,12 @@ class TestPipelineIntegration:
         (provider 'mock-ok'), the other always fails (provider 'mock-fail').
         """
         return PipelineConfig(
-            schema_name="datacite-4.6",
+            schema_name="cdif-discovery",
             agents=[
                 AgentConfig(
                     id="titles-agent",
                     name="Titles Agent",
-                    fields=["titles"],
+                    fields=["schema_name"],
                     prompt="Extract titles from {url} {title} {description}",
                     provider="mock-ok",
                     model="mock-model",
@@ -243,7 +310,7 @@ class TestPipelineIntegration:
                 AgentConfig(
                     id="descriptions-agent",
                     name="Descriptions Agent",
-                    fields=["descriptions"],
+                    fields=["schema_description"],
                     prompt="Extract descriptions from {url} {title} {description}",
                     provider="mock-fail",
                     model="mock-model",
@@ -285,7 +352,7 @@ class TestPipelineIntegration:
         assert result.success is False
         assert result.document is None
         assert result.error is not None
-        assert "descriptions" in result.error
+        assert "schema_description" in result.error
         assert "401" in result.error
 
     def test_pipeline_partial_agent_failure_allow_partial_reports_warnings(self, tmp_path):
@@ -312,9 +379,9 @@ class TestPipelineIntegration:
 
         assert result.success is True
         assert result.document is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
         assert len(result.warnings) == 1
-        assert "descriptions" in result.warnings[0]
+        assert "schema_description" in result.warnings[0]
         assert "401" in result.warnings[0]
 
 
@@ -423,13 +490,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/BADID",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}],
+                    }
                 }
             }
         )
@@ -451,13 +516,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/02sevrz47",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}],
+                    }
                 }
             }
         )
@@ -476,13 +539,11 @@ class TestPipelinePidValidation:
         factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
             {
                 "fields": {
-                    "publishers": [
-                        {
-                            "publisher_name": "Test Publisher",
-                            "publisher_identifier": "https://ror.org/BADID",
-                            "publisher_identifier_scheme": "ROR",
-                        }
-                    ]
+                    "schema_publisher": {
+                        "@type": ["schema:Organization"],
+                        "schema:name": "Test Publisher",
+                        "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}],
+                    }
                 }
             }
         )
@@ -510,7 +571,74 @@ class TestPipelinePidValidation:
         result = results[0]
         assert result.success is True
         assert result.error is None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
+
+
+class TestPipelineShaclValidation:
+    """Pipeline: SHACL conformance check is opt-in and non-blocking.
+
+    Unlike PID validation (defaults True, mature/tuned), this defaults
+    False -- see PipelineConfig.validate_shacl_conformance's own
+    docstring. make_test_config()'s single agent only ever produces
+    schema:name, so the merged document is always missing several of the
+    vendored shapes' required properties (schema:license/conditionsOfAccess,
+    schema:url/distribution both absent since only schema_name is
+    populated) -- real, expected SHACL violations once the check is
+    switched on.
+    """
+
+    def test_disabled_by_default_no_shacl_warnings(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False  # isolate: only interested in SHACL here
+        results = Pipeline(config=config, llm_factory=llm_factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        assert results[0].success is True
+        assert results[0].warnings == []
+
+    def test_enabled_surfaces_real_shacl_violations_as_warnings(self, tmp_path, llm_factory):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False  # isolate: only interested in SHACL here
+        config.validate_shacl_conformance = True
+        results = Pipeline(config=config, llm_factory=llm_factory).run(
+            FilesystemInputSource(), pattern=str(tmp_path / "*.json")
+        )
+        result = results[0]
+        assert result.success is True  # non-blocking -- still succeeds
+        assert len(result.warnings) > 0
+        assert any("shape=" in w for w in result.warnings)
+
+    def test_shacl_check_exception_is_caught_not_propagated(self, tmp_path, llm_factory, monkeypatch):
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.validate_pids = False
+        config.validate_shacl_conformance = True
+
+        def _boom(self, doc):  # noqa: ARG001
+            raise RuntimeError("shacl blew up")
+
+        monkeypatch.setattr(
+            "metadata_enricher.schemas.cdif.discovery.cdif_discovery.CDIFDiscoveryProfile."
+            "check_shacl_conformance",
+            _boom,
+        )
+        pipeline = Pipeline(config=config, llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.error is None
 
 
 class FakeEnricher:
@@ -572,7 +700,7 @@ class TestPipelineIdentifierEnrichmentWiring:
         assert fake.called_with is not None
         # The fake raises before mutating — document must be the merger's
         # unmodified output, not None and not crashed.
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_country_is_detected_from_resource_url_and_forwarded(self, tmp_path, llm_factory):
         """pipeline.py must compute the country hint itself (the merged
@@ -682,7 +810,7 @@ class TestPipelineDOIResolutionWiring:
         assert result.success is True
         assert result.error is None
         assert fake.called_with is not None
-        assert result.document.get_field("titles") is not None
+        assert result.document.get_field("schema:name") is not None
 
     def test_runs_before_identifier_enrichment(self, tmp_path, llm_factory):
         """DOI resolution must run BEFORE identifier enrichment — a
@@ -907,7 +1035,7 @@ class TestPipelineResultTokenUsage:
             {"url": "https://example.com/x", "title": "T", "description": "D"},
         )
         factory = lambda provider, **kw: FakeLLMClientWithUsage(  # noqa: E731
-            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+            {"fields": {"schema_name": "T"}}
         )
         pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
         results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
@@ -947,7 +1075,7 @@ class TestPipelineResultModelsUsed:
             {"url": "https://example.com/x", "title": "T", "description": "D"},
         )
         factory = lambda provider, **kw: FakeLLMClientWithModel(  # noqa: E731
-            {"fields": {"titles": [{"name": "T", "title_type": "MainTitle"}]}}
+            {"fields": {"schema_name": "T"}}
         )
         pipeline = Pipeline(config=make_test_config(), llm_factory=factory)
         results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
@@ -967,3 +1095,275 @@ class TestPipelineResultModelsUsed:
 
         assert len(results) == 1
         assert results[0].models_used == {}
+
+
+class TestPipelineSchemaUrlFallback:
+    """Open Question #20, resolved: schema:url falls back to the input
+    resource's own URL when no agent produced one -- see pipeline.py's
+    _process_resource, right after merger.merge(). This is the *input*
+    URL the pipeline was given, not a separately-verified "documented
+    landing page" -- a deliberate, reasonable default, not a stretch of
+    the field's meaning."""
+
+    def test_fallback_fires_when_schema_url_absent_and_resource_url_present(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        # make_test_config's single agent only ever produces schema_name --
+        # schema:url is never populated by any agent here.
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert result.document.get_field("schema:url") == "https://example.com/x"
+
+    def test_fallback_does_not_override_an_agent_produced_value(self, tmp_path) -> None:
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D"},
+        )
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_url": "https://example.org/documented-landing-page"}}
+        )
+        pipeline = Pipeline(config=make_url_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        # The agent's own value survives untouched -- never silently
+        # clobbered by the input URL, even though no agent currently
+        # produces schema:url in the real shipped config.
+        assert result.document.get_field("schema:url") == "https://example.org/documented-landing-page"
+
+    def test_fallback_does_nothing_when_resource_url_also_empty(self, tmp_path, llm_factory) -> None:
+        make_input_file(
+            tmp_path,
+            {"title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert not result.document.get_field("schema:url")
+
+    def test_fallback_does_nothing_when_resource_url_is_a_bare_doi(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Regression: some input sources put a bare DOI in the `url`
+        field (e.g. "10.5880/gfz.4.1.2020.012", not a real http(s) URL) --
+        writing that verbatim into schema:url used to pre-empt both
+        exporters/datacite.py's and exporters/croissant.py's own, smarter
+        DOI-to-URL resolution logic. Found on review against a real
+        recorded fixture (sample_input06.json)."""
+        make_input_file(
+            tmp_path,
+            {"url": "10.5880/gfz.4.1.2020.012", "title": "T", "description": "D"},
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        assert not result.document.get_field("schema:url")
+
+
+class TestPipelineActorFallbacks:
+    """Phase B1 (live-eval quality gap, docs/cdif_pivot_implementation_plan.md's
+    "Post-PR#45 investigation" section): schema:publisher/schema:creator/
+    schema:copyrightHolder came back empty on a real live run despite
+    resource.publisher carrying a hand-verified name -- a deterministic
+    fallback cascade in pipeline.py, same class of fix as
+    TestPipelineSchemaUrlFallback above. Fires only on genuinely empty
+    slots, never overrides a real agent-produced value."""
+
+    def test_publisher_fallback_fires_and_cascades_to_creator_and_copyright_holder(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """make_test_config's one agent only ever produces schema_name --
+        publisher/creator/copyrightHolder are never populated by any agent
+        here, so the full cascade should fire from resource.publisher alone.
+        Also exercises the suffix-stripping normalization (Open Question O-4)."""
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Ministerio de Hacienda - Gobierno de Chile",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        assert len(results) == 1
+        result = results[0]
+        assert result.success is True
+        assert result.document is not None
+        expected_publisher = {"@type": ["schema:Organization"], "schema:name": "Ministerio de Hacienda"}
+        assert result.document.get_field("schema:publisher") == expected_publisher
+        assert result.document.get_field("schema:creator") == {"@list": [expected_publisher]}
+        assert result.document.get_field("schema:copyrightHolder") == "Ministerio de Hacienda"
+
+    def test_publisher_fallback_creator_does_not_alias_publisher(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """Regression: schema:creator's fallback dict must be a deep copy of
+        schema:publisher, not a shallow dict(publisher) -- a shallow copy
+        aliases every nested value (e.g. "@type") between the two fields,
+        so mutating one in place would silently corrupt the other."""
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Ministerio de Hacienda - Gobierno de Chile",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        publisher = result.document.get_field("schema:publisher")
+        creator = jsonld_list_unwrap(result.document.get_field("schema:creator"))[0]
+        assert creator is not publisher
+        assert creator["@type"] is not publisher["@type"]
+
+        creator["@type"].append("schema:Corporation")
+        assert publisher["@type"] == ["schema:Organization"]
+
+    def test_publisher_fallback_strips_trailing_country_parenthetical(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Instituto Nacional de Estadísticas (Chile)",
+            },
+        )
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Instituto Nacional de Estadísticas",
+        }
+
+    def test_publisher_fallback_does_not_override_an_agent_produced_publisher(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_publisher": {"@type": ["schema:Organization"], "schema:name": "Real Publisher"}}}
+        )
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Fallback Publisher (Chile)",
+            },
+        )
+        pipeline = Pipeline(config=make_publisher_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        # Agent's own publisher survives untouched -- the fallback text
+        # ("Fallback Publisher") never appears anywhere.
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Real Publisher",
+        }
+        # Creator/copyrightHolder were still empty, so they cascade from the
+        # real (agent-produced) publisher, not the unused fallback text.
+        assert result.document.get_field("schema:creator") == {
+            "@list": [{"@type": ["schema:Organization"], "schema:name": "Real Publisher"}]
+        }
+        assert result.document.get_field("schema:copyrightHolder") == "Real Publisher"
+
+    def test_creator_and_copyright_holder_not_overridden_when_agent_produced(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {
+                "fields": {
+                    "schema_creator": [{"@type": ["schema:Person"], "schema:name": "Jane Doe"}],
+                    "schema_copyright_holder": "Jane Doe",
+                }
+            }
+        )
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Some Publisher",
+            },
+        )
+        pipeline = Pipeline(config=make_creator_copyright_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        # publisher fallback still fires (this config's agent never produces
+        # schema_publisher), but creator/copyrightHolder are untouched since
+        # they already had real agent values.
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Some Publisher",
+        }
+        assert result.document.get_field("schema:creator") == {
+            "@list": [{"@type": ["schema:Person"], "schema:name": "Jane Doe"}]
+        }
+        assert result.document.get_field("schema:copyrightHolder") == "Jane Doe"
+
+    def test_datos_abiertos_license_sets_estado_de_chile_copyright_holder(
+        self, tmp_path
+    ) -> None:
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_license": [{"schema:name": "Datos Abiertos del Estado de Chile"}]}}
+        )
+        make_input_file(tmp_path, {"url": "https://example.com/x", "title": "T", "description": "D"})
+        pipeline = Pipeline(config=make_license_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
+
+    def test_no_fallback_when_no_resource_publisher_and_no_matching_license(
+        self, tmp_path, llm_factory
+    ) -> None:
+        make_input_file(tmp_path, {"url": "https://example.com/x", "title": "T", "description": "D"})
+        pipeline = Pipeline(config=make_test_config(), llm_factory=llm_factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert not result.document.get_field("schema:publisher")
+        # No agent produced schema:creator and no fallback fired -- the key
+        # never gets set at all (merge_agent_results' own {"@list": [...]}
+        # wrap only fires when get_field returns an actual list).
+        assert result.document.get_field("schema:creator") is None
+        assert not result.document.get_field("schema:copyrightHolder")

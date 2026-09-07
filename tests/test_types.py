@@ -8,6 +8,7 @@ from metadata_enricher.types import (
     MetadataDocument,
     ResourceDescription,
     TokenUsage,
+    entity_identifiers,
 )
 
 
@@ -190,3 +191,63 @@ class TestMetadataDocument:
         doc = MetadataDocument(fields={"a": 1}, custom="value")
         assert doc.custom == "value"  # type: ignore[attr-defined]
         assert doc.fields == {"a": 1}
+
+
+class TestEntityIdentifiers:
+    """entity_identifiers: nested Person/Organization/MonetaryGrant reader."""
+
+    def test_non_dict_returns_empty(self):
+        assert entity_identifiers("not a dict") == []
+
+    def test_no_identifier_or_same_as_returns_empty(self):
+        assert entity_identifiers({"schema:name": "X"}) == []
+
+    def test_singular_primary_only(self):
+        entry = {"schema:identifier": {"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"}}
+        assert entity_identifiers(entry) == [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"}]
+
+    def test_bare_list_primary_tolerated(self):
+        """Pre-#16 shape, or a hand-built/synthetic fixture."""
+        entry = {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"}]}
+        assert entity_identifiers(entry) == [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"}]
+
+    def test_same_as_reconstructed_from_bare_id_isni(self):
+        """Open Question #22: overflow entries are bare {"@id": url}
+        references -- reconstructed back into the PropertyValue shape
+        callers (name_identifiers, funder_identifiers, ...) want."""
+        entry = {
+            "schema:identifier": {"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"},
+            "schema:sameAs": [{"@id": "https://isni.org/isni/0000000122544402"}],
+        }
+        assert entity_identifiers(entry) == [
+            {"schema:propertyID": "ROR", "schema:value": "https://ror.org/x"},
+            {"schema:propertyID": "ISNI", "schema:value": "0000000122544402", "schema:url": "https://isni.org/isni/0000000122544402"},
+        ]
+
+    def test_same_as_reconstructed_from_bare_id_ror(self):
+        entry = {"schema:sameAs": [{"@id": "https://ror.org/027nn6b17"}]}
+        assert entity_identifiers(entry) == [
+            {"schema:propertyID": "ROR", "schema:value": "https://ror.org/027nn6b17", "schema:url": "https://ror.org/027nn6b17"}
+        ]
+
+    def test_same_as_reconstructed_from_bare_string(self):
+        entry = {"schema:sameAs": ["https://isni.org/isni/0000000122544402"]}
+        assert entity_identifiers(entry) == [
+            {"schema:propertyID": "ISNI", "schema:value": "0000000122544402", "schema:url": "https://isni.org/isni/0000000122544402"}
+        ]
+
+    def test_same_as_unknown_host_degrades_to_url_only(self):
+        entry = {"schema:sameAs": [{"@id": "https://example.org/x"}]}
+        assert entity_identifiers(entry) == [{"schema:url": "https://example.org/x"}]
+
+    def test_same_as_pre_22_property_value_shape_passed_through(self):
+        """Legacy/hand-built fixtures already in the shape callers want are
+        not re-processed."""
+        entry = {
+            "schema:sameAs": [
+                {"schema:propertyID": "ISNI", "schema:value": "0000000122544402", "schema:url": "https://isni.org/isni/0000000122544402"}
+            ]
+        }
+        assert entity_identifiers(entry) == [
+            {"schema:propertyID": "ISNI", "schema:value": "0000000122544402", "schema:url": "https://isni.org/isni/0000000122544402"}
+        ]

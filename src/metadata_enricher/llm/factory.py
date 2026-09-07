@@ -15,9 +15,10 @@ if TYPE_CHECKING:
     from datetime import timedelta
 
 from metadata_enricher.cache import CachedLLMClient, CacheManager
-from metadata_enricher.config.models import ProviderConfig
+from metadata_enricher.config.models import ProviderConfig, ReasoningEffort
 from metadata_enricher.llm.base import LLMClient, LLMConfig
 from metadata_enricher.llm.instructor_client import InstructorLLMClient
+from metadata_enricher.llm.responses_client import ResponsesLLMClient
 from metadata_enricher.llm.retry import RetryableLLMClient
 
 logger = logging.getLogger(__name__)
@@ -57,10 +58,12 @@ def create_llm_client(
     cache_ttl: timedelta | None = None,
     extra_body: dict[str, Any] | None = None,
     api_key: str | None = None,
+    reasoning_effort: ReasoningEffort | None = None,
 ) -> LLMClient:
     """Create a fully configured LLM client from a provider config.
 
-    Wraps InstructorLLMClient with retry middleware and disk cache.
+    Wraps InstructorLLMClient (or ResponsesLLMClient, for a provider/model
+    resolved to api_style="responses") with retry middleware and disk cache.
     Client instances are cached by a composite key of provider + model +
     temperature + seed + max_tokens + use_cache + use_retry + extra_body —
     calling with identical parameters returns the same client instance.
@@ -86,6 +89,11 @@ def create_llm_client(
             unusable when two hosted sessions hold different keys for the
             same provider). Omitted (the default) preserves the original
             env-var-only behavior byte-for-byte, cache key included.
+        reasoning_effort: Explicit override, taking precedence over
+            provider.effective_reasoning_effort(model) when given — same
+            override-if-given-else-resolve pattern as *seed* above. Only
+            meaningful when the resolved api_style is "responses"; ignored
+            otherwise.
 
     Returns:
         Configured LLMClient (wrapped with cache + retry).
@@ -94,11 +102,21 @@ def create_llm_client(
         ValueError: If api_key is omitted and the provider's API key
             environment variable is not set.
     """
+    api_style = provider.effective_api_style(model)
+    resolved_effort = (
+        reasoning_effort if reasoning_effort is not None else provider.effective_reasoning_effort(model)
+    )
+
     extra_body_key = json.dumps(extra_body, sort_keys=True) if extra_body else None
     cache_key = (
         f"{provider.name}|{model}|t={temperature}|seed={seed}|mt={max_tokens}"
         f"|c={use_cache}|r={use_retry}|eb={extra_body_key}"
     )
+    # Only appended for a non-default api_style -- keeps every existing
+    # provider/model's cache key byte-identical to before this field existed
+    # (see cache.py's CacheManager._make_key for the same convention).
+    if api_style != "chat_completions":
+        cache_key += f"|as={api_style}|re={resolved_effort}"
     if api_key is not None:
         # Only appended for the explicit-key path -- keeps the env-var
         # path's cache key byte-identical to before. Without this,
@@ -124,9 +142,16 @@ def create_llm_client(
         seed=resolved_seed,
         max_tokens=max_tokens,
         extra_body=extra_body,
+        session_header=provider.session_header,
+        api_style=api_style,
+        reasoning_effort=resolved_effort,
     )
 
-    client: LLMClient = InstructorLLMClient(config=config, max_retries=max_retries)
+    client: LLMClient
+    if api_style == "responses":
+        client = ResponsesLLMClient(config=config, max_retries=max_retries)
+    else:
+        client = InstructorLLMClient(config=config, max_retries=max_retries)
 
     if use_retry:
         client = RetryableLLMClient(client)

@@ -52,88 +52,115 @@ class TestValidatePidFormat:
 
 
 class TestExtractPids:
-    def test_finds_ror_in_creator_name_identifiers(self) -> None:
+    def test_finds_ror_in_creator_identifier(self) -> None:
         output = {
-            "creators": [
-                {"name_identifiers": [{"name_identifier": "https://ror.org/02sevrz47", "name_identifier_scheme": "ROR"}]}
+            "schema:creator": [
+                {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}]}
             ]
         }
         triples = extract_pids(output)
-        assert ("ROR", "https://ror.org/02sevrz47", "root.creators[0].name_identifiers[0]") in triples
+        assert (
+            "ROR",
+            "https://ror.org/02sevrz47",
+            "root.schema:creator[0].schema:identifier[0]",
+        ) in triples
 
-    def test_finds_orcid_in_creator_name_identifiers(self) -> None:
+    def test_finds_orcid_in_creator_identifier(self) -> None:
         output = {
-            "creators": [
-                {
-                    "name_identifiers": [
-                        {
-                            "name_identifier": "https://orcid.org/0000-0002-1825-0097",
-                            "name_identifier_scheme": "ORCID",
-                        }
-                    ]
-                }
+            "schema:creator": [
+                {"schema:identifier": [{"schema:propertyID": "ORCID", "schema:value": "0000-0002-1825-0097"}]}
             ]
         }
         triples = extract_pids(output)
         assert (
             "ORCID",
-            "https://orcid.org/0000-0002-1825-0097",
-            "root.creators[0].name_identifiers[0]",
+            "0000-0002-1825-0097",
+            "root.schema:creator[0].schema:identifier[0]",
         ) in triples
 
     def test_finds_isni_in_affiliation(self) -> None:
         output = {
-            "creators": [{"affiliations": [{"affiliation_identifier": "000000040628717X", "affiliation_identifier_scheme": "ISNI"}]}]
+            "schema:creator": [
+                {
+                    "schema:affiliation": [
+                        {"schema:identifier": [{"schema:propertyID": "ISNI", "schema:value": "000000040628717X"}]}
+                    ]
+                }
+            ]
         }
         triples = extract_pids(output)
-        assert triples == [("ISNI", "000000040628717X", "root.creators[0].affiliations[0]")]
+        assert triples == [
+            (
+                "ISNI",
+                "000000040628717X",
+                "root.schema:creator[0].schema:affiliation[0].schema:identifier[0]",
+            )
+        ]
 
     def test_finds_ror_in_publisher(self) -> None:
-        output = {"publishers": [{"publisher_identifier": "https://ror.org/02sevrz47", "publisher_identifier_scheme": "ROR"}]}
-        assert extract_pids(output) == [("ROR", "https://ror.org/02sevrz47", "root.publishers[0]")]
+        output = {
+            "schema:publisher": {
+                "schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}]
+            }
+        }
+        assert extract_pids(output) == [
+            ("ROR", "https://ror.org/02sevrz47", "root.schema:publisher.schema:identifier[0]")
+        ]
 
     def test_finds_ror_in_funder_identifiers(self) -> None:
         output = {
-            "funding_references": [
-                {"funder_identifiers": [{"funder_identifier": "https://ror.org/02sevrz47", "funder_identifier_type": "ROR"}]}
+            "schema:funding": [
+                {
+                    "schema:funder": {
+                        "schema:identifier": [
+                            {"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}
+                        ]
+                    }
+                }
             ]
         }
         triples = extract_pids(output)
-        assert ("ROR", "https://ror.org/02sevrz47", "root.funding_references[0].funder_identifiers[0]") in triples
+        assert (
+            "ROR",
+            "https://ror.org/02sevrz47",
+            "root.schema:funding[0].schema:funder.schema:identifier[0]",
+        ) in triples
 
-    def test_finds_doi_in_resource_identifier(self) -> None:
-        output = {"resource": {"identifier": "10.5281/zenodo.1234567", "identifier_type": "DOI"}}
-        assert extract_pids(output) == [("DOI", "10.5281/zenodo.1234567", "resource.identifier")]
-
-    def test_ignores_non_doi_resource_identifier(self) -> None:
-        output = {"resource": {"identifier": "https://example.com/x", "identifier_type": "URL"}}
-        assert extract_pids(output) == []
-
-    def test_finds_doi_in_related_identifiers(self) -> None:
-        output = {
-            "related_identifiers": [
-                {"related_identifier": "10.5281/zenodo.1234567", "related_identifier_type": "DOI"}
-            ]
-        }
+    def test_finds_doi_in_top_level_identifier(self) -> None:
+        output = {"schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.5281/zenodo.1234567"}]}
         assert extract_pids(output) == [
-            ("DOI", "10.5281/zenodo.1234567", "related_identifiers[0].related_identifier")
+            ("DOI", "10.5281/zenodo.1234567", "root.schema:identifier[0]")
         ]
 
-    def test_finds_doi_in_alternate_identifiers(self) -> None:
+    def test_non_pid_scheme_extracted_but_filtered_downstream(self) -> None:
+        """extract_pids returns every propertyID/value pair regardless of
+        scheme (same generic walk as ROR/ORCID/etc.) -- unknown schemes
+        like a bare "URL" tag are filtered later by validate_pids's
+        _KNOWN_SCHEMES check, not here (see TestValidatePids.test_unknown_scheme_ignored)."""
+        output = {"schema:identifier": [{"schema:propertyID": "URL", "schema:value": "https://example.com/x"}]}
+        assert extract_pids(output) == [("URL", "https://example.com/x", "root.schema:identifier[0]")]
+
+    def test_finds_doi_in_same_as(self) -> None:
+        output = {"schema:sameAs": [{"schema:value": "https://doi.org/10.5281/zenodo.1234567"}]}
+        assert extract_pids(output) == [
+            ("DOI", "https://doi.org/10.5281/zenodo.1234567", "schema:sameAs[0]")
+        ]
+
+    def test_finds_doi_in_related_link(self) -> None:
         output = {
-            "alternate_identifiers": [
-                {"alternate_identifier": "10.5281/zenodo.1234567", "alternate_identifier_type": "DOI"}
+            "schema:relatedLink": [
+                {"schema:target": {"schema:url": "https://doi.org/10.5281/zenodo.1234567"}, "schema:url": "https://doi.org/10.5281/zenodo.1234567"}
             ]
         }
         assert extract_pids(output) == [
-            ("DOI", "10.5281/zenodo.1234567", "alternate_identifiers[0].alternate_identifier")
+            ("DOI", "https://doi.org/10.5281/zenodo.1234567", "schema:relatedLink[0]")
         ]
 
     def test_empty_output_returns_empty(self) -> None:
         assert extract_pids({}) == []
 
     def test_blank_identifier_ignored(self) -> None:
-        output = {"publishers": [{"publisher_identifier": "", "publisher_identifier_scheme": "ROR"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": ""}]}}
         assert extract_pids(output) == []
 
 
@@ -198,7 +225,7 @@ class TestValidatePids:
         assert validate_pids({}, resolve=False) == []
 
     def test_format_only_no_network(self) -> None:
-        output = {"publishers": [{"publisher_identifier": "https://ror.org/BADID", "publisher_identifier_scheme": "ROR"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}]}}
         checks = validate_pids(output, resolve=False)
         assert len(checks) == 1
         assert checks[0].format_ok is False
@@ -207,14 +234,14 @@ class TestValidatePids:
 
     def test_malformed_pid_skips_live_resolve(self) -> None:
         client = MagicMock(spec=httpx.Client)
-        output = {"publishers": [{"publisher_identifier": "https://ror.org/BADID", "publisher_identifier_scheme": "ROR"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/BADID"}]}}
         validate_pids(output, resolve=True, client=client)
         assert not client.get.called
 
     def test_well_formed_pid_triggers_live_resolve(self) -> None:
         client = MagicMock(spec=httpx.Client)
         client.get.return_value = MagicMock(status_code=200)
-        output = {"publishers": [{"publisher_identifier": "https://ror.org/02sevrz47", "publisher_identifier_scheme": "ROR"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}]}}
         checks = validate_pids(output, resolve=True, client=client)
         assert checks[0].resolved is True
         assert checks[0].problem is None
@@ -222,28 +249,21 @@ class TestValidatePids:
     def test_resolve_false_that_produces_a_problem(self) -> None:
         client = MagicMock(spec=httpx.Client)
         client.get.return_value = MagicMock(status_code=404)
-        output = {"publishers": [{"publisher_identifier": "https://ror.org/02sevrz47", "publisher_identifier_scheme": "ROR"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "ROR", "schema:value": "https://ror.org/02sevrz47"}]}}
         checks = validate_pids(output, resolve=True, client=client)
         assert checks[0].resolved is False
         assert checks[0].problem is not None
 
     def test_unknown_scheme_ignored(self) -> None:
-        output = {"publishers": [{"publisher_identifier": "12345", "publisher_identifier_scheme": "GRID"}]}
+        output = {"schema:publisher": {"schema:identifier": [{"schema:propertyID": "GRID", "schema:value": "12345"}]}}
         assert validate_pids(output, resolve=False) == []
 
     def test_orcid_checked_end_to_end_no_credentials_needed(self) -> None:
         client = MagicMock(spec=httpx.Client)
         client.get.return_value = MagicMock(status_code=200)
         output = {
-            "creators": [
-                {
-                    "name_identifiers": [
-                        {
-                            "name_identifier": "https://orcid.org/0000-0002-1825-0097",
-                            "name_identifier_scheme": "ORCID",
-                        }
-                    ]
-                }
+            "schema:creator": [
+                {"schema:identifier": [{"schema:propertyID": "ORCID", "schema:value": "0000-0002-1825-0097"}]}
             ]
         }
         checks = validate_pids(output, resolve=True, client=client)

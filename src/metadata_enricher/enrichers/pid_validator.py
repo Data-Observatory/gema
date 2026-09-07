@@ -150,39 +150,22 @@ def _walk_scheme_pairs(
 def extract_pids(output: dict[str, Any]) -> list[tuple[str, str, str]]:
     """Return (scheme, value, location) triples for every identifier found in *output*.
 
-    Covers the field-name variants used across the DataCite schema:
-    name_identifier(_scheme), affiliation_identifier(_scheme),
-    publisher_identifier(_scheme), funder_identifier(_type), plus DOIs
-    surfaced via resource.identifier / related_identifiers / alternate_identifiers.
+    Covers the CDIF shape (see enrichers/identifier_enricher.py's module
+    docstring for the full convention): every ``schema:identifier`` list
+    anywhere in the document, keyed by ``schema:propertyID``/``schema:value``
+    pairs, plus DOIs surfaced via ``schema:sameAs``/``schema:relatedLink``
+    entries.
     """
     triples: list[tuple[str, str, str]] = []
-    triples += _walk_scheme_pairs(output, "name_identifier", "name_identifier_scheme", "root")
-    triples += _walk_scheme_pairs(
-        output, "affiliation_identifier", "affiliation_identifier_scheme", "root"
-    )
-    triples += _walk_scheme_pairs(
-        output, "publisher_identifier", "publisher_identifier_scheme", "root"
-    )
-    triples += _walk_scheme_pairs(output, "funder_identifier", "funder_identifier_type", "root")
+    triples += _walk_scheme_pairs(output, "schema:value", "schema:propertyID", "root")
 
-    resource = output.get("resource")
-    if isinstance(resource, dict):
-        ident = resource.get("identifier")
-        ident_type = resource.get("identifier_type", "")
-        if isinstance(ident, str) and ident and "doi" in str(ident_type).lower():
-            triples.append(("DOI", ident, "resource.identifier"))
-
-    for group, id_key, type_key in (
-        ("related_identifiers", "related_identifier", "related_identifier_type"),
-        ("alternate_identifiers", "alternate_identifier", "alternate_identifier_type"),
-    ):
+    for group in ("schema:sameAs", "schema:relatedLink"):
         for i, item in enumerate(output.get(group, []) or []):
             if not isinstance(item, dict):
                 continue
-            if "doi" in str(item.get(type_key, "")).lower():
-                value = item.get(id_key)
-                if isinstance(value, str) and value:
-                    triples.append(("DOI", value, f"{group}[{i}].{id_key}"))
+            candidate = item.get("schema:value") or item.get("schema:url") or item.get("@id") or ""
+            if isinstance(candidate, str) and "doi.org" in candidate.lower():
+                triples.append(("DOI", candidate, f"{group}[{i}]"))
 
     return triples
 

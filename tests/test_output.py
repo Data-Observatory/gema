@@ -110,7 +110,7 @@ class TestWrite:
         """Directory output_path creates a .json file inside with auto-generated name."""
         doc = MetadataDocument(
             fields={
-                "doi": "10.1234/example-doi",
+                "schema:identifier": [{"schema:propertyID": "DOI", "schema:value": "10.1234/example-doi"}],
                 "titles": [{"title": "Directory Test"}],
             }
         )
@@ -123,7 +123,7 @@ class TestWrite:
         content = target.read_text(encoding="utf-8")
         assert content == result
         data = json.loads(content)
-        assert data["doi"] == "10.1234/example-doi"
+        assert data["schema:identifier"][0]["schema:value"] == "10.1234/example-doi"
         assert data["titles"] == [{"title": "Directory Test"}]
 
     def test_write_creates_parent_dirs(self, writer: OutputWriter, tmp_path: Path):
@@ -137,12 +137,8 @@ class TestWrite:
         assert data["titles"] == [{"title": "Nested"}]
 
     def test_write_to_directory_uses_title_when_no_doi(self, writer: OutputWriter, tmp_path: Path):
-        """Without DOI, filename is derived from the title field."""
-        doc = MetadataDocument(
-            fields={
-                "titles": [{"title": "My Research Paper: 2024"}],
-            }
-        )
+        """Without a DOI, filename is derived from schema:name."""
+        doc = MetadataDocument(fields={"schema:name": "My Research Paper: 2024"})
         writer.write(doc, output_path=tmp_path)
         expected_part = "MyResearchPaper2024"
         files = list(tmp_path.iterdir())

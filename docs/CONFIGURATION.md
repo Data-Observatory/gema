@@ -21,16 +21,25 @@ auto-discovery), `--verbose/-v` (DEBUG logging), `--quiet/-q` (WARNING-only),
 | `list-schemas` | — | Lists registered schemas |
 | `list-providers` | `--config/-c` | Lists providers from a config |
 | `validate <file>` | `--schema/-s` | Pre-flight only, no LLM call, no API key needed |
-| `process <input_path>` | `--output/-o`, `--schema/-s`, `--config/-c`, `--allow-partial`, `--max-workers N` | The real run — costs API tokens |
+| `process <input_path>` | `--output/-o`, `--schema/-s`, `--config/-c`, `--allow-partial`, `--max-workers N`, `--export FORMAT` | The real run — costs API tokens |
 
 `process` is the one command that calls the LLM for real. `--allow-partial` writes
 best-effort output even when some agents failed on a resource, instead of treating
 any partial failure as a hard failure. `--max-workers` overrides the config's
 `max_workers` for this run — lower it first if a provider is rate-limiting (429s).
 
+`--export FORMAT` (repeatable; choices `datacite`, `croissant`) writes an
+additional export alongside the primary CDIF output — a pure, no-LLM-call
+crosswalk (`metadata_enricher.exporters`) — as a sibling file next to the
+primary one (`<output>.datacite.json`, `<output>.croissant.json`). Requires
+`--output` (there's no file to place a sibling next to when writing to
+stdout). A single export failing never blocks or corrupts the primary
+output — it's reported as a warning instead. Not yet wired into Visor's UI.
+
 ```bash
 uv run gema process examples/sample_input01.json -o output.json
 uv run gema process tests/fixtures/geoportal/inputs -o reports/manual/ --max-workers 1
+uv run gema process examples/sample_input01.json -o output.json --export datacite --export croissant
 ```
 
 Exit codes for `process`: `0` all resources fully succeeded · `1` every resource
@@ -57,7 +66,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `schema_name` | `str` | yes | Schema to use (e.g. `datacite-4.6`) |
+| `schema_name` | `str` | yes | Schema to use — `cdif-discovery` (sole registered generation target; `datacite-4.6` is deregistered, exporter-only) |
 | `agents` | `list[AgentConfig]` | yes | Ordered list of agent definitions (at least 1) |
 | `providers` | `list[ProviderConfig]` | yes | LLM provider connection settings (at least 1) |
 | `default_provider` | `str` | no | Provider name used when an agent omits the `provider` field |
@@ -67,6 +76,7 @@ default settings. It validates against the `PipelineConfig` Pydantic model.
 | `identifier_overrides_path` | `str` | no | `null` | Path to a human-curated overrides file (see `scripts/curate_ror_isni.py`'s promote mode), checked before any ROR/ISNI network call. Resolved relative to the current working directory, same as `--output`. Only takes effect when `enable_identifier_enrichment` is also `true` |
 | `validate_pids` | `bool` | no | `true` | Check every DOI/ROR/ISNI found in the output for correct format on **every run** — no flag needed. Problems become `PipelineResult.warnings`, never a hard failure |
 | `validate_pids_live` | `bool` | no | `true` | On top of the format check, actually look each PID up against doi.org/ror.org/isni.org to confirm it resolves. Set `false` to keep the format check but skip the live network calls |
+| `validate_shacl_conformance` | `bool` | no | `false` | Run the vendored CDIF Discovery SHACL shapes against the generated document, non-blocking (violations become warnings, never a hard failure). Defaults off: every currently-recorded golden fixture fails this check today, mostly for reasons the pipeline doesn't yet address (see `docs/cdif_pivot_implementation_plan.md`'s "Step 6") — enabling it would surface warnings on essentially every real run |
 
 ### AgentConfig Fields
 
@@ -97,6 +107,7 @@ Each entry in the `providers` list supports:
 | `base_url` | `str` | no | `null` | API base URL (e.g. `https://opencode.ai/zen/go/v1`) |
 | `api_key_env` | `str` | yes | — | Environment variable name holding the API key |
 | `default` | `bool` | no | `false` | Whether this is the default provider |
+| `session_header` | `str` | no | `null` | Header name stamped with a fresh random ID once per LLM call (e.g. OpenCode's required `x-opencode-session`) |
 
 ## Provider Config (`providers.yaml`)
 
@@ -154,7 +165,7 @@ pipeline config.
 ## Full Example
 
 ```yaml
-schema_name: datacite-4.6
+schema_name: cdif-discovery
 default_provider: opencode
 providers:
   - name: opencode

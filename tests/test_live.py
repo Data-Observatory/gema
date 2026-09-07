@@ -44,14 +44,13 @@ class TestLiveSingleAgent:
         assert result.success, f"Pipeline failed: {result.error}"
         assert result.document is not None
 
-        resource = result.document.get_field("resource")
-        assert resource is not None, "resource field missing"
-        assert isinstance(resource, dict)
-        assert len(resource) > 0, "resource dict is empty"
+        name = result.document.get_field("schema:name")
+        assert name, "schema:name field missing or empty"
+        assert isinstance(name, str)
 
 
 class TestLivePipelineStructural:
-    """Verify pipeline output has expected DataCite structure."""
+    """Verify pipeline output has the expected CDIF Discovery structure."""
 
     def test_output_has_multiple_field_groups(self) -> None:
         source = FilesystemInputSource()
@@ -62,12 +61,12 @@ class TestLivePipelineStructural:
         assert results[0].success
         assert results[0].document is not None
 
-        schema = get_registry().get("datacite-4.6")
+        schema = get_registry().get("cdif-discovery")
         writer = OutputWriter(schema)
         json_str = writer.format_json(results[0].document)
         output: dict = json.loads(json_str)
 
-        expected_groups = {"resource", "titles", "creators", "dates", "descriptions"}
+        expected_groups = {"@id", "@type", "schema:name", "schema:description", "schema:creator"}
         actual_groups = set(output.keys())
         missing = expected_groups - actual_groups
         assert not missing, f"Missing expected field groups: {missing}"
@@ -75,7 +74,7 @@ class TestLivePipelineStructural:
             f"Expected >=8 field groups, got {len(actual_groups)}: {sorted(actual_groups)}"
         )
 
-    def test_titles_non_empty(self) -> None:
+    def test_name_non_empty(self) -> None:
         source = FilesystemInputSource()
         pipeline = _build_pipeline()
         results = pipeline.run(source, pattern=str(SAMPLE_INPUT))
@@ -83,17 +82,11 @@ class TestLivePipelineStructural:
         assert len(results) == 1
         assert results[0].document is not None
 
-        titles = results[0].document.get_field("titles")
-        assert titles is not None
-        assert isinstance(titles, list)
-        assert len(titles) > 0, "titles list is empty"
-        first = titles[0]
-        assert isinstance(first, dict)
-        assert "title" in first or "name" in first, (
-            f"title/name key missing from first title entry: {list(first.keys())}"
-        )
+        name = results[0].document.get_field("schema:name")
+        assert isinstance(name, str)
+        assert name.strip(), "schema:name is empty"
 
-    def test_creators_have_name_identifiers(self) -> None:
+    def test_creators_have_names(self) -> None:
         source = FilesystemInputSource()
         pipeline = _build_pipeline()
         results = pipeline.run(source, pattern=str(SAMPLE_INPUT))
@@ -101,14 +94,16 @@ class TestLivePipelineStructural:
         assert len(results) == 1
         assert results[0].document is not None
 
-        creators = results[0].document.get_field("creators")
+        creators = results[0].document.get_field("schema:creator")
         assert creators is not None
-        assert isinstance(creators, list)
-        assert len(creators) > 0, "creators list is empty"
-        for creator in creators:
+        assert isinstance(creators, dict)
+        creator_list = creators.get("@list")
+        assert isinstance(creator_list, list)
+        assert len(creator_list) > 0, "schema:creator @list is empty"
+        for creator in creator_list:
             assert isinstance(creator, dict)
-            assert "creator_name" in creator or "name" in creator, (
-                f"creator missing name field: {list(creator.keys())}"
+            assert creator.get("schema:name"), (
+                f"creator missing schema:name: {list(creator.keys())}"
             )
 
 
@@ -126,7 +121,7 @@ class TestLiveMultipleInputs:
         assert result.success, f"Pipeline failed for {input_file.name}: {result.error}"
         assert result.document is not None
 
-        json_str = OutputWriter(get_registry().get("datacite-4.6")).format_json(
+        json_str = OutputWriter(get_registry().get("cdif-discovery")).format_json(
             result.document
         )
         output: dict = json.loads(json_str)

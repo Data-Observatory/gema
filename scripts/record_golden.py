@@ -30,7 +30,7 @@ from pathlib import Path
 
 from metadata_enricher.agents.registry import LLMClientFactory
 from metadata_enricher.config.loader import load_config
-from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig, ReasoningEffort
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client, reset_client_cache
@@ -57,6 +57,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         extra_body: dict[str, object] | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
@@ -64,6 +65,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             extra_body=extra_body,
+            reasoning_effort=reasoning_effort,
             cache_dir=cache_dir,
             cache_ttl=_GOLDEN_CACHE_TTL,
         )
@@ -129,8 +131,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-s", "--schema",
-        default="datacite-4.6",
-        help="Schema name to use (default: datacite-4.6)",
+        default=None,
+        help="Schema name for output field ordering (default: the loaded config's "
+        "schema_name). This does NOT affect generation -- only pass it to format "
+        "output using a *different* schema's field order than the one that "
+        "generated it.",
     )
     parser.add_argument(
         "-v", "--verbose",
@@ -178,7 +183,8 @@ def main(argv: list[str] | None = None) -> None:
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     schema_registry = get_registry()
-    schema: Schema = schema_registry.get(args.schema)
+    schema_name = args.schema if args.schema is not None else config.schema_name
+    schema: Schema = schema_registry.get(schema_name)
     logger.info("Using schema: %s v%s", schema.name, schema.version)
 
     writer = OutputWriter(schema)

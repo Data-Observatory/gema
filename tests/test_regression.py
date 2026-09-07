@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,7 @@ import pytest
 
 from metadata_enricher.agents.registry import LLMClientFactory
 from metadata_enricher.config.loader import load_config
-from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig, ReasoningEffort
 from metadata_enricher.input_sources.filesystem import FilesystemInputSource
 from metadata_enricher.llm.base import LLMClient
 from metadata_enricher.llm.factory import create_llm_client, reset_client_cache
@@ -69,6 +70,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
         temperature: float,
         max_tokens: int | None,
         extra_body: dict[str, object] | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> LLMClient:
         return create_llm_client(
             provider,
@@ -76,6 +78,7 @@ def _make_factory(cache_dir: Path) -> LLMClientFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             extra_body=extra_body,
+            reasoning_effort=reasoning_effort,
             cache_dir=cache_dir,
         )
 
@@ -152,6 +155,23 @@ def _format_failure_message(
 # ---------------------------------------------------------------------------
 
 
+@pytest.fixture(scope="module")
+def readonly_cache_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Copy the committed golden cache to a scratch dir before replay.
+
+    diskcache opens ``cache.db`` read-write even for a pure hit, rewriting
+    internal SQLite bookkeeping -- so every regression run left the
+    committed fixture showing as modified in `git status` (Bin X -> X
+    bytes, zero real content change), found in review 2026-09-07. Copied
+    once per module (not per parametrized case) so every input stem
+    replays against the same untouched-by-git snapshot without re-copying
+    per test."""
+    dest = tmp_path_factory.mktemp("golden_cache_replay") / "cache"
+    if CACHE_DIR.exists():
+        shutil.copytree(CACHE_DIR, dest)
+    return dest
+
+
 class TestRegressionSemantics:
     """Pipeline outputs must remain semantically similar to committed golden."""
 
@@ -160,7 +180,9 @@ class TestRegressionSemantics:
         reason="No golden outputs recorded. Run `make record-golden` first.",
     )
     @pytest.mark.parametrize("input_stem", _PARAM_STEMS)
-    def test_output_matches_golden_semantically(self, input_stem: str) -> None:
+    def test_output_matches_golden_semantically(
+        self, input_stem: str, readonly_cache_dir: Path
+    ) -> None:
         """Cache-replay the pipeline and assert similarity >= SIMILARITY_THRESHOLD."""
         # 1. Load expected output from committed golden.
         expected_path = EXPECTED_DIR / f"{input_stem}.json"
@@ -188,7 +210,7 @@ class TestRegressionSemantics:
         # HTTP request on every regression run, breaking the "no API key/
         # network needed" cache-replay contract.
         config = config.model_copy(update={"enable_content_fetch": False})
-        llm_factory = _make_factory(CACHE_DIR)
+        llm_factory = _make_factory(readonly_cache_dir)
         pipeline = Pipeline(config=config, llm_factory=llm_factory)
 
         # 4. Run pipeline on the single input file.

@@ -627,6 +627,12 @@ async def _handle_upload(
     pipeline_config.enable_doi_resolution = validated.enable_doi_resolution
     pipeline_config.validate_pids = validated.validate_pids
     pipeline_config.validate_pids_live = validated.validate_pids_live
+    # _download() serializes the whole model (model_dump), so a downloaded
+    # config always carries every PipelineConfig field -- this per-field
+    # copy back must be kept in sync or a field silently reverts to its
+    # default on every download/edit/upload round-trip (found missing for
+    # validate_shacl_conformance, added when that flag was introduced).
+    pipeline_config.validate_shacl_conformance = validated.validate_shacl_conformance
 
     refresh_cards()
     ui.notify(t("agents.upload.applied", count=len(validated.agents)), type="positive")
