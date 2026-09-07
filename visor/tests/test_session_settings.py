@@ -49,6 +49,7 @@ class TestBuildLlmFactory:
             temperature=0.5,
             max_tokens=None,
             extra_body=None,
+            reasoning_effort=None,
             api_key="session-key",
         )
 
