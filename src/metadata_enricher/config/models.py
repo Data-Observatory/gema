@@ -6,10 +6,42 @@ with strict validation. No I/O, no parsing.
 
 from __future__ import annotations
 
+import logging
 from collections import Counter
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+logger = logging.getLogger(__name__)
+
+# Which wire format a provider/model speaks. "chat_completions" is the
+# universal OpenAI-compatible baseline every provider in this repo supports
+# today; "responses" opts a specific model into OpenAI's newer Responses API
+# (POST /responses) instead -- needed for models that don't work at all over
+# Chat Completions (e.g. opencode's muse-spark family, confirmed 2026-09-06:
+# real HTTP 500 from Chat Completions, HTTP 200 from Responses, same key).
+ApiStyle = Literal["chat_completions", "responses"]
+
+# Real values taken verbatim from openai.types.shared.reasoning_effort.
+# "provider_default" is a gema-only sentinel meaning "omit the reasoning
+# block entirely and let the endpoint pick" -- an explicit, greppable opt-out
+# rather than an accidental omission. Only meaningful when api_style is
+# "responses"; ignored for chat_completions models.
+ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh", "provider_default"]
+
+DEFAULT_API_STYLE: ApiStyle = "chat_completions"
+
+# Picked from real data, not guessed (probed 2026-09-06 against
+# opencode:muse-spark-1.3-contributor, "What is the capital of France?
+# Answer in one word.", max_output_tokens=600): low=202 output tokens,
+# medium=189, high=254, all three answered correctly. low/medium are
+# statistically tied at this sample size; high is clearly more expensive
+# for zero quality gain. "low" is the safe conservative floor -- a model
+# opting into the responses API without an explicit override should never
+# silently inherit the endpoint's own default (observed to be "high" when
+# omitted entirely, which burned 534 reasoning tokens on "say hello world"
+# in an earlier probe).
+DEFAULT_RESPONSES_REASONING_EFFORT: ReasoningEffort = "low"
 
 
 class ModelOverride(BaseModel):
@@ -25,6 +57,11 @@ class ModelOverride(BaseModel):
 
     model: str = Field(..., min_length=1)
     max_workers: int | None = Field(default=None, ge=1)
+    # None on either field means "inherit from the owning ProviderConfig",
+    # exactly like max_workers above -- see ProviderConfig.effective_api_style
+    # / effective_reasoning_effort for the cascade.
+    api_style: ApiStyle | None = None
+    reasoning_effort: ReasoningEffort | None = None
 
 
 class ProviderConfig(BaseModel):
@@ -39,6 +76,38 @@ class ProviderConfig(BaseModel):
     seed: int | None = None
     max_workers: int | None = Field(default=None, ge=1)
     model_overrides: list[ModelOverride] = Field(default_factory=list)
+    api_style: ApiStyle = DEFAULT_API_STYLE
+    reasoning_effort: ReasoningEffort | None = None
+
+    def effective_api_style(self, model: str) -> ApiStyle:
+        """Resolve wire format with 2-level cascading precedence: this
+        provider's own api_style (least specific, defaults to
+        "chat_completions") -> its per-model override for *model* (most
+        specific). model is looked up ONLY within this provider's own
+        model_overrides -- same rule as effective_max_workers.
+        """
+        for override in self.model_overrides:
+            if override.model == model and override.api_style is not None:
+                return override.api_style
+        return self.api_style
+
+    def effective_reasoning_effort(self, model: str) -> ReasoningEffort:
+        """Resolve reasoning effort with 3-level cascading precedence: the
+        hardcoded conservative default (least specific) -> this provider's
+        own reasoning_effort -> its per-model override for *model* (most
+        specific). Only meaningful when effective_api_style(model) ==
+        "responses"; callers on the chat_completions path ignore this.
+        """
+        if self.reasoning_effort is not None:
+            effective = self.reasoning_effort
+        else:
+            effective = DEFAULT_RESPONSES_REASONING_EFFORT
+
+        for override in self.model_overrides:
+            if override.model == model and override.reasoning_effort is not None:
+                effective = override.reasoning_effort
+
+        return effective
 
 
 class AgentConfig(BaseModel):
@@ -56,6 +125,14 @@ class AgentConfig(BaseModel):
     model: str | None = None
     temperature: float = 0.0
     max_tokens: int | None = None
+    # Overrides the resolved provider/model reasoning effort for this agent
+    # only -- e.g. give one hard agent more thinking budget without paying
+    # for it on every other agent. Meaningless (and warned about at pipeline
+    # construction, see PipelineConfig._validate_references) for an agent
+    # whose resolved provider/model is on the chat_completions api_style --
+    # deliberately a warning, not an error, so a single agents.yaml keeps
+    # working across scripts/compare_models.py's in-place model swaps.
+    reasoning_effort: ReasoningEffort | None = None
     depends_on: list[str] = []
     # Top-level field names this agent wants surfaced from its dependencies'
     # already-merged output (e.g. ["resource", "publishers"]) -- only
@@ -144,6 +221,18 @@ class PipelineConfig(BaseModel):
             )
             raise ValueError(msg)
 
+        providers_by_name = {p.name: p for p in self.providers}
+
+        for provider in self.providers:
+            override_models = [o.model for o in provider.model_overrides]
+            dupes = {m for m, count in Counter(override_models).items() if count > 1}
+            if dupes:
+                msg = (
+                    f"provider '{provider.name}' has duplicate model_overrides "
+                    f"entries for model(s): {sorted(dupes)}"
+                )
+                raise ValueError(msg)
+
         for agent in self.agents:
             if agent.provider not in provider_names:
                 msg = (
@@ -151,6 +240,19 @@ class PipelineConfig(BaseModel):
                     f"which is not in providers. Available: {sorted(provider_names)}"
                 )
                 raise ValueError(msg)
+
+            if agent.reasoning_effort is not None:
+                provider = providers_by_name[agent.provider]
+                resolved_model = agent.model or ""
+                if provider.effective_api_style(resolved_model) == "chat_completions":
+                    logger.warning(
+                        "agent '%s' sets reasoning_effort but resolves to a "
+                        "chat_completions model (provider '%s', model '%s') -- "
+                        "ignored on that path",
+                        agent.id,
+                        agent.provider,
+                        resolved_model,
+                    )
 
             for dep in agent.depends_on:
                 if dep not in agent_ids:

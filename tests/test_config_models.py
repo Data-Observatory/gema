@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from metadata_enricher.config.models import (
     AgentConfig,
+    ModelOverride,
     PipelineConfig,
     ProviderConfig,
 )
@@ -743,3 +744,248 @@ class TestPipelineConfig:
                 ],
                 providers=[ProviderConfig(name="p1", api_key_env="K")],
             )
+
+
+# ──────────────────────────────────────────────
+# api_style / reasoning_effort (Responses-API opt-in)
+# ──────────────────────────────────────────────
+
+
+class TestApiStyleDefaults:
+    """A provider/model that says nothing stays byte-for-byte on today's
+    behavior -- api_style defaults to chat_completions everywhere."""
+
+    def test_provider_defaults_to_chat_completions(self):
+        p = ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY")
+        assert p.api_style == "chat_completions"
+        assert p.reasoning_effort is None
+
+    def test_model_override_defaults_to_none(self):
+        """None on a ModelOverride means 'inherit from the provider', not
+        'chat_completions' -- the provider-level field is what carries the
+        actual resolved default."""
+        override = ModelOverride(model="deepseek-v4-flash")
+        assert override.api_style is None
+        assert override.reasoning_effort is None
+
+    def test_rejects_invalid_api_style(self):
+        with pytest.raises(ValidationError):
+            ProviderConfig(name="opencode", api_key_env="K", api_style="carrier_pigeon")
+
+    def test_rejects_invalid_reasoning_effort(self):
+        with pytest.raises(ValidationError):
+            ProviderConfig(name="opencode", api_key_env="K", reasoning_effort="ludicrous")
+
+    def test_agent_reasoning_effort_defaults_to_none(self):
+        a = AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1")
+        assert a.reasoning_effort is None
+
+
+class TestEffectiveApiStyle:
+    """ProviderConfig.effective_api_style — same 2-level cascade shape as
+    effective_max_workers: provider default -> per-model override, model
+    matched only within this provider's own model_overrides."""
+
+    def test_no_override_returns_provider_default(self):
+        p = ProviderConfig(name="opencode", api_key_env="K")
+        assert p.effective_api_style("deepseek-v4-flash") == "chat_completions"
+
+    def test_provider_level_responses_applies_to_every_model(self):
+        p = ProviderConfig(name="opencode", api_key_env="K", api_style="responses")
+        assert p.effective_api_style("anything") == "responses"
+
+    def test_model_override_wins_over_provider_default(self):
+        p = ProviderConfig(
+            name="opencode",
+            api_key_env="K",
+            model_overrides=[
+                ModelOverride(model="muse-spark-1.3-contributor", api_style="responses"),
+            ],
+        )
+        assert p.effective_api_style("muse-spark-1.3-contributor") == "responses"
+        assert p.effective_api_style("deepseek-v4-flash") == "chat_completions"
+
+    def test_model_name_not_matched_under_different_provider(self):
+        """The same model name declared under provider A's model_overrides
+        must not leak into provider B's resolution -- each ProviderConfig
+        only ever scans its own model_overrides list."""
+        p_a = ProviderConfig(
+            name="provider-a",
+            api_key_env="K",
+            model_overrides=[ModelOverride(model="shared-model-name", api_style="responses")],
+        )
+        p_b = ProviderConfig(name="provider-b", api_key_env="K")
+        assert p_a.effective_api_style("shared-model-name") == "responses"
+        assert p_b.effective_api_style("shared-model-name") == "chat_completions"
+
+
+class TestEffectiveReasoningEffort:
+    """ProviderConfig.effective_reasoning_effort — 3-level cascade: hardcoded
+    conservative default -> provider default -> per-model override."""
+
+    def test_no_override_returns_hardcoded_default(self):
+        p = ProviderConfig(name="opencode", api_key_env="K")
+        assert p.effective_reasoning_effort("muse-spark-1.3-contributor") == "low"
+
+    def test_provider_level_default_applies_to_every_model(self):
+        p = ProviderConfig(name="opencode", api_key_env="K", reasoning_effort="medium")
+        assert p.effective_reasoning_effort("anything") == "medium"
+
+    def test_model_override_wins_over_provider_default(self):
+        p = ProviderConfig(
+            name="opencode",
+            api_key_env="K",
+            reasoning_effort="medium",
+            model_overrides=[
+                ModelOverride(model="muse-spark-1.3-contributor", reasoning_effort="high"),
+            ],
+        )
+        assert p.effective_reasoning_effort("muse-spark-1.3-contributor") == "high"
+        assert p.effective_reasoning_effort("some-other-model") == "medium"
+
+    def test_provider_default_hint_explicit_opt_out(self):
+        """reasoning_effort='provider_default' is a real, distinct value --
+        it means 'omit the reasoning block entirely', not 'unset'."""
+        p = ProviderConfig(
+            name="opencode",
+            api_key_env="K",
+            model_overrides=[
+                ModelOverride(model="m", reasoning_effort="provider_default"),
+            ],
+        )
+        assert p.effective_reasoning_effort("m") == "provider_default"
+
+
+class TestModelOverridesValidation:
+    """PipelineConfig-level validation added alongside api_style/
+    reasoning_effort -- duplicate model_overrides entries for the same model
+    within one provider are ambiguous (which one wins?) and were previously
+    silently allowed (last-one-wins) even for max_workers; now rejected."""
+
+    def test_duplicate_model_override_within_one_provider_rejected(self):
+        with pytest.raises(ValueError, match="duplicate model_overrides"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+                ],
+                providers=[
+                    ProviderConfig(
+                        name="p1",
+                        api_key_env="K",
+                        model_overrides=[
+                            ModelOverride(model="dup-model", api_style="responses"),
+                            ModelOverride(model="dup-model", max_workers=2),
+                        ],
+                    ),
+                ],
+            )
+
+    def test_same_model_name_different_providers_not_a_duplicate(self):
+        """Duplicate-detection is scoped per-provider, matching every other
+        model_overrides rule in this file."""
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+            ],
+            providers=[
+                ProviderConfig(
+                    name="p1",
+                    api_key_env="K1",
+                    model_overrides=[ModelOverride(model="shared-name")],
+                ),
+                ProviderConfig(
+                    name="p2",
+                    api_key_env="K2",
+                    model_overrides=[ModelOverride(model="shared-name")],
+                ),
+            ],
+        )
+        assert len(p.providers) == 2
+
+    def test_distinct_models_same_provider_not_duplicates(self):
+        p = PipelineConfig(
+            schema_name="datacite-4.6",
+            agents=[
+                AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+            ],
+            providers=[
+                ProviderConfig(
+                    name="p1",
+                    api_key_env="K",
+                    model_overrides=[
+                        ModelOverride(model="model-a"),
+                        ModelOverride(model="model-b"),
+                    ],
+                ),
+            ],
+        )
+        assert len(p.providers[0].model_overrides) == 2
+
+
+class TestAgentReasoningEffortWarning:
+    """agent.reasoning_effort on a chat_completions-resolved agent warns but
+    never raises -- must not break scripts/compare_models.py's in-place
+    agent.model rewrites when swapping between models for comparison."""
+
+    def test_warns_when_agent_resolves_to_chat_completions(self, caplog):
+        with caplog.at_level("WARNING"):
+            p = PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1",
+                        name="A1",
+                        fields=["f1"],
+                        prompt="p",
+                        provider="p1",
+                        model="deepseek-v4-flash",
+                        reasoning_effort="medium",
+                    ),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+        assert p.agents[0].reasoning_effort == "medium"
+        assert any("reasoning_effort" in record.message for record in caplog.records)
+        assert any("chat_completions" in record.message for record in caplog.records)
+
+    def test_no_warning_when_agent_resolves_to_responses(self, caplog):
+        with caplog.at_level("WARNING"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(
+                        id="a1",
+                        name="A1",
+                        fields=["f1"],
+                        prompt="p",
+                        provider="p1",
+                        model="muse-spark-1.3-contributor",
+                        reasoning_effort="low",
+                    ),
+                ],
+                providers=[
+                    ProviderConfig(
+                        name="p1",
+                        api_key_env="K",
+                        model_overrides=[
+                            ModelOverride(
+                                model="muse-spark-1.3-contributor", api_style="responses"
+                            ),
+                        ],
+                    ),
+                ],
+            )
+        assert not any("reasoning_effort" in record.message for record in caplog.records)
+
+    def test_no_warning_when_reasoning_effort_unset(self, caplog):
+        with caplog.at_level("WARNING"):
+            PipelineConfig(
+                schema_name="datacite-4.6",
+                agents=[
+                    AgentConfig(id="a1", name="A1", fields=["f1"], prompt="p", provider="p1"),
+                ],
+                providers=[ProviderConfig(name="p1", api_key_env="K")],
+            )
+        assert len(caplog.records) == 0
