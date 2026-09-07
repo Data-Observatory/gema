@@ -189,8 +189,20 @@ class IdentifierResolver:
         self, original_name: str, normalized_name: str, country: str | None = None
     ) -> IdentifierMatch | None:
         ror_match = self._try_ror_affiliation(original_name, country)
-        if ror_match is None:
-            ror_match = self._try_ror_query(original_name, normalized_name, country)
+        if ror_match is None or ror_match.status == "review":
+            # A "review" affiliation match includes the country-mismatch
+            # demotion (see _try_ror_affiliation's docstring) -- it never
+            # overrides ROR's own chosen pick, only distrusts it, so
+            # _try_ror_query (which DOES apply country as a fuzzy-match
+            # deprioritizer) gets a real chance to find the correct org
+            # instead of the demoted wrong-country one silently winning by
+            # default. Only take the query result if it's strictly better
+            # (auto beats review) or there was nothing at all before.
+            query_match = self._try_ror_query(original_name, normalized_name, country)
+            if query_match is not None and (
+                ror_match is None or query_match.status == "auto"
+            ):
+                ror_match = query_match
 
         if ror_match is not None and ror_match.isni_id and ror_match.status == "auto":
             # ROR's own linked ISNI is verified registry data -- trust it

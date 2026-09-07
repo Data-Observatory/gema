@@ -184,6 +184,53 @@ class TestRORAffiliationCountryMismatch:
         assert result.status == "auto"
         assert result.confidence == 1.0
 
+    def test_demoted_affiliation_match_falls_through_to_ror_query(self, tmp_path: Path) -> None:
+        """Regression: a country-demoted ?affiliation= match must not
+        silently win by default -- ?query= (which DOES apply country as a
+        fuzzy-match deprioritizer) gets a real chance to find the correct
+        org instead. Here it does: the wrong-country Madrid pick is
+        replaced by a correctly-scored Chilean ?query= candidate for the
+        same real organization (ODEPA)."""
+        mock_odepa_query_org = {
+            "id": "https://ror.org/bbbb2222",
+            "names": [
+                {
+                    "lang": "es",
+                    "types": ["ror_display"],
+                    "value": "Oficina de Estudios y Políticas Agrarias",
+                }
+            ],
+            "external_ids": [],
+            "relationships": [],
+            "locations": [{"geonames_details": {"country_code": "CL"}}],
+        }
+        resolver, _, _, _ = _make_resolver(
+            tmp_path,
+            ror_org=MOCK_ROR_ORG_ES,
+            ror_query_results=[mock_odepa_query_org],
+            isni_results=[],
+        )
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias", country="CL")
+        assert result is not None
+        assert result.ror_id == "https://ror.org/bbbb2222"
+        assert result.status == "auto"
+        assert result.matched_via == "ror_query_fuzzy"
+
+    def test_demoted_affiliation_match_kept_when_query_finds_nothing_better(
+        self, tmp_path: Path
+    ) -> None:
+        """When ?query= also comes back empty/no-better, the demoted
+        ?affiliation= match is still surfaced (status="review", never
+        silently dropped) rather than losing the match entirely --
+        matches the pre-fix behavior for this specific sub-case."""
+        resolver, _, _, _ = _make_resolver(
+            tmp_path, ror_org=MOCK_ROR_ORG_ES, ror_query_results=[], isni_results=[]
+        )
+        result = resolver.resolve("Oficina de Estudios y Políticas Agrarias", country="CL")
+        assert result is not None
+        assert result.status == "review"
+        assert result.ror_id == "https://ror.org/04q93ds34"
+
 
 # --------------------------------------------------------------------------
 
