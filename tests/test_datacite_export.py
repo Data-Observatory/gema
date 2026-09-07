@@ -914,7 +914,7 @@ class TestAgainstRealGoldenFixture:
         # reverse mapping on any of these can't pass silently just because
         # titles/creators/publishers/language/identifier/rights looked fine.
         subject_names = {s["subject_name"] for s in data["subjects"]}
-        assert "Presupuesto público" in subject_names
+        assert "Gastos municipales -- Presupuesto público -- Chile" in subject_names
         assert data["categories"][0]["name"] == "Economía y negocios"
         assert data["categories"][0]["sub_category"] == "Ciencias Sociales"
         assert data["audiences"][0]["audience"] == "Investigadores"

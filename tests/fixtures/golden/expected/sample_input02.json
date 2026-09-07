@@ -1,5 +1,5 @@
 {
-  "@id": "urn:gema:generated:ea4b14297ba84253a225a88e18e170c7",
+  "@id": "https://www.rasgos.cl/",
   "@type": [
     "schema:Dataset"
   ],
@@ -10,9 +10,9 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-09-04",
+  "schema:dateModified": "2026-09-07",
   "schema:subjectOf": {
-    "@id": "urn:gema:generated:ea4b14297ba84253a225a88e18e170c7#metadata",
+    "@id": "https://www.rasgos.cl/#metadata",
     "@type": [
       "schema:Dataset"
     ],
@@ -20,7 +20,7 @@
       "dcat:CatalogRecord"
     ],
     "schema:about": {
-      "@id": "urn:gema:generated:ea4b14297ba84253a225a88e18e170c7"
+      "@id": "https://www.rasgos.cl/"
     },
     "dcterms:conformsTo": [
       {
@@ -31,14 +31,20 @@
       }
     ]
   },
-  "schema:name": "",
+  "schema:name": "Rasgos-CL: Plataforma de Rasgos Funcionales de la Biodiversidad de Plantas en Chile",
+  "schema:identifier": {
+    "schema:propertyID": "URL",
+    "schema:value": "https://www.rasgos.cl/",
+    "schema:url": "https://www.rasgos.cl/"
+  },
   "schema:license": [],
   "schema:conditionsOfAccess": [],
+  "schema:url": "https://www.rasgos.cl/",
   "schema:distribution": [],
-  "schema:description": "",
+  "schema:description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
   "schema:additionalType": "",
   "schema:version": "",
-  "schema:inLanguage": "",
+  "schema:inLanguage": "es",
   "schema:dateCreated": "",
   "schema:datePublished": "",
   "schema:copyrightYear": "",
@@ -87,7 +93,22 @@
     }
   ],
   "schema:creator": {
-    "@list": []
+    "@list": [
+      {
+        "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Data Observatory Foundation",
+        "schema:identifier": {
+          "schema:propertyID": "ROR",
+          "schema:value": "https://ror.org/027nn6b17",
+          "schema:url": "https://ror.org/027nn6b17",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        }
+      }
+    ]
   },
   "schema:contributor": [],
   "schema:publisher": {
@@ -107,10 +128,17 @@
   "schema:copyrightHolder": "Data Observatory Foundation",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [],
-  "schema:spatialCoverage": [],
+  "schema:spatialCoverage": [
+    {
+      "schema:name": "Chile",
+      "schema:description": "Cobertura nacional y regional de la biodiversidad de plantas en Chile",
+      "schema:geo": {
+        "schema:box": "-75.956,-57.987,-65.084,-16.309"
+      }
+    }
+  ],
   "schema:measurementTechnique": [],
   "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
-  "prov:wasGeneratedBy": {},
-  "schema:url": "https://www.rasgos.cl/"
+  "prov:wasGeneratedBy": {}
 }
