@@ -257,7 +257,7 @@ def run_pipeline_on(
         llm_factory = None
         if cache_dir is not None:
             from metadata_enricher.agents.registry import LLMClientFactory  # noqa: F401
-            from metadata_enricher.config.models import ProviderConfig
+            from metadata_enricher.config.models import ProviderConfig, ReasoningEffort
             from metadata_enricher.llm.base import LLMClient
             from metadata_enricher.llm.factory import create_llm_client
 
@@ -267,10 +267,11 @@ def run_pipeline_on(
                 temperature: float = 0.0,
                 max_tokens: int | None = None,
                 extra_body: dict[str, Any] | None = None,
+                reasoning_effort: ReasoningEffort | None = None,
             ) -> LLMClient:
                 return create_llm_client(
                     provider, model=model, temperature=temperature, max_tokens=max_tokens,
-                    extra_body=extra_body, cache_dir=cache_dir,
+                    extra_body=extra_body, reasoning_effort=reasoning_effort, cache_dir=cache_dir,
                 )
 
         pipeline = Pipeline(config=config, llm_factory=llm_factory, max_workers=config.max_workers)

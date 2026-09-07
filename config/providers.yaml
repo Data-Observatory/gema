@@ -19,6 +19,15 @@ providers:
     # tighter limit (see that file's own comment + git blame on commit
     # 4101ac9).
     max_workers: 5
+    # Kept in sync with the same override in config/agents.yaml's real
+    # inlined providers: block (the load-bearing one) so this autofill
+    # preset stays a truthful copy of it. See that file's comment for the
+    # full rationale (500 on chat_completions, works on the Responses API,
+    # forced tool_choice rejected there too).
+    model_overrides:
+    - model: muse-spark-1.3-contributor
+      api_style: responses
+      reasoning_effort: medium
 
   - name: openai
     api_key_env: OPENAI_API_KEY
