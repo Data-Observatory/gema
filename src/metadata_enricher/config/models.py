@@ -31,17 +31,19 @@ ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh", "
 
 DEFAULT_API_STYLE: ApiStyle = "chat_completions"
 
-# Picked from real data, not guessed (probed 2026-09-06 against
-# opencode:muse-spark-1.3-contributor, "What is the capital of France?
-# Answer in one word.", max_output_tokens=600): low=202 output tokens,
-# medium=189, high=254, all three answered correctly. low/medium are
-# statistically tied at this sample size; high is clearly more expensive
-# for zero quality gain. "low" is the safe conservative floor -- a model
-# opting into the responses API without an explicit override should never
-# silently inherit the endpoint's own default (observed to be "high" when
-# omitted entirely, which burned 534 reasoning tokens on "say hello world"
-# in an earlier probe).
-DEFAULT_RESPONSES_REASONING_EFFORT: ReasoningEffort = "low"
+# Probed 2026-09-06 against opencode:muse-spark-1.3-contributor, single
+# prompt ("What is the capital of France? Answer in one word.",
+# max_output_tokens=600): low=202 output tokens, medium=189, high=254, all
+# three answered correctly. That is one data point per tier -- far too small
+# a sample to responsibly pick the cheapest option ("low") as the default
+# every agent run silently inherits. "medium" is the deliberate, more
+# conservative starting default pending real-world data from actual agent
+# runs -- not a reversal of the probe's finding (medium/low still look
+# roughly comparable), just a more cautious read of weak data. It remains
+# strictly cheaper than the endpoint's own unrequested default (observed to
+# be "high" when the reasoning block is omitted entirely, which burned 534
+# reasoning tokens on "say hello world" in an earlier probe).
+DEFAULT_RESPONSES_REASONING_EFFORT: ReasoningEffort = "medium"
 
 
 class ModelOverride(BaseModel):

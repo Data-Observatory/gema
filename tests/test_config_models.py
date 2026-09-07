@@ -825,7 +825,7 @@ class TestEffectiveReasoningEffort:
 
     def test_no_override_returns_hardcoded_default(self):
         p = ProviderConfig(name="opencode", api_key_env="K")
-        assert p.effective_reasoning_effort("muse-spark-1.3-contributor") == "low"
+        assert p.effective_reasoning_effort("muse-spark-1.3-contributor") == "medium"
 
     def test_provider_level_default_applies_to_every_model(self):
         p = ProviderConfig(name="opencode", api_key_env="K", reasoning_effort="medium")
