@@ -913,11 +913,23 @@ class TestAgainstRealGoldenFixture:
         # docs/cdif_pivot_implementation_plan.md's Backlog) so a broken
         # reverse mapping on any of these can't pass silently just because
         # titles/creators/publishers/language/identifier/rights looked fine.
+        # Expected values are derived from the fixture's own raw content
+        # rather than hardcoded, since _build_subjects/_build_audiences
+        # pass schema:name/audience through verbatim (see datacite.py) --
+        # pinning the literal LLM-chosen text here would churn on every
+        # re-record for a reason unrelated to a real crosswalk bug (found
+        # in review: 2026-09-07).
         subject_names = {s["subject_name"] for s in data["subjects"]}
-        assert "Gastos municipales -- Presupuesto público -- Chile" in subject_names
-        assert data["categories"][0]["name"] == "Economía y negocios"
-        assert data["categories"][0]["sub_category"] == "Ciencias Sociales"
-        assert data["audiences"][0]["audience"] == "Tomadores de decisiones"
+        raw_keyword_names = {
+            k["schema:name"] for k in raw["schema:keywords"] if k.get("schema:name")
+        }
+        assert raw_keyword_names
+        assert subject_names == raw_keyword_names
+        assert data["categories"][0]["name"] == raw["schema:about"][0]["schema:name"]
+        assert data["categories"][0]["sub_category"] == raw["schema:about"][0].get(
+            "schema:inDefinedTermSet", ""
+        )
+        assert data["audiences"][0]["audience"] == raw["schema:audience"][0]["audience"]
         assert len(data["audiences"]) == len(raw["schema:audience"])
         assert data["geo_locations"][0]["geo_location_place"] == "Chile"
         assert data["geo_locations"][0]["geo_location_box"] == "-75.956,-57.987,-65.084,-16.309"
