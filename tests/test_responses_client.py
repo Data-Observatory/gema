@@ -345,6 +345,11 @@ class TestStructuredOutputAndReask:
         assert client._raw_client.responses.create.call_count == 2
         second_call_input = client._raw_client.responses.create.call_args_list[1].kwargs["input"]
         assert "empty" in second_call_input[-1]["content"].lower()
+        # Regression: no empty {"role": "assistant", "content": ""} turn --
+        # some OpenAI-compatible endpoints reject empty message content
+        # with a 400, which would break the very reask meant to recover
+        # from this failure.
+        assert not any(item.get("content") == "" for item in second_call_input)
 
     @patch("metadata_enricher.llm.responses_client.OpenAI")
     def test_status_incomplete_raises_immediately(self, mock_openai: MagicMock) -> None:

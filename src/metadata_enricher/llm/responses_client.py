@@ -333,16 +333,24 @@ class ResponsesLLMClient:
                     if isinstance(exc, ValidationError)
                     else "No JSON object found in the response output_text (it was empty)."
                 )
+                reask_turn: dict[str, Any] = {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{error_text}\n"
+                        "Return corrected JSON matching the schema."
+                    ),
+                }
+                # Some OpenAI-compatible endpoints reject a message with
+                # empty content with a 400 -- echoing output_text verbatim
+                # when it's "" (the empty-output_text failure mode) would
+                # turn a recoverable reask into a hard failure on exactly
+                # the path meant to recover from it. The corrective user
+                # turn above already states the output was empty; nothing
+                # is lost by omitting the echo in that case.
                 running_input = [
                     *running_input,
-                    {"role": "assistant", "content": output_text},
-                    {
-                        "role": "user",
-                        "content": (
-                            f"Validation Error found:\n{error_text}\n"
-                            "Return corrected JSON matching the schema."
-                        ),
-                    },
+                    *([{"role": "assistant", "content": output_text}] if output_text else []),
+                    reask_turn,
                 ]
                 logger.debug(
                     "Responses structured-output attempt %d/%d failed for model=%s; reasking.",
