@@ -797,6 +797,33 @@ Tests: new `TestRORAffiliationCountryMismatch` in `tests/test_identifier_resolve
 
 Verified: `ruff`/`mypy` clean, `tests/test_identifier_resolver.py` 46 passed (+4 new), full `-m "not live"` suite 1268 passed (+8 total this round).
 
+## Phase A0/A1: CODATA source-check + markdown bake-off (2026-09-06) — do not proceed to A2
+
+Real web access this round (the earlier Post-PR#45 pass had none). Both pre-work steps of Phase A done; verdict is to not adopt CODATA's code and not to treat this bake-off as a case for a `content_format: "markdown"` migration either.
+
+**A0 — CODATA's repo, found and read directly.** `github.com/codata/semantic-croissant`: real, public, Python (FastAPI + the official `mcp` SDK), last pushed 2026-08-31. "croissant-live" is a deployment profile inside this repo, not a separate project; a related-but-distinct repo, `github.com/gdcc/mcp-dataverse` (Dataverse+Croissant MCP, CODATA-funded), also exists and is worth knowing about but isn't what the earlier investigation was pointing at.
+
+**Hard blocker, resolves O-6 outright: `GET /repos/codata/semantic-croissant` returns `"license": null`.** No `LICENSE`/`LICENSE.md`/`COPYING` file at any variant, no SPDX tag, no license header anywhere in the repo (checked directly, not inferred). This isn't an AGPL-3.0 compatibility question — under default copyright, unlicensed public code grants no permission to copy/reuse/vendor at all, full stop. **O-6 answer: no, vendoring is not on the table**, independent of gema's own license.
+
+Even setting the license aside, there's little to gain: the repo's actual HTML→markdown step (`convertors/url_to_croissant.py::fetch_url_markdown()`) is itself just `markdownify.markdownify(html_str, heading_style="ATX")` — the same library already on this bake-off's own shortlist — wrapped in orchestration (cloudscraper → Playwright-on-bot-challenge fallback, BeautifulSoup content-root heuristics, WordPress-cruft stripping, GitHub/YouTube/PDF special cases). No proprietary parsing algorithm worth copying, license or no license. The repo also confirms the other half of the original concern: it does contain full JSON-LD/Croissant *generation* machinery (QLever ingestion, `@context` construction) — the plan's existing recommendation against adopting that stands, now confirmed rather than assumed.
+
+**A1 — real bake-off against all 6 golden fixture URLs**, gema's current `clean_html_to_text` vs. `trafilatura`/`markdownify`/`html2text` (via `uv run --with`, zero project dependency changes):
+
+| Fixture | gema (flat) | trafilatura (md) | markdownify (md) | html2text (md) |
+|---|---|---|---|---|
+| sample01 (datos.gob.cl) | 72 | 255 | 0 | 1,161 |
+| sample02 (rasgos.cl) | 9 | 0 | 0 | 1 |
+| sample03 (geoportal.cl climate zones) | 7,508 | 4,448 | 8,727 | 8,610 |
+| sample04 (ine.gob.cl EPF survey) | **35** | 2,086 | 24,008 | 24,146 |
+| sample05 (geoportal.cl Censo Agropecuario) | 23 | 13 | 14 | 17 |
+| sample06 (GFZ Data Services, via doi.org) | 123 | 0 | 0 | 1 |
+
+Only 1 of 6 is a genuine markdown-format win: **sample03**, where the page has no `<article>`/`<main>`/`<nav>` tags, so gema's own extractor and the naive baselines all duplicate the full site-chrome nav block verbatim into the output; `trafilatura`'s boilerplate detection is the one method that cleanly excises it. The other 5 are not format comparisons at all — sample01/02/06 are JS-rendered SPAs where the static HTML has no real content for *any* method to extract (confirmed via a script/style-stripped raw-HTML check), and sample05's live URL now 404s (dead link, unrelated to this investigation).
+
+**sample04's apparent gap (35 vs. up to 24,146 chars) is not a markdown finding — it's a distinct, real bug in gema's own fetcher, worth fixing on its own merits.** This page (ASP.NET WebForms, likely Sitefinity) wraps 82.6% of the entire document in one page-wide `<form method="post" id="aspnetForm">`. `content_fetcher.py`'s `_SKIP_TAGS` includes `"form"` (meant for small search/login widgets) and discards nearly the whole article as a result — verified independently that 9,901 real chars of visible text exist in the static HTML that gema currently throws away. **Filed as a fast-follow, independent of any markdown decision**: narrow `_SKIP_TAGS`'s `"form"` entry (e.g. skip only small/short forms, or add a size-proportion guard) — should recover most of this specific gap without touching the flat-text-vs-markdown question at all. Not yet implemented; the existing `clean_html_to_text` 11-test contract must stay green if picked up.
+
+**Recommendation: do not proceed to Phase A2.** A0 alone is a hard stop (no license, nothing to vendor). A1 doesn't independently justify a markdown migration either — real signal-preservation gains showed up in exactly 1 of the 6 real pages this pipeline actually processes, and the fixture with the biggest apparent gap turned out to be a separate, cheap, independently-worth-fixing bug rather than evidence for markdown. Phase A stops here per its own "if none preserve more signal, stop here" clause; A2-A4 not started. The one concrete action item to come out of this is the narrow, independent `_SKIP_TAGS`/`"form"` fix above.
+
 ## Standing rules
 
 - No push/PR without fresh, explicit, per-instance authorization.
