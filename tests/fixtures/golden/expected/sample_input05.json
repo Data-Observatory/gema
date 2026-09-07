@@ -64,20 +64,11 @@
       "schema:name": "Distritos censales INE",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
-    },
-    {
-      "schema:name": "División administrativa -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
     }
   ],
   "schema:about": [
     {
       "schema:name": "Agricultura, silvicultura y pesca",
-      "schema:inDefinedTermSet": "Ciencias Agrícolas"
-    },
-    {
-      "schema:name": "Ciencia animal y lechería",
       "schema:inDefinedTermSet": "Ciencias Agrícolas"
     }
   ],
@@ -114,8 +105,6 @@
           "schema:Organization"
         ],
         "schema:name": "Oficina de Estudios y Políticas Agrarias",
-        "schema:givenName": "",
-        "schema:familyName": "",
         "schema:identifier": {
           "schema:propertyID": "ISNI",
           "schema:value": "0000000119427969",
@@ -123,28 +112,7 @@
           "matched_via": "isni_sru",
           "confidence": 1.0,
           "status": "auto"
-        },
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Ministerio de Agricultura",
-            "schema:identifier": {
-              "schema:propertyID": "ROR",
-              "schema:value": "https://ror.org/05nqvv719",
-              "schema:url": "https://ror.org/05nqvv719",
-              "matched_via": "ror_affiliation+isni_sru",
-              "confidence": 0.9,
-              "status": "auto"
-            },
-            "schema:sameAs": [
-              {
-                "@id": "https://isni.org/isni/0000000406285553"
-              }
-            ]
-          }
-        ]
+        }
       }
     ]
   },
@@ -169,11 +137,13 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Isla de Pascua",
-      "schema:description": "Cobertura geográfica de la capa vectorial del Censo Agropecuario 2007 para ganado bovino en Isla de Pascua"
+      "schema:description": "Cobertura de la capa vectorial para la Isla de Pascua, con polígonos de división administrativa vigente y distritos censales INE"
     }
   ],
   "schema:measurementTechnique": [],
   "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
-  "prov:wasGeneratedBy": {}
+  "prov:wasGeneratedBy": {
+    "schema:description": "Antecedentes recopilados mediante el VII Censo Nacional Agropecuario año 2007"
+  }
 }

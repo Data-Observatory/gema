@@ -48,7 +48,7 @@
   "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
   "schema:distribution": [],
   "schema:description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
-  "schema:additionalType": "",
+  "schema:additionalType": "Serie de tiempo",
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "",
@@ -62,12 +62,17 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Corporaciones municipales",
+      "schema:name": "Presupuesto abierto -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Egresos ejecutados",
+      "schema:name": "Corporaciones municipales -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Egresos ejecutados -- Municipios -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -80,16 +85,16 @@
   ],
   "schema:audience": [
     {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Análisis"
+    },
+    {
       "audience": "Investigadores",
       "mediator": "Autodirigido",
       "education_level": "Postgrado",
       "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
     },
     {
       "audience": "Ciudadanos",
@@ -98,10 +103,10 @@
       "instructional_method": "Autoaprendizaje"
     },
     {
-      "audience": "Periodistas",
-      "mediator": "Autodirigido",
+      "audience": "Administradores",
+      "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "instructional_method": "Consultoría"
     }
   ],
   "schema:creator": {
@@ -110,17 +115,7 @@
         "@type": [
           "schema:Organization"
         ],
-        "schema:name": "Ministerio de Hacienda",
-        "schema:givenName": "",
-        "schema:familyName": "",
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Gobierno de Chile"
-          }
-        ]
+        "schema:name": "Ministerio de Hacienda"
       }
     ]
   },

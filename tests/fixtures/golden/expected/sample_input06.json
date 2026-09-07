@@ -50,32 +50,22 @@
   "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "schema:name": "Active faults",
+      "schema:name": "Active faults -- Atacama Fault System -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Atacama Fault System",
+      "schema:name": "Forearc segmentation -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Megathrust seismic cycle -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
       "schema:name": "GIS",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Neotectonics",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Plate tectonics",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Earthquake occurrences",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -94,16 +84,16 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Profesionales",
+      "audience": "Científicos de datos",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Científicos de datos",
+      "audience": "Profesionales",
       "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Laboratorio"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "schema:creator": {
@@ -187,25 +177,58 @@
     "@type": [
       "schema:Organization"
     ],
-    "schema:name": "GFZ Data Services"
+    "schema:name": "GFZ Helmholtz Centre for Geosciences",
+    "schema:identifier": {
+      "schema:propertyID": "ROR",
+      "schema:value": "https://ror.org/04z8jg394",
+      "schema:url": "https://ror.org/04z8jg394",
+      "matched_via": "ror_affiliation",
+      "confidence": 1.0,
+      "status": "auto"
+    },
+    "schema:sameAs": [
+      {
+        "@id": "https://isni.org/isni/0000000091952461"
+      }
+    ]
   },
-  "schema:copyrightHolder": "GFZ Data Services",
+  "schema:copyrightHolder": "GFZ Helmholtz Centre for Geosciences",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
-      "schema:name": "Coastal Cordillera of N-Chile (Atacama Fault System)",
-      "schema:description": "Región de la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S, cubriendo el segmento más septentrional del Sistema de Fallas de Atacama"
+      "schema:name": "Coastal Cordillera of N-Chile",
+      "schema:description": "Northernmost segment of the Atacama Fault System in the Coastal Cordillera of N-Chile (19°12'S - 25°12'S)"
     }
   ],
   "schema:measurementTechnique": [
-    "Interpretación de datos de teledetección (remote sensing)",
+    "Interpretación de datos de sensores remotos",
     "Trabajo de campo",
-    "Sismicidad de placa superior"
+    "Sismicidad de placa superior (IPOC)",
+    "Catálogos sísmicos locales",
+    "Revisión de literatura"
   ],
-  "schema:variableMeasured": [],
-  "dqv:hasQualityMeasurement": [],
+  "schema:variableMeasured": [
+    {
+      "schema:name": "Actividad de fallas"
+    },
+    {
+      "schema:name": "Tasa de movimiento de fallas"
+    },
+    {
+      "schema:name": "Dirección de movimiento de fallas"
+    },
+    {
+      "schema:name": "Segmentación de fallas"
+    }
+  ],
+  "dqv:hasQualityMeasurement": [
+    {
+      "dqv:isMeasurementOf": "Exactitud de la actividad de fallas",
+      "dqv:value": "Sujeto a error significativo debido a tasas de deslizamiento lentas (<0.2 mm/año), pocos desplazamientos de falla cronológicamente restringidos y falta de terremotos observados histórica o instrumentalmente"
+    }
+  ],
   "prov:wasGeneratedBy": {
-    "schema:description": "El dataset se basa en una revisión exhaustiva de literatura complementada con interpretación de datos de teledetección, trabajo de campo y sismicidad de placa superior del Integrated Plate Boundary Observatory in Chile (IPOC) (Sippl et al., 2018) y catálogos sísmicos locales del área del segmento Salar Grande (Bloch et al., 2014). Incluye datos de edad de unidades geológicas desplazadas como referencia para acotar la cronología de la actividad de fallas."
+    "schema:description": "Datos compilados en Arc-GIS a partir de revisión exhaustiva de literatura, complementados con interpretación de datos de sensores remotos, trabajo de campo y sismicidad de placa superior del Integrated Plate Boundary Observatory in Chile (IPOC) y catálogos sísmicos locales del área del segmento Salar Grande. Incluye datos de edad de unidades geológicas desplazadas."
   }
 }

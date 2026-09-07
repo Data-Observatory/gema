@@ -45,7 +45,7 @@
   "schema:additionalType": "Capa geoespacial",
   "schema:version": "",
   "schema:inLanguage": "es",
-  "schema:dateCreated": "",
+  "schema:dateCreated": "2017",
   "schema:datePublished": "2017-01-12",
   "schema:copyrightYear": "",
   "schema:relatedLink": [
@@ -55,40 +55,21 @@
         "schema:url": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
         "schema:name": "Servicio de mapas WMS"
       }
-    },
-    {
-      "schema:linkRelationship": "HasPart",
-      "schema:target": {
-        "schema:url": "https://www.geoportal.cl/geoportal/catalog/download/8e85a12a-151d-31c0-9e7e-e356f92ece84",
-        "schema:name": "Capa"
-      }
-    },
-    {
-      "schema:linkRelationship": "IsDescribedBy",
-      "schema:target": {
-        "schema:url": "https://geoportal.cl/geoportal/catalog/xml?identifier=%7BFC85D54E-34B7-416D-ABC3-E0E3FAC45A31%7D",
-        "schema:name": "Ver XML"
-      }
     }
   ],
   "schema:keywords": [
     {
-      "schema:name": "Zonas climáticas -- Chile",
+      "schema:name": "Zonas climáticas -- Clasificación Köppen-Geiger -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Clasificación climática Köppen-Geiger",
+      "schema:name": "Clima -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Temperatura -- Precipitación -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Shapefile",
+      "schema:name": "Clasificación climática -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -113,10 +94,10 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Científicos de datos",
-      "mediator": "Autodirigido",
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Laboratorio"
+      "instructional_method": "Consultoría"
     }
   ],
   "schema:creator": {
@@ -157,27 +138,7 @@
         "schema:name": "Herrera, MJ.",
         "schema:givenName": "MJ.",
         "schema:familyName": "Herrera",
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Departamento de Geografía, Universidad de Chile",
-            "schema:identifier": {
-              "schema:propertyID": "ROR",
-              "schema:value": "https://ror.org/047gc3g35",
-              "schema:url": "https://ror.org/047gc3g35",
-              "matched_via": "ror_affiliation",
-              "confidence": 1.0,
-              "status": "auto"
-            },
-            "schema:sameAs": [
-              {
-                "@id": "https://isni.org/isni/0000000403854466"
-              }
-            ]
-          }
-        ]
+        "schema:affiliation": []
       },
       {
         "@type": [
@@ -186,50 +147,16 @@
         "schema:name": "Meseguer-Ruiz, O.",
         "schema:givenName": "O.",
         "schema:familyName": "Meseguer-Ruiz",
-        "schema:affiliation": [
-          {
-            "@type": [
-              "schema:Organization"
-            ],
-            "schema:name": "Departamento de Geografía, Universidad de Chile",
-            "schema:identifier": {
-              "schema:propertyID": "ROR",
-              "schema:value": "https://ror.org/047gc3g35",
-              "schema:url": "https://ror.org/047gc3g35",
-              "matched_via": "ror_affiliation",
-              "confidence": 1.0,
-              "status": "auto"
-            },
-            "schema:sameAs": [
-              {
-                "@id": "https://isni.org/isni/0000000403854466"
-              }
-            ]
-          }
-        ]
+        "schema:affiliation": []
       }
     ]
   },
-  "schema:contributor": [
-    {
-      "@type": [
-        "schema:Role"
-      ],
-      "schema:roleName": "ContactPerson",
-      "schema:contributor": {
-        "@type": [
-          "schema:Organization"
-        ],
-        "schema:name": "Departamento de Geografía Universidad de Chile",
-        "schema:email": "psarricolea@uchilefau.cl"
-      }
-    }
-  ],
+  "schema:contributor": [],
   "schema:publisher": {
     "@type": [
       "schema:Organization"
     ],
-    "schema:name": "Departamento de Geografía Universidad de Chile",
+    "schema:name": "Departamento de Geografía, Universidad de Chile",
     "schema:identifier": {
       "schema:propertyID": "ROR",
       "schema:value": "https://ror.org/047gc3g35",
@@ -244,7 +171,7 @@
       }
     ]
   },
-  "schema:copyrightHolder": "Departamento de Geografía Universidad de Chile",
+  "schema:copyrightHolder": "Departamento de Geografía, Universidad de Chile",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [
     "Journal of Maps, 13(2), 66-73."

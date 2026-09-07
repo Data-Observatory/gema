@@ -917,7 +917,7 @@ class TestAgainstRealGoldenFixture:
         assert "Gastos municipales -- Presupuesto público -- Chile" in subject_names
         assert data["categories"][0]["name"] == "Economía y negocios"
         assert data["categories"][0]["sub_category"] == "Ciencias Sociales"
-        assert data["audiences"][0]["audience"] == "Investigadores"
+        assert data["audiences"][0]["audience"] == "Tomadores de decisiones"
         assert len(data["audiences"]) == len(raw["schema:audience"])
         assert data["geo_locations"][0]["geo_location_place"] == "Chile"
         assert data["geo_locations"][0]["geo_location_box"] == "-75.956,-57.987,-65.084,-16.309"

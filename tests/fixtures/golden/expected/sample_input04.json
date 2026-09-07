@@ -51,7 +51,7 @@
   ],
   "schema:version": "",
   "schema:inLanguage": "es",
-  "schema:dateCreated": "",
+  "schema:dateCreated": "2021/2022",
   "schema:datePublished": "",
   "schema:copyrightYear": "",
   "schema:relatedLink": [],
@@ -62,22 +62,22 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Ingresos de los hogares",
+      "schema:name": "Ingresos de los hogares -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Gastos de los hogares",
+      "schema:name": "Gastos de los hogares -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Presupuesto familiar",
+      "schema:name": "Patrones de consumo -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Patrones de consumo",
+      "schema:name": "Presupuesto familiar -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -106,12 +106,6 @@
       "mediator": "Autodirigido",
       "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Periodistas",
-      "mediator": "Autodirigido",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
     }
   ],
   "schema:creator": {
@@ -181,7 +175,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Cobertura nacional, hogares de todas las capitales regionales de Chile",
+      "schema:description": "Cobertura nacional, hogares de Chile incluyendo capitales regionales",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }

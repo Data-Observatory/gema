@@ -56,12 +56,12 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Biodiversidad de plantas",
+      "schema:name": "Biodiversidad de plantas -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Características ecológicas de especies",
+      "schema:name": "Características ecológicas -- Especies -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -131,7 +131,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Cobertura nacional y regional de la biodiversidad de plantas en Chile",
+      "schema:description": "Cobertura nacional de la biodiversidad de plantas en Chile",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }
