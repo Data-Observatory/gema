@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from metadata_enricher.llm.base import LLMClient, LLMConfig
 from metadata_enricher.llm.responses_client import (
     ResponsesLLMClient,
+    _ensure_strict_object_schema,
     _extract_json,
     _to_responses_tool_schema,
 )
@@ -440,9 +441,92 @@ class TestToolSchemaReshape:
             "type": "function",
             "name": "lookup_organization",
             "description": "look it up",
-            "parameters": {"type": "object", "properties": {}},
+            "parameters": {"type": "object", "properties": {}, "additionalProperties": False, "required": []},
         }
         assert "function" not in flat
+
+    def test_parameters_get_additional_properties_false(self) -> None:
+        """Regression: a Responses-API tool schema missing
+        additionalProperties on an object type gets a 400 from at least one
+        real backend (see _ensure_strict_object_schema's docstring) -- this
+        must never regress back to a bare pass-through reshape."""
+        nested = {
+            "type": "function",
+            "function": {
+                "name": "lookup_organization",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                    "required": ["name"],
+                },
+            },
+        }
+        flat = _to_responses_tool_schema(nested)
+        assert flat["parameters"]["additionalProperties"] is False
+        assert flat["parameters"]["required"] == ["name"]
+
+
+class TestEnsureStrictObjectSchema:
+    """Direct tests for the recursive additionalProperties/required
+    enforcement, independent of any particular tool -- this must apply to
+    any Responses-API model's tool schemas, not just the one that surfaced
+    the bug (opencode:muse-spark-1.3-contributor)."""
+
+    def test_top_level_object(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"type": "string"}}}
+        result = _ensure_strict_object_schema(schema)
+        assert result["additionalProperties"] is False
+        assert result["required"] == ["a"]
+
+    def test_nested_object_property(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "outer": {
+                    "type": "object",
+                    "properties": {"inner": {"type": "string"}},
+                }
+            },
+        }
+        result = _ensure_strict_object_schema(schema)
+        outer = result["properties"]["outer"]
+        assert outer["additionalProperties"] is False
+        assert outer["required"] == ["inner"]
+
+    def test_object_inside_array_items(self) -> None:
+        schema = {
+            "type": "array",
+            "items": {"type": "object", "properties": {"x": {"type": "string"}}},
+        }
+        result = _ensure_strict_object_schema(schema)
+        assert result["items"]["additionalProperties"] is False
+        assert result["items"]["required"] == ["x"]
+
+    def test_object_inside_union(self) -> None:
+        schema = {
+            "anyOf": [
+                {"type": "object", "properties": {"x": {"type": "string"}}},
+                {"type": "null"},
+            ]
+        }
+        result = _ensure_strict_object_schema(schema)
+        assert result["anyOf"][0]["additionalProperties"] is False
+        assert result["anyOf"][1] == {"type": "null"}
+
+    def test_non_object_schema_untouched(self) -> None:
+        schema = {"type": "string"}
+        assert _ensure_strict_object_schema(schema) == {"type": "string"}
+
+    def test_explicit_additional_properties_not_overridden(self) -> None:
+        """setdefault, not unconditional assignment -- a hand-written tool
+        schema that deliberately allows extra keys (rare, but not this
+        module's call to forbid) must survive untouched."""
+        schema = {
+            "type": "object",
+            "properties": {"a": {"type": "string"}},
+            "additionalProperties": True,
+        }
+        assert _ensure_strict_object_schema(schema)["additionalProperties"] is True
 
 
 class TestSessionHeader:

@@ -150,19 +150,61 @@ def _format_validation_error(exc: ValidationError) -> str:
     return "\n".join(lines)
 
 
+def _ensure_strict_object_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively enforce ``additionalProperties: false`` (and, on the same
+    object, ``required`` naming every property) on a hand-written JSON
+    schema, mirroring ``openai.lib._pydantic._ensure_strict_json_schema``'s
+    object/array/union handling -- reused here rather than imported since
+    that helper is a private API and expects a pydantic-derived schema
+    (``$ref``/``$defs`` resolution included); llm.tools's hand-written tool
+    schemas never use either, so that part is intentionally omitted.
+
+    Confirmed 2026-09-08: a tool schema missing ``additionalProperties``
+    gets a 400 ("'additionalProperties' is required to be supplied and to
+    be false") from at least one Responses-API backend
+    (opencode:muse-spark-1.3-contributor) even though the same reshape
+    worked untouched when this module was first probed against that same
+    provider on 2026-09-06 -- i.e. this is a real gap in gema's own
+    reshape, not a model-specific quirk, and belongs here so every
+    Responses-API model's tool calls get it, not just the one that
+    surfaced it."""
+    schema = dict(schema)
+    if schema.get("type") == "object":
+        schema.setdefault("additionalProperties", False)
+        properties = schema.get("properties")
+        if isinstance(properties, dict):
+            schema["required"] = list(properties.keys())
+            schema["properties"] = {
+                key: _ensure_strict_object_schema(value) for key, value in properties.items()
+            }
+    items = schema.get("items")
+    if isinstance(items, dict):
+        schema["items"] = _ensure_strict_object_schema(items)
+    for union_key in ("anyOf", "oneOf", "allOf"):
+        variants = schema.get(union_key)
+        if isinstance(variants, list):
+            schema[union_key] = [
+                _ensure_strict_object_schema(variant) if isinstance(variant, dict) else variant
+                for variant in variants
+            ]
+    return schema
+
+
 def _to_responses_tool_schema(chat_completions_schema: dict[str, Any]) -> dict[str, Any]:
     """Reshape one of llm.tools's Chat-Completions-nested tool schemas
     (``{"type":"function","function":{"name":...,"parameters":...}}``) into
     the flat shape the Responses API expects
-    (``{"type":"function","name":...,"parameters":...}``). Probed
-    2026-09-06: gema's existing tool schemas work after this pure reshape,
-    no other schema surgery needed."""
+    (``{"type":"function","name":...,"parameters":...}``), with
+    ``_ensure_strict_object_schema`` applied to ``parameters`` -- see that
+    function's docstring for why. Probed 2026-09-06: gema's existing tool
+    schemas otherwise work after this pure reshape, no other schema
+    surgery needed."""
     function = chat_completions_schema["function"]
     flat: dict[str, Any] = {"type": "function", "name": function["name"]}
     if "description" in function:
         flat["description"] = function["description"]
     if "parameters" in function:
-        flat["parameters"] = function["parameters"]
+        flat["parameters"] = _ensure_strict_object_schema(function["parameters"])
     return flat
 
 
