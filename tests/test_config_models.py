@@ -11,6 +11,7 @@ from metadata_enricher.config.models import (
     ModelOverride,
     PipelineConfig,
     ProviderConfig,
+    find_model_override_elsewhere,
 )
 
 
@@ -890,6 +891,50 @@ class TestEffectiveReasoningEffort:
             ],
         )
         assert p.effective_reasoning_effort("m") == "provider_default"
+
+
+class TestFindModelOverrideElsewhere:
+    """find_model_override_elsewhere -- the misconfiguration-detection
+    helper visor's Agents tab warns from at save time. Generic over any
+    model/provider pair, not tied to any one real model."""
+
+    def test_none_when_assigned_provider_already_has_override(self):
+        providers = [
+            ProviderConfig(
+                name="p1",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") is None
+
+    def test_none_when_no_provider_has_an_override(self):
+        providers = [ProviderConfig(name="p1", api_key_env="K")]
+        assert find_model_override_elsewhere(providers, "m", "p1") is None
+
+    def test_finds_other_provider_with_the_override(self):
+        providers = [
+            ProviderConfig(name="p1", api_key_env="K"),
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") == "p2"
+
+    def test_unknown_assigned_provider_still_checks_others(self):
+        """agent.provider not (yet) matching any real provider (e.g. a
+        stale value from an in-progress edit) must not crash the check --
+        it's just treated as 'this provider has no override'."""
+        providers = [
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "not-a-real-provider") == "p2"
 
 
 class TestModelOverridesValidation:

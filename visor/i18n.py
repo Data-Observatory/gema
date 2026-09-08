@@ -241,6 +241,11 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.dataverse.model_label": "Modelo — basta un nivel rápido/económico para clasificar entre 14 opciones",
         "agents.save": "Guardar cambios",
         "agents.save.done": "Configuración de agentes actualizada para esta sesión",
+        "agents.model_provider_mismatch": (
+            "El modelo '{model}' tiene ajustes especiales solo bajo el proveedor "
+            "'{other_provider}', pero este agente usa '{provider}' — probablemente "
+            "no funcione como se espera con este proveedor."
+        ),
         "agents.models.fetch_failed": "No se pudieron obtener los modelos de '{provider}': {error}",
         "agents.models.loaded": "Se cargaron {count} modelos para '{provider}'",
         "agents.upload.rejected": "No se pudo aplicar este archivo: {error}",
@@ -446,6 +451,11 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.dataverse.model_label": "Model — a fast/cheap tier is enough for a 14-way classification",
         "agents.save": "Save changes",
         "agents.save.done": "Agent settings updated for this session",
+        "agents.model_provider_mismatch": (
+            "Model '{model}' has special settings only under provider "
+            "'{other_provider}', but this agent uses '{provider}' — it likely "
+            "won't work as expected on this provider."
+        ),
         "agents.models.fetch_failed": "Could not fetch models for '{provider}': {error}",
         "agents.models.loaded": "Loaded {count} models for '{provider}'",
         "agents.upload.rejected": "Could not apply this file: {error}",

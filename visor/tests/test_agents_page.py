@@ -14,7 +14,7 @@ from typing import Any
 import pytest
 
 from metadata_enricher.config.models import PipelineConfig
-from visor.pages.agents_page import _handle_upload
+from visor.pages.agents_page import _handle_upload, _warn_model_override_mismatches
 
 pytestmark = pytest.mark.asyncio
 
@@ -108,6 +108,64 @@ class TestHandleUpload:
 
         assert pipeline_config.enable_content_fetch is False
         assert refreshed == []
+
+
+class TestWarnModelOverrideMismatches:
+    """_warn_model_override_mismatches -- the save-time UI surface for
+    find_model_override_elsewhere() (pure-function coverage lives in
+    test_config_models.py). Uses a synthetic model/provider pair, not any
+    real model -- this is a generic model-call-architecture fix, not
+    special-cased to whichever model first surfaced the underlying bug.
+
+    Bodies are all sync work, but declared async like their neighbours
+    since this module's pytestmark is asyncio for all of them."""
+
+    @pytest.fixture
+    def _notify_calls(self, monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
+        calls: list[dict[str, Any]] = []
+        monkeypatch.setattr(
+            "visor.pages.agents_page.ui.notify",
+            lambda *a, **k: calls.append(k),
+        )
+        return calls
+
+    def _config_with_mismatch(self) -> PipelineConfig:
+        raw = _minimal_config_dict(
+            providers=[
+                {"name": "p0", "api_key_env": "P0_API_KEY"},
+                {
+                    "name": "p1",
+                    "api_key_env": "P1_API_KEY",
+                    "model_overrides": [{"model": "special-model", "api_style": "responses"}],
+                },
+            ]
+        )
+        raw["agents"][0]["model"] = "special-model"  # agent stays on p0, the wrong provider
+        return PipelineConfig(**raw)
+
+    async def test_warns_when_model_needs_a_different_providers_override(
+        self, _notify_calls: list[dict[str, Any]]
+    ) -> None:
+        pipeline_config = self._config_with_mismatch()
+        _warn_model_override_mismatches(pipeline_config, None)
+        assert len(_notify_calls) == 1
+        assert _notify_calls[0]["type"] == "warning"
+
+    async def test_no_warning_when_agent_already_on_the_right_provider(
+        self, _notify_calls: list[dict[str, Any]]
+    ) -> None:
+        pipeline_config = self._config_with_mismatch()
+        pipeline_config.agents[0].provider = "p1"
+        _warn_model_override_mismatches(pipeline_config, None)
+        assert _notify_calls == []
+
+    async def test_no_warning_when_agent_has_no_model_set(
+        self, _notify_calls: list[dict[str, Any]]
+    ) -> None:
+        pipeline_config = PipelineConfig(**_minimal_config_dict())
+        assert pipeline_config.agents[0].model is None
+        _warn_model_override_mismatches(pipeline_config, None)
+        assert _notify_calls == []
 
 
 class TestAdvancedSection:

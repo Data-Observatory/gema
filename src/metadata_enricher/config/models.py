@@ -121,6 +121,34 @@ class ProviderConfig(BaseModel):
         return effective
 
 
+def find_model_override_elsewhere(
+    providers: list[ProviderConfig], model: str, assigned_provider: str
+) -> str | None:
+    """Return another provider's name that carries a model_overrides entry
+    for *model*, if *assigned_provider* itself doesn't -- a likely
+    misconfiguration signal, not an error: model_overrides is deliberately
+    scoped per-provider (see ModelOverride's docstring), so assigning a
+    model to a provider that lacks the override it needs (e.g. api_style:
+    responses for a model that 400s on chat_completions) silently falls
+    back to that provider's own default instead of failing loudly. Callers
+    decide what to do with the answer (visor surfaces a warning; nothing
+    here blocks the assignment, since a provider genuinely not needing any
+    override for this model is a normal, valid case too).
+
+    Returns None when *assigned_provider* already has the override (no
+    mismatch) or no provider has one at all (nothing to warn about).
+    """
+    assigned = next((p for p in providers if p.name == assigned_provider), None)
+    if assigned is not None and any(o.model == model for o in assigned.model_overrides):
+        return None
+    for provider in providers:
+        if provider.name == assigned_provider:
+            continue
+        if any(o.model == model for o in provider.model_overrides):
+            return provider.name
+    return None
+
+
 class AgentConfig(BaseModel):
     """Single agent definition within a pipeline."""
 

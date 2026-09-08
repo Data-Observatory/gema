@@ -63,7 +63,12 @@ from typing import Any, Callable
 
 from nicegui import events, run, ui
 
-from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import (
+    DataverseExportConfig,
+    PipelineConfig,
+    ProviderConfig,
+    find_model_override_elsewhere,
+)
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
 from visor.session_settings import load_session_settings, save_session_settings
@@ -150,6 +155,39 @@ def _persist_overrides(
             },
         )
     )
+
+
+def _warn_model_override_mismatches(
+    pipeline_config: PipelineConfig, dataverse_export_config: DataverseExportConfig | None
+) -> None:
+    """Surface find_model_override_elsewhere() as a save-time UI warning --
+    never blocking, since a provider genuinely not needing any override for
+    a model is a normal, valid case. Without this, assigning a model to the
+    wrong provider (the model field is free text, decoupled from the
+    provider select right next to it -- see this module's docstring) fails
+    silently: the run still starts, using that provider's plain default
+    wire format, and only surfaces as a confusing runtime 400 from the LLM
+    call itself. Checked at save time (not on every keystroke) since a
+    mismatch is only meaningful once both fields have settled."""
+    agents_and_dataverse = list(pipeline_config.agents)
+    if dataverse_export_config is not None:
+        agents_and_dataverse.append(dataverse_export_config.agent)
+    for agent in agents_and_dataverse:
+        if not agent.model:
+            continue
+        other_provider = find_model_override_elsewhere(
+            pipeline_config.providers, agent.model, agent.provider
+        )
+        if other_provider is not None:
+            ui.notify(
+                t(
+                    "agents.model_provider_mismatch",
+                    model=agent.model,
+                    provider=agent.provider,
+                    other_provider=other_provider,
+                ),
+                type="warning",
+            )
 
 
 def render_agents(
@@ -604,6 +642,7 @@ def render_agents(
                     dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
                 _persist_overrides(pipeline_config, dataverse_export_config)
+                _warn_model_override_mismatches(pipeline_config, dataverse_export_config)
                 ui.notify(t("agents.save.done"), type="positive")
                 cards.refresh()
                 if on_changed is not None:
