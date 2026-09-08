@@ -463,6 +463,16 @@ def _render_running_phase(state: _RunViewState) -> None:
     timer = ui.timer(0.3, _poll)
 
 
+# Export format keys for the Result phase's single download control (see
+# _render_result_phase) -- replaces what used to be one separate button per
+# format (found on review: 4 buttons on one row was too many), matching
+# values to no particular external spec, just this module's own dispatch.
+_EXPORT_FORMAT_CDIF = "cdif"
+_EXPORT_FORMAT_DATACITE = "datacite"
+_EXPORT_FORMAT_CROISSANT = "croissant"
+_EXPORT_FORMAT_DATAVERSE = "dataverse"
+
+
 def _render_result_phase(
     schema: Schema,
     state: _RunViewState,
@@ -482,25 +492,43 @@ def _render_result_phase(
 
     with ui.row().classes("items-center q-mb-sm"):
         if state.result is not None and state.result.success:
-            ui.button(
-                t("run.result.download_json"), on_click=lambda: _download(schema, state)
-            ).mark("result-download")
-            # DataCite and Croissant are pure crosswalks — no LLM call, no
-            # provider, no config — so unlike Dataverse below they need no
-            # run.io_bound offload and no enabled-gate.
-            ui.button(
-                t("run.result.download_datacite"),
-                on_click=lambda: _download_datacite(state),
-            ).props("outline").mark("result-download-datacite")
-            ui.button(
-                t("run.result.download_croissant"),
-                on_click=lambda: _download_croissant(state),
-            ).props("outline").mark("result-download-croissant")
+            format_options = {
+                _EXPORT_FORMAT_CDIF: t("run.result.format.cdif"),
+                _EXPORT_FORMAT_DATACITE: t("run.result.format.datacite"),
+                _EXPORT_FORMAT_CROISSANT: t("run.result.format.croissant"),
+            }
+            # Dataverse needs an enabled/configured export + provider (see
+            # _download_dataverse's own gate below) -- DataCite and
+            # Croissant are pure crosswalks with no such requirement, so
+            # unlike Dataverse they're always offered on a successful
+            # result.
             if dataverse_export_config is not None:
-                ui.button(
-                    t("run.result.download_dataverse"),
-                    on_click=lambda: _download_dataverse(state, pipeline_config, dataverse_export_config),
-                ).props("outline").mark("result-download-dataverse")
+                format_options[_EXPORT_FORMAT_DATAVERSE] = t("run.result.format.dataverse")
+
+            format_select = (
+                ui.select(
+                    format_options,
+                    value=_EXPORT_FORMAT_CDIF,
+                    label=t("run.result.format_label"),
+                )
+                .classes("w-56")
+                .mark("result-download-format")
+            )
+
+            async def _download_selected() -> None:
+                selected = format_select.value
+                if selected == _EXPORT_FORMAT_DATACITE:
+                    _download_datacite(state)
+                elif selected == _EXPORT_FORMAT_CROISSANT:
+                    _download_croissant(state)
+                elif selected == _EXPORT_FORMAT_DATAVERSE and dataverse_export_config is not None:
+                    await _download_dataverse(state, pipeline_config, dataverse_export_config)
+                else:
+                    _download_cdif(schema, state)
+
+            ui.button(t("run.result.download"), on_click=_download_selected).mark(
+                "result-download"
+            )
         ui.button(t("run.result.run_another"), on_click=_reset).mark("result-back")
 
     if state.elapsed_seconds is not None:
@@ -542,14 +570,19 @@ def _render_result_phase(
                     ui.label(line).classes("text-caption")
 
 
-def _download(schema: Schema, state: _RunViewState) -> None:
+def _download_cdif(schema: Schema, state: _RunViewState) -> None:
+    """The primary generation output -- CDIF Discovery, JSON-LD (not plain
+    JSON: it carries @context/@id/@type, per schemas/cdif/discovery/
+    cdif_discovery.py's envelope injection). filename/media_type reflect
+    that precisely -- found on review: the old "metadata.json"/generic
+    "JSON" label undersold what this actually is."""
     assert state.result is not None and state.result.document is not None
     json_str = OutputWriter(schema).format_json(state.result.document)
     # Explicit bytes, not str: NiceGUI's test-simulation Download.content()
     # doesn't do the str->bytes conversion the real implementation does —
     # caught by visor/tests/test_app_e2e.py's real click-through test.
     ui.download.content(
-        json_str.encode("utf-8"), filename="metadata.json", media_type="application/json"
+        json_str.encode("utf-8"), filename="metadata.jsonld", media_type="application/ld+json"
     )
 
 

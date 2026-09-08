@@ -228,6 +228,131 @@ async def test_agents_tab_bulk_provider_switch_applies_to_every_agent(
     assert {a["model"] for a in payload["agents"]} == {"opencode-model-a"}
 
 
+async def test_agents_tab_bulk_provider_select_reflects_current_state(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Found on review: the bulk provider select never wrote the
+    just-applied value back onto itself, and stayed at its own selected
+    value (or blank on a fresh render) instead of showing reality once
+    every agent (and the Dataverse card) actually agreed on one provider
+    -- confirmed by re-finding the select fresh after a cards.refresh()
+    triggered by an unrelated Save, not by reading back whatever the test
+    itself just set programmatically."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module, "fetch_provider_models", lambda provider, api_key: ["opencode-model-a"]
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-provider")
+
+    bulk_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_select.value = "opencode"
+    include_checkbox = list(user.find(marker="agents-bulk-include-dataverse").elements)[0]
+    include_checkbox.value = True  # every agent AND the Dataverse card end up on one provider
+    user.find(marker="agents-bulk-provider-apply").click()
+    await user.should_see("applied to")
+
+    # The select itself, right after Apply -- no manual re-set.
+    bulk_select_after_apply = list(user.find(marker="agents-bulk-provider").elements)[0]
+    assert bulk_select_after_apply.value == "opencode"
+
+    # And still correct across an unrelated refresh (Save changes), which
+    # rebuilds every card -- including this select -- from pipeline_config
+    # rather than the DOM's prior state.
+    user.find(marker="agents-save").click()
+    await user.should_see("Agent settings updated")
+    bulk_select_after_save = list(user.find(marker="agents-bulk-provider").elements)[0]
+    assert bulk_select_after_save.value == "opencode"
+
+
+async def test_agents_tab_bulk_model_and_effort_switch_applies_to_every_agent(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The second bulk control: change model (and reasoning_effort) for
+    every agent at once, based on whichever provider the bulk provider
+    select currently names -- separate from the "switch provider" control
+    above since a provider switch alone can't know which model or effort
+    level the user actually wants."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module,
+        "fetch_provider_models",
+        lambda provider, api_key: ["opencode-model-b"],
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-model")
+
+    # config/agents.yaml's real agents all default to opencode already --
+    # point the bulk provider select at it without needing to click Apply
+    # first, matching this control's contract ("based on the selected
+    # provider", not "based on the already-applied provider").
+    bulk_provider_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_provider_select.value = "opencode"
+
+    user.find(marker="agents-bulk-model-refresh").click()
+    await user.should_see("Loaded 1 models")
+
+    bulk_model_select = list(user.find(marker="agents-bulk-model").elements)[0]
+    bulk_model_select.value = "opencode-model-b"
+    bulk_effort_select = list(user.find(marker="agents-bulk-effort").elements)[0]
+    bulk_effort_select.value = "high"
+
+    user.find(marker="agents-bulk-model-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert {a["model"] for a in payload["agents"]} == {"opencode-model-b"}
+    assert {a["reasoning_effort"] for a in payload["agents"]} == {"high"}
+
+
+async def test_agents_tab_bulk_effort_inherit_leaves_reasoning_effort_unset(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The default "(inherit from provider)" effort option must not stamp
+    an explicit reasoning_effort onto every agent -- it means "let the
+    normal provider/model_overrides cascade decide", the same as never
+    having touched this field at all."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    monkeypatch.setattr(
+        agents_page_module,
+        "fetch_provider_models",
+        lambda provider, api_key: ["opencode-model-c"],
+    )
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-bulk-model")
+
+    bulk_provider_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_provider_select.value = "opencode"
+    user.find(marker="agents-bulk-model-refresh").click()
+    await user.should_see("Loaded 1 models")
+
+    bulk_model_select = list(user.find(marker="agents-bulk-model").elements)[0]
+    bulk_model_select.value = "opencode-model-c"
+    # bulk_effort_select left at its default ("(inherit from provider)").
+
+    user.find(marker="agents-bulk-model-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert all(a.get("reasoning_effort") is None for a in payload["agents"])
+
+
 async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -947,9 +1072,9 @@ async def test_result_phase_shows_models_used(user: User, monkeypatch, tmp_path)
 async def test_result_phase_downloads_datacite_export(user: User, monkeypatch, tmp_path) -> None:
     """DataCite is exporter-only after the CDIF pivot and was reachable
     only via `gema process --export datacite` on the CLI -- the Run tab
-    never offered it. Unlike the Dataverse button it needs no provider and
-    no enabled-gate: to_datacite_json() is a pure crosswalk with no LLM
-    call, so the button is always shown on a successful result."""
+    never offered it. Unlike Dataverse it needs no provider and no
+    enabled-gate: to_datacite_json() is a pure crosswalk with no LLM call,
+    so this format option is always offered on a successful result."""
     from metadata_enricher.pipeline import PipelineResult
     from metadata_enricher.types import MetadataDocument, ResourceDescription
 
@@ -980,7 +1105,9 @@ async def test_result_phase_downloads_datacite_export(user: User, monkeypatch, t
     user.find(marker="run-submit").click()
 
     await user.should_see(marker="result-success")
-    user.find(marker="result-download-datacite").click()
+    format_select = list(user.find(marker="result-download-format").elements)[0]
+    format_select.value = "datacite"
+    user.find(marker="result-download").click()
 
     response = await user.download.next(timeout=5)
     assert response.status_code == 200
@@ -989,9 +1116,9 @@ async def test_result_phase_downloads_datacite_export(user: User, monkeypatch, t
 
 
 async def test_result_phase_downloads_croissant_export(user: User, monkeypatch, tmp_path) -> None:
-    """Same as the DataCite button above, for MLCommons Croissant --
+    """Same as the DataCite format option above, for MLCommons Croissant --
     to_croissant_json() is likewise a pure crosswalk (no LLM call, no
-    provider), so the button carries no gate either."""
+    provider), so this option carries no gate either."""
     from metadata_enricher.pipeline import PipelineResult
     from metadata_enricher.types import MetadataDocument, ResourceDescription
 
@@ -1022,7 +1149,9 @@ async def test_result_phase_downloads_croissant_export(user: User, monkeypatch, 
     user.find(marker="run-submit").click()
 
     await user.should_see(marker="result-success")
-    user.find(marker="result-download-croissant").click()
+    format_select = list(user.find(marker="result-download-format").elements)[0]
+    format_select.value = "croissant"
+    user.find(marker="result-download").click()
 
     response = await user.download.next(timeout=5)
     assert response.status_code == 200

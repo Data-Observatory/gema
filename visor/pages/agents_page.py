@@ -59,7 +59,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from nicegui import events, run, ui
 
@@ -67,6 +67,7 @@ from metadata_enricher.config.models import (
     DataverseExportConfig,
     PipelineConfig,
     ProviderConfig,
+    ReasoningEffort,
     find_model_override_elsewhere,
 )
 from visor.i18n import t
@@ -75,6 +76,13 @@ from visor.session_settings import load_session_settings, save_session_settings
 from visor.settings import VisorSettings
 
 logger = logging.getLogger(__name__)
+
+# UI sentinel for the bulk effort select's "don't set a per-agent override"
+# option -- distinct from AgentConfig.reasoning_effort's own real "None"
+# (unset) and from "provider_default" (a real, explicit ReasoningEffort
+# value meaning "omit the reasoning block entirely"). ui.select needs a
+# concrete option value, so this stands in for the unset case.
+_BULK_EFFORT_INHERIT = ""
 
 
 def _model_options(options: list[str], current_model: str) -> list[str]:
@@ -312,13 +320,30 @@ def render_agents(
             provider_selects.clear()
             model_inputs.clear()
 
+            # Every agent's (and, if present, the Dataverse classifier's)
+            # provider, if they all currently agree on one -- pre-fills the
+            # bulk selects below with reality instead of an empty
+            # placeholder. Found on review: the provider select stayed
+            # blank even right after Apply, since nothing ever wrote the
+            # just-applied value back onto the select itself.
+            _bulk_agent_providers = {a.provider for a in pipeline_config.agents}
+            if dataverse_export_config is not None:
+                _bulk_agent_providers.add(dataverse_export_config.agent.provider)
+            current_common_provider = (
+                next(iter(_bulk_agent_providers)) if len(_bulk_agent_providers) == 1 else None
+            )
+
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.bulk_provider.title")).classes("text-subtitle1 text-bold")
                 ui.label(t("agents.bulk_provider.intro")).classes("text-caption")
 
                 with ui.row().classes("w-full items-end"):
                     bulk_provider_select = (
-                        ui.select(provider_names, label=t("agents.provider_label"))
+                        ui.select(
+                            provider_names,
+                            value=current_common_provider,
+                            label=t("agents.provider_label"),
+                        )
                         .classes("w-48")
                         .mark("agents-bulk-provider")
                     )
@@ -357,6 +382,7 @@ def render_agents(
                         # provider this bulk action just "switched away
                         # from" still looked in-use there until Save was
                         # also clicked, wrongly blocking its removal.
+                        bulk_provider_select.value = provider_name
                         for select in provider_selects.values():
                             select.value = provider_name
                         for agent in pipeline_config.agents:
@@ -441,6 +467,107 @@ def render_agents(
                     ui.button(
                         t("agents.bulk_provider.apply"), on_click=_apply_provider_to_all
                     ).mark("agents-bulk-provider-apply")
+
+            with ui.card().classes("w-full q-mt-md"):
+                ui.label(t("agents.bulk_model.title")).classes("text-subtitle1 text-bold")
+                ui.label(t("agents.bulk_model.intro")).classes("text-caption")
+
+                with ui.row().classes("w-full items-end"):
+                    bulk_model_select = (
+                        ui.select(
+                            [],
+                            label=t("agents.model_label"),
+                            with_input=True,
+                            new_value_mode="add-unique",
+                        )
+                        .classes("flex-grow")
+                        .mark("agents-bulk-model")
+                    )
+
+                    async def _refresh_bulk_models() -> None:
+                        provider = next(
+                            (p for p in pipeline_config.providers if p.name == bulk_provider_select.value),
+                            None,
+                        )
+                        if provider is None:
+                            ui.notify(t("agents.pick_provider_first"), type="negative")
+                            return
+                        await _refresh_models(provider, bulk_model_select)
+
+                    ui.button(icon="refresh", on_click=_refresh_bulk_models).props(
+                        "flat round"
+                    ).tooltip(t("agents.refresh_models.tooltip")).mark("agents-bulk-model-refresh")
+
+                    bulk_effort_select = (
+                        ui.select(
+                            {
+                                _BULK_EFFORT_INHERIT: t("agents.reasoning_effort.inherit"),
+                                "none": "none",
+                                "minimal": "minimal",
+                                "low": "low",
+                                "medium": "medium",
+                                "high": "high",
+                                "xhigh": "xhigh",
+                                "provider_default": "provider_default",
+                            },
+                            label=t("agents.reasoning_effort_label"),
+                            value=_BULK_EFFORT_INHERIT,
+                        )
+                        .classes("w-56")
+                        .mark("agents-bulk-effort")
+                    )
+
+                    bulk_include_dataverse_model = (
+                        ui.checkbox(t("agents.bulk_provider.include_dataverse"), value=True).mark(
+                            "agents-bulk-include-dataverse-model"
+                        )
+                        if dataverse_export_config is not None
+                        else None
+                    )
+
+                def _apply_model_to_all() -> None:
+                    model_value = (bulk_model_select.value or "").strip()
+                    if not model_value:
+                        ui.notify(t("agents.bulk_model.pick_first"), type="negative")
+                        return
+                    effort_value = bulk_effort_select.value or _BULK_EFFORT_INHERIT
+                    resolved_effort = (
+                        None
+                        if effort_value == _BULK_EFFORT_INHERIT
+                        else cast(ReasoningEffort, effort_value)
+                    )
+
+                    include_dataverse = (
+                        bulk_include_dataverse_model is not None
+                        and bulk_include_dataverse_model.value
+                    )
+
+                    for agent in pipeline_config.agents:
+                        agent.model = model_value
+                        agent.reasoning_effort = resolved_effort
+                    if include_dataverse and dataverse_export_config is not None:
+                        dataverse_export_config.agent.model = model_value
+                        dataverse_export_config.agent.reasoning_effort = resolved_effort
+
+                    agent_count = len(pipeline_config.agents) + (1 if include_dataverse else 0)
+                    ui.notify(
+                        t("agents.bulk_model.applied", model=model_value, count=agent_count),
+                        type="positive",
+                    )
+                    _persist_overrides(pipeline_config, dataverse_export_config)
+                    # Unlike _apply_provider_to_all above, this makes no
+                    # awaited call in between -- a plain refresh is simplest
+                    # and correctly re-renders every per-agent card (model
+                    # select value, and the Advanced section's resolved
+                    # reasoning_effort display) from pipeline_config's own
+                    # just-updated state, no risk of orphaning widgets.
+                    cards.refresh()
+                    if on_changed is not None:
+                        on_changed()
+
+                ui.button(t("agents.bulk_model.apply"), on_click=_apply_model_to_all).mark(
+                    "agents-bulk-model-apply"
+                )
 
             with ui.card().classes("w-full q-mt-md"):
                 ui.label(t("agents.pipeline_behavior.title")).classes("text-subtitle1 text-bold")
@@ -553,13 +680,44 @@ def render_agents(
                             ui.label(t("agents.tools", tools=", ".join(agent.tools)))
                         if agent.extra_body:
                             ui.label(t("agents.extra_body", extra_body=agent.extra_body))
-                        if agent.reasoning_effort:
+                        if agent.reasoning_effort is not None:
                             ui.label(
                                 t(
                                     "agents.reasoning_effort",
                                     reasoning_effort=agent.reasoning_effort,
                                 )
                             )
+                        else:
+                            # No per-agent override -- but reasoning_effort
+                            # more commonly comes from a provider's
+                            # model_overrides entry (e.g. config/agents.yaml's
+                            # own opencode/muse-spark-1.3-contributor pairing)
+                            # rather than the agent itself. Show the resolved
+                            # value in that case too, the same cascade
+                            # create_llm_client actually uses -- otherwise
+                            # this section stays silent for exactly the
+                            # agents where reasoning_effort is actually in
+                            # effect, and only shows it for the rare agent
+                            # that sets it directly.
+                            resolved_provider = next(
+                                (p for p in pipeline_config.providers if p.name == agent.provider),
+                                None,
+                            )
+                            resolved_model = agent.model or ""
+                            if (
+                                resolved_provider is not None
+                                and resolved_model
+                                and resolved_provider.effective_api_style(resolved_model)
+                                == "responses"
+                            ):
+                                ui.label(
+                                    t(
+                                        "agents.reasoning_effort",
+                                        reasoning_effort=resolved_provider.effective_reasoning_effort(
+                                            resolved_model
+                                        ),
+                                    )
+                                )
                         ui.label(t("agents.prompt_readonly")).classes("text-caption q-mt-sm")
                         ui.code(agent.prompt, language=None).classes("w-full")
 

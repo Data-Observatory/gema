@@ -143,10 +143,12 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.title": "Ejecutando…",
         "run.running.hint": "Esto puede tardar un minuto o más — una llamada al LLM por cada paso del pipeline.",
         "run.running.elapsed": "Transcurrido: {duration}",
-        "run.result.download_json": "Descargar JSON",
-        "run.result.download_dataverse": "Descargar JSON de Dataverse",
-        "run.result.download_datacite": "Descargar JSON de DataCite",
-        "run.result.download_croissant": "Descargar JSON de Croissant",
+        "run.result.download": "Descargar",
+        "run.result.format_label": "Formato de exportación",
+        "run.result.format.cdif": "CDIF Discovery (JSON-LD)",
+        "run.result.format.datacite": "DataCite (JSON)",
+        "run.result.format.croissant": "Croissant (JSON-LD)",
+        "run.result.format.dataverse": "Dataverse (JSON)",
         "run.result.run_another": "Ejecutar otro",
         "run.result.completed_in": "Completado en {duration}",
         "run.result.warnings_title": "Algunos campos están incompletos o un PID no se verificó:",
@@ -198,6 +200,19 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "obtener su lista de modelos — elige un modelo manualmente en cada "
             "tarjeta, luego pulsa Guardar cambios"
         ),
+        "agents.bulk_model.title": "Cambiar modelo (y esfuerzo) para todos los agentes",
+        "agents.bulk_model.intro": (
+            "Usa el proveedor elegido arriba: pulsa el botón de refrescar para "
+            "obtener su lista real de modelos, elige uno y, si aplica, un nivel "
+            "de esfuerzo de razonamiento, y aplícalo a todos los agentes del "
+            "pipeline (y, si lo marcas, al clasificador de Dataverse) de una "
+            "sola vez."
+        ),
+        "agents.bulk_model.pick_first": "Elige primero un modelo",
+        "agents.bulk_model.apply": "Aplicar a todos",
+        "agents.bulk_model.applied": "Modelo '{model}' aplicado a {count} agentes",
+        "agents.reasoning_effort_label": "Esfuerzo de razonamiento",
+        "agents.reasoning_effort.inherit": "(heredar del proveedor)",
         "agents.pipeline_behavior.title": "Comportamiento del pipeline",
         "agents.pipeline_behavior.intro": "Se aplica a todo el pipeline, no a un solo agente.",
         "agents.checkbox.content_fetch": "Obtener el contenido de la página automáticamente",
@@ -357,10 +372,12 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.title": "Running…",
         "run.running.hint": "This can take a minute or more — one LLM call per pipeline step.",
         "run.running.elapsed": "Elapsed: {duration}",
-        "run.result.download_json": "Download JSON",
-        "run.result.download_dataverse": "Download Dataverse JSON",
-        "run.result.download_datacite": "Download DataCite JSON",
-        "run.result.download_croissant": "Download Croissant JSON",
+        "run.result.download": "Download",
+        "run.result.format_label": "Export format",
+        "run.result.format.cdif": "CDIF Discovery (JSON-LD)",
+        "run.result.format.datacite": "DataCite (JSON)",
+        "run.result.format.croissant": "Croissant (JSON-LD)",
+        "run.result.format.dataverse": "Dataverse (JSON)",
         "run.result.run_another": "Run another",
         "run.result.completed_in": "Completed in {duration}",
         "run.result.warnings_title": "Some fields are incomplete or a PID didn't check out:",
@@ -411,6 +428,18 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "list couldn't be fetched — pick a model manually on each card, "
             "then click Save changes"
         ),
+        "agents.bulk_model.title": "Change model (and effort) for all agents",
+        "agents.bulk_model.intro": (
+            "Uses the provider picked above: click the refresh button to fetch "
+            "its real model list, pick one and, if it applies, a reasoning "
+            "effort level, and apply it to every agent in the pipeline (and, "
+            "if checked, the Dataverse classifier) at once."
+        ),
+        "agents.bulk_model.pick_first": "Pick a model first",
+        "agents.bulk_model.apply": "Apply to all",
+        "agents.bulk_model.applied": "Model '{model}' applied to {count} agents",
+        "agents.reasoning_effort_label": "Reasoning effort",
+        "agents.reasoning_effort.inherit": "(inherit from provider)",
         "agents.pipeline_behavior.title": "Pipeline behavior",
         "agents.pipeline_behavior.intro": "These apply to the whole pipeline, not a single agent.",
         "agents.checkbox.content_fetch": "Fetch page content automatically",

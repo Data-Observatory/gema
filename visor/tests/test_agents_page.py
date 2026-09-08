@@ -252,4 +252,72 @@ class TestAdvancedSection:
         async with user_simulation(root=_root) as user:
             await user.open("/")
             await user.should_see("Agent 0")
-            await user.should_not_see("Reasoning effort")
+            await user.should_not_see("Reasoning effort:")
+
+    async def test_shows_resolved_reasoning_effort_from_a_provider_model_override(self) -> None:
+        """The common real shape (config/agents.yaml's own opencode/
+        muse-spark-1.3-contributor pairing): reasoning_effort lives on the
+        provider's model_overrides entry, not the agent itself -- found
+        missing on review 2026-09-08: an agent with no per-agent
+        reasoning_effort set showed nothing here even when its provider
+        resolved one via model_overrides, the same cascade
+        create_llm_client actually uses."""
+        from nicegui import ui
+        from nicegui.testing import user_simulation
+
+        from visor.pages.agents_page import render_agents
+
+        raw = _minimal_config_dict(
+            providers=[
+                {
+                    "name": "p0",
+                    "api_key_env": "P0_API_KEY",
+                    "model_overrides": [
+                        {"model": "special-model", "api_style": "responses", "reasoning_effort": "high"}
+                    ],
+                }
+            ]
+        )
+        raw["agents"][0]["model"] = "special-model"
+        pipeline_config = PipelineConfig(**raw)
+        assert pipeline_config.agents[0].reasoning_effort is None
+
+        def _root() -> None:
+            render_agents(ui.column(), pipeline_config)
+
+        async with user_simulation(root=_root) as user:
+            await user.open("/")
+            await user.should_see("Reasoning effort: high")
+
+    async def test_omits_resolved_reasoning_effort_on_chat_completions_models(self) -> None:
+        """A provider's model_overrides entry for some *other* model must
+        not leak a reasoning_effort display onto an agent using a plain
+        chat_completions model -- effective_api_style is per-model, and
+        this display must respect that the same way create_llm_client
+        does."""
+        from nicegui import ui
+        from nicegui.testing import user_simulation
+
+        from visor.pages.agents_page import render_agents
+
+        raw = _minimal_config_dict(
+            providers=[
+                {
+                    "name": "p0",
+                    "api_key_env": "P0_API_KEY",
+                    "model_overrides": [
+                        {"model": "special-model", "api_style": "responses", "reasoning_effort": "high"}
+                    ],
+                }
+            ]
+        )
+        raw["agents"][0]["model"] = "plain-chat-model"
+        pipeline_config = PipelineConfig(**raw)
+
+        def _root() -> None:
+            render_agents(ui.column(), pipeline_config)
+
+        async with user_simulation(root=_root) as user:
+            await user.open("/")
+            await user.should_see("Agent 0")
+            await user.should_not_see("Reasoning effort:")
