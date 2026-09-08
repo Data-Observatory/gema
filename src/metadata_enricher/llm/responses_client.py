@@ -171,12 +171,16 @@ def _ensure_strict_object_schema(schema: dict[str, Any]) -> dict[str, Any]:
     schema = dict(schema)
     if schema.get("type") == "object":
         schema.setdefault("additionalProperties", False)
-        properties = schema.get("properties")
-        if isinstance(properties, dict):
-            schema["required"] = list(properties.keys())
-            schema["properties"] = {
-                key: _ensure_strict_object_schema(value) for key, value in properties.items()
-            }
+    # Unconditional on "properties" itself, not gated on type=="object" above
+    # -- matches openai.lib._pydantic._ensure_strict_json_schema exactly,
+    # so a hand-written schema with "properties" but no explicit "type" key
+    # (valid JSON Schema; implied object) still gets required/recursion.
+    properties = schema.get("properties")
+    if isinstance(properties, dict):
+        schema["required"] = list(properties.keys())
+        schema["properties"] = {
+            key: _ensure_strict_object_schema(value) for key, value in properties.items()
+        }
     items = schema.get("items")
     if isinstance(items, dict):
         schema["items"] = _ensure_strict_object_schema(items)

@@ -168,26 +168,37 @@ def _warn_model_override_mismatches(
     silently: the run still starts, using that provider's plain default
     wire format, and only surfaces as a confusing runtime 400 from the LLM
     call itself. Checked at save time (not on every keystroke) since a
-    mismatch is only meaningful once both fields have settled."""
+    mismatch is only meaningful once both fields have settled.
+
+    Deduplicated by (model, provider, other_provider) before notifying --
+    a bulk provider switch (see the "switch provider for all agents" card
+    above) can put every agent onto the same wrong provider in one click,
+    and one toast per agent for what's really one mistake is noise."""
     agents_and_dataverse = list(pipeline_config.agents)
     if dataverse_export_config is not None:
         agents_and_dataverse.append(dataverse_export_config.agent)
+    seen: set[tuple[str, str, str]] = set()
     for agent in agents_and_dataverse:
         if not agent.model:
             continue
         other_provider = find_model_override_elsewhere(
             pipeline_config.providers, agent.model, agent.provider
         )
-        if other_provider is not None:
-            ui.notify(
-                t(
-                    "agents.model_provider_mismatch",
-                    model=agent.model,
-                    provider=agent.provider,
-                    other_provider=other_provider,
-                ),
-                type="warning",
-            )
+        if other_provider is None:
+            continue
+        key = (agent.model, agent.provider, other_provider)
+        if key in seen:
+            continue
+        seen.add(key)
+        ui.notify(
+            t(
+                "agents.model_provider_mismatch",
+                model=agent.model,
+                provider=agent.provider,
+                other_provider=other_provider,
+            ),
+            type="warning",
+        )
 
 
 def render_agents(

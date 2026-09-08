@@ -125,9 +125,18 @@ def restore_testing_provider_if_key_available(pipeline_config: PipelineConfig) -
     still wins over both defaults).
 
     Inverts the swap using the same well-known constants rather than
-    needing a second, unswapped copy of the config kept around -- exact
-    inverse of apply_external_user_provider_overrides()'s own mapping, so
-    the two can never drift out of sync with each other.
+    needing a second, unswapped copy of the config kept around --
+    conservative by construction (only restores an agent whose provider,
+    model, *and* extra_body all still exactly match the external-user
+    default), so a config that already diverged from that shape (e.g. an
+    agent bulk-switched to a third provider) is left alone.
+
+    A user's own saved provider/model choice, applied by
+    apply_agent_overrides() right after this, still wins -- but extra_body
+    isn't one of the fields that function restores, so it can end up
+    stale relative to whatever (provider, model) that later layer settles
+    on; call reconcile_provider_extra_body() (below) last, after
+    apply_agent_overrides(), to fix that up.
 
     A no-op (safe) when the config doesn't declare the testing provider at
     all, or when nothing was actually swapped (e.g. a hand-edited config
@@ -161,6 +170,43 @@ def restore_testing_provider_if_key_available(pipeline_config: PipelineConfig) -
             provider.default = True
         elif provider.name == _EXTERNAL_USER_PROVIDER:
             provider.default = False
+
+
+def reconcile_provider_extra_body(pipeline_config: PipelineConfig) -> None:
+    """Fix up extra_body left stale by a later layer changing (provider,
+    model) without also updating it -- apply_agent_overrides() (settings.py)
+    restores a user's own saved provider/model choice but was never meant
+    to know about this swap's extra_body shapes, so a session that
+    restore_testing_provider_if_key_available() flipped to opencode, whose
+    saved override then flips the same agent back to openrouter (e.g.
+    saved before this session ever had an opencode key), ends up with
+    openrouter's provider/model paired with opencode's DeepSeek-native
+    extra_body -- OpenRouter doesn't understand that shape, thinking mode
+    stays on, and it collides with a forced tool_choice exactly like the
+    bug this branch exists to eliminate. Call this last, after
+    apply_agent_overrides(), so it reconciles whichever (provider, model)
+    pair actually won.
+
+    Equality-gated the same conservative way as the swap/restore
+    functions above: only touches extra_body that's still sitting at
+    exactly the *other* pairing's canonical shape, so a genuinely
+    hand-customized extra_body (e.g. via the Agents tab's JSON upload) on
+    an agent that happens to already match one of these (provider, model)
+    pairs is left alone.
+    """
+    for agent in pipeline_config.agents:
+        if (
+            agent.provider == _TESTING_PROVIDER
+            and agent.model == _TESTING_MODEL
+            and agent.extra_body == _EXTERNAL_USER_EXTRA_BODY
+        ):
+            agent.extra_body = dict(_TESTING_EXTRA_BODY)
+        elif (
+            agent.provider == _EXTERNAL_USER_PROVIDER
+            and agent.model == _EXTERNAL_USER_MODEL
+            and agent.extra_body == _TESTING_EXTRA_BODY
+        ):
+            agent.extra_body = dict(_EXTERNAL_USER_EXTRA_BODY)
 
 
 DATAVERSE_EXPORT_BUNDLED_SUBPATH = Path("visor_default_config") / "dataverse_export.yaml"

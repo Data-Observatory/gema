@@ -167,6 +167,45 @@ class TestWarnModelOverrideMismatches:
         _warn_model_override_mismatches(pipeline_config, None)
         assert _notify_calls == []
 
+    async def test_dedupes_identical_mismatches_across_agents(
+        self, _notify_calls: list[dict[str, Any]]
+    ) -> None:
+        """A bulk provider switch can put every agent onto the same wrong
+        provider in one click -- one toast for that, not one per agent."""
+        raw = _minimal_config_dict(
+            agents=[
+                {
+                    "id": "a0",
+                    "name": "Agent 0",
+                    "fields": ["titles"],
+                    "prompt": "Do something.",
+                    "provider": "p0",
+                    "model": "special-model",
+                },
+                {
+                    "id": "a1",
+                    "name": "Agent 1",
+                    "fields": ["titles"],
+                    "prompt": "Do something else.",
+                    "provider": "p0",
+                    "model": "special-model",
+                },
+            ],
+            providers=[
+                {"name": "p0", "api_key_env": "P0_API_KEY"},
+                {
+                    "name": "p1",
+                    "api_key_env": "P1_API_KEY",
+                    "model_overrides": [{"model": "special-model", "api_style": "responses"}],
+                },
+            ],
+        )
+        pipeline_config = PipelineConfig(**raw)
+
+        _warn_model_override_mismatches(pipeline_config, None)
+
+        assert len(_notify_calls) == 1
+
 
 class TestAdvancedSection:
     """The read-only "Advanced" expansion. Rendered here against a

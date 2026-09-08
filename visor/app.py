@@ -20,6 +20,7 @@ from visor.bootstrap import (
     load_dataverse_export_config_safe,
     load_pipeline_config,
     load_providers_pool_safe,
+    reconcile_provider_extra_body,
     restore_testing_provider_if_key_available,
 )
 from metadata_enricher.llm.factory import reset_client_cache
@@ -68,6 +69,7 @@ def main_page() -> None:
     apply_to_environ(session_settings)
     restore_testing_provider_if_key_available(pipeline_config)
     apply_agent_overrides(pipeline_config, dataverse_export_config, session_settings)
+    reconcile_provider_extra_body(pipeline_config)
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
 

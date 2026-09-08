@@ -275,6 +275,26 @@ class TestMissingRequired:
         settings = VisorSettings(env={"ZAI_API_KEY": ""})
         assert missing_required(config, settings) == ["ZAI_API_KEY"]
 
+    def test_os_environ_fallback_when_settings_lacks_it(self, monkeypatch):
+        """Matches the actual key resolution build_llm_factory/
+        create_llm_client use at call time (settings first, os.environ
+        otherwise) -- a key that would genuinely make the call succeed
+        must not be reported as missing just because it was never typed
+        into visor's own Settings tab. Regression: without this,
+        bootstrap.restore_testing_provider_if_key_available() could flip
+        an agent onto a provider this gate then insisted needed a key the
+        environment already has."""
+        monkeypatch.setenv("ZAI_API_KEY", "from-os-environ")
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        settings = VisorSettings()
+        assert missing_required(config, settings) == []
+
+    def test_os_environ_empty_value_still_counts_as_missing(self, monkeypatch):
+        monkeypatch.setenv("ZAI_API_KEY", "")
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        settings = VisorSettings()
+        assert missing_required(config, settings) == ["ZAI_API_KEY"]
+
 
 class TestMissingRequiredDetails:
     def test_all_present_returns_empty(self):

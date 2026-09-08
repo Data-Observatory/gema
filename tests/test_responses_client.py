@@ -513,6 +513,17 @@ class TestEnsureStrictObjectSchema:
         assert result["anyOf"][0]["additionalProperties"] is False
         assert result["anyOf"][1] == {"type": "null"}
 
+    def test_properties_without_explicit_type_still_get_required(self) -> None:
+        """Valid JSON Schema can omit "type": "object" when "properties" is
+        present (it's implied) -- must still get additionalProperties/
+        required, matching openai.lib._pydantic's own unconditional-on-
+        "properties" handling (found on review: an earlier version of this
+        function nested that logic inside the type=="object" branch and
+        missed exactly this shape)."""
+        schema = {"properties": {"a": {"type": "string"}}}
+        result = _ensure_strict_object_schema(schema)
+        assert result["required"] == ["a"]
+
     def test_non_object_schema_untouched(self) -> None:
         schema = {"type": "string"}
         assert _ensure_strict_object_schema(schema) == {"type": "string"}

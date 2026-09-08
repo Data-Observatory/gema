@@ -322,10 +322,25 @@ def apply_agent_overrides(
 
 
 def missing_required(pipeline_config: PipelineConfig, settings: VisorSettings) -> list[str]:
-    """Required env vars with no non-empty value in *settings* — used to
-    gate the run form behind Settings on first use, instead of letting
-    factory.py's raw ValueError surface."""
-    return [env for env in required_env_vars(pipeline_config) if not settings.env.get(env)]
+    """Required env vars with no non-empty value in *settings* or, failing
+    that, os.environ -- used to gate the run form behind Settings on first
+    use, instead of letting factory.py's raw ValueError surface.
+
+    The os.environ fallback matches the actual key resolution
+    build_llm_factory/create_llm_client use at call time (session settings
+    first, os.environ otherwise -- see session_settings.py's factory() and
+    agents_page.py's _resolve_api_key): a maintainer's own .env, loaded
+    process-wide by `uv run`, genuinely does make a call succeed even
+    though it was never typed into visor's own Settings tab. Found on
+    review (2026-09-08): without this fallback,
+    bootstrap.restore_testing_provider_if_key_available() could flip
+    agents onto a provider whose key this same gate then insisted was
+    missing, hard-locking the Run tab for a key that actually works."""
+    return [
+        env
+        for env in required_env_vars(pipeline_config)
+        if not settings.env.get(env) and not os.environ.get(env)
+    ]
 
 
 @dataclass

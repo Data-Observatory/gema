@@ -302,6 +302,151 @@ class TestRestoreTestingProviderIfKeyAvailable:
         assert by_name["opencode"].default is False
 
 
+class TestReconcileProviderExtraBody:
+    """Fixes the desync found on review: apply_agent_overrides() (called
+    between restore_testing_provider_if_key_available() and this function
+    in app.py) restores a user's saved provider/model but never touches
+    extra_body -- without this reconciliation, a saved override could pair
+    one provider's model with the other's extra_body shape, resurrecting
+    the exact thinking-mode/tool_choice collision this branch exists to
+    eliminate."""
+
+    def test_fixes_opencode_pairing_with_leftover_openrouter_extra_body(self):
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            providers=[ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="opencode",
+                    model="deepseek-v4-flash",
+                    extra_body={"reasoning": {"enabled": False}},
+                ),
+            ],
+        )
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
+    def test_fixes_openrouter_pairing_with_leftover_opencode_extra_body(self):
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            providers=[ProviderConfig(name="openrouter", api_key_env="OPENROUTER_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="openrouter",
+                    model="~deepseek/deepseek-v4-flash-latest",
+                    extra_body={"thinking": {"type": "disabled"}},
+                ),
+            ],
+        )
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"reasoning": {"enabled": False}}
+
+    def test_leaves_a_hand_customized_extra_body_alone(self):
+        """An extra_body that matches neither canonical shape (e.g.
+        uploaded by hand) is not this function's business."""
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            providers=[ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="opencode",
+                    model="deepseek-v4-flash",
+                    extra_body={"thinking": {"type": "enabled"}},
+                ),
+            ],
+        )
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"thinking": {"type": "enabled"}}
+
+    def test_leaves_already_consistent_pairing_alone(self):
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            providers=[ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="opencode",
+                    model="deepseek-v4-flash",
+                    extra_body={"thinking": {"type": "disabled"}},
+                ),
+            ],
+        )
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
+    def test_end_to_end_restore_then_conflicting_saved_override_then_reconcile(
+        self, monkeypatch
+    ):
+        """The exact scenario found on review: a session already has an
+        opencode key (restore fires), but the user's saved agent_overrides
+        (applied after restore, before this function) flips the agent back
+        to openrouter -- reconcile must catch the resulting desync."""
+        from visor.settings import apply_agent_overrides
+        from visor.settings import VisorSettings as _VisorSettings
+
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            default_provider="openrouter",
+            providers=[
+                ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY", default=False),
+                ProviderConfig(name="openrouter", api_key_env="OPENROUTER_API_KEY", default=True),
+            ],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="openrouter",
+                    model="~deepseek/deepseek-v4-flash-latest",
+                    extra_body={"reasoning": {"enabled": False}},
+                ),
+            ],
+        )
+        session_settings = _VisorSettings(
+            agent_overrides={
+                "a0": {"provider": "openrouter", "model": "~deepseek/deepseek-v4-flash-latest"}
+            }
+        )
+
+        monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+        assert config.agents[0].provider == "opencode"  # restored
+
+        apply_agent_overrides(config, None, session_settings)
+        assert config.agents[0].provider == "openrouter"  # saved choice wins
+        assert config.agents[0].extra_body == {
+            "thinking": {"type": "disabled"}
+        }  # desync before reconcile
+
+        bootstrap.reconcile_provider_extra_body(config)
+        assert config.agents[0].extra_body == {"reasoning": {"enabled": False}}
+
+
 class TestLoadPipelineConfig:
     def test_returns_config_and_schema_on_success(self, monkeypatch, tmp_path):
         config_path = tmp_path / "agents.yaml"
