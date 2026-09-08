@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 import visor.bootstrap as bootstrap
-from metadata_enricher.config.models import PipelineConfig
+from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
 
 _REAL_AGENTS_YAML = Path(__file__).resolve().parent.parent.parent / "config" / "agents.yaml"
 
@@ -168,6 +168,138 @@ class TestApplyExternalUserProviderOverrides:
             assert agent.provider == "openrouter"
             assert agent.model == "~deepseek/deepseek-v4-flash-latest"
             assert agent.extra_body == {"reasoning": {"enabled": False}}
+
+
+class TestRestoreTestingProviderIfKeyAvailable:
+    """The undo half of the openrouter swap -- confirmed 2026-09-08: without
+    this, a session with real opencode access still got silently rerouted
+    through openrouter's model alias, which doesn't reliably suppress
+    thinking-mode for forced tool_choice the way the canonical opencode
+    config does (see this branch's Responses-client fix for the other half
+    of that same bug class)."""
+
+    def _swapped_config(self) -> PipelineConfig:
+        """A config already in the post-swap shape
+        apply_external_user_provider_overrides() would have produced --
+        this function's whole job is inverting exactly that shape."""
+        return PipelineConfig(
+            schema_name="cdif-discovery",
+            default_provider="openrouter",
+            providers=[
+                ProviderConfig(
+                    name="opencode", api_key_env="OPENCODE_API_KEY", default=False
+                ),
+                ProviderConfig(
+                    name="openrouter", api_key_env="OPENROUTER_API_KEY", default=True
+                ),
+            ],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="openrouter",
+                    model="~deepseek/deepseek-v4-flash-latest",
+                    extra_body={"reasoning": {"enabled": False}},
+                ),
+            ],
+        )
+
+    def test_restores_when_testing_provider_key_present(self, monkeypatch):
+        monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+        config = self._swapped_config()
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+
+        assert config.agents[0].provider == "opencode"
+        assert config.agents[0].model == "deepseek-v4-flash"
+        assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+        assert config.default_provider == "opencode"
+        by_name = {p.name: p for p in config.providers}
+        assert by_name["opencode"].default is True
+        assert by_name["openrouter"].default is False
+
+    def test_leaves_openrouter_swap_when_key_absent(self, monkeypatch):
+        monkeypatch.delenv("OPENCODE_API_KEY", raising=False)
+        config = self._swapped_config()
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+
+        assert config.agents[0].provider == "openrouter"
+        assert config.agents[0].model == "~deepseek/deepseek-v4-flash-latest"
+        assert config.default_provider == "openrouter"
+
+    def test_leaves_openrouter_swap_when_key_present_but_empty(self, monkeypatch):
+        """An empty-string env var must not count as "available" -- same
+        truthiness rule create_llm_client's own key resolution uses."""
+        monkeypatch.setenv("OPENCODE_API_KEY", "")
+        config = self._swapped_config()
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+
+        assert config.agents[0].provider == "openrouter"
+
+    def test_noop_when_config_never_declares_testing_provider(self, monkeypatch):
+        monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            default_provider="openai",
+            providers=[ProviderConfig(name="openai", api_key_env="OPENAI_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0", name="A0", fields=["schema_name"], prompt="x", provider="openai"
+                ),
+            ],
+        )
+
+        bootstrap.restore_testing_provider_if_key_available(config)  # must not raise
+
+        assert config.agents[0].provider == "openai"
+
+    def test_untouched_agent_on_a_third_provider_stays_untouched(self, monkeypatch):
+        """Only agents actually sitting on the external-user default get
+        restored -- an agent a user has already hand-set to some other
+        provider entirely is not this function's business."""
+        monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+        config = self._swapped_config()
+        config.providers.append(ProviderConfig(name="openai", api_key_env="OPENAI_API_KEY"))
+        config.agents.append(
+            AgentConfig(
+                id="a1", name="A1", fields=["schema_name"], prompt="x", provider="openai"
+            )
+        )
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+
+        assert config.agents[1].provider == "openai"
+
+    def test_default_flags_untouched_when_nothing_was_restored(self, monkeypatch):
+        """The provider.default/default_provider flip only happens
+        alongside an actual restore -- a config that never went through the
+        openrouter swap in the first place must come out exactly as it
+        went in."""
+        monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+        config = PipelineConfig(
+            schema_name="cdif-discovery",
+            default_provider="openai",
+            providers=[
+                ProviderConfig(name="openai", api_key_env="OPENAI_API_KEY", default=True),
+                ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY", default=False),
+            ],
+            agents=[
+                AgentConfig(
+                    id="a0", name="A0", fields=["schema_name"], prompt="x", provider="openai"
+                ),
+            ],
+        )
+
+        bootstrap.restore_testing_provider_if_key_available(config)
+
+        assert config.default_provider == "openai"
+        by_name = {p.name: p for p in config.providers}
+        assert by_name["openai"].default is True
+        assert by_name["opencode"].default is False
 
 
 class TestLoadPipelineConfig:

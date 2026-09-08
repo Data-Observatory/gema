@@ -33,6 +33,30 @@ async def test_tabs_render_and_are_freely_navigable(user: User, monkeypatch, tmp
     await user.should_see(marker="run-settings-gate")
 
 
+async def test_agents_default_to_opencode_when_its_key_is_already_available(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """visor's shipped default is openrouter (see visor/bootstrap.py's
+    apply_external_user_provider_overrides, and every other test in this
+    file implicitly exercising that default via the key-stripped baseline
+    conftest.py's _no_real_provider_keys_in_environ fixture provides) --
+    but restore_testing_provider_if_key_available() must undo that swap
+    when a real OPENCODE_API_KEY is already sitting in the environment
+    (e.g. a maintainer's own .env), the same way `gema process` from the
+    CLI already sees it. Regression coverage for the actual bug: this key
+    being present had no effect at all before that function existed, so
+    every agent silently ran through openrouter's model alias regardless."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    monkeypatch.setenv("OPENCODE_API_KEY", "real-key")
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agents-save")
+
+    provider_select = list(user.find(marker="agent-provider-core_metadata").elements)[0]
+    assert provider_select.value == "opencode"
+
+
 async def test_settings_save_clears_stale_llm_client_cache(user: User, monkeypatch, tmp_path) -> None:
     """create_llm_client()'s cache key is provider+model+temperature+... --
     never the API key's value -- so saving a new key must invalidate
