@@ -13,7 +13,10 @@ from pydantic import BaseModel, ValidationError
 from metadata_enricher.llm.base import LLMClient, LLMConfig
 from metadata_enricher.llm.responses_client import (
     ResponsesLLMClient,
+    _ensure_strict_object_schema,
     _extract_json,
+    _force_strict_additional_properties,
+    _text_format,
     _to_responses_tool_schema,
 )
 from metadata_enricher.llm.retry import _is_retryable
@@ -184,6 +187,92 @@ class TestRequestShaping:
                         _check(value)
 
         _check(schema)
+
+
+class TestForceStrictAdditionalProperties:
+    """to_strict_json_schema() leaves an EXPLICIT additionalProperties:
+    true untouched (assumes it was deliberate) -- but pydantic's own
+    model_json_schema() emits exactly that for any model using
+    ConfigDict(extra="allow"), which is what CDIFDiscoveryProfile's
+    dynamically-built output model uses. Confirmed 2026-09-08 against
+    opencode:muse-spark-1.3-contributor: every agent (not just
+    tool-using ones) 400'd on the real CDIF output schema with
+    "'additionalProperties' is required to be supplied and to be false"
+    -- array-of-object fields (schema:identifier, schema:sameAs, ...) all
+    carried additionalProperties: true, inherited from extra="allow"."""
+
+    def test_forces_false_over_an_explicit_true(self) -> None:
+        schema = {"type": "object", "properties": {}, "additionalProperties": True}
+        assert _force_strict_additional_properties(schema)["additionalProperties"] is False
+
+    def test_forces_false_inside_nested_properties(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "outer": {"type": "object", "properties": {}, "additionalProperties": True}
+            },
+        }
+        result = _force_strict_additional_properties(schema)
+        assert result["properties"]["outer"]["additionalProperties"] is False
+
+    def test_forces_false_inside_array_items(self) -> None:
+        """The exact CDIF shape: schema:identifier is an array of
+        extra="allow" objects."""
+        schema = {
+            "type": "array",
+            "items": {"type": "object", "properties": {}, "additionalProperties": True},
+        }
+        result = _force_strict_additional_properties(schema)
+        assert result["items"]["additionalProperties"] is False
+
+    def test_forces_false_inside_defs(self) -> None:
+        schema = {
+            "$defs": {"Sub": {"type": "object", "properties": {}, "additionalProperties": True}}
+        }
+        result = _force_strict_additional_properties(schema)
+        assert result["$defs"]["Sub"]["additionalProperties"] is False
+
+    def test_forces_false_inside_union_variants(self) -> None:
+        schema = {
+            "anyOf": [
+                {"type": "object", "properties": {}, "additionalProperties": True},
+                {"type": "null"},
+            ]
+        }
+        result = _force_strict_additional_properties(schema)
+        assert result["anyOf"][0]["additionalProperties"] is False
+        assert result["anyOf"][1] == {"type": "null"}
+
+    def test_non_object_schema_untouched(self) -> None:
+        assert _force_strict_additional_properties({"type": "string"}) == {"type": "string"}
+
+    def test_text_format_output_never_has_a_true_anywhere(self) -> None:
+        """End-to-end through _text_format() itself, using an
+        extra="allow" model shaped like CDIFDiscoveryProfile's real
+        dynamic output model (a scalar field plus an array-of-open-object
+        field) -- not just the isolated helper."""
+        from pydantic import ConfigDict, Field
+
+        class _OpenModel(BaseModel):
+            model_config = ConfigDict(extra="allow")
+
+            name: str = ""
+            identifiers: list[dict[str, Any]] = Field(default_factory=list)
+
+        text_format = _text_format(_OpenModel)
+        schema = text_format["format"]["schema"]
+
+        def _assert_no_true(node: object) -> None:
+            if isinstance(node, dict):
+                if node.get("type") == "object":
+                    assert node.get("additionalProperties") is False
+                for value in node.values():
+                    _assert_no_true(value)
+            elif isinstance(node, list):
+                for value in node:
+                    _assert_no_true(value)
+
+        _assert_no_true(schema)
 
     @pytest.mark.parametrize(
         ("effort", "expected"),
@@ -440,9 +529,103 @@ class TestToolSchemaReshape:
             "type": "function",
             "name": "lookup_organization",
             "description": "look it up",
-            "parameters": {"type": "object", "properties": {}},
+            "parameters": {"type": "object", "properties": {}, "additionalProperties": False, "required": []},
         }
         assert "function" not in flat
+
+    def test_parameters_get_additional_properties_false(self) -> None:
+        """Regression: a Responses-API tool schema missing
+        additionalProperties on an object type gets a 400 from at least one
+        real backend (see _ensure_strict_object_schema's docstring) -- this
+        must never regress back to a bare pass-through reshape."""
+        nested = {
+            "type": "function",
+            "function": {
+                "name": "lookup_organization",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                    "required": ["name"],
+                },
+            },
+        }
+        flat = _to_responses_tool_schema(nested)
+        assert flat["parameters"]["additionalProperties"] is False
+        assert flat["parameters"]["required"] == ["name"]
+
+
+class TestEnsureStrictObjectSchema:
+    """Direct tests for the recursive additionalProperties/required
+    enforcement, independent of any particular tool -- this must apply to
+    any Responses-API model's tool schemas, not just the one that surfaced
+    the bug (opencode:muse-spark-1.3-contributor)."""
+
+    def test_top_level_object(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"type": "string"}}}
+        result = _ensure_strict_object_schema(schema)
+        assert result["additionalProperties"] is False
+        assert result["required"] == ["a"]
+
+    def test_nested_object_property(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "outer": {
+                    "type": "object",
+                    "properties": {"inner": {"type": "string"}},
+                }
+            },
+        }
+        result = _ensure_strict_object_schema(schema)
+        outer = result["properties"]["outer"]
+        assert outer["additionalProperties"] is False
+        assert outer["required"] == ["inner"]
+
+    def test_object_inside_array_items(self) -> None:
+        schema = {
+            "type": "array",
+            "items": {"type": "object", "properties": {"x": {"type": "string"}}},
+        }
+        result = _ensure_strict_object_schema(schema)
+        assert result["items"]["additionalProperties"] is False
+        assert result["items"]["required"] == ["x"]
+
+    def test_object_inside_union(self) -> None:
+        schema = {
+            "anyOf": [
+                {"type": "object", "properties": {"x": {"type": "string"}}},
+                {"type": "null"},
+            ]
+        }
+        result = _ensure_strict_object_schema(schema)
+        assert result["anyOf"][0]["additionalProperties"] is False
+        assert result["anyOf"][1] == {"type": "null"}
+
+    def test_properties_without_explicit_type_still_get_required(self) -> None:
+        """Valid JSON Schema can omit "type": "object" when "properties" is
+        present (it's implied) -- must still get additionalProperties/
+        required, matching openai.lib._pydantic's own unconditional-on-
+        "properties" handling (found on review: an earlier version of this
+        function nested that logic inside the type=="object" branch and
+        missed exactly this shape)."""
+        schema = {"properties": {"a": {"type": "string"}}}
+        result = _ensure_strict_object_schema(schema)
+        assert result["required"] == ["a"]
+
+    def test_non_object_schema_untouched(self) -> None:
+        schema = {"type": "string"}
+        assert _ensure_strict_object_schema(schema) == {"type": "string"}
+
+    def test_explicit_additional_properties_not_overridden(self) -> None:
+        """setdefault, not unconditional assignment -- a hand-written tool
+        schema that deliberately allows extra keys (rare, but not this
+        module's call to forbid) must survive untouched."""
+        schema = {
+            "type": "object",
+            "properties": {"a": {"type": "string"}},
+            "additionalProperties": True,
+        }
+        assert _ensure_strict_object_schema(schema)["additionalProperties"] is True
 
 
 class TestSessionHeader:

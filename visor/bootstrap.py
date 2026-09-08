@@ -15,11 +15,26 @@ editable repo checkout) or a frozen build's seeded copy. Only the
 underlying files (config/agents.yaml, and any seeded user copy of it) stay
 pinned to opencode/deepseek-v4-flash on disk — that's what CI, the test
 suite, and `gema process` from the CLI actually run against.
+
+That openrouter default is meant for someone with no opencode access at
+all, not an unconditional override -- restore_testing_provider_if_key_available()
+(see below) undoes it, per session, for anyone whose environment already
+has a real key for the testing provider (e.g. a maintainer's own .env,
+loaded process-wide by `uv run` the same way the CLI sees it). Confirmed
+2026-09-08: without this, someone with working opencode access got
+silently rerouted through openrouter's model alias and its differently
+-shaped reasoning-disable param, which doesn't reliably suppress
+thinking-mode there and collides with a forced tool_choice -- a bug the
+canonical opencode config (proven reliable via the CLI) never hits. Called
+from app.py, after settings.apply_to_environ() so a hosted session's own
+saved key is visible in the same os.environ check a native install's .env
+already populated.
 """
 
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -97,6 +112,102 @@ def apply_external_user_provider_overrides(config_yaml: str) -> str:
             agent["extra_body"] = dict(_EXTERNAL_USER_EXTRA_BODY)
 
     return yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
+
+
+def restore_testing_provider_if_key_available(pipeline_config: PipelineConfig) -> None:
+    """Undo apply_external_user_provider_overrides()'s openrouter swap, per
+    session, for any agent still sitting on the external-user default --
+    but only when a real key for the testing provider (opencode) is
+    already available in this process's environment. Call after
+    settings.apply_to_environ(settings) (so a hosted session's own saved
+    key has already been copied in) and before apply_agent_overrides() (so
+    a user's own explicit saved provider/model choice, applied after this,
+    still wins over both defaults).
+
+    Inverts the swap using the same well-known constants rather than
+    needing a second, unswapped copy of the config kept around --
+    conservative by construction (only restores an agent whose provider,
+    model, *and* extra_body all still exactly match the external-user
+    default), so a config that already diverged from that shape (e.g. an
+    agent bulk-switched to a third provider) is left alone.
+
+    A user's own saved provider/model choice, applied by
+    apply_agent_overrides() right after this, still wins -- but extra_body
+    isn't one of the fields that function restores, so it can end up
+    stale relative to whatever (provider, model) that later layer settles
+    on; call reconcile_provider_extra_body() (below) last, after
+    apply_agent_overrides(), to fix that up.
+
+    A no-op (safe) when the config doesn't declare the testing provider at
+    all, or when nothing was actually swapped (e.g. a hand-edited config
+    already using an agent on a third, unrelated provider).
+    """
+    testing_provider = next(
+        (p for p in pipeline_config.providers if p.name == _TESTING_PROVIDER), None
+    )
+    if testing_provider is None or not os.environ.get(testing_provider.api_key_env):
+        return
+
+    restored_any = False
+    for agent in pipeline_config.agents:
+        if (
+            agent.provider == _EXTERNAL_USER_PROVIDER
+            and agent.model == _EXTERNAL_USER_MODEL
+            and agent.extra_body == _EXTERNAL_USER_EXTRA_BODY
+        ):
+            agent.provider = _TESTING_PROVIDER
+            agent.model = _TESTING_MODEL
+            agent.extra_body = dict(_TESTING_EXTRA_BODY)
+            restored_any = True
+
+    if not restored_any:
+        return
+
+    if pipeline_config.default_provider == _EXTERNAL_USER_PROVIDER:
+        pipeline_config.default_provider = _TESTING_PROVIDER
+    for provider in pipeline_config.providers:
+        if provider.name == _TESTING_PROVIDER:
+            provider.default = True
+        elif provider.name == _EXTERNAL_USER_PROVIDER:
+            provider.default = False
+
+
+def reconcile_provider_extra_body(pipeline_config: PipelineConfig) -> None:
+    """Fix up extra_body left stale by a later layer changing (provider,
+    model) without also updating it -- apply_agent_overrides() (settings.py)
+    restores a user's own saved provider/model choice but was never meant
+    to know about this swap's extra_body shapes, so a session that
+    restore_testing_provider_if_key_available() flipped to opencode, whose
+    saved override then flips the same agent back to openrouter (e.g.
+    saved before this session ever had an opencode key), ends up with
+    openrouter's provider/model paired with opencode's DeepSeek-native
+    extra_body -- OpenRouter doesn't understand that shape, thinking mode
+    stays on, and it collides with a forced tool_choice exactly like the
+    bug this branch exists to eliminate. Call this last, after
+    apply_agent_overrides(), so it reconciles whichever (provider, model)
+    pair actually won.
+
+    Equality-gated the same conservative way as the swap/restore
+    functions above: only touches extra_body that's still sitting at
+    exactly the *other* pairing's canonical shape, so a genuinely
+    hand-customized extra_body (e.g. via the Agents tab's JSON upload) on
+    an agent that happens to already match one of these (provider, model)
+    pairs is left alone.
+    """
+    for agent in pipeline_config.agents:
+        if (
+            agent.provider == _TESTING_PROVIDER
+            and agent.model == _TESTING_MODEL
+            and agent.extra_body == _EXTERNAL_USER_EXTRA_BODY
+        ):
+            agent.extra_body = dict(_TESTING_EXTRA_BODY)
+        elif (
+            agent.provider == _EXTERNAL_USER_PROVIDER
+            and agent.model == _EXTERNAL_USER_MODEL
+            and agent.extra_body == _TESTING_EXTRA_BODY
+        ):
+            agent.extra_body = dict(_EXTERNAL_USER_EXTRA_BODY)
+
 
 DATAVERSE_EXPORT_BUNDLED_SUBPATH = Path("visor_default_config") / "dataverse_export.yaml"
 DATAVERSE_EXPORT_REPO_PATH = Path("config") / "dataverse_export.yaml"

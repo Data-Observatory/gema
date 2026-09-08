@@ -121,6 +121,54 @@ class ProviderConfig(BaseModel):
         return effective
 
 
+def find_model_override_elsewhere(
+    providers: list[ProviderConfig], model: str, assigned_provider: str
+) -> str | None:
+    """Return another provider's name that carries an api_style or
+    reasoning_effort override for *model* which *assigned_provider*
+    doesn't actually resolve to -- a likely misconfiguration signal, not
+    an error: model_overrides is deliberately scoped per-provider (see
+    ModelOverride's docstring), so assigning a model to a provider that
+    lacks the override it needs (e.g. api_style: responses for a model
+    that 400s on chat_completions) silently falls back to that provider's
+    own default instead of failing loudly. Callers decide what to do with
+    the answer (visor surfaces a warning; nothing here blocks the
+    assignment, since a provider genuinely not needing any override for
+    this model is a normal, valid case too).
+
+    Compares actual *resolved* values (via effective_api_style/
+    effective_reasoning_effort), not mere presence of a model_overrides
+    entry for *model* -- found on review: a provider carrying an entry for
+    *model* that sets, say, only max_workers (leaving api_style/
+    reasoning_effort to cascade down to that provider's own plain default)
+    must still be flagged if another provider's api_style/reasoning_effort
+    override for the same model would actually resolve differently; the
+    mere existence of *an* entry doesn't mean the field that matters is
+    covered.
+
+    Returns None when *assigned_provider* already resolves to the same
+    values another provider's override would give, or no provider's
+    override would actually change anything (nothing to warn about).
+    """
+    assigned = next((p for p in providers if p.name == assigned_provider), None)
+    for provider in providers:
+        if provider.name == assigned_provider:
+            continue
+        for override in provider.model_overrides:
+            if override.model != model:
+                continue
+            if override.api_style is not None and (
+                assigned is None or assigned.effective_api_style(model) != override.api_style
+            ):
+                return provider.name
+            if override.reasoning_effort is not None and (
+                assigned is None
+                or assigned.effective_reasoning_effort(model) != override.reasoning_effort
+            ):
+                return provider.name
+    return None
+
+
 class AgentConfig(BaseModel):
     """Single agent definition within a pipeline."""
 

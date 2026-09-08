@@ -67,6 +67,7 @@ htmlcov/
 # DeepEval local telemetry/state (not for distribution)
 .deepeval/
 .omo/
+.nicegui
 
 # Student onboarding doc — plain local file, handed directly, never committed
 ONBOARDING_BIBLIOTECARIA.md

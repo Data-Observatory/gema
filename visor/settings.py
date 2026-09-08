@@ -20,11 +20,18 @@ import secrets
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast, get_args
 
 from platformdirs import user_config_dir
 
-from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import (
+    DataverseExportConfig,
+    PipelineConfig,
+    ProviderConfig,
+    ReasoningEffort,
+)
+
+_REASONING_EFFORT_VALUES = frozenset(get_args(ReasoningEffort))
 
 logger = logging.getLogger(__name__)
 
@@ -299,6 +306,12 @@ def apply_agent_overrides(
         temperature = override.get("temperature")
         if isinstance(temperature, int | float):
             agent.temperature = float(temperature)
+        if "reasoning_effort" in override:
+            effort = override["reasoning_effort"]
+            if effort is None:
+                agent.reasoning_effort = None
+            elif isinstance(effort, str) and effort in _REASONING_EFFORT_VALUES:
+                agent.reasoning_effort = cast(ReasoningEffort, effort)
 
     dataverse_override = settings.dataverse_agent_override
     if dataverse_export_config is not None and dataverse_override:
@@ -314,6 +327,12 @@ def apply_agent_overrides(
         temperature = dataverse_override.get("temperature")
         if isinstance(temperature, int | float):
             dataverse_export_config.agent.temperature = float(temperature)
+        if "reasoning_effort" in dataverse_override:
+            effort = dataverse_override["reasoning_effort"]
+            if effort is None:
+                dataverse_export_config.agent.reasoning_effort = None
+            elif isinstance(effort, str) and effort in _REASONING_EFFORT_VALUES:
+                dataverse_export_config.agent.reasoning_effort = cast(ReasoningEffort, effort)
 
     for flag in PIPELINE_BEHAVIOR_FLAGS:
         value = settings.pipeline_behavior.get(flag)
@@ -322,10 +341,25 @@ def apply_agent_overrides(
 
 
 def missing_required(pipeline_config: PipelineConfig, settings: VisorSettings) -> list[str]:
-    """Required env vars with no non-empty value in *settings* — used to
-    gate the run form behind Settings on first use, instead of letting
-    factory.py's raw ValueError surface."""
-    return [env for env in required_env_vars(pipeline_config) if not settings.env.get(env)]
+    """Required env vars with no non-empty value in *settings* or, failing
+    that, os.environ -- used to gate the run form behind Settings on first
+    use, instead of letting factory.py's raw ValueError surface.
+
+    The os.environ fallback matches the actual key resolution
+    build_llm_factory/create_llm_client use at call time (session settings
+    first, os.environ otherwise -- see session_settings.py's factory() and
+    agents_page.py's _resolve_api_key): a maintainer's own .env, loaded
+    process-wide by `uv run`, genuinely does make a call succeed even
+    though it was never typed into visor's own Settings tab. Found on
+    review (2026-09-08): without this fallback,
+    bootstrap.restore_testing_provider_if_key_available() could flip
+    agents onto a provider whose key this same gate then insisted was
+    missing, hard-locking the Run tab for a key that actually works."""
+    return [
+        env
+        for env in required_env_vars(pipeline_config)
+        if not settings.env.get(env) and not os.environ.get(env)
+    ]
 
 
 @dataclass

@@ -143,10 +143,12 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.title": "Ejecutando…",
         "run.running.hint": "Esto puede tardar un minuto o más — una llamada al LLM por cada paso del pipeline.",
         "run.running.elapsed": "Transcurrido: {duration}",
-        "run.result.download_json": "Descargar JSON",
-        "run.result.download_dataverse": "Descargar JSON de Dataverse",
-        "run.result.download_datacite": "Descargar JSON de DataCite",
-        "run.result.download_croissant": "Descargar JSON de Croissant",
+        "run.result.download": "Descargar",
+        "run.result.format_label": "Formato de exportación",
+        "run.result.format.cdif": "CDIF Discovery (JSON-LD)",
+        "run.result.format.datacite": "DataCite (JSON)",
+        "run.result.format.croissant": "Croissant (JSON-LD)",
+        "run.result.format.dataverse": "Dataverse (JSON)",
         "run.result.run_another": "Ejecutar otro",
         "run.result.completed_in": "Completado en {duration}",
         "run.result.warnings_title": "Algunos campos están incompletos o un PID no se verificó:",
@@ -179,7 +181,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Descargar configuración (JSON)",
         "agents.upload": "Subir configuración (JSON)",
-        "agents.bulk_provider.title": "Cambiar proveedor para todos los agentes",
+        "agents.bulk_provider.title": "Proveedor, modelo y esfuerzo para todos los agentes",
         "agents.bulk_provider.intro": (
             "Asigna un proveedor a todos los agentes del pipeline (y, si lo "
             "marcas, al clasificador de tema de Dataverse) de una sola vez, e intenta "
@@ -198,6 +200,17 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "obtener su lista de modelos — elige un modelo manualmente en cada "
             "tarjeta, luego pulsa Guardar cambios"
         ),
+        "agents.bulk_model.intro": (
+            "Ahora elige un modelo para ese mismo proveedor (pulsa el botón de "
+            "refrescar para obtener su lista real) y, si aplica, un nivel de "
+            "esfuerzo de razonamiento, y aplícalo también a todos los agentes."
+        ),
+        "agents.bulk_model.pick_first": "Elige primero un modelo",
+        "agents.bulk_model.apply": "Aplicar a todos",
+        "agents.bulk_model.applied": "Modelo '{model}' aplicado a {count} agentes",
+        "agents.reasoning_effort_label": "Esfuerzo de razonamiento",
+        "agents.reasoning_effort.inherit": "(heredar del proveedor)",
+        "agents.reasoning_effort.keep_existing": "(mantener el de cada agente)",
         "agents.pipeline_behavior.title": "Comportamiento del pipeline",
         "agents.pipeline_behavior.intro": "Se aplica a todo el pipeline, no a un solo agente.",
         "agents.checkbox.content_fetch": "Obtener el contenido de la página automáticamente",
@@ -215,8 +228,27 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "financiadores que los agentes dejaron en blanco."
         ),
         "agents.checkbox.validate_pids": "Validar identificadores persistentes",
+        "agents.checkbox.validate_pids.tooltip": (
+            "Revisa el formato de cada DOI/ROR/ISNI/ORCID encontrado en el "
+            "resultado y marca cualquiera con forma inválida. No hace "
+            "llamadas de red por sí solo — ver la opción \"en vivo\" abajo."
+        ),
         "agents.checkbox.validate_pids_live": "Validar PIDs en vivo (llamadas reales a la red)",
+        "agents.checkbox.validate_pids_live.tooltip": (
+            "Además de revisar el formato, resuelve cada identificador contra "
+            "su registro real (doi.org, ror.org, ...) para confirmar que "
+            "existe. Solo tiene efecto si \"Validar identificadores "
+            "persistentes\" está activado; añade llamadas de red y por lo "
+            "tanto tiempo a cada ejecución."
+        ),
         "agents.checkbox.validate_shacl_conformance": "Validar conformidad SHACL",
+        "agents.checkbox.validate_shacl_conformance.tooltip": (
+            "Comprueba el JSON-LD generado contra las reglas SHACL del "
+            "perfil CDIF Discovery y agrega advertencias no bloqueantes al "
+            "resultado — nunca hace fallar la ejecución. Desactivado por "
+            "defecto: es una verificación nueva y casi todo el corpus de "
+            "referencia actual todavía no la cumple del todo."
+        ),
         "agents.provider_label": "Proveedor",
         "agents.model_label": "Modelo",
         "agents.pick_provider_first": "Elige primero un proveedor",
@@ -241,6 +273,11 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.dataverse.model_label": "Modelo — basta un nivel rápido/económico para clasificar entre 14 opciones",
         "agents.save": "Guardar cambios",
         "agents.save.done": "Configuración de agentes actualizada para esta sesión",
+        "agents.model_provider_mismatch": (
+            "El modelo '{model}' tiene ajustes especiales solo bajo el proveedor "
+            "'{other_provider}', pero este agente usa '{provider}' — probablemente "
+            "no funcione como se espera con este proveedor."
+        ),
         "agents.models.fetch_failed": "No se pudieron obtener los modelos de '{provider}': {error}",
         "agents.models.loaded": "Se cargaron {count} modelos para '{provider}'",
         "agents.upload.rejected": "No se pudo aplicar este archivo: {error}",
@@ -352,10 +389,12 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.title": "Running…",
         "run.running.hint": "This can take a minute or more — one LLM call per pipeline step.",
         "run.running.elapsed": "Elapsed: {duration}",
-        "run.result.download_json": "Download JSON",
-        "run.result.download_dataverse": "Download Dataverse JSON",
-        "run.result.download_datacite": "Download DataCite JSON",
-        "run.result.download_croissant": "Download Croissant JSON",
+        "run.result.download": "Download",
+        "run.result.format_label": "Export format",
+        "run.result.format.cdif": "CDIF Discovery (JSON-LD)",
+        "run.result.format.datacite": "DataCite (JSON)",
+        "run.result.format.croissant": "Croissant (JSON-LD)",
+        "run.result.format.dataverse": "Dataverse (JSON)",
         "run.result.run_another": "Run another",
         "run.result.completed_in": "Completed in {duration}",
         "run.result.warnings_title": "Some fields are incomplete or a PID didn't check out:",
@@ -387,7 +426,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Download configuration (JSON)",
         "agents.upload": "Upload configuration (JSON)",
-        "agents.bulk_provider.title": "Switch provider for all agents",
+        "agents.bulk_provider.title": "Provider, model & effort for all agents",
         "agents.bulk_provider.intro": (
             "Assign one provider to every pipeline agent (and, if checked, "
             "the Dataverse subject classifier) at once, and try to auto-pick "
@@ -406,6 +445,17 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "list couldn't be fetched — pick a model manually on each card, "
             "then click Save changes"
         ),
+        "agents.bulk_model.intro": (
+            "Now pick a model for that same provider (click the refresh "
+            "button to fetch its real list) and, if it applies, a reasoning "
+            "effort level, and apply it to every agent too."
+        ),
+        "agents.bulk_model.pick_first": "Pick a model first",
+        "agents.bulk_model.apply": "Apply to all",
+        "agents.bulk_model.applied": "Model '{model}' applied to {count} agents",
+        "agents.reasoning_effort_label": "Reasoning effort",
+        "agents.reasoning_effort.inherit": "(inherit from provider)",
+        "agents.reasoning_effort.keep_existing": "(keep each agent's own)",
         "agents.pipeline_behavior.title": "Pipeline behavior",
         "agents.pipeline_behavior.intro": "These apply to the whole pipeline, not a single agent.",
         "agents.checkbox.content_fetch": "Fetch page content automatically",
@@ -421,8 +471,27 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "funders the agents left blank."
         ),
         "agents.checkbox.validate_pids": "Validate persistent identifiers",
+        "agents.checkbox.validate_pids.tooltip": (
+            "Checks the shape of every DOI/ROR/ISNI/ORCID found in the "
+            "output and flags any that's malformed. Makes no network calls "
+            "on its own -- see the \"live\" option below."
+        ),
         "agents.checkbox.validate_pids_live": "Validate PIDs live (real network calls)",
+        "agents.checkbox.validate_pids_live.tooltip": (
+            "On top of the shape check, resolves each identifier against "
+            "its real registry (doi.org, ror.org, ...) to confirm it "
+            "actually exists. Only takes effect when \"Validate persistent "
+            "identifiers\" is also on; adds network calls, and therefore "
+            "time, to every run."
+        ),
         "agents.checkbox.validate_shacl_conformance": "Validate SHACL conformance",
+        "agents.checkbox.validate_shacl_conformance.tooltip": (
+            "Checks the generated JSON-LD against the CDIF Discovery "
+            "profile's SHACL rules and adds non-blocking warnings to the "
+            "output -- never fails the run. Off by default: it's a new "
+            "check, and most of the current reference corpus doesn't fully "
+            "pass it yet."
+        ),
         "agents.provider_label": "Provider",
         "agents.model_label": "Model",
         "agents.pick_provider_first": "Pick a provider first",
@@ -446,6 +515,11 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.dataverse.model_label": "Model — a fast/cheap tier is enough for a 14-way classification",
         "agents.save": "Save changes",
         "agents.save.done": "Agent settings updated for this session",
+        "agents.model_provider_mismatch": (
+            "Model '{model}' has special settings only under provider "
+            "'{other_provider}', but this agent uses '{provider}' — it likely "
+            "won't work as expected on this provider."
+        ),
         "agents.models.fetch_failed": "Could not fetch models for '{provider}': {error}",
         "agents.models.loaded": "Loaded {count} models for '{provider}'",
         "agents.upload.rejected": "Could not apply this file: {error}",
