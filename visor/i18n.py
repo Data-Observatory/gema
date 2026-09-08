@@ -145,6 +145,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.elapsed": "Transcurrido: {duration}",
         "run.result.download_json": "Descargar JSON",
         "run.result.download_dataverse": "Descargar JSON de Dataverse",
+        "run.result.download_datacite": "Descargar JSON de DataCite",
+        "run.result.download_croissant": "Descargar JSON de Croissant",
         "run.result.run_another": "Ejecutar otro",
         "run.result.completed_in": "Completado en {duration}",
         "run.result.warnings_title": "Algunos campos están incompletos o un PID no se verificó:",
@@ -165,6 +167,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "run.dataverse.build_failed": "No se pudo construir el JSON de Dataverse: {error}",
         "run.dataverse.no_result": "No se pudo construir el JSON de Dataverse: sin resultado",
+        "run.datacite.build_failed": "No se pudo construir el JSON de DataCite: {error}",
+        "run.croissant.build_failed": "No se pudo construir el JSON de Croissant: {error}",
         # -- agents_page.py --
         "agents.title": "Agentes",
         "agents.intro": (
@@ -212,6 +216,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.checkbox.validate_pids": "Validar identificadores persistentes",
         "agents.checkbox.validate_pids_live": "Validar PIDs en vivo (llamadas reales a la red)",
+        "agents.checkbox.validate_shacl_conformance": "Validar conformidad SHACL",
         "agents.provider_label": "Proveedor",
         "agents.model_label": "Modelo",
         "agents.pick_provider_first": "Elige primero un proveedor",
@@ -223,6 +228,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.produces_fields": "Produce los campos: {fields}",
         "agents.tools": "Herramientas: {tools}",
         "agents.extra_body": "Opciones extra de la petición: {extra_body}",
+        "agents.reasoning_effort": "Esfuerzo de razonamiento: {reasoning_effort}",
         "agents.prompt_readonly": "Prompt (solo lectura aquí — edítalo en el JSON descargado)",
         "agents.dataverse.title": "Exportación a Dataverse — Clasificador de tema",
         "agents.dataverse.intro": (
@@ -348,6 +354,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "run.running.elapsed": "Elapsed: {duration}",
         "run.result.download_json": "Download JSON",
         "run.result.download_dataverse": "Download Dataverse JSON",
+        "run.result.download_datacite": "Download DataCite JSON",
+        "run.result.download_croissant": "Download Croissant JSON",
         "run.result.run_another": "Run another",
         "run.result.completed_in": "Completed in {duration}",
         "run.result.warnings_title": "Some fields are incomplete or a PID didn't check out:",
@@ -368,6 +376,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "run.dataverse.build_failed": "Could not build Dataverse JSON: {error}",
         "run.dataverse.no_result": "Could not build Dataverse JSON: no result",
+        "run.datacite.build_failed": "Could not build DataCite JSON: {error}",
+        "run.croissant.build_failed": "Could not build Croissant JSON: {error}",
         # -- agents_page.py --
         "agents.title": "Agents",
         "agents.intro": (
@@ -412,6 +422,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.checkbox.validate_pids": "Validate persistent identifiers",
         "agents.checkbox.validate_pids_live": "Validate PIDs live (real network calls)",
+        "agents.checkbox.validate_shacl_conformance": "Validate SHACL conformance",
         "agents.provider_label": "Provider",
         "agents.model_label": "Model",
         "agents.pick_provider_first": "Pick a provider first",
@@ -423,6 +434,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.produces_fields": "Produces fields: {fields}",
         "agents.tools": "Tools: {tools}",
         "agents.extra_body": "Extra request options: {extra_body}",
+        "agents.reasoning_effort": "Reasoning effort: {reasoning_effort}",
         "agents.prompt_readonly": "Prompt (read-only here — edit via the downloaded JSON)",
         "agents.dataverse.title": "Dataverse Export — Subject Classifier",
         "agents.dataverse.intro": (
