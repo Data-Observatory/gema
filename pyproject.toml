@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gema"
-version = "0.1.0"
+version = "0.5.0"
 description = "Multi-agent metadata enrichment library with pluggable schema support"
 readme = "README.md"
 license = "AGPL-3.0-only"
