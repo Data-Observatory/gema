@@ -468,8 +468,7 @@ def render_agents(
                         t("agents.bulk_provider.apply"), on_click=_apply_provider_to_all
                     ).mark("agents-bulk-provider-apply")
 
-            with ui.card().classes("w-full q-mt-md"):
-                ui.label(t("agents.bulk_model.title")).classes("text-subtitle1 text-bold")
+                ui.separator().classes("q-my-sm")
                 ui.label(t("agents.bulk_model.intro")).classes("text-caption")
 
                 with ui.row().classes("w-full items-end"):

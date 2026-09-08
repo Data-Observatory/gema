@@ -92,6 +92,56 @@ def _build_extra_headers(config: LLMConfig) -> dict[str, str] | None:
     return {config.session_header: f"gema-{uuid.uuid4().hex}"}
 
 
+def _force_strict_additional_properties(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively force ``additionalProperties: false`` on every object
+    type, overriding an explicit ``true`` -- unlike
+    ``_ensure_strict_object_schema``'s ``setdefault`` (correct for
+    llm.tools's hand-written tool schemas, which never say ``true``),
+    ``to_strict_json_schema`` itself leaves an *explicit*
+    ``additionalProperties: true`` untouched, assuming it was deliberate.
+    Pydantic's own ``model_json_schema()`` emits exactly that for any model
+    using ``ConfigDict(extra="allow")`` -- which is what
+    ``CDIFDiscoveryProfile``'s dynamically-built output model uses (its
+    open-world design, matching ``DataCiteSchema46``'s own ``extra``
+    policy).
+
+    Confirmed 2026-09-08 against opencode:muse-spark-1.3-contributor:
+    every agent (not just tool-using ones) 400'd with `"'additionalProperties'
+    is required to be supplied and to be false"` on the real CDIF output
+    schema specifically -- ``schema:identifier``/``schema:sameAs``/etc.'s
+    array-of-object fields all carry ``additionalProperties: true``,
+    inherited from the parent model's ``extra="allow"``. Forcing it to
+    ``false`` here is safe: during structured generation the model is only
+    ever asked to fill in the schema's own known fields regardless --
+    ``extra="allow"`` is about tolerating already-parsed data post-hoc
+    (e.g. a legacy JSON config with stray keys), not about wanting the LLM
+    itself to invent unlisted top-level keys while generating."""
+    schema = dict(schema)
+    if schema.get("type") == "object":
+        schema["additionalProperties"] = False
+    properties = schema.get("properties")
+    if isinstance(properties, dict):
+        schema["properties"] = {
+            key: _force_strict_additional_properties(value) for key, value in properties.items()
+        }
+    items = schema.get("items")
+    if isinstance(items, dict):
+        schema["items"] = _force_strict_additional_properties(items)
+    defs = schema.get("$defs")
+    if isinstance(defs, dict):
+        schema["$defs"] = {
+            key: _force_strict_additional_properties(value) for key, value in defs.items()
+        }
+    for union_key in ("anyOf", "oneOf", "allOf"):
+        variants = schema.get(union_key)
+        if isinstance(variants, list):
+            schema[union_key] = [
+                _force_strict_additional_properties(v) if isinstance(v, dict) else v
+                for v in variants
+            ]
+    return schema
+
+
 def _text_format(response_model: type[BaseModel]) -> dict[str, Any]:
     """Build the ``text=`` request param for native json_schema structured
     output. Must go through ``to_strict_json_schema`` -- a raw
@@ -100,12 +150,17 @@ def _text_format(response_model: type[BaseModel]) -> dict[str, Any]:
     instead returns 200 but silently corrupts data (the model free-forms a
     wrong key name and pydantic silently drops it, no error surfaces
     anywhere), so ``strict`` must always be ``True``, never a config knob.
+
+    ``_force_strict_additional_properties`` runs after
+    ``to_strict_json_schema`` -- see that function's own docstring for why
+    an extra pass is needed on top of it for gema's own (``extra="allow"``)
+    output models.
     """
     return {
         "format": {
             "type": "json_schema",
             "name": response_model.__name__,
-            "schema": to_strict_json_schema(response_model),
+            "schema": _force_strict_additional_properties(to_strict_json_schema(response_model)),
             "strict": True,
         }
     }

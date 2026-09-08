@@ -181,7 +181,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Descargar configuración (JSON)",
         "agents.upload": "Subir configuración (JSON)",
-        "agents.bulk_provider.title": "Cambiar proveedor para todos los agentes",
+        "agents.bulk_provider.title": "Proveedor, modelo y esfuerzo para todos los agentes",
         "agents.bulk_provider.intro": (
             "Asigna un proveedor a todos los agentes del pipeline (y, si lo "
             "marcas, al clasificador de tema de Dataverse) de una sola vez, e intenta "
@@ -200,13 +200,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "obtener su lista de modelos — elige un modelo manualmente en cada "
             "tarjeta, luego pulsa Guardar cambios"
         ),
-        "agents.bulk_model.title": "Cambiar modelo (y esfuerzo) para todos los agentes",
         "agents.bulk_model.intro": (
-            "Usa el proveedor elegido arriba: pulsa el botón de refrescar para "
-            "obtener su lista real de modelos, elige uno y, si aplica, un nivel "
-            "de esfuerzo de razonamiento, y aplícalo a todos los agentes del "
-            "pipeline (y, si lo marcas, al clasificador de Dataverse) de una "
-            "sola vez."
+            "Ahora elige un modelo para ese mismo proveedor (pulsa el botón de "
+            "refrescar para obtener su lista real) y, si aplica, un nivel de "
+            "esfuerzo de razonamiento, y aplícalo también a todos los agentes."
         ),
         "agents.bulk_model.pick_first": "Elige primero un modelo",
         "agents.bulk_model.apply": "Aplicar a todos",
@@ -409,7 +406,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         ),
         "agents.download": "Download configuration (JSON)",
         "agents.upload": "Upload configuration (JSON)",
-        "agents.bulk_provider.title": "Switch provider for all agents",
+        "agents.bulk_provider.title": "Provider, model & effort for all agents",
         "agents.bulk_provider.intro": (
             "Assign one provider to every pipeline agent (and, if checked, "
             "the Dataverse subject classifier) at once, and try to auto-pick "
@@ -428,12 +425,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "list couldn't be fetched — pick a model manually on each card, "
             "then click Save changes"
         ),
-        "agents.bulk_model.title": "Change model (and effort) for all agents",
         "agents.bulk_model.intro": (
-            "Uses the provider picked above: click the refresh button to fetch "
-            "its real model list, pick one and, if it applies, a reasoning "
-            "effort level, and apply it to every agent in the pipeline (and, "
-            "if checked, the Dataverse classifier) at once."
+            "Now pick a model for that same provider (click the refresh "
+            "button to fetch its real list) and, if it applies, a reasoning "
+            "effort level, and apply it to every agent too."
         ),
         "agents.bulk_model.pick_first": "Pick a model first",
         "agents.bulk_model.apply": "Apply to all",
