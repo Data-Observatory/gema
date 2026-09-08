@@ -20,11 +20,18 @@ import secrets
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast, get_args
 
 from platformdirs import user_config_dir
 
-from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.config.models import (
+    DataverseExportConfig,
+    PipelineConfig,
+    ProviderConfig,
+    ReasoningEffort,
+)
+
+_REASONING_EFFORT_VALUES = frozenset(get_args(ReasoningEffort))
 
 logger = logging.getLogger(__name__)
 
@@ -299,6 +306,12 @@ def apply_agent_overrides(
         temperature = override.get("temperature")
         if isinstance(temperature, int | float):
             agent.temperature = float(temperature)
+        if "reasoning_effort" in override:
+            effort = override["reasoning_effort"]
+            if effort is None:
+                agent.reasoning_effort = None
+            elif isinstance(effort, str) and effort in _REASONING_EFFORT_VALUES:
+                agent.reasoning_effort = cast(ReasoningEffort, effort)
 
     dataverse_override = settings.dataverse_agent_override
     if dataverse_export_config is not None and dataverse_override:
@@ -314,6 +327,12 @@ def apply_agent_overrides(
         temperature = dataverse_override.get("temperature")
         if isinstance(temperature, int | float):
             dataverse_export_config.agent.temperature = float(temperature)
+        if "reasoning_effort" in dataverse_override:
+            effort = dataverse_override["reasoning_effort"]
+            if effort is None:
+                dataverse_export_config.agent.reasoning_effort = None
+            elif isinstance(effort, str) and effort in _REASONING_EFFORT_VALUES:
+                dataverse_export_config.agent.reasoning_effort = cast(ReasoningEffort, effort)
 
     for flag in PIPELINE_BEHAVIOR_FLAGS:
         value = settings.pipeline_behavior.get(flag)

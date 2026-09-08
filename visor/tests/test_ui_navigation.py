@@ -353,6 +353,121 @@ async def test_agents_tab_bulk_effort_inherit_leaves_reasoning_effort_unset(
     assert all(a.get("reasoning_effort") is None for a in payload["agents"])
 
 
+async def test_agents_tab_individual_reasoning_effort_select_is_editable(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Found 2026-09-08: the per-agent "Advanced" section only ever showed
+    reasoning_effort as read-only text -- there was no way to set or clear
+    it on a single agent without the (all-agents) bulk control. This is
+    the individual counterpart to the bulk effort select, scoped to one
+    agent's own card."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-effort-core_metadata")
+
+    effort_select = list(user.find(marker="agent-effort-core_metadata").elements)[0]
+    effort_select.value = "high"
+
+    user.find(marker="agents-save").click()
+    await user.should_see("Agent settings updated")
+
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    by_id = {a["id"]: a for a in payload["agents"]}
+    assert by_id["core_metadata"]["reasoning_effort"] == "high"
+    assert all(
+        a.get("reasoning_effort") is None for aid, a in by_id.items() if aid != "core_metadata"
+    )
+
+
+async def test_agents_tab_individual_reasoning_effort_select_clears_back_to_inherit(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """The other half of the round trip: setting a per-agent effort, saving,
+    then clearing it back to "(inherit from provider)" must actually clear
+    AgentConfig.reasoning_effort to None again -- not leave the previous
+    explicit value in place. Depends on the select re-populating from
+    agent.reasoning_effort (not from whatever the DOM happened to hold) on
+    the cards() rebuild after Save."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-effort-core_metadata")
+
+    effort_select = list(user.find(marker="agent-effort-core_metadata").elements)[0]
+    effort_select.value = "high"
+    user.find(marker="agents-save").click()
+    await user.should_see("Agent settings updated")
+
+    # cards.refresh() rebuilds every widget -- re-find it rather than reuse
+    # the pre-refresh reference.
+    effort_select_after_save = list(user.find(marker="agent-effort-core_metadata").elements)[0]
+    assert effort_select_after_save.value == "high"
+
+    effort_select_after_save.value = ""  # "(inherit from provider)" sentinel
+    user.find(marker="agents-save").click()
+    await user.should_see("Agent settings updated")
+
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    by_id = {a["id"]: a for a in payload["agents"]}
+    assert by_id["core_metadata"]["reasoning_effort"] is None
+
+
+async def test_agents_tab_bulk_model_switch_keeps_existing_effort_by_default(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """Found on Opus review: once per-agent reasoning_effort became
+    individually settable, the bulk "change model for all agents" control
+    used to default its effort select to "(inherit)", which meant every
+    bulk model switch silently wiped any per-agent effort override that
+    had nothing to do with the model change. The bulk select's actual
+    default must be "(keep each agent's own)" -- a genuine no-op on
+    reasoning_effort -- with "(inherit)" now a deliberate, separate choice
+    for clearing every agent's override on purpose."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    import visor.pages.agents_page as agents_page_module
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="agent-effort-core_metadata")
+
+    # Give core_metadata its own explicit effort first.
+    effort_select = list(user.find(marker="agent-effort-core_metadata").elements)[0]
+    effort_select.value = "high"
+    user.find(marker="agents-save").click()
+    await user.should_see("Agent settings updated")
+
+    # Re-find every widget fresh, post-rebuild -- cards.refresh() from the
+    # Save above is fire-and-forget (see this module's own docstring), so a
+    # reference captured before it would go stale mid-await. Setting the
+    # model directly (no "Refresh models" click) sidesteps that entirely --
+    # this combobox already accepts free text without a refresh (see this
+    # module's own docstring: "Typing any other model id is always
+    # accepted regardless of whether a refresh has happened").
+    bulk_provider_select = list(user.find(marker="agents-bulk-provider").elements)[0]
+    bulk_provider_select.value = "opencode"
+    bulk_model_select = list(user.find(marker="agents-bulk-model").elements)[0]
+    bulk_model_select.set_options(["opencode-model-d"], value="opencode-model-d")
+    bulk_effort_select = list(user.find(marker="agents-bulk-effort").elements)[0]
+    assert bulk_effort_select.value == agents_page_module._BULK_EFFORT_KEEP_EXISTING
+
+    user.find(marker="agents-bulk-model-apply").click()
+    await user.should_see("applied to")
+
+    user.find(marker="agents-download").click()
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    by_id = {a["id"]: a for a in payload["agents"]}
+    assert by_id["core_metadata"]["model"] == "opencode-model-d"
+    assert by_id["core_metadata"]["reasoning_effort"] == "high"
+
+
 async def test_agents_tab_bulk_provider_switch_unblocks_removing_old_provider(
     user: User, monkeypatch, tmp_path
 ) -> None:
@@ -1607,6 +1722,7 @@ async def test_agents_tab_save_persists_provider_model_temperature_dataverse_and
         "provider": "opencode",
         "model": "persisted-model-xyz",
         "temperature": 1.7,
+        "reasoning_effort": None,
     }
     assert saved.pipeline_behavior["enable_content_fetch"] == (not original_content_fetch)
     assert saved.dataverse_agent_override == {
@@ -1614,6 +1730,7 @@ async def test_agents_tab_save_persists_provider_model_temperature_dataverse_and
         "provider": "opencode",
         "model": unsaved_dataverse_model or None,
         "temperature": 1.9,
+        "reasoning_effort": None,
     }
 
     # A fresh page load (same running process, native mode -- what

@@ -13,8 +13,13 @@ from typing import Any
 
 import pytest
 
-from metadata_enricher.config.models import PipelineConfig
-from visor.pages.agents_page import _handle_upload, _warn_model_override_mismatches
+from metadata_enricher.config.models import PipelineConfig, ProviderConfig
+from visor.pages.agents_page import (
+    _handle_upload,
+    sanitize_all_agents_extra_body,
+    _sanitize_extra_body_for_responses_api,
+    _warn_model_override_mismatches,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -321,3 +326,129 @@ class TestAdvancedSection:
             await user.open("/")
             await user.should_see("Agent 0")
             await user.should_not_see("Reasoning effort:")
+
+
+class TestSanitizeExtraBodyForResponsesApi:
+    """Found 2026-09-08: switching an agent's model onto a Responses-API
+    model (e.g. opencode/muse-spark-1.3-contributor) while a Chat-Completions
+    -shaped extra_body (e.g. ``{"thinking": {"type": "disabled"}}``, left
+    over from deepseek-v4-flash) is still sitting on it doesn't clear that
+    key -- ResponsesLLMClient drops it and logs a warning on every single
+    call, forever, since nothing in visor ever re-checks extra_body once a
+    model changes."""
+
+    async def test_strips_unsupported_keys_when_resolved_api_style_is_responses(self) -> None:
+        provider = ProviderConfig(
+            name="p0",
+            api_key_env="P0_API_KEY",
+            model_overrides=[{"model": "muse", "api_style": "responses"}],
+        )
+
+        result = _sanitize_extra_body_for_responses_api(
+            {"thinking": {"type": "disabled"}, "keep": "me"}, provider, "muse"
+        )
+
+        assert result == {"keep": "me"}
+
+    async def test_returns_none_rather_than_an_empty_dict_when_nothing_survives(self) -> None:
+        provider = ProviderConfig(
+            name="p0",
+            api_key_env="P0_API_KEY",
+            model_overrides=[{"model": "muse", "api_style": "responses"}],
+        )
+
+        result = _sanitize_extra_body_for_responses_api(
+            {"thinking": {"type": "disabled"}, "seed": 42}, provider, "muse"
+        )
+
+        assert result is None
+
+    async def test_leaves_chat_completions_models_untouched(self) -> None:
+        provider = ProviderConfig(name="p0", api_key_env="P0_API_KEY")
+
+        result = _sanitize_extra_body_for_responses_api(
+            {"thinking": {"type": "disabled"}}, provider, "plain-chat-model"
+        )
+
+        assert result == {"thinking": {"type": "disabled"}}
+
+    async def test_noop_when_extra_body_provider_or_model_missing(self) -> None:
+        assert _sanitize_extra_body_for_responses_api(None, None, None) is None
+        assert _sanitize_extra_body_for_responses_api({}, None, "m") == {}
+        provider = ProviderConfig(name="p0", api_key_env="P0_API_KEY")
+        assert _sanitize_extra_body_for_responses_api({"seed": 1}, provider, None) == {"seed": 1}
+
+    async def test_strips_when_api_style_is_responses_at_the_provider_level(self) -> None:
+        """Same outcome as the model_overrides-scoped test above, but via
+        the OTHER branch of effective_api_style's cascade -- a provider
+        that sets api_style: responses directly, with no per-model
+        override at all. Only the model_overrides path had coverage."""
+        provider = ProviderConfig(name="p0", api_key_env="P0_API_KEY", api_style="responses")
+
+        result = _sanitize_extra_body_for_responses_api(
+            {"thinking": {"type": "disabled"}, "keep": "me"}, provider, "any-model"
+        )
+
+        assert result == {"keep": "me"}
+
+
+class TestSanitizeAllAgentsExtraBody:
+    async def test_sanitizes_every_agent_using_its_own_resolved_provider(self) -> None:
+        raw = _minimal_config_dict(
+            providers=[
+                {
+                    "name": "p0",
+                    "api_key_env": "P0_API_KEY",
+                    "model_overrides": [{"model": "muse", "api_style": "responses"}],
+                }
+            ],
+        )
+        raw["agents"][0]["model"] = "muse"
+        raw["agents"][0]["extra_body"] = {"thinking": {"type": "disabled"}}
+        pipeline_config = PipelineConfig(**raw)
+
+        sanitize_all_agents_extra_body(pipeline_config, None)
+
+        assert pipeline_config.agents[0].extra_body is None
+
+    async def test_leaves_a_chat_completions_agents_extra_body_alone(self) -> None:
+        raw = _minimal_config_dict()
+        raw["agents"][0]["extra_body"] = {"thinking": {"type": "disabled"}}
+        pipeline_config = PipelineConfig(**raw)
+
+        sanitize_all_agents_extra_body(pipeline_config, None)
+
+        assert pipeline_config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
+    async def test_sanitizes_the_dataverse_agent_too(self) -> None:
+        """Found on Opus review: every existing test only checked
+        pipeline_config.agents -- deleting the dataverse_export_config
+        branch inside sanitize_all_agents_extra_body entirely broke
+        nothing until now."""
+        from metadata_enricher.config.models import AgentConfig, DataverseExportConfig
+
+        raw = _minimal_config_dict(
+            providers=[
+                {
+                    "name": "p0",
+                    "api_key_env": "P0_API_KEY",
+                    "model_overrides": [{"model": "muse", "api_style": "responses"}],
+                }
+            ],
+        )
+        pipeline_config = PipelineConfig(**raw)
+        dataverse_export_config = DataverseExportConfig(
+            agent=AgentConfig(
+                id="dataverse",
+                name="Dataverse",
+                fields=["schema_keywords"],
+                prompt="Classify.",
+                provider="p0",
+                model="muse",
+                extra_body={"thinking": {"type": "disabled"}},
+            )
+        )
+
+        sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
+
+        assert dataverse_export_config.agent.extra_body is None

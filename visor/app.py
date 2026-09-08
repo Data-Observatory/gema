@@ -25,7 +25,7 @@ from visor.bootstrap import (
 )
 from metadata_enricher.llm.factory import reset_client_cache
 from visor.i18n import LANGUAGES, current_language, set_language, t
-from visor.pages.agents_page import render_agents
+from visor.pages.agents_page import render_agents, sanitize_all_agents_extra_body
 from visor.pages.run_page import render_run_form
 from visor.pages.settings_page import render_settings
 from visor.session_settings import load_session_settings
@@ -70,6 +70,18 @@ def main_page() -> None:
     restore_testing_provider_if_key_available(pipeline_config)
     apply_agent_overrides(pipeline_config, dataverse_export_config, session_settings)
     reconcile_provider_extra_body(pipeline_config)
+    # Runs on every browser connection/reload (main_page is @ui.page("/")),
+    # not just on the Agents tab's own Save button -- a config loaded fresh
+    # from config/agents.yaml, or restored/overridden by any of the layers
+    # above, can carry an extra_body left over from a different api_style
+    # (e.g. deepseek-v4-flash's native "thinking" key on an agent that
+    # apply_agent_overrides() just pointed at a Responses-API model like
+    # muse-spark-1.3-contributor) -- reconcile_provider_extra_body() only
+    # fixes up its own two known provider/model pairings, not this general
+    # case. Without this call, agents_page.py's save-time sanitize never
+    # even runs until the user next clicks Save, so the very first request
+    # after a fresh load still hits ResponsesLLMClient's drop-and-warn path.
+    sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
 
     with ui.column().classes("w-full max-w-3xl mx-auto q-pa-md"):
 

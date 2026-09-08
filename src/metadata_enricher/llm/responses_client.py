@@ -42,7 +42,14 @@ logger = logging.getLogger(__name__)
 # extra_body={"seed": 42} -> 400 "unknown parameter 'seed'";
 # extra_body={"thinking": {"type": "disabled"}} -> 400 "unknown parameter
 # 'thinking'". Never forward either on this path.
-_UNSUPPORTED_ON_RESPONSES: tuple[str, ...] = ("seed", "thinking")
+#
+# Public (not module-private) because it's also the source of truth for
+# visor's agents_page.py, which strips these same keys at save time when an
+# agent's resolved api_style is "responses" -- otherwise a stale
+# Chat-Completions-shaped extra_body (e.g. left over from switching an
+# agent's model away from deepseek-v4-flash) lingers in the saved config
+# and re-triggers this module's drop-and-warn path on every call, forever.
+UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES: tuple[str, ...] = ("seed", "thinking")
 
 # Cap on how many formatted validation-error lines get sent back to the
 # model in a reask turn -- keeps a real-payload ValidationError (which can
@@ -64,7 +71,7 @@ def _build_responses_extra_body(config: LLMConfig) -> dict[str, Any] | None:
     if not config.extra_body:
         return None
     extra_body = dict(config.extra_body)
-    for key in _UNSUPPORTED_ON_RESPONSES:
+    for key in UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES:
         if key in extra_body:
             del extra_body[key]
             logger.warning(

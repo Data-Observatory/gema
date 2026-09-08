@@ -70,6 +70,7 @@ from metadata_enricher.config.models import (
     ReasoningEffort,
     find_model_override_elsewhere,
 )
+from metadata_enricher.llm.responses_client import UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
 from visor.session_settings import load_session_settings, save_session_settings
@@ -77,12 +78,23 @@ from visor.settings import VisorSettings
 
 logger = logging.getLogger(__name__)
 
-# UI sentinel for the bulk effort select's "don't set a per-agent override"
-# option -- distinct from AgentConfig.reasoning_effort's own real "None"
+# UI sentinel, shared by the bulk effort select and each per-agent effort
+# select, for "clear this agent's override -- use the provider/model
+# cascade" -- distinct from AgentConfig.reasoning_effort's own real "None"
 # (unset) and from "provider_default" (a real, explicit ReasoningEffort
 # value meaning "omit the reasoning block entirely"). ui.select needs a
 # concrete option value, so this stands in for the unset case.
 _BULK_EFFORT_INHERIT = ""
+
+# A second, distinct sentinel for the BULK select only -- found on review:
+# once per-agent reasoning_effort became individually settable, defaulting
+# the bulk select to _BULK_EFFORT_INHERIT meant every "change model for all
+# agents" click also silently wiped any per-agent effort override that had
+# nothing to do with the model change. This sentinel means "don't touch
+# reasoning_effort at all" and is the bulk select's actual default; a user
+# must deliberately pick _BULK_EFFORT_INHERIT (or a real level) to affect
+# effort in bulk.
+_BULK_EFFORT_KEEP_EXISTING = "__keep_existing__"
 
 
 def _model_options(options: list[str], current_model: str) -> list[str]:
@@ -139,6 +151,7 @@ def _persist_overrides(
             "provider": dataverse_export_config.agent.provider,
             "model": dataverse_export_config.agent.model,
             "temperature": dataverse_export_config.agent.temperature,
+            "reasoning_effort": dataverse_export_config.agent.reasoning_effort,
         }
     save_session_settings(
         VisorSettings(
@@ -149,6 +162,7 @@ def _persist_overrides(
                     "provider": agent.provider,
                     "model": agent.model,
                     "temperature": agent.temperature,
+                    "reasoning_effort": agent.reasoning_effort,
                 }
                 for agent in pipeline_config.agents
             },
@@ -206,6 +220,62 @@ def _warn_model_override_mismatches(
                 other_provider=other_provider,
             ),
             type="warning",
+        )
+
+
+def _sanitize_extra_body_for_responses_api(
+    agent_extra_body: dict[str, Any] | None,
+    provider: ProviderConfig | None,
+    model: str | None,
+) -> dict[str, Any] | None:
+    """Strip any extra_body key that ResponsesLLMClient would silently drop
+    (and warn about, forever, on every call) for this agent's resolved
+    api_style -- e.g. a stale ``{"thinking": {...}}`` left over from
+    switching an agent's model away from deepseek-v4-flash onto a
+    Responses-API model like muse-spark-1.3-contributor. Driven off the
+    same UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES list the client itself
+    uses, keyed by resolved api_style rather than any specific model name,
+    so this stays correct for any future Responses-API model, not just
+    muse-spark. A no-op when there's nothing to strip, the agent isn't on
+    the Responses API, or extra_body already has none of those keys."""
+    if not agent_extra_body or provider is None or not model:
+        return agent_extra_body
+    if provider.effective_api_style(model) != "responses":
+        return agent_extra_body
+    cleaned = {
+        key: value
+        for key, value in agent_extra_body.items()
+        if key not in UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES
+    }
+    return cleaned or None
+
+
+def sanitize_all_agents_extra_body(
+    pipeline_config: PipelineConfig, dataverse_export_config: DataverseExportConfig | None
+) -> None:
+    """Runs _sanitize_extra_body_for_responses_api() over every agent (and
+    the Dataverse classifier, if configured) -- called right before every
+    _persist_overrides() in this module, so it catches a stale extra_body
+    regardless of which control changed the (provider, model) pair: the
+    per-agent Save changes button, the bulk provider switch, the bulk
+    model/effort switch, or a config Upload.
+
+    Not module-private (despite the leading-underscore-free name being the
+    only thing that changes here) because app.py also calls this directly,
+    once per browser connection/reload, right after apply_agent_overrides()
+    +reconcile_provider_extra_body() -- found on review: without that call,
+    a freshly loaded pipeline_config (nothing saved yet, or a saved
+    provider/model override reconcile_provider_extra_body() doesn't know
+    about) still had a stale extra_body until the user's first Save click,
+    so the very request that reproduced the original bug report happened
+    before this module's own save-time sanitize ever ran once."""
+    agents_and_dataverse = list(pipeline_config.agents)
+    if dataverse_export_config is not None:
+        agents_and_dataverse.append(dataverse_export_config.agent)
+    for agent in agents_and_dataverse:
+        provider = next((p for p in pipeline_config.providers if p.name == agent.provider), None)
+        agent.extra_body = _sanitize_extra_body_for_responses_api(
+            agent.extra_body, provider, agent.model
         )
 
 
@@ -295,6 +365,7 @@ def render_agents(
                 # export config is never part of the uploaded JSON (see
                 # _download()'s own docstring), so its saved override is
                 # left exactly as it was.
+                sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
                 _persist_overrides(pipeline_config, dataverse_export_config)
                 if on_changed is not None:
                     on_changed()
@@ -317,6 +388,7 @@ def render_agents(
             # entirely, and this must reflect that on the next render.
             provider_names = [p.name for p in pipeline_config.providers]
             temp_inputs: dict[str, ui.number] = {}
+            effort_inputs: dict[str, ui.select] = {}
             provider_selects.clear()
             model_inputs.clear()
 
@@ -460,6 +532,7 @@ def render_agents(
                                 ),
                                 type="warning",
                             )
+                        sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
                         _persist_overrides(pipeline_config, dataverse_export_config)
                         if on_changed is not None:
                             on_changed()
@@ -500,6 +573,7 @@ def render_agents(
                     bulk_effort_select = (
                         ui.select(
                             {
+                                _BULK_EFFORT_KEEP_EXISTING: t("agents.reasoning_effort.keep_existing"),
                                 _BULK_EFFORT_INHERIT: t("agents.reasoning_effort.inherit"),
                                 "none": "none",
                                 "minimal": "minimal",
@@ -510,7 +584,7 @@ def render_agents(
                                 "provider_default": "provider_default",
                             },
                             label=t("agents.reasoning_effort_label"),
-                            value=_BULK_EFFORT_INHERIT,
+                            value=_BULK_EFFORT_KEEP_EXISTING,
                         )
                         .classes("w-56")
                         .mark("agents-bulk-effort")
@@ -529,11 +603,12 @@ def render_agents(
                     if not model_value:
                         ui.notify(t("agents.bulk_model.pick_first"), type="negative")
                         return
-                    effort_value = bulk_effort_select.value or _BULK_EFFORT_INHERIT
+                    effort_value = bulk_effort_select.value or _BULK_EFFORT_KEEP_EXISTING
+                    touch_effort = effort_value != _BULK_EFFORT_KEEP_EXISTING
                     resolved_effort = (
-                        None
-                        if effort_value == _BULK_EFFORT_INHERIT
-                        else cast(ReasoningEffort, effort_value)
+                        cast(ReasoningEffort, effort_value)
+                        if touch_effort and effort_value != _BULK_EFFORT_INHERIT
+                        else None
                     )
 
                     include_dataverse = (
@@ -543,16 +618,19 @@ def render_agents(
 
                     for agent in pipeline_config.agents:
                         agent.model = model_value
-                        agent.reasoning_effort = resolved_effort
+                        if touch_effort:
+                            agent.reasoning_effort = resolved_effort
                     if include_dataverse and dataverse_export_config is not None:
                         dataverse_export_config.agent.model = model_value
-                        dataverse_export_config.agent.reasoning_effort = resolved_effort
+                        if touch_effort:
+                            dataverse_export_config.agent.reasoning_effort = resolved_effort
 
                     agent_count = len(pipeline_config.agents) + (1 if include_dataverse else 0)
                     ui.notify(
                         t("agents.bulk_model.applied", model=model_value, count=agent_count),
                         type="positive",
                     )
+                    sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
                     _persist_overrides(pipeline_config, dataverse_export_config)
                     # Unlike _apply_provider_to_all above, this makes no
                     # awaited call in between -- a plain refresh is simplest
@@ -679,13 +757,38 @@ def render_agents(
                             ui.label(t("agents.tools", tools=", ".join(agent.tools)))
                         if agent.extra_body:
                             ui.label(t("agents.extra_body", extra_body=agent.extra_body))
+                        effort_inputs[agent.id] = (
+                            ui.select(
+                                {
+                                    _BULK_EFFORT_INHERIT: t("agents.reasoning_effort.inherit"),
+                                    "none": "none",
+                                    "minimal": "minimal",
+                                    "low": "low",
+                                    "medium": "medium",
+                                    "high": "high",
+                                    "xhigh": "xhigh",
+                                    "provider_default": "provider_default",
+                                },
+                                label=t("agents.reasoning_effort_label"),
+                                value=agent.reasoning_effort or _BULK_EFFORT_INHERIT,
+                            )
+                            .classes("w-56 q-mt-sm")
+                            .mark(f"agent-effort-{agent.id}")
+                        )
                         if agent.reasoning_effort is not None:
+                            # Kept alongside the editable select above (not
+                            # replaced by it) -- the select's own closed-state
+                            # text is just the bare value ("high"), and
+                            # test_shows_reasoning_effort_when_an_agent_sets_it
+                            # (plus anyone glancing at the card without
+                            # opening the dropdown) expects the explicit
+                            # "Reasoning effort: high" sentence this renders.
                             ui.label(
                                 t(
                                     "agents.reasoning_effort",
                                     reasoning_effort=agent.reasoning_effort,
                                 )
-                            )
+                            ).classes("text-caption")
                         else:
                             # No per-agent override -- but reasoning_effort
                             # more commonly comes from a provider's
@@ -696,8 +799,12 @@ def render_agents(
                             # create_llm_client actually uses -- otherwise
                             # this section stays silent for exactly the
                             # agents where reasoning_effort is actually in
-                            # effect, and only shows it for the rare agent
-                            # that sets it directly.
+                            # effect, and the select above just reads
+                            # "inherit" with no indication of what that
+                            # resolves to. Higher effort trades directly for
+                            # latency on a reasoning model -- this is also
+                            # the knob to lower if a Responses-API model
+                            # like muse-spark-1.3-contributor is too slow.
                             resolved_provider = next(
                                 (p for p in pipeline_config.providers if p.name == agent.provider),
                                 None,
@@ -716,7 +823,7 @@ def render_agents(
                                             resolved_model
                                         ),
                                     )
-                                )
+                                ).classes("text-caption")
                         ui.label(t("agents.prompt_readonly")).classes("text-caption q-mt-sm")
                         ui.code(agent.prompt, language=None).classes("w-full")
 
@@ -800,6 +907,12 @@ def render_agents(
                     agent.provider = provider_selects[agent.id].value
                     agent.model = model_inputs[agent.id].value.strip() or None
                     agent.temperature = temp_inputs[agent.id].value
+                    effort_value = effort_inputs[agent.id].value or _BULK_EFFORT_INHERIT
+                    agent.reasoning_effort = (
+                        None
+                        if effort_value == _BULK_EFFORT_INHERIT
+                        else cast(ReasoningEffort, effort_value)
+                    )
                 if dataverse_export_config is not None:
                     assert dataverse_enabled_checkbox is not None
                     assert dataverse_provider_select is not None
@@ -809,6 +922,7 @@ def render_agents(
                     dataverse_export_config.agent.provider = dataverse_provider_select.value
                     dataverse_export_config.agent.model = dataverse_model_input.value.strip() or None
                     dataverse_export_config.agent.temperature = dataverse_temp_input.value
+                sanitize_all_agents_extra_body(pipeline_config, dataverse_export_config)
                 _persist_overrides(pipeline_config, dataverse_export_config)
                 _warn_model_override_mismatches(pipeline_config, dataverse_export_config)
                 ui.notify(t("agents.save.done"), type="positive")
