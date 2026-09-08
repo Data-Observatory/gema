@@ -213,11 +213,13 @@ class TestWarnModelOverrideMismatches:
 
 
 class TestAdvancedSection:
-    """The read-only "Advanced" expansion. Rendered here against a
-    hand-built PipelineConfig rather than in test_ui_navigation.py's
-    click-through: the real config/agents.yaml sets no agent-level
-    reasoning_effort, and the app-boot harness (runpy of visor/app.py at
-    fixture-setup time) leaves no seam to inject one from a test body."""
+    """The read-only "Advanced" expansion (tools/extra_body/prompt) plus the
+    reasoning-effort select/caption that sits just above it, inline with
+    provider/model/temperature. Rendered here against a hand-built
+    PipelineConfig rather than in test_ui_navigation.py's click-through:
+    the real config/agents.yaml sets no agent-level reasoning_effort, and
+    the app-boot harness (runpy of visor/app.py at fixture-setup time)
+    leaves no seam to inject one from a test body."""
 
     async def test_shows_reasoning_effort_when_an_agent_sets_it(self) -> None:
         """AgentConfig.reasoning_effort is a real, settable per-agent field
@@ -238,7 +240,8 @@ class TestAdvancedSection:
 
         async with user_simulation(root=_root) as user:
             await user.open("/")
-            await user.should_see("Reasoning effort: high")
+            effort_select = list(user.find(marker="agent-effort-a0").elements)[0]
+            assert effort_select.value == "high"
 
     async def test_omits_reasoning_effort_when_unset(self) -> None:
         """Same conditional treatment as tools/extra_body -- an agent that

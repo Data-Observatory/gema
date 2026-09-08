@@ -16,9 +16,12 @@ agent is set to here is what Settings' "used by: ..." captions reflect —
 the two tabs describe the same underlying assignment from two different
 angles.
 
-Prompt/fields/depends_on (and tools/extra_body/reasoning_effort, when an
-agent sets them) are read-only in a collapsed "Advanced" section for
-transparency.
+Prompt/fields/depends_on (and tools/extra_body, when an agent sets them)
+are read-only in a collapsed "Advanced" section for transparency.
+Reasoning effort is its own editable select, inline with provider/model/
+temperature rather than tucked into Advanced -- it's a real per-run knob
+(the thing to lower first if a Responses-API model runs slow), not
+background detail.
 
 A "switch provider for all agents" card above everything else sets every
 agent card's provider select (and, if checked, the Dataverse card's) in
@@ -679,6 +682,7 @@ def render_agents(
                         t("agents.checkbox.validate_pids"),
                         value=pipeline_config.validate_pids,
                     )
+                    .tooltip(t("agents.checkbox.validate_pids.tooltip"))
                     .mark("pipeline-validate-pids")
                 )
                 validate_pids_live_checkbox = (
@@ -686,6 +690,7 @@ def render_agents(
                         t("agents.checkbox.validate_pids_live"),
                         value=pipeline_config.validate_pids_live,
                     )
+                    .tooltip(t("agents.checkbox.validate_pids_live.tooltip"))
                     .mark("pipeline-validate-pids-live")
                 )
                 validate_shacl_conformance_checkbox = (
@@ -693,6 +698,7 @@ def render_agents(
                         t("agents.checkbox.validate_shacl_conformance"),
                         value=pipeline_config.validate_shacl_conformance,
                     )
+                    .tooltip(t("agents.checkbox.validate_shacl_conformance.tooltip"))
                     .mark("pipeline-validate-shacl-conformance")
                 )
 
@@ -748,15 +754,6 @@ def render_agents(
                             .classes("w-32")
                             .mark(f"agent-temperature-{agent.id}")
                         )
-
-                    with ui.expansion(t("agents.advanced"), icon="tune").classes("w-full q-mt-sm"):
-                        deps = ", ".join(agent.depends_on) or t("agents.runs_after.nothing")
-                        ui.label(t("agents.runs_after", deps=deps))
-                        ui.label(t("agents.produces_fields", fields=", ".join(agent.fields)))
-                        if agent.tools:
-                            ui.label(t("agents.tools", tools=", ".join(agent.tools)))
-                        if agent.extra_body:
-                            ui.label(t("agents.extra_body", extra_body=agent.extra_body))
                         effort_inputs[agent.id] = (
                             ui.select(
                                 {
@@ -772,58 +769,51 @@ def render_agents(
                                 label=t("agents.reasoning_effort_label"),
                                 value=agent.reasoning_effort or _BULK_EFFORT_INHERIT,
                             )
-                            .classes("w-56 q-mt-sm")
+                            .classes("w-56")
                             .mark(f"agent-effort-{agent.id}")
                         )
-                        if agent.reasoning_effort is not None:
-                            # Kept alongside the editable select above (not
-                            # replaced by it) -- the select's own closed-state
-                            # text is just the bare value ("high"), and
-                            # test_shows_reasoning_effort_when_an_agent_sets_it
-                            # (plus anyone glancing at the card without
-                            # opening the dropdown) expects the explicit
-                            # "Reasoning effort: high" sentence this renders.
+
+                    if agent.reasoning_effort is None:
+                        # No per-agent override -- but reasoning_effort more
+                        # commonly comes from a provider's model_overrides
+                        # entry (e.g. config/agents.yaml's own opencode/
+                        # muse-spark-1.3-contributor pairing) rather than the
+                        # agent itself. Show the resolved value in that case
+                        # too, the same cascade create_llm_client actually
+                        # uses -- otherwise the select above just reads
+                        # "inherit" with no indication of what that resolves
+                        # to. Higher effort trades directly for latency on a
+                        # reasoning model -- this is also the knob to lower
+                        # if a Responses-API model like
+                        # muse-spark-1.3-contributor is too slow.
+                        resolved_provider = next(
+                            (p for p in pipeline_config.providers if p.name == agent.provider),
+                            None,
+                        )
+                        resolved_model = agent.model or ""
+                        if (
+                            resolved_provider is not None
+                            and resolved_model
+                            and resolved_provider.effective_api_style(resolved_model)
+                            == "responses"
+                        ):
                             ui.label(
                                 t(
                                     "agents.reasoning_effort",
-                                    reasoning_effort=agent.reasoning_effort,
+                                    reasoning_effort=resolved_provider.effective_reasoning_effort(
+                                        resolved_model
+                                    ),
                                 )
                             ).classes("text-caption")
-                        else:
-                            # No per-agent override -- but reasoning_effort
-                            # more commonly comes from a provider's
-                            # model_overrides entry (e.g. config/agents.yaml's
-                            # own opencode/muse-spark-1.3-contributor pairing)
-                            # rather than the agent itself. Show the resolved
-                            # value in that case too, the same cascade
-                            # create_llm_client actually uses -- otherwise
-                            # this section stays silent for exactly the
-                            # agents where reasoning_effort is actually in
-                            # effect, and the select above just reads
-                            # "inherit" with no indication of what that
-                            # resolves to. Higher effort trades directly for
-                            # latency on a reasoning model -- this is also
-                            # the knob to lower if a Responses-API model
-                            # like muse-spark-1.3-contributor is too slow.
-                            resolved_provider = next(
-                                (p for p in pipeline_config.providers if p.name == agent.provider),
-                                None,
-                            )
-                            resolved_model = agent.model or ""
-                            if (
-                                resolved_provider is not None
-                                and resolved_model
-                                and resolved_provider.effective_api_style(resolved_model)
-                                == "responses"
-                            ):
-                                ui.label(
-                                    t(
-                                        "agents.reasoning_effort",
-                                        reasoning_effort=resolved_provider.effective_reasoning_effort(
-                                            resolved_model
-                                        ),
-                                    )
-                                ).classes("text-caption")
+
+                    with ui.expansion(t("agents.advanced"), icon="tune").classes("w-full q-mt-sm"):
+                        deps = ", ".join(agent.depends_on) or t("agents.runs_after.nothing")
+                        ui.label(t("agents.runs_after", deps=deps))
+                        ui.label(t("agents.produces_fields", fields=", ".join(agent.fields)))
+                        if agent.tools:
+                            ui.label(t("agents.tools", tools=", ".join(agent.tools)))
+                        if agent.extra_body:
+                            ui.label(t("agents.extra_body", extra_body=agent.extra_body))
                         ui.label(t("agents.prompt_readonly")).classes("text-caption q-mt-sm")
                         ui.code(agent.prompt, language=None).classes("w-full")
 

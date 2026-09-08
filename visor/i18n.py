@@ -228,8 +228,27 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "financiadores que los agentes dejaron en blanco."
         ),
         "agents.checkbox.validate_pids": "Validar identificadores persistentes",
+        "agents.checkbox.validate_pids.tooltip": (
+            "Revisa el formato de cada DOI/ROR/ISNI/ORCID encontrado en el "
+            "resultado y marca cualquiera con forma inválida. No hace "
+            "llamadas de red por sí solo — ver la opción \"en vivo\" abajo."
+        ),
         "agents.checkbox.validate_pids_live": "Validar PIDs en vivo (llamadas reales a la red)",
+        "agents.checkbox.validate_pids_live.tooltip": (
+            "Además de revisar el formato, resuelve cada identificador contra "
+            "su registro real (doi.org, ror.org, ...) para confirmar que "
+            "existe. Solo tiene efecto si \"Validar identificadores "
+            "persistentes\" está activado; añade llamadas de red y por lo "
+            "tanto tiempo a cada ejecución."
+        ),
         "agents.checkbox.validate_shacl_conformance": "Validar conformidad SHACL",
+        "agents.checkbox.validate_shacl_conformance.tooltip": (
+            "Comprueba el JSON-LD generado contra las reglas SHACL del "
+            "perfil CDIF Discovery y agrega advertencias no bloqueantes al "
+            "resultado — nunca hace fallar la ejecución. Desactivado por "
+            "defecto: es una verificación nueva y casi todo el corpus de "
+            "referencia actual todavía no la cumple del todo."
+        ),
         "agents.provider_label": "Proveedor",
         "agents.model_label": "Modelo",
         "agents.pick_provider_first": "Elige primero un proveedor",
@@ -452,8 +471,27 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "funders the agents left blank."
         ),
         "agents.checkbox.validate_pids": "Validate persistent identifiers",
+        "agents.checkbox.validate_pids.tooltip": (
+            "Checks the shape of every DOI/ROR/ISNI/ORCID found in the "
+            "output and flags any that's malformed. Makes no network calls "
+            "on its own -- see the \"live\" option below."
+        ),
         "agents.checkbox.validate_pids_live": "Validate PIDs live (real network calls)",
+        "agents.checkbox.validate_pids_live.tooltip": (
+            "On top of the shape check, resolves each identifier against "
+            "its real registry (doi.org, ror.org, ...) to confirm it "
+            "actually exists. Only takes effect when \"Validate persistent "
+            "identifiers\" is also on; adds network calls, and therefore "
+            "time, to every run."
+        ),
         "agents.checkbox.validate_shacl_conformance": "Validate SHACL conformance",
+        "agents.checkbox.validate_shacl_conformance.tooltip": (
+            "Checks the generated JSON-LD against the CDIF Discovery "
+            "profile's SHACL rules and adds non-blocking warnings to the "
+            "output -- never fails the run. Off by default: it's a new "
+            "check, and most of the current reference corpus doesn't fully "
+            "pass it yet."
+        ),
         "agents.provider_label": "Provider",
         "agents.model_label": "Model",
         "agents.pick_provider_first": "Pick a provider first",
