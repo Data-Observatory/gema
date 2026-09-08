@@ -42,7 +42,14 @@ logger = logging.getLogger(__name__)
 # extra_body={"seed": 42} -> 400 "unknown parameter 'seed'";
 # extra_body={"thinking": {"type": "disabled"}} -> 400 "unknown parameter
 # 'thinking'". Never forward either on this path.
-_UNSUPPORTED_ON_RESPONSES: tuple[str, ...] = ("seed", "thinking")
+#
+# Public (not module-private) because it's also the source of truth for
+# visor's agents_page.py, which strips these same keys at save time when an
+# agent's resolved api_style is "responses" -- otherwise a stale
+# Chat-Completions-shaped extra_body (e.g. left over from switching an
+# agent's model away from deepseek-v4-flash) lingers in the saved config
+# and re-triggers this module's drop-and-warn path on every call, forever.
+UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES: tuple[str, ...] = ("seed", "thinking")
 
 # Cap on how many formatted validation-error lines get sent back to the
 # model in a reask turn -- keeps a real-payload ValidationError (which can
@@ -64,7 +71,7 @@ def _build_responses_extra_body(config: LLMConfig) -> dict[str, Any] | None:
     if not config.extra_body:
         return None
     extra_body = dict(config.extra_body)
-    for key in _UNSUPPORTED_ON_RESPONSES:
+    for key in UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES:
         if key in extra_body:
             del extra_body[key]
             logger.warning(
@@ -92,6 +99,56 @@ def _build_extra_headers(config: LLMConfig) -> dict[str, str] | None:
     return {config.session_header: f"gema-{uuid.uuid4().hex}"}
 
 
+def _force_strict_additional_properties(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively force ``additionalProperties: false`` on every object
+    type, overriding an explicit ``true`` -- unlike
+    ``_ensure_strict_object_schema``'s ``setdefault`` (correct for
+    llm.tools's hand-written tool schemas, which never say ``true``),
+    ``to_strict_json_schema`` itself leaves an *explicit*
+    ``additionalProperties: true`` untouched, assuming it was deliberate.
+    Pydantic's own ``model_json_schema()`` emits exactly that for any model
+    using ``ConfigDict(extra="allow")`` -- which is what
+    ``CDIFDiscoveryProfile``'s dynamically-built output model uses (its
+    open-world design, matching ``DataCiteSchema46``'s own ``extra``
+    policy).
+
+    Confirmed 2026-09-08 against opencode:muse-spark-1.3-contributor:
+    every agent (not just tool-using ones) 400'd with `"'additionalProperties'
+    is required to be supplied and to be false"` on the real CDIF output
+    schema specifically -- ``schema:identifier``/``schema:sameAs``/etc.'s
+    array-of-object fields all carry ``additionalProperties: true``,
+    inherited from the parent model's ``extra="allow"``. Forcing it to
+    ``false`` here is safe: during structured generation the model is only
+    ever asked to fill in the schema's own known fields regardless --
+    ``extra="allow"`` is about tolerating already-parsed data post-hoc
+    (e.g. a legacy JSON config with stray keys), not about wanting the LLM
+    itself to invent unlisted top-level keys while generating."""
+    schema = dict(schema)
+    if schema.get("type") == "object":
+        schema["additionalProperties"] = False
+    properties = schema.get("properties")
+    if isinstance(properties, dict):
+        schema["properties"] = {
+            key: _force_strict_additional_properties(value) for key, value in properties.items()
+        }
+    items = schema.get("items")
+    if isinstance(items, dict):
+        schema["items"] = _force_strict_additional_properties(items)
+    defs = schema.get("$defs")
+    if isinstance(defs, dict):
+        schema["$defs"] = {
+            key: _force_strict_additional_properties(value) for key, value in defs.items()
+        }
+    for union_key in ("anyOf", "oneOf", "allOf"):
+        variants = schema.get(union_key)
+        if isinstance(variants, list):
+            schema[union_key] = [
+                _force_strict_additional_properties(v) if isinstance(v, dict) else v
+                for v in variants
+            ]
+    return schema
+
+
 def _text_format(response_model: type[BaseModel]) -> dict[str, Any]:
     """Build the ``text=`` request param for native json_schema structured
     output. Must go through ``to_strict_json_schema`` -- a raw
@@ -100,12 +157,17 @@ def _text_format(response_model: type[BaseModel]) -> dict[str, Any]:
     instead returns 200 but silently corrupts data (the model free-forms a
     wrong key name and pydantic silently drops it, no error surfaces
     anywhere), so ``strict`` must always be ``True``, never a config knob.
+
+    ``_force_strict_additional_properties`` runs after
+    ``to_strict_json_schema`` -- see that function's own docstring for why
+    an extra pass is needed on top of it for gema's own (``extra="allow"``)
+    output models.
     """
     return {
         "format": {
             "type": "json_schema",
             "name": response_model.__name__,
-            "schema": to_strict_json_schema(response_model),
+            "schema": _force_strict_additional_properties(to_strict_json_schema(response_model)),
             "strict": True,
         }
     }
@@ -150,19 +212,65 @@ def _format_validation_error(exc: ValidationError) -> str:
     return "\n".join(lines)
 
 
+def _ensure_strict_object_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively enforce ``additionalProperties: false`` (and, on the same
+    object, ``required`` naming every property) on a hand-written JSON
+    schema, mirroring ``openai.lib._pydantic._ensure_strict_json_schema``'s
+    object/array/union handling -- reused here rather than imported since
+    that helper is a private API and expects a pydantic-derived schema
+    (``$ref``/``$defs`` resolution included); llm.tools's hand-written tool
+    schemas never use either, so that part is intentionally omitted.
+
+    Confirmed 2026-09-08: a tool schema missing ``additionalProperties``
+    gets a 400 ("'additionalProperties' is required to be supplied and to
+    be false") from at least one Responses-API backend
+    (opencode:muse-spark-1.3-contributor) even though the same reshape
+    worked untouched when this module was first probed against that same
+    provider on 2026-09-06 -- i.e. this is a real gap in gema's own
+    reshape, not a model-specific quirk, and belongs here so every
+    Responses-API model's tool calls get it, not just the one that
+    surfaced it."""
+    schema = dict(schema)
+    if schema.get("type") == "object":
+        schema.setdefault("additionalProperties", False)
+    # Unconditional on "properties" itself, not gated on type=="object" above
+    # -- matches openai.lib._pydantic._ensure_strict_json_schema exactly,
+    # so a hand-written schema with "properties" but no explicit "type" key
+    # (valid JSON Schema; implied object) still gets required/recursion.
+    properties = schema.get("properties")
+    if isinstance(properties, dict):
+        schema["required"] = list(properties.keys())
+        schema["properties"] = {
+            key: _ensure_strict_object_schema(value) for key, value in properties.items()
+        }
+    items = schema.get("items")
+    if isinstance(items, dict):
+        schema["items"] = _ensure_strict_object_schema(items)
+    for union_key in ("anyOf", "oneOf", "allOf"):
+        variants = schema.get(union_key)
+        if isinstance(variants, list):
+            schema[union_key] = [
+                _ensure_strict_object_schema(variant) if isinstance(variant, dict) else variant
+                for variant in variants
+            ]
+    return schema
+
+
 def _to_responses_tool_schema(chat_completions_schema: dict[str, Any]) -> dict[str, Any]:
     """Reshape one of llm.tools's Chat-Completions-nested tool schemas
     (``{"type":"function","function":{"name":...,"parameters":...}}``) into
     the flat shape the Responses API expects
-    (``{"type":"function","name":...,"parameters":...}``). Probed
-    2026-09-06: gema's existing tool schemas work after this pure reshape,
-    no other schema surgery needed."""
+    (``{"type":"function","name":...,"parameters":...}``), with
+    ``_ensure_strict_object_schema`` applied to ``parameters`` -- see that
+    function's docstring for why. Probed 2026-09-06: gema's existing tool
+    schemas otherwise work after this pure reshape, no other schema
+    surgery needed."""
     function = chat_completions_schema["function"]
     flat: dict[str, Any] = {"type": "function", "name": function["name"]}
     if "description" in function:
         flat["description"] = function["description"]
     if "parameters" in function:
-        flat["parameters"] = function["parameters"]
+        flat["parameters"] = _ensure_strict_object_schema(function["parameters"])
     return flat
 
 

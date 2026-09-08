@@ -275,6 +275,26 @@ class TestMissingRequired:
         settings = VisorSettings(env={"ZAI_API_KEY": ""})
         assert missing_required(config, settings) == ["ZAI_API_KEY"]
 
+    def test_os_environ_fallback_when_settings_lacks_it(self, monkeypatch):
+        """Matches the actual key resolution build_llm_factory/
+        create_llm_client use at call time (settings first, os.environ
+        otherwise) -- a key that would genuinely make the call succeed
+        must not be reported as missing just because it was never typed
+        into visor's own Settings tab. Regression: without this,
+        bootstrap.restore_testing_provider_if_key_available() could flip
+        an agent onto a provider this gate then insisted needed a key the
+        environment already has."""
+        monkeypatch.setenv("ZAI_API_KEY", "from-os-environ")
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        settings = VisorSettings()
+        assert missing_required(config, settings) == []
+
+    def test_os_environ_empty_value_still_counts_as_missing(self, monkeypatch):
+        monkeypatch.setenv("ZAI_API_KEY", "")
+        config = make_pipeline_config(("zai", "ZAI_API_KEY"))
+        settings = VisorSettings()
+        assert missing_required(config, settings) == ["ZAI_API_KEY"]
+
 
 class TestMissingRequiredDetails:
     def test_all_present_returns_empty(self):
@@ -449,3 +469,42 @@ class TestApplyAgentOverrides:
         original_provider = config.agents[0].provider
         apply_agent_overrides(config, None, VisorSettings())
         assert config.agents[0].provider == original_provider
+
+    def test_applies_saved_reasoning_effort_to_matching_agent(self):
+        """Found on Opus review: agents_page.py's per-agent effort select
+        (feat/visor-bulk-model-effort-and-export-ux) writes reasoning_effort
+        into _persist_overrides()'s saved dict, but this read side never
+        restored it -- a saved effort silently reverted to whatever
+        config/agents.yaml's own cascade resolved on the very next load."""
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        settings = VisorSettings(agent_overrides={"a0": {"reasoning_effort": "high"}})
+        apply_agent_overrides(config, None, settings)
+        assert config.agents[0].reasoning_effort == "high"
+
+    def test_saved_reasoning_effort_none_clears_an_existing_value(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        config.agents[0].reasoning_effort = "high"
+        settings = VisorSettings(agent_overrides={"a0": {"reasoning_effort": None}})
+        apply_agent_overrides(config, None, settings)
+        assert config.agents[0].reasoning_effort is None
+
+    def test_invalid_saved_reasoning_effort_is_ignored(self):
+        """Defensive the same way an unknown provider name is (see
+        test_skips_a_saved_provider_no_longer_declared_but_still_applies_model
+        above) -- a hand-edited or stale settings.json must never make this
+        raise, and must never silently assign a value AgentConfig's own
+        Literal type doesn't recognize."""
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        config.agents[0].reasoning_effort = "medium"
+        settings = VisorSettings(agent_overrides={"a0": {"reasoning_effort": "not-a-real-level"}})
+        apply_agent_overrides(config, None, settings)
+        assert config.agents[0].reasoning_effort == "medium"
+
+    def test_applies_saved_reasoning_effort_to_dataverse_agent(self):
+        config = make_pipeline_config(("openrouter", "OPENROUTER_API_KEY"))
+        dataverse = make_dataverse_export_config("openrouter")
+        settings = VisorSettings(
+            dataverse_agent_override={"enabled": True, "reasoning_effort": "low"}
+        )
+        apply_agent_overrides(config, dataverse, settings)
+        assert dataverse.agent.reasoning_effort == "low"

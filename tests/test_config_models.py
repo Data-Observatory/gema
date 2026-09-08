@@ -11,6 +11,7 @@ from metadata_enricher.config.models import (
     ModelOverride,
     PipelineConfig,
     ProviderConfig,
+    find_model_override_elsewhere,
 )
 
 
@@ -890,6 +891,100 @@ class TestEffectiveReasoningEffort:
             ],
         )
         assert p.effective_reasoning_effort("m") == "provider_default"
+
+
+class TestFindModelOverrideElsewhere:
+    """find_model_override_elsewhere -- the misconfiguration-detection
+    helper visor's Agents tab warns from at save time. Generic over any
+    model/provider pair, not tied to any one real model."""
+
+    def test_none_when_assigned_provider_already_has_override(self):
+        providers = [
+            ProviderConfig(
+                name="p1",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") is None
+
+    def test_none_when_no_provider_has_an_override(self):
+        providers = [ProviderConfig(name="p1", api_key_env="K")]
+        assert find_model_override_elsewhere(providers, "m", "p1") is None
+
+    def test_finds_other_provider_with_the_override(self):
+        providers = [
+            ProviderConfig(name="p1", api_key_env="K"),
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") == "p2"
+
+    def test_unknown_assigned_provider_still_checks_others(self):
+        """agent.provider not (yet) matching any real provider (e.g. a
+        stale value from an in-progress edit) must not crash the check --
+        it's just treated as 'this provider has no override'."""
+        providers = [
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "not-a-real-provider") == "p2"
+
+    def test_warns_even_when_assigned_provider_has_an_unrelated_override_entry(self):
+        """Regression (found on review): a provider carrying *an* entry for
+        this model that only sets an unrelated field (max_workers here)
+        must not be mistaken for "already covered" -- api_style still
+        cascades down to that provider's own plain default (chat_completions
+        here), which genuinely differs from what another provider's
+        api_style override would give."""
+        providers = [
+            ProviderConfig(
+                name="p1",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", max_workers=2)],
+            ),
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") == "p2"
+
+    def test_none_when_assigned_provider_resolves_to_the_same_value(self):
+        """Two providers can each declare their own api_style override for
+        the same model and agree -- no real mismatch, must not warn."""
+        providers = [
+            ProviderConfig(
+                name="p1",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                model_overrides=[ModelOverride(model="m", api_style="responses")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") is None
+
+    def test_finds_reasoning_effort_mismatch_too(self):
+        providers = [
+            ProviderConfig(name="p1", api_key_env="K"),
+            ProviderConfig(
+                name="p2",
+                api_key_env="K",
+                reasoning_effort="medium",
+                model_overrides=[ModelOverride(model="m", reasoning_effort="high")],
+            ),
+        ]
+        assert find_model_override_elsewhere(providers, "m", "p1") == "p2"
 
 
 class TestModelOverridesValidation:
