@@ -259,6 +259,7 @@ def apply_to_environ(settings: VisorSettings) -> None:
 
 PIPELINE_BEHAVIOR_FLAGS = (
     "enable_content_fetch",
+    "enable_js_render_fallback",
     "enable_doi_resolution",
     "enable_identifier_enrichment",
     "validate_pids",
