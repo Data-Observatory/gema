@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from unittest.mock import MagicMock, patch
 
 import httpx
+import pytest
 
 from metadata_enricher.enrichers.content_fetcher import (
+    _MIN_STATIC_TEXT_LEN,
+    _fetch_via_obscura,
+    _obscura_binary_path,
     _resolve_url,
     clean_html_to_text,
     fetch_page_content,
@@ -289,3 +295,331 @@ class TestFetchPageContent:
         assert mock_get.call_args.kwargs["timeout"] == 5.0
         assert result is not None
         assert len(result) == 10
+
+
+class TestObscuraBinaryPath:
+    """Locating the optional obscura render binary."""
+
+    def test_returns_none_when_not_found_anywhere(self) -> None:
+        with patch("metadata_enricher.enrichers.content_fetcher.shutil.which", return_value=None):
+            assert _obscura_binary_path() is None
+
+    def test_finds_binary_on_path(self) -> None:
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.shutil.which",
+            return_value="/usr/local/bin/obscura",
+        ):
+            assert _obscura_binary_path() == "/usr/local/bin/obscura"
+
+    def test_finds_bundled_binary_when_frozen_and_staged(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path
+    ) -> None:
+        bundled = tmp_path / "obscura"
+        bundled.write_bytes(b"fake bundled binary")
+        monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.shutil.which",
+            return_value=None,
+        ):
+            assert _obscura_binary_path() == str(bundled)
+
+    def test_falls_back_to_path_when_frozen_but_staging_was_skipped(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path
+    ) -> None:
+        """visor.spec skips staging on an unsupported platform (see
+        fetch_obscura.py) -- a frozen build must still fall through to a
+        separately-installed PATH binary rather than crashing or refusing
+        to look further."""
+        monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.shutil.which",
+            return_value="/usr/local/bin/obscura",
+        ):
+            assert _obscura_binary_path() == "/usr/local/bin/obscura"
+
+
+class TestFetchViaObscura:
+    """_fetch_via_obscura: JS-render fallback, same never-raise contract."""
+
+    def test_returns_none_when_binary_not_found(self) -> None:
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher._obscura_binary_path", return_value=None
+        ):
+            assert _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000) is None
+
+    def test_refuses_non_http_scheme_without_touching_subprocess(self) -> None:
+        with patch("metadata_enricher.enrichers.content_fetcher.subprocess.run") as mock_run:
+            assert _fetch_via_obscura("file:///etc/passwd", timeout=5.0, max_len=8000) is None
+        mock_run.assert_not_called()
+
+    def test_refuses_flag_like_or_schemeless_input(self) -> None:
+        with patch("metadata_enricher.enrichers.content_fetcher.subprocess.run") as mock_run:
+            assert _fetch_via_obscura("--dump", timeout=5.0, max_len=8000) is None
+        mock_run.assert_not_called()
+
+    def test_successful_render_is_cleaned_through_clean_html_to_text(self) -> None:
+        completed = MagicMock(
+            returncode=0,
+            stdout=b"<html><body><main>Real rendered content here</main></body></html>",
+            stderr=b"",
+        )
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                return_value=completed,
+            ) as mock_run,
+        ):
+            result = _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000)
+        assert result == "Real rendered content here"
+        called_args = mock_run.call_args.args[0]
+        assert called_args == [
+            "/usr/local/bin/obscura",
+            "fetch",
+            "https://example.com",
+            "--dump",
+            "html",
+            "--timeout",
+            "5",
+        ]
+
+    def test_sub_one_second_timeout_floors_to_one(self) -> None:
+        """str(int(0.5)) == '0' would pass obscura a nonsensical --timeout 0
+        -- floor to at least 1. The subprocess.run(timeout=...) bound stays
+        the caller's real value + slack regardless, so this only affects
+        what obscura itself is told."""
+        completed = MagicMock(returncode=0, stdout=b"<main>content</main>", stderr=b"")
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                return_value=completed,
+            ) as mock_run,
+        ):
+            _fetch_via_obscura("https://example.com", timeout=0.5, max_len=8000)
+        assert mock_run.call_args.args[0][-1] == "1"
+
+    def test_non_zero_exit_returns_none(self) -> None:
+        completed = MagicMock(returncode=1, stdout=b"", stderr=b"navigation failed")
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                return_value=completed,
+            ),
+        ):
+            assert _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000) is None
+
+    def test_timeout_returns_none(self) -> None:
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                side_effect=subprocess.TimeoutExpired(cmd="obscura", timeout=5.0),
+            ),
+        ):
+            assert _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000) is None
+
+    def test_binary_not_executable_returns_none(self) -> None:
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                side_effect=OSError("permission denied"),
+            ),
+        ):
+            assert _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000) is None
+
+    def test_empty_stdout_returns_none(self) -> None:
+        completed = MagicMock(returncode=0, stdout=b"   ", stderr=b"")
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._obscura_binary_path",
+                return_value="/usr/local/bin/obscura",
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.subprocess.run",
+                return_value=completed,
+            ),
+        ):
+            assert _fetch_via_obscura("https://example.com", timeout=5.0, max_len=8000) is None
+
+
+class TestFetchPageContentJsRenderFallback:
+    """fetch_page_content's opt-in JS-render retry path."""
+
+    def test_disabled_by_default_thin_result_not_retried(self) -> None:
+        response = _mock_response(text="<p>Hi</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com")
+        mock_render.assert_not_called()
+        assert result == "Hi"
+
+    def test_thin_result_triggers_render_when_enabled(self) -> None:
+        response = _mock_response(text="<p>Hi</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value="Real rendered content. " * 20,
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_called_once()
+        assert result is not None
+        assert "Real rendered content" in result
+
+    def test_substantial_static_result_is_not_retried(self) -> None:
+        substantial = "Real static page content. " * 20
+        response = _mock_response(text=f"<p>{substantial}</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_not_called()
+        assert result is not None
+        assert "Real static page content" in result
+
+    def test_render_failure_falls_back_to_thin_static_text(self) -> None:
+        response = _mock_response(text="<p>Hi</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value=None,
+            ),
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        assert result == "Hi"
+
+    def test_timeout_triggers_render_when_enabled(self) -> None:
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.httpx.get",
+                side_effect=httpx.TimeoutException("timed out"),
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value="Real rendered content. " * 20,
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_called_once()
+        assert result is not None
+
+    def test_non_200_is_not_retried_even_when_enabled(self) -> None:
+        response = _mock_response(status_code=404)
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_not_called()
+        assert result is None
+
+    def test_non_html_content_type_is_not_retried_even_when_enabled(self) -> None:
+        response = _mock_response(content_type="application/pdf")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_not_called()
+        assert result is None
+
+    def test_connection_error_is_not_retried_even_when_enabled(self) -> None:
+        """Distinct from timeout: obscura would hit the exact same
+        unreachable host, so a connection error is trusted as-is rather
+        than wasting a render attempt on it."""
+        with (
+            patch(
+                "metadata_enricher.enrichers.content_fetcher.httpx.get",
+                side_effect=httpx.ConnectError("connection refused"),
+            ),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_not_called()
+        assert result is None
+
+    def test_exactly_at_threshold_is_not_retried(self) -> None:
+        exact = "x" * _MIN_STATIC_TEXT_LEN
+        response = _mock_response(text=f"<p>{exact}</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura"
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_not_called()
+        assert result == exact
+
+    def test_one_char_below_threshold_is_retried(self) -> None:
+        thin = "x" * (_MIN_STATIC_TEXT_LEN - 1)
+        response = _mock_response(text=f"<p>{thin}</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value="y" * (_MIN_STATIC_TEXT_LEN + 50),
+            ) as mock_render,
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        mock_render.assert_called_once()
+        assert result == "y" * (_MIN_STATIC_TEXT_LEN + 50)
+
+    def test_render_result_shorter_than_static_keeps_static(self) -> None:
+        static = "x" * 50  # thin (below threshold) but real
+        response = _mock_response(text=f"<p>{static}</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value="y" * 5,
+            ),
+        ):
+            result = fetch_page_content("https://example.com", js_render_fallback=True)
+        assert result == static
+
+    def test_bare_doi_is_resolved_before_being_passed_to_render(self) -> None:
+        response = _mock_response(text="<p>Hi</p>")
+        with (
+            patch("metadata_enricher.enrichers.content_fetcher.httpx.get", return_value=response),
+            patch(
+                "metadata_enricher.enrichers.content_fetcher._fetch_via_obscura",
+                return_value="Real rendered content. " * 20,
+            ) as mock_render,
+        ):
+            fetch_page_content("10.5880/gfz.4.1.2020.012", js_render_fallback=True)
+        mock_render.assert_called_once()
+        assert mock_render.call_args.args[0] == "https://doi.org/10.5880/gfz.4.1.2020.012"
