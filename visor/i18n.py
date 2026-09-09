@@ -218,6 +218,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
             "Obtiene la URL de cada recurso y pasa el texto de la página a "
             "los agentes cuando aún no lo tienen."
         ),
+        "agents.checkbox.js_render_fallback": "Renderizar con JS si la página viene vacía",
+        "agents.checkbox.js_render_fallback.tooltip": (
+            "Si obtener la página trae muy poco texto (habitual en sitios que "
+            "cargan el contenido con JavaScript), reintenta con un navegador "
+            "sin interfaz antes de rendirse. Requiere el binario 'obscura' "
+            "(incluido en las compilaciones de Visor). Solo aplica cuando la "
+            "opción anterior está activada."
+        ),
         "agents.checkbox.doi_resolution": "Resolver DOIs automáticamente",
         "agents.checkbox.doi_resolution.tooltip": (
             "Busca un DOI aislado para ayudar a completar metadatos que falten."
@@ -462,6 +470,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "agents.checkbox.content_fetch.tooltip": (
             "Fetches each resource's URL and feeds the page text to the "
             "agents when they don't already have it."
+        ),
+        "agents.checkbox.js_render_fallback": "Render with JS when the page comes back empty",
+        "agents.checkbox.js_render_fallback.tooltip": (
+            "If fetching the page returns very little text (common on sites "
+            "that load content via JavaScript), retries with a headless "
+            "browser before giving up. Requires the 'obscura' binary "
+            "(bundled into Visor builds). Only applies when the option above "
+            "is enabled."
         ),
         "agents.checkbox.doi_resolution": "Resolve DOIs automatically",
         "agents.checkbox.doi_resolution.tooltip": "Looks up a bare DOI to help fill in missing metadata.",

@@ -13,6 +13,9 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+# visor.spec's build-time vendoring of the obscura binary (fetch_obscura.py) --
+# downloaded+verified per platform, never committed.
+/vendor/
 downloads/
 eggs/
 .eggs/

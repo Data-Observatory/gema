@@ -904,11 +904,39 @@ class TestPipelineContentFetchWiring:
             pipeline = Pipeline(config=config, llm_factory=factory)
             results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
 
-        mock_fetch.assert_called_once_with("https://example.com/resource")
+        mock_fetch.assert_called_once_with(
+            "https://example.com/resource", js_render_fallback=False
+        )
         assert len(results) == 1
         assert results[0].success is True
         assert results[0].resource.fetched_content == "Fetched page body text"
         assert any("Fetched page body text" in p for p in capturing_client.prompts)
+
+    def test_js_render_fallback_flag_is_passed_through_to_fetch_page_content(
+        self, tmp_path, llm_factory
+    ) -> None:
+        """enable_js_render_fallback is its own opt-in on top of enable_content_
+        fetch -- both must be True for the flag fetch_page_content sees to be
+        True. Off by default, same as its parent flag."""
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/resource", "title": "T", "description": "D"},
+        )
+        config = make_test_config()
+        config.enable_content_fetch = True
+        assert config.enable_js_render_fallback is False
+        config.enable_js_render_fallback = True
+
+        with patch(
+            "metadata_enricher.enrichers.content_fetcher.fetch_page_content",
+            return_value="Fetched page body text",
+        ) as mock_fetch:
+            pipeline = Pipeline(config=config, llm_factory=llm_factory)
+            pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        mock_fetch.assert_called_once_with(
+            "https://example.com/resource", js_render_fallback=True
+        )
 
     def test_enabled_but_content_already_present_does_not_fetch(
         self, tmp_path, llm_factory

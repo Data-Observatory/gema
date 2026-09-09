@@ -29,6 +29,7 @@ enrichers/
 | Task | Location |
 |------|----------|
 | Enable auto content-fetch (populate `fetched_content` from `resource.url`) | `PipelineConfig.enable_content_fetch = True` (config/models.py); wired in `pipeline.py:Pipeline._maybe_fetch_content` |
+| Enable JS-render fallback for a too-thin/JS-rendered fetch (needs `enable_content_fetch` too) | `PipelineConfig.enable_js_render_fallback = True` (config/models.py); `content_fetcher.py:_fetch_via_obscura` — requires the `obscura` binary (bundled into Visor, else a separate PATH install) |
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
 | Add/edit a human-curated ROR/ISNI override | `config/overrides.yaml` — see `identifier_overrides.py`; path set via `PipelineConfig.identifier_overrides_path` |
 | Enable DOI resolution (Crossref backfill) | `PipelineConfig.enable_doi_resolution = True` (config/models.py) |
@@ -101,6 +102,9 @@ Pipeline.run() [per resource]:
   0. fetch_page_content(resource.url) → resource.fetched_content   ← only if enable_content_fetch,
                                                                         AND fetched_content is empty,
                                                                         AND resource.url is non-empty
+                                                                        (a too-thin/failed static fetch
+                                                                        retries via obscura when
+                                                                        enable_js_render_fallback is also on)
 Pipeline._process_resource():
   1. Validate resource
   2. Build agent registry
@@ -139,6 +143,9 @@ Enable auto content-fetch, DOI resolution, and/or identifier enrichment via conf
 # config/agents.yaml
 enable_content_fetch: true          # default false — off by default: no cost/behavior
                                      # change for existing users unless opted in
+enable_js_render_fallback: true      # default false — only consulted when the flag above is
+                                     # also on; needs the `obscura` binary (bundled into Visor,
+                                     # else a separate PATH install for CLI/library use)
 enable_doi_resolution: true          # default false — same reasoning
 enable_identifier_enrichment: true
 identifier_overrides_path: config/overrides.yaml   # optional — default null (feature off)

@@ -231,6 +231,17 @@ class PipelineConfig(BaseModel):
     # a missing/unset path is not an error, matching this feature's fail-soft design.
     identifier_overrides_path: str | None = None
     enable_content_fetch: bool = False
+    # Only consulted when enable_content_fetch is also True. When the plain
+    # HTTP fetch comes back empty/too-thin to trust (see content_fetcher.py's
+    # _MIN_STATIC_TEXT_LEN -- typically a JS-rendered SPA shell with no real
+    # content in the static HTML), retry via a headless-render fallback
+    # (the `obscura` binary, bundled into Visor builds via visor.spec /
+    # resolved from PATH otherwise) before giving up. Off by default: it's a
+    # slower, heavier path (subprocess + real page render) than the rest of
+    # this fail-soft module, and depends on an external binary the plain
+    # httpx path never needed. See docs/cdif_pivot_implementation_plan.md's
+    # "JS-render fallback" phase for the full evaluation.
+    enable_js_render_fallback: bool = False
     enable_doi_resolution: bool = False
     validate_pids: bool = True
     validate_pids_live: bool = True

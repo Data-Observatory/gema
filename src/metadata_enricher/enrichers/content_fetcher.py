@@ -12,13 +12,26 @@ fetch`` (default ``False``) and wired in ``pipeline.py``. It must never raise:
 a failed/slow/dead URL just means no ``fetched_content`` for that resource,
 identical to today's behavior when the caller doesn't supply one — never
 blocks generation.
+
+A second, independently opt-in layer (``PipelineConfig.enable_js_render_
+fallback``) retries a too-thin/failed static fetch through a real JS engine
+(the ``obscura`` CLI, https://github.com/h4ckf0r0day/obscura) before giving
+up -- for the real, measured case of a JS-rendered SPA whose static HTML
+carries none of the page's actual content. Same fail-soft contract: a
+missing binary, timeout, or render failure just falls back to whatever the
+static fetch already returned. See docs/cdif_pivot_implementation_plan.md's
+"JS-render fallback" phase for the evaluation this was built from.
 """
 
 from __future__ import annotations
 
 import logging
 import re
+import shutil
+import subprocess
+import sys
 from html.parser import HTMLParser
+from pathlib import Path
 
 import httpx
 
@@ -28,6 +41,19 @@ _STRIP_BLOCKS_RE = re.compile(r"(?is)<(script|style|nav|header|footer|noscript)[
 _TAG_RE = re.compile(r"(?s)<[^>]+>")
 _WHITESPACE_RE = re.compile(r"\s+")
 _BARE_DOI_RE = re.compile(r"^10\.\d{4,9}/\S+$")
+
+# Below this length, a *successful* static fetch is treated as too thin to
+# trust -- typically a JS-rendered SPA shell whose real content never made it
+# into the static HTML at all (confirmed live against real golden-fixture
+# URLs: dead pages measured 9/23/72/123 chars vs. a real page's thousands).
+# Only load-bearing when the caller opts into js_render_fallback -- see
+# _fetch_via_obscura below.
+_MIN_STATIC_TEXT_LEN = 200
+_OBSCURA_BINARY_NAME = "obscura.exe" if sys.platform == "win32" else "obscura"
+# Slack added on top of the caller's own timeout for the *subprocess* bound,
+# since obscura's own --timeout only bounds page navigation, not process
+# startup/V8 init -- see fetch_page_content's docstring.
+_OBSCURA_TIMEOUT_SLACK = 5.0
 
 # Chrome tags whose text is never real content, wherever they appear in the
 # tree (unlike _STRIP_BLOCKS_RE above, this is nesting-aware via HTMLParser,
@@ -192,16 +218,106 @@ def clean_html_to_text(html: str, max_len: int = 8000) -> str:
     return text[:max_len]
 
 
-def fetch_page_content(url: str, *, timeout: float = 15.0, max_len: int = 8000) -> str | None:
+def _obscura_binary_path() -> str | None:
+    """Locate the ``obscura`` headless-render binary.
+
+    A frozen Visor build ships it bundled next to the app (staged into
+    PyInstaller's ``binaries`` by visor.spec, landing in ``sys._MEIPASS`` at
+    runtime — see that spec file's own comments for the vendoring step).
+    Outside a frozen build (plain CLI/library use), it must be a separately
+    installed prerequisite on ``PATH`` — gema never downloads it itself.
+    Returns ``None`` if it can't be found either way, which callers treat as
+    "render fallback unavailable", not an error.
+    """
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        bundled = Path(meipass) / _OBSCURA_BINARY_NAME
+        if bundled.is_file():
+            return str(bundled)
+    return shutil.which(_OBSCURA_BINARY_NAME)
+
+
+def _fetch_via_obscura(url: str, *, timeout: float, max_len: int) -> str | None:
+    """Render *url* with a real JS engine (via the ``obscura`` CLI) and clean
+    the resulting DOM through the same ``clean_html_to_text`` path as a plain
+    static fetch — one extraction implementation, not two (verified live:
+    obscura's rendered ``--dump html`` output carries real <main>/<article>
+    tags on real pages, so the existing extractor behaves the same on it as
+    on server-rendered HTML).
+
+    Never raises: a missing binary, non-zero exit, or timeout all degrade to
+    ``None`` plus a logged warning, identical in spirit to fetch_page_
+    content's own contract.
+    """
+    if not url.startswith(("http://", "https://")):
+        # Defense in depth: the only caller (fetch_page_content) never
+        # reaches here with anything else -- a non-http(s) string fails at
+        # httpx.get() before render_eligible is ever set -- but this
+        # function shells out to an external binary, so refuse explicitly
+        # rather than relying on that call-site guarantee.
+        logger.warning("refusing to render non-http(s) url via obscura: %s", url)
+        return None
+    binary = _obscura_binary_path()
+    if binary is None:
+        logger.warning("obscura binary not found -- skipping JS-render fallback for %s", url)
+        return None
+    try:
+        result = subprocess.run(
+            [binary, "fetch", url, "--dump", "html", "--timeout", str(max(1, int(timeout)))],
+            capture_output=True,
+            timeout=timeout + _OBSCURA_TIMEOUT_SLACK,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        logger.warning("obscura render timed out for %s", url)
+        return None
+    except OSError as exc:  # binary present but not executable, etc.
+        logger.warning("obscura render failed to start for %s: %s", url, exc)
+        return None
+
+    if result.returncode != 0:
+        logger.warning(
+            "obscura render non-zero exit for %s: %s",
+            url,
+            result.stderr.decode("utf-8", errors="replace")[:200],
+        )
+        return None
+
+    html = result.stdout.decode("utf-8", errors="replace")
+    if not html.strip():
+        return None
+    return clean_html_to_text(html, max_len=max_len) or None
+
+
+def fetch_page_content(
+    url: str,
+    *,
+    timeout: float = 15.0,
+    max_len: int = 8000,
+    js_render_fallback: bool = False,
+) -> str | None:
     """Best-effort live fetch + clean of *url*.
 
     Returns ``None`` on any failure (empty url, non-200, timeout, connection
     error, non-HTML/text content-type) — callers must treat this as purely
     optional and never let it block resource processing.
+
+    When *js_render_fallback* is True, a static fetch that either times out
+    (a slow-but-reachable page that might just need more time/a browser) or
+    succeeds but comes back too thin to trust (under _MIN_STATIC_TEXT_LEN,
+    the JS-rendered-SPA case) is retried via _fetch_via_obscura. A real
+    non-200, a non-HTML content-type, a connection error, or any other
+    request failure is *not* retried: obscura hits the exact same network
+    path a connection error already failed on, so rendering would just
+    waste a subprocess timeout on an unreachable host, and rendering a 404
+    or a PDF doesn't make it a webpage either way.
     """
     if not url:
         return None
     resolved_url = _resolve_url(url)
+
+    static_text: str | None = None
+    render_eligible = False
     try:
         response = httpx.get(
             resolved_url,
@@ -209,21 +325,31 @@ def fetch_page_content(url: str, *, timeout: float = 15.0, max_len: int = 8000) 
             follow_redirects=True,
             headers={"User-Agent": USER_AGENT},
         )
+    except httpx.TimeoutException as exc:
+        logger.warning("fetch timed out for %s: %s", resolved_url, exc)
+        render_eligible = True
     except httpx.HTTPError as exc:
         logger.warning("fetch failed for %s: %s", resolved_url, exc)
-        return None
     except Exception as exc:  # defensive: never let a fetch failure propagate
         logger.warning("fetch failed for %s: %s", resolved_url, exc)
-        return None
+    else:
+        if response.status_code != 200:
+            logger.warning("fetch non-200 for %s: %s", resolved_url, response.status_code)
+        else:
+            content_type = response.headers.get("content-type", "")
+            if "html" not in content_type and "text" not in content_type:
+                logger.warning(
+                    "fetch non-HTML content-type for %s: %s", resolved_url, content_type
+                )
+            else:
+                static_text = clean_html_to_text(response.text, max_len=max_len) or None
+                if static_text is None or len(static_text) < _MIN_STATIC_TEXT_LEN:
+                    render_eligible = True
 
-    if response.status_code != 200:
-        logger.warning("fetch non-200 for %s: %s", resolved_url, response.status_code)
-        return None
+    if not js_render_fallback or not render_eligible:
+        return static_text
 
-    content_type = response.headers.get("content-type", "")
-    if "html" not in content_type and "text" not in content_type:
-        logger.warning("fetch non-HTML content-type for %s: %s", resolved_url, content_type)
-        return None
-
-    text = clean_html_to_text(response.text, max_len=max_len)
-    return text or None
+    rendered_text = _fetch_via_obscura(resolved_url, timeout=timeout, max_len=max_len)
+    if rendered_text and (static_text is None or len(rendered_text) > len(static_text)):
+        return rendered_text
+    return static_text

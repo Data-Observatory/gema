@@ -245,6 +245,11 @@ class Pipeline:
           is never overwritten; this stays a passthrough field by default.
         - ``resource.url`` is non-empty — nothing to fetch otherwise.
 
+        ``config.enable_js_render_fallback`` (also off by default, and only
+        consulted when the static fetch above is already enabled) additionally
+        retries a too-thin/failed static fetch through a real JS engine — see
+        content_fetcher.py's module docstring.
+
         A fetch failure (``fetch_page_content`` returns None on any error, by
         contract) is silently tolerated: resource processing continues with
         no ``fetched_content``, exactly as it does today. Wrapped in a
@@ -258,7 +263,9 @@ class Pipeline:
         try:
             from metadata_enricher.enrichers.content_fetcher import fetch_page_content
 
-            content = fetch_page_content(resource.url)
+            content = fetch_page_content(
+                resource.url, js_render_fallback=self._config.enable_js_render_fallback
+            )
         except Exception as exc:
             logger.warning("Content fetch failed for %s: %s", resource.url, exc)
             return resource

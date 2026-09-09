@@ -104,6 +104,23 @@ class TestHandleUpload:
         assert pipeline_config.validate_shacl_conformance is True
         assert refreshed == [True]
 
+    async def test_carries_enable_js_render_fallback(self) -> None:
+        """Same class of regression as enable_content_fetch/validate_shacl_
+        conformance above: _handle_upload's manual field-by-field copy must
+        pick up enable_js_render_fallback too, or it silently reverts to the
+        default (False) on every download/edit/upload round-trip."""
+        pipeline_config = PipelineConfig(**_minimal_config_dict())
+        assert pipeline_config.enable_js_render_fallback is False
+
+        uploaded = _minimal_config_dict(enable_js_render_fallback=True)
+        event = _FakeUploadEvent(json.dumps(uploaded))
+        refreshed: list[bool] = []
+
+        await _handle_upload(event, pipeline_config, lambda: refreshed.append(True))
+
+        assert pipeline_config.enable_js_render_fallback is True
+        assert refreshed == [True]
+
     async def test_rejects_invalid_upload_without_mutating_config(self) -> None:
         pipeline_config = PipelineConfig(**_minimal_config_dict())
         event = _FakeUploadEvent("not json")
