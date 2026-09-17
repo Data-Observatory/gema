@@ -759,3 +759,61 @@ class TestReaskToolsNoneCrashPatch:
         tool_messages = [m for m in result["messages"] if m.get("role") == "tool"]
         assert len(tool_messages) == 1
         assert tool_messages[0]["tool_call_id"] == "call_1"
+
+
+class TestReaskToolsStrictNameFieldPatch:
+    """Regression coverage for the instructor upstream bug worked around in
+    instructor_client._patch_instructor_reask_tools_strict_name_field().
+
+    instructor's reask_tools() puts a "name" key on the "tool"-role retry
+    message it builds. OpenAI's real API tolerates this extra field, but at
+    least one strict OpenAI-compatible proxy (opencode's "Console Go"
+    backend, model omen-alpha) rejects the whole request with a 400 because
+    of it -- so the patch strips "name" from those messages.
+    """
+
+    def test_tool_message_name_field_is_stripped(self) -> None:
+        from instructor.v2.providers.openai import handlers
+
+        tool_call = MagicMock()
+        tool_call.id = "call_1"
+        tool_call.function.name = "SomeModel"
+        message = MagicMock()
+        message.tool_calls = [tool_call]
+        message.function_call = None
+        message.model_dump.return_value = {"role": "assistant", "tool_calls": [{"id": "call_1"}]}
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+
+        kwargs = {"messages": [{"role": "user", "content": "original prompt"}]}
+        result = handlers.reask_tools(kwargs, response, ValueError("bad output"))
+
+        tool_messages = [m for m in result["messages"] if m.get("role") == "tool"]
+        assert len(tool_messages) == 1
+        assert "name" not in tool_messages[0]
+        assert tool_messages[0]["tool_call_id"] == "call_1"
+
+    def test_non_tool_messages_are_left_alone(self) -> None:
+        from instructor.v2.providers.openai import handlers
+
+        tool_call = MagicMock()
+        tool_call.id = "call_1"
+        tool_call.function.name = "SomeModel"
+        message = MagicMock()
+        message.tool_calls = [tool_call]
+        message.function_call = None
+        message.model_dump.return_value = {"role": "assistant", "tool_calls": [{"id": "call_1"}]}
+        choice = MagicMock()
+        choice.message = message
+        response = MagicMock()
+        response.choices = [choice]
+
+        kwargs = {
+            "messages": [{"role": "user", "content": "original prompt", "name": "keep-me"}]
+        }
+        result = handlers.reask_tools(kwargs, response, ValueError("bad output"))
+
+        user_messages = [m for m in result["messages"] if m.get("role") == "user"]
+        assert user_messages[0]["name"] == "keep-me"
