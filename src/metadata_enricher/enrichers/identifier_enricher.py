@@ -133,7 +133,7 @@ def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
         {
             "schema:propertyID": scheme,
             "schema:value": id_value,
-            "schema:url": id_value if scheme == "ORCID" else _scheme_url(scheme, id_value),
+            "schema:url": _scheme_url(scheme, id_value),
             "matched_via": match.matched_via,
             "confidence": match.confidence,
             "status": match.status,
@@ -308,7 +308,7 @@ class IdentifierEnricher:
             creator["schema:identifier"] = {
                 "schema:propertyID": "ORCID",
                 "schema:value": match.orcid_id,
-                "schema:url": f"https://orcid.org/{match.orcid_id}",
+                "schema:url": _scheme_url("ORCID", match.orcid_id),
                 "matched_via": match.matched_via,
                 "confidence": match.confidence,
                 "status": match.status,

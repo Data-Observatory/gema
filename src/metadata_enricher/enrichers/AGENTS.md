@@ -171,7 +171,7 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 - `diskcache` for caching (SHA-256 key, TTL in seconds). Cache keys are prefixed `org:`/`person:` — an org name and a person's name never collide. Org keys also fold in `country` (normalized: stripped + uppercased before hashing) — same name in two countries never collides either.
 - `rapidfuzz` for fuzzy matching (WRatio scorer, threshold 90, gap 5 for review flagging).
 - ISNI format: 16-digit unspaced string (e.g. "000000040628717X"). ROR external_ids has spaces — normalized on extraction.
-- ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"). ROR/ISNI entries get a resolvable `schema:url` via `_scheme_url`. ORCID entries currently copy the value as-is into `schema:url`, and since `ORCIDClient` returns the bare path, that's the bare iD rather than `https://orcid.org/<id>`. See `_identifier_entries`.
+- ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"). Every entry (ROR, ISNI, ORCID) gets a resolvable `schema:url` via `_scheme_url` — e.g. `https://orcid.org/<id>` for the bare iD `ORCIDClient` returns. See `_identifier_entries`.
 
 ## ANTI-PATTERNS
 
