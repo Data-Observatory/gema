@@ -383,7 +383,7 @@ uv run python scripts/validate_ground_truth.py tests/fixtures/do_catalog/ground_
 ## `generate_ground_truth_schema.py`
 
 Dumps `DataCiteOutputModel`'s JSON Schema to `tests/fixtures/do_catalog/ground_truth.schema.json`,
-for editor autocomplete while hand-editing ground truth or `metadata_template.json`. No
+for editor autocomplete while hand-editing ground truth or `do_catalog/metadata_template.json`. No
 arguments.
 
 ```bash
@@ -395,8 +395,6 @@ uv run python scripts/generate_ground_truth_schema.py
 - **`do_catalog_common.py`**: `do_catalog`-specific ground-truth adaptation (top-level
   `roles` → `creators`, scheme-aware identifier matching) used by `compare_models.py` /
   `judge_models.py`.
-- **`fetch_content.py`**: best-effort live URL fetch that fills `fetched_content` for
-  `generate_inputs.py --fetch`.
 - **`reverse_input.py`**: corpus-agnostic reverse-input extraction. Its `ALLOWED_KEYS`
   defines exactly which fields a generated input may carry, so an eval never leaks a field
   the pipeline is supposed to produce.

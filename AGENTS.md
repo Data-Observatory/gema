@@ -22,7 +22,7 @@ Guidance for coding agents (Claude Code, Codex, etc.) working in this repository
 ```bash
 uv sync --extra dev                                    # install (uv only — never pip install)
 
-make test                                               # pytest + coverage (--cov=metadata_enricher)
+make test                                               # pytest -m "not live" + coverage (--cov=metadata_enricher)
 make lint                                               # ruff check src/ tests/ scripts/
 make typecheck                                          # mypy src/ scripts/ (strict)
 make test-regression                                    # golden-output cache-replay, no API key needed

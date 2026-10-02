@@ -3,7 +3,8 @@ navigable tabs (not a locked wizard): the user can hop between configuring
 things and running a resource at will.
 
 Imports only from metadata_enricher (the library), never from
-metadata_enricher.cli — see visor/AGENTS.md / the visor plan doc for why.
+metadata_enricher.cli — enforced by visor/tests/test_architecture.py; see
+visor/BUILD.md and visor/settings.py's module docstring for why.
 `ui.run(native=True)` (this file's default) vs `ui.run(host=..., port=...)`
 (VISOR_NATIVE=0) is a one-line switch on the same app code, so this can run
 hosted later without a rewrite.

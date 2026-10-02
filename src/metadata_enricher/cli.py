@@ -131,7 +131,7 @@ def _resolve_config_path(explicit: Optional[Path], ctx_config: Optional[Path]) -
 
 
 @app.command(name="list-schemas")
-def list_schemas(ctx: typer.Context) -> None:
+def list_schemas() -> None:
     """List all registered metadata schemas."""
     registry = get_registry()
     schemas = registry.list_schemas()
@@ -203,7 +203,6 @@ def list_known_providers(
 
 @app.command()
 def validate(
-    ctx: typer.Context,
     file: Path = typer.Argument(..., help="Path to input JSON file"),
     # No config file involved in this command (unlike `process`), so there's
     # no schema_name to default from -- "cdif-discovery" is the sole

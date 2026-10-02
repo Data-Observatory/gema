@@ -14,11 +14,10 @@ rule) are in the root [`AGENTS.md`](../AGENTS.md#testing) and aren't repeated he
 | Regression | `-m regression` (`test_regression.py`) | nothing: cache-replays `fixtures/golden/cache/`, `json-semantic-diff` ≥ 0.85 | `make test-regression`, `make test`, CI |
 | Live | `-m live` (`test_live.py`, `test_identifier_resolver_live.py`, live cases in `test_responses_client.py`) | real API keys / network | manual only: `uv run pytest -m live`, `make live-identifier-check` |
 
-`make test` runs pytest with no marker filter, so live tests are collected too.
-`test_live.py` and the Responses live case skip without their API keys, but
-`test_identifier_resolver_live.py`'s ROR/ISNI cases make real network calls regardless (only
-its ORCID cases skip without `ORCID_CLIENT_ID`/`SECRET`). For an offline run use
-`uv run pytest -m "not live"`, which is also what CI runs.
+`make test` runs `pytest -m "not live"`, same as CI, so live-marked tests never run. Run
+live tests explicitly (`uv run pytest -m live`): note `test_identifier_resolver_live.py`'s
+ROR/ISNI cases make real network calls even without keys (only its ORCID cases skip without
+`ORCID_CLIENT_ID`/`SECRET`).
 
 ## Layout (by area)
 

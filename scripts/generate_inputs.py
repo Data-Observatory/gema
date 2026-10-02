@@ -37,6 +37,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from metadata_enricher.enrichers.content_fetcher import fetch_page_content
 from reverse_input import ALLOWED_KEYS, FORBIDDEN_KEYS, extract_minimal_input, select_description, unwrap_attributes
 
 
@@ -53,8 +54,6 @@ def generate(ground_truth_dir: Path, inputs_dir: Path, *, fetch: bool = False, f
 
         fetched_content = None
         if fetch:
-            from fetch_content import fetch_page_content  # noqa: PLC0415 — optional, network-dependent
-
             url = str((attrs.get("resource") or {}).get("identifier", ""))
             fetched_content = fetch_page_content(url)
             if fetched_content:

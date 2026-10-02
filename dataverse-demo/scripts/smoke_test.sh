@@ -8,10 +8,11 @@
 # API guide (native-api.rst) and run once against a live instance before
 # being committed — not copied from memory.
 #
-# This does NOT need the DataCite -> Dataverse translator (separate,
-# upcoming work). It proves the API mechanism works — auth, create,
-# upload, publish — using a small hand-written dataset.json. Once the
-# translator exists, its output is a drop-in replacement for
+# This does NOT need the CDIF -> Dataverse translator
+# (metadata_enricher.exporters.dataverse). It proves the API mechanism
+# works — auth, create, upload, publish — using a small hand-written
+# dataset.json. The translator's output (via
+# export_from_metadata_enricher.py) is a drop-in replacement for
 # example_dataset.json at the "create dataset" step; everything else in
 # this script is unaffected.
 #

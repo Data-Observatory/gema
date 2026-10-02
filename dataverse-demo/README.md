@@ -2,8 +2,8 @@
 
 A local, disposable Dataverse instance for the live exercise: attendees fill
 in a resource description, run it through `gema`/visor to get
-DataCite JSON, convert that to Dataverse's native JSON (separate, upcoming
-work — see below), and upload the resulting dataset to *this* instance so
+CDIF JSON-LD, convert that to Dataverse's native JSON (gema's Dataverse
+exporter — see below), and upload the resulting dataset to *this* instance so
 everyone can see how it renders.
 
 This is `compose.yml` from IQSS's own official demo/evaluation setup,
@@ -50,7 +50,7 @@ Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
 (Or hit each service directly without Caddy: 8080 / 8090 / 8001.)
 
 Sharing this beyond localhost (Tailscale, Funnel), resetting between runs,
-and the DataCite → Dataverse translator are all covered in detail below.
+and the CDIF → Dataverse translator are all covered in detail below.
 
 ## Requirements
 
@@ -99,10 +99,10 @@ same instance — collection aliases must be unique, so re-running with the
 default alias against an already-populated instance fails at step 2 with
 a clear "such a collection already exists" error, not a bug.
 
-This never needed the DataCite → Dataverse translator to prove the API
+This never needed the CDIF → Dataverse translator to prove the API
 mechanism works — that's `example_dataset.json`'s whole point, a small
-hand-written payload. The translator now exists
-(`metadata_enricher.exporters.dataverse`, separate branch) — use
+hand-written payload. To use the real translator
+(`metadata_enricher.exporters.dataverse`) instead, run
 `scripts/export_from_metadata_enricher.py` to generate a real one from an
 actual gema output instead:
 
@@ -115,13 +115,13 @@ uv run python dataverse-demo/scripts/export_from_metadata_enricher.py \
 
 Verified live: this exact command's output was POSTed to a real running
 instance and accepted (`{"status":"OK",...}`), producing a real dataset
-with the correct title/author pulled straight from actual DataCite
+with the correct title/author pulled straight from actual gema
 output — not a synthetic example. Without `--classify`, Subject defaults
 to `"Other"` (no LLM call, no cost); add `--classify` to run the real
 classification call (needs the provider's API key set, same as running
 gema itself). Either way it prints any warnings — e.g. no
 contact email found anywhere in the source metadata, a real gap between
-DataCite and Dataverse's required fields, not a bug — so check those
+the source metadata and Dataverse's required fields, not a bug — so check those
 before publishing.
 
 ## Upload proxy (for attendees without API tooling)
@@ -299,14 +299,14 @@ docker compose down -v
 (`-v` is what removes the named volumes; a plain `docker compose down`
 leaves them in place for next time.)
 
-## The DataCite → Dataverse translator
+## The CDIF → Dataverse translator
 
-Lives in `metadata_enricher.exporters.dataverse` (separate branch —
-`dataverse-export-agent`), not in this folder — this stays docker/API
-concerns only. Most fields map deterministically (DataCite already
-extracted them correctly); the one genuinely ambiguous field — Dataverse's
-required, fixed Subject controlled vocabulary vs. DataCite's free-text
-subjects — gets one optional LLM call, config-driven
+Lives in the library, `metadata_enricher.exporters.dataverse`, not in this
+folder — this folder stays docker/API concerns only, and is a test bench
+for that exporter. Most fields map deterministically (CDIF generation
+already extracted them); the one genuinely ambiguous field — Dataverse's
+required, fixed Subject controlled vocabulary vs. gema's free-text
+`schema:keywords` — gets one optional LLM call, config-driven
 (`config/dataverse_export.yaml` at the repo root: provider/model/
 temperature, same shape as every pipeline agent) and independently
 enable/disable-able. `SUBJECT_CATEGORIES` and the `authorIdentifierScheme`
