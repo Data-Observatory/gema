@@ -174,6 +174,22 @@ class AgentConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_deprecated_keys(cls, data: Any) -> Any:
+        # use_chain_of_thought was never read by any code and has been removed.
+        # Configs written before that (e.g. every Visor "Download config" file,
+        # which dumps the full model) still carry it -- drop it with a warning
+        # instead of failing extra="forbid".
+        if isinstance(data, dict) and "use_chain_of_thought" in data:
+            data = {k: v for k, v in data.items() if k != "use_chain_of_thought"}
+            logger.warning(
+                "Agent %r: 'use_chain_of_thought' is deprecated and ignored -- "
+                "remove it from the config.",
+                data.get("id"),
+            )
+        return data
+
     id: str = Field(..., min_length=1)
     name: str
     description: str = ""
@@ -199,7 +215,6 @@ class AgentConfig(BaseModel):
     # ever available. See BaseAgent.run()'s upstream_fields param and
     # orchestrator.py's wave-result threading.
     context_fields: list[str] = []
-    use_chain_of_thought: bool = False
     # Passed straight through to the OpenAI-compatible request body. Needed for
     # provider/model-specific knobs standard fields don't cover — e.g. disabling
     # DeepSeek V4's "thinking mode" (extra_body={"thinking": {"type": "disabled"}}),
@@ -239,8 +254,8 @@ class PipelineConfig(BaseModel):
     # resolved from PATH otherwise) before giving up. Off by default: it's a
     # slower, heavier path (subprocess + real page render) than the rest of
     # this fail-soft module, and depends on an external binary the plain
-    # httpx path never needed. See docs/cdif_pivot_implementation_plan.md's
-    # "JS-render fallback" phase for the full evaluation.
+    # httpx path never needed. See docs/codata_mcp_croissant_cdifspecs.md
+    # Appendix B A0 for the evaluation.
     enable_js_render_fallback: bool = False
     enable_doi_resolution: bool = False
     validate_pids: bool = True
@@ -252,7 +267,7 @@ class PipelineConfig(BaseModel):
     # validation is a mature, already-tuned check every user benefits from;
     # this one is new and, as of this writing, every real recorded golden
     # fixture fails it (mostly for reasons outside gema's direct control --
-    # see docs/cdif_pivot_implementation_plan.md's "Step 6" notes) -- so
+    # see docs/codata_mcp_croissant_cdifspecs.md Appendix B Q5) -- so
     # defaulting it on today would flood every existing user with warnings
     # they have no way to act on yet. Opt in once you want visibility into
     # CDIF conformance gaps for your own generated documents. Only takes

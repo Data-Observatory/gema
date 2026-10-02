@@ -29,21 +29,16 @@ handling is needed.  This can grow bespoke per-field normalizers later if
 real LLM output turns out messier than assumed, the same way DataCite's
 did over time.
 
-SHACL conformance (``check_shacl_conformance``) and JSON-LD framing
-(``frame_output``) -- wiring decision (docs/cdif_pivot_implementation_plan.md
-"Step 6"): ``check_shacl_conformance`` **is** wired into ``pipeline.py`` as
+SHACL conformance (``check_shacl_conformance``) -- wiring decision (docs/codata_mcp_croissant_cdifspecs.md
+Appendix B Q5): ``check_shacl_conformance`` **is** wired into ``pipeline.py`` as
 a new, non-blocking post-merge step mirroring the existing PID-validation
 step, gated behind ``PipelineConfig.validate_shacl_conformance`` (default
 ``False`` -- see that field's own docstring for why: every real recorded
 golden fixture fails this check today, mostly for reasons outside gema's
 control -- see below -- so defaulting it on would flood every existing
 user with warnings before there's a way to act on most of them).
-``frame_output`` stays an available-but-uncalled utility method, the same
-status ``validate_output`` itself already has: nothing in gema consumes
-CDIF's canonical framed shape yet (no output writer, no exporter reads
-it), so wiring it into the pipeline would produce a value nobody uses.
-Both methods are exercised directly against real golden fixtures in
-``tests/test_shacl_and_framing.py``, which also records what was found:
+It is exercised directly against real golden fixtures in
+``tests/test_shacl_conformance.py``, which also records what was found:
 every fixture produced *real*, sensible violations (not JSON-LD-conversion
 noise -- that class of false positive was the Step 5.5 bug, already
 fixed) -- most commonly (a) ``dcterms:conformsTo`` only ever named
@@ -58,8 +53,7 @@ not a framework bug. (a) is now fixed -- see ``_inject_envelope`` below
 (Open Question #18) -- and the ``url``/``distribution`` half of (c) has a
 fallback via ``pipeline.py`` (Open Question #20); (b) and the
 ``license``/``conditionsOfAccess`` half of (c) remain open, tracked in
-docs/cdif_pivot_implementation_plan.md's Open questions log rather than
-fixed here.
+BACKLOG.md rather than fixed here.
 """
 
 from __future__ import annotations
@@ -126,7 +120,7 @@ class CDIFDiscoveryOutputModel(BaseModel):
     All fields optional except where the required-floor validator below
     enforces presence -- agents populate this progressively, same as
     DataCiteOutputModel. Field order matches this profile's Q2 mapping
-    in docs/cdif_pivot_implementation_plan.md, grouped by required floor,
+    in docs/codata_mcp_croissant_cdifspecs.md Appendix A, grouped by required floor,
     conditional OR-groups, then the rest.
     """
 
@@ -272,8 +266,8 @@ class CDIFDiscoveryOutputModel(BaseModel):
     @model_validator(mode="after")
     def _check_required_floor(self) -> CDIFDiscoveryOutputModel:
         """Enforces the vendored schema's allOf[0].required floor plus its
-        two anyOf conditional groups (see docs/cdif_pivot_implementation_plan.md
-        Q1 research findings). Only meaningful on a fully-merged document --
+        two anyOf conditional groups (see docs/codata_mcp_croissant_cdifspecs.md
+        Appendix A). Only meaningful on a fully-merged document --
         per-agent partial output never satisfies this and must not be
         validated against it (see build_output_model, which never carries
         this validator over to its per-agent subset models)."""
@@ -418,14 +412,12 @@ class CDIFDiscoveryProfile:
         merge_agent_results) against the complete required floor. Not
         currently wired into pipeline.py's runtime flow -- same as
         DataCiteSchema46.validate_output today -- available for direct use
-        (tests, a future CLI `validate` step, or the SHACL/framing helpers
-        below)."""
+        (tests, a future CLI `validate` step, or the SHACL helper below)."""
         return CDIFDiscoveryOutputModel(**raw)
 
     # ------------------------------------------------------------------
-    # SHACL conformance + JSON-LD framing (see module docstring for the
-    # wiring decision -- check_shacl_conformance is called from
-    # pipeline.py when opted in; frame_output stays available-but-uncalled)
+    # SHACL conformance (see module docstring for the wiring decision --
+    # called from pipeline.py when opted in)
     # ------------------------------------------------------------------
 
     def check_shacl_conformance(self, doc: MetadataDocument) -> list[str]:
@@ -436,8 +428,8 @@ class CDIFDiscoveryProfile:
         Converts *doc.fields* to a real RDF graph by round-tripping it
         through JSON and rdflib's ``json-ld`` parser, which resolves
         property names strictly via the document's own ``@context`` --
-        this is exactly the mechanism Step 5.5
-        (docs/cdif_pivot_implementation_plan.md) had to fix a bug in
+        this is exactly the mechanism an earlier CURIE-key fix
+        (docs/codata_mcp_croissant_cdifspecs.md Appendix A) had to fix a bug in
         (bare, non-CURIE nested keys silently vanishing during
         expansion instead of erroring). ``advanced=True`` is required
         because several of the vendored shapes use ``sh:SPARQLTarget``,
@@ -495,33 +487,6 @@ class CDIFDiscoveryProfile:
         except Exception as exc:  # noqa: BLE001 - diagnostic-only, must never fail a pipeline run
             logger.warning("SHACL conformance check failed to run: %s", exc)
             return []
-
-    def frame_output(self, doc: MetadataDocument) -> dict[str, Any]:
-        """JSON-LD framing via the vendored ``frame.jsonld`` (CDIF's own
-        ``CDIFDiscovery-frame.jsonld`` -- see ``VENDORED_SHA.txt``).
-
-        Produces CDIF's own canonical, node-shaped rendering of
-        *doc.fields* (typically a ``{"@context", "@graph": [...]}``
-        envelope -- the vendored frame matches more than one node per
-        document, e.g. the Dataset and its ``schema:subjectOf``
-        CatalogRecord, so results normally carry more than one ``@graph``
-        entry). Available-but-uncalled utility method -- see module
-        docstring for why nothing wires this in yet.
-
-        Never raises: on any failure (malformed input, a pyld/rdflib
-        internal error) logs a warning and returns a plain deep copy of
-        *doc.fields* unchanged, so callers always get some usable dict
-        back, never an exception or ``None``.
-        """
-        try:
-            from pyld import jsonld
-
-            frame = json.loads((resources.files(_PACKAGE) / "frame.jsonld").read_text(encoding="utf-8"))
-            framed: dict[str, Any] = jsonld.frame(doc.fields, frame)
-            return framed
-        except Exception as exc:  # noqa: BLE001 - never raise, degrade to the unchanged input
-            logger.warning("JSON-LD framing failed: %s", exc)
-            return deepcopy(doc.fields)
 
     # ------------------------------------------------------------------
     # Normalize field (dispatch)
@@ -651,7 +616,7 @@ class CDIFDiscoveryProfile:
         # schema's own field description ("Use the JSON-LD @list construct
         # to preserve author order") -- an {"@list": [...]} object, not a
         # bare array, unlike schema:contributor (constraint C4 in
-        # docs/cdif_pivot_implementation_plan.md). Agents still emit a
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix A). Agents still emit a
         # plain list (the natural Instructor/structured-output shape);
         # wrapping is a pure JSON-LD serialization concern applied once
         # here, after generation, so it never leaks into agent prompts.

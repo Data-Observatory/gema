@@ -15,7 +15,7 @@ already-unwrapped/adapted dicts.
 
 Post-CDIF-pivot note: the live pipeline's generation target is
 ``cdif-discovery`` (``config/agents.yaml``), not ``datacite-4.6`` (deregistered
--- see ``docs/cdif_pivot_implementation_plan.md``). ``run_pipeline_for_model``
+-- see ``docs/codata_mcp_croissant_cdifspecs.md`` §3.5). ``run_pipeline_for_model``
 below runs the real (CDIF) pipeline and then crosswalks the result through
 ``exporters.datacite.to_datacite_json`` -- pure, no extra LLM call -- so its
 return value stays DataCite-shaped, matching ``extract_*``/``compare_outputs``
@@ -407,8 +407,8 @@ def compare_outputs(truth: dict[str, Any], actual: dict[str, Any]) -> dict[str, 
 # code as "today" by CDIFDiscoveryProfile._inject_envelope (a processing-time
 # fact, not an agent output) -- scoring it penalizes every run for the
 # wall-clock gap between when a fixture was recorded and when the live eval
-# actually runs, not for any real quality difference. Found as Finding B-1 in
-# docs/cdif_pivot_implementation_plan.md's Post-PR#45 investigation: it
+# actually runs, not for any real quality difference (open question O-1 in
+# BACKLOG.md on whether to extract a real date instead). It
 # accounted for a real, measurable chunk of every one of live-eval's 6
 # fixtures scoring below threshold.
 IGNORED_SCORING_FIELDS = frozenset({"schema:dateModified"})

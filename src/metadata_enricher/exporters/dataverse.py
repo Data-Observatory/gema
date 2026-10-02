@@ -170,7 +170,7 @@ def _build_authors(document: MetadataDocument) -> list[dict[str, dict[str, Any]]
                 "typeName": "authorAffiliation",
             }
         # schema:identifier is singular on a Person/Organization entry as of
-        # Open Question #16 (docs/cdif_pivot_implementation_plan.md) -- an
+        # Open Question #16 (docs/codata_mcp_croissant_cdifspecs.md Appendix B Q16) -- an
         # additional resolved identifier, if any, lives in that same
         # entry's schema:sameAs overflow. entity_identifiers reads both,
         # preferred first; Dataverse's authorIdentifier* fields only ever
@@ -218,8 +218,8 @@ def _build_dataset_contact(
     email = None
     name = None
     # schema:contributor entries tagged with a ContactPerson role are the
-    # CDIF mapping's home for DataCite's old resource.contact (Q6 in
-    # docs/cdif_pivot_implementation_plan.md). A role-carrying entry is a
+    # CDIF mapping's home for DataCite's old resource.contact
+    # (docs/codata_mcp_croissant_cdifspecs.md Appendix A). A role-carrying entry is a
     # Role wrapper ({"@type": ["schema:Role"], "schema:roleName": ...,
     # "schema:contributor": <actor>}) as of Open Question #17's resolution
     # -- the actor (name/email) lives inside that nested schema:contributor,

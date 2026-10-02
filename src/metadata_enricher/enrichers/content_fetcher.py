@@ -1,11 +1,12 @@
 """Best-effort live URL fetching to populate ``ResourceDescription.fetched_content``.
 
-Several DataCite fields (dates, media_files, related_identifiers, geo hints)
-genuinely live only on the destination page, not in a short title/description
-— a controlled A/B eval (see ``scripts/fetch_content.py``, the eval-only
-harness this module was ported from) showed a clean, consistent structural-
-accuracy improvement across every model tested when the page's cleaned text
-was fed into the agent prompts via ``fetched_content``.
+Several fields (dates, distributions, related links, geo hints) genuinely
+live only on the destination page, not in a short title/description -- a
+controlled A/B eval (run with the eval-only script this module was ported
+from, since retired; ``scripts/generate_inputs.py --fetch`` now calls this
+module) showed a clean, consistent structural-accuracy improvement across
+every model tested when the page's cleaned text was fed into the agent
+prompts via ``fetched_content``.
 
 This module is production code, gated behind ``PipelineConfig.enable_content_
 fetch`` (default ``False``) and wired in ``pipeline.py``. It must never raise:
@@ -19,8 +20,8 @@ fallback``) retries a too-thin/failed static fetch through a real JS engine
 up -- for the real, measured case of a JS-rendered SPA whose static HTML
 carries none of the page's actual content. Same fail-soft contract: a
 missing binary, timeout, or render failure just falls back to whatever the
-static fetch already returned. See docs/cdif_pivot_implementation_plan.md's
-"JS-render fallback" phase for the evaluation this was built from.
+static fetch already returned. See docs/codata_mcp_croissant_cdifspecs.md
+Appendix B A0 for the evaluation this was built from.
 """
 
 from __future__ import annotations

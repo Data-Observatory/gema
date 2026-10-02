@@ -1,6 +1,6 @@
 # enrichers/
 
-Post-merge enrichment modules. Deterministic transforms applied to `MetadataDocument` after the LLM agent pipeline.
+Enrichment modules. Mostly deterministic post-merge transforms applied to the CDIF `MetadataDocument` after the LLM agents run. The exception is `content_fetcher.py`, which runs *before* any agent (it populates the input's `fetched_content`).
 
 ## STRUCTURE
 
@@ -8,7 +8,7 @@ Post-merge enrichment modules. Deterministic transforms applied to `MetadataDocu
 enrichers/
 ├── __init__.py                  # Exports IdentifierEnricher, IdentifierResolver, IdentifierMatch, fetch_page_content
 ├── content_fetcher.py           # Best-effort live URL fetch -> cleaned text for ResourceDescription.fetched_content (pre-orchestration, opt-in)
-├── iana_normalizer.py           # MIME type normalization against IANA registry (standalone, not wired)
+├── iana_normalizer.py           # MIME type normalization against IANA registry (used by DataCiteSchema46 → DataCite export path; not a pipeline step)
 ├── country_extractor.py         # ISO country code extraction from HTML/URL — wired into both
 │                                 #   agent prompts (agents/base.py) and ROR/ISNI matching (pipeline.py -> IdentifierEnricher)
 ├── identifier_types.py          # IdentifierMatch pydantic model (resolved org/person identifier)
@@ -20,8 +20,8 @@ enrichers/
 ├── identifier_resolver.py       # resolve() merges ROR+ISNI; resolve_person() for ORCID
 ├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding) + match provenance
 ├── crossref_client.py            # Crossref public Works API client (GET /works/{doi})
-├── doi_resolver.py               # Post-merge DOI backfill (titles, creators, publisher, Issued date)
-└── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI (shared by Pipeline + scripts/validate_real_output.py)
+├── doi_resolver.py               # Post-merge DOI backfill (schema:name, creators, publisher, schema:datePublished)
+└── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI/ORCID (shared by Pipeline + scripts/validate_real_output.py)
 ```
 
 ## WHERE TO LOOK
@@ -33,7 +33,7 @@ enrichers/
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
 | Add/edit a human-curated ROR/ISNI override | `config/overrides.yaml` — see `identifier_overrides.py`; path set via `PipelineConfig.identifier_overrides_path` |
 | Enable DOI resolution (Crossref backfill) | `PipelineConfig.enable_doi_resolution = True` (config/models.py) |
-| Change what DOI resolution backfills | `DOIResolverEnricher._backfill_*()` (doi_resolver.py) — currently titles, creators, publishers, Issued date |
+| Change what DOI resolution backfills | `DOIResolverEnricher._backfill_*()` (doi_resolver.py): currently `schema:name`, `schema:creator`, `schema:publisher`, `schema:datePublished` |
 | Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
 | Change org resolution order/merge | `IdentifierResolver._try_resolve()` / `_merge_org_matches()` (identifier_resolver.py) |
 | Change ORCID ambiguity policy | `IdentifierResolver._try_orcid()` — currently: >1 hit → `status="review"`, not auto-attached |
@@ -87,13 +87,13 @@ Person (given_name, family_name[, affiliation]) → IdentifierResolver.resolve_p
 - **Override always wins**: a human-curated `config/overrides.yaml` entry (`IdentifierOverrides`) short-circuits everything else — no network call, not even a cache write.
 - **ISNI is checked independently EXCEPT when it would be pure noise**: `resolve()` skips the independent ISNI SRU check only when ROR already returned an unambiguous (`status=="auto"`) match that already carries its own linked ISNI — that check can only ever demote confidence/status (see `_merge_org_matches`), never confirm it. Any other case (ROR found nothing, ROR's match has no ISNI of its own, or ROR's match is itself ambiguous) still checks ISNI independently.
 - **Country is a soft hint, not a filter**: the optional `country` param re-ranks ROR `?query=` fuzzy candidates (`fuzzy_matcher.match_organization`'s `country_hint`) — a mismatched candidate is deprioritized by a fixed penalty, never eliminated outright. Folded into the cache key so the same org name in two countries never collides on one cached result.
-- **Write every identifier found, where the schema allows it**: `name_identifiers` and `funder_identifiers` are lists — a match carrying both ROR and ISNI writes both entries. `affiliation_identifier` and `publisher_identifier` are singular DataCite fields (0..1 cardinality) — ROR is preferred there when both are available. Every attached identifier also carries its match provenance (`matched_via`/`confidence`/`status`, prefixed for the singular fields) as sibling keys — see `identifier_enricher.py`'s `_identifier_entry`/`_provenance`.
+- **Write every identifier found, in the CDIF shape**: the vendored schema models a Person/Organization/MonetaryGrant `schema:identifier` as *singular*, so the preferred match (`_SCHEME_ORDER`: ROR before ISNI for orgs) goes into `schema:identifier` as a PropertyValue (`{"schema:propertyID", "schema:value", "schema:url"}`), and any additional match goes into `schema:sameAs` as a bare `{"@id": <resolvable URL>}` overflow entry. A match carrying both ROR and ISNI therefore writes both. Only the singular `schema:identifier` carries match provenance (`matched_via`/`confidence`/`status`, deliberately un-prefixed, outside the JSON-LD graph). Overflow entries don't, since it would be identical. An unresolved entity has the key *absent*, never `[]`/`{}`. Applies to creators (and their `schema:affiliation`), `schema:publisher`, and `schema:funding[].schema:funder`. See `identifier_enricher.py`'s module docstring, `_identifier_entries` and `_write_identifiers`, and `types.entity_identifiers` (the shared reader).
 - **ORCID is conservative by design**: a wrong ORCID on a person is worse than a missing one. Ambiguous searches (`status == "review"`) are logged, never auto-attached.
 - **Negative caching**: `None` results are cached (both org and person lookups) to avoid repeated API calls for unknown names.
 - **Graceful degradation**: All API failures are caught — resolvers never raise, return `None`/empty on failure. Missing ORCID credentials → `ORCIDClient.enabled == False` → silent no-op, not an error.
 - **Preserve LLM values**: Enricher only fills EMPTY identifier fields. If the LLM already populated a field, it's preserved.
 - **httpx not requests**: Entire codebase uses httpx.
-- **DOI resolution scope is deliberately narrow**: `DOIResolverEnricher` only backfills titles, creators (authors), publisher, and an Issued date — the fields Crossref's public Works API reliably returns. Abstracts are skipped (rare, often JATS-XML-tagged when present). Same "preserve LLM values" policy — only ever fills a field that's completely empty.
+- **DOI resolution scope is deliberately narrow**: `DOIResolverEnricher` only backfills `schema:name`, creators (authors), publisher, and `schema:datePublished`, the fields Crossref's public Works API reliably returns. Abstracts are skipped (rare, often JATS-XML-tagged when present). Same "preserve LLM values" policy — only ever fills a field that's completely empty.
 
 ### Pipeline Integration
 
@@ -110,17 +110,27 @@ Pipeline._process_resource():
   2. Build agent registry
   3. Orchestrator.run() → agent_results
   4. MetadataMerger.merge() → MetadataDocument
-  5. DOIResolverEnricher.enrich(document) → backfilled document ← only if enable_doi_resolution
-                                                                     AND resource.identifier_type == "DOI"
+  4a. schema:url fallback: resource.url → schema:url    ← only if no agent produced one AND
+                                                           resource.url is http(s) (never a bare DOI)
+  4b. Actor fallback cascade (deterministic, fills empty slots only):
+        resource.publisher (input extra key) → schema:publisher
+        schema:publisher → schema:creator ({"@list": [deep copy]})
+        schema:publisher name → schema:copyrightHolder
+        "Datos Abiertos del Estado de Chile" license → copyrightHolder "Estado de Chile"
+  5. DOIResolverEnricher.enrich(document) → backfilled document ← only if enable_doi_resolution;
+                                                                     acts only when schema:identifier
+                                                                     carries a DOI-typed PropertyValue
   6. IdentifierEnricher.enrich(document, country=detected_country) → enriched document
                                                                    ← only if enable_identifier_enrichment.
                                                                      country computed by pipeline.py itself
                                                                      from resource.url/fetched_content (same
                                                                      CountryExtractor call agents/base.py
                                                                      already makes for the LLM prompt) —
-                                                                     the merged document carries no url/
+                                                                     the merged document carries no
                                                                      country field to read it back from.
   7. validate_pids(document.fields) → warnings                  ← on by default (validate_pids=True)
+  8. schema.check_shacl_conformance(document) → warnings        ← only if validate_shacl_conformance
+                                                                     (default false; duck-typed on the schema)
 ```
 
 Step 5 runs BEFORE step 6 deliberately — creators/publishers it backfills from Crossref
@@ -147,7 +157,7 @@ enable_js_render_fallback: true      # default false — only consulted when the
                                      # also on; needs the `obscura` binary (bundled into Visor,
                                      # else a separate PATH install for CLI/library use)
 enable_doi_resolution: true          # default false — same reasoning
-enable_identifier_enrichment: true
+enable_identifier_enrichment: true   # default false (the shipped config/agents.yaml turns it on)
 identifier_overrides_path: config/overrides.yaml   # optional — default null (feature off)
 validate_pids: true       # default — set false to disable entirely
 validate_pids_live: true  # default — set false to keep format checks but skip network
@@ -161,7 +171,7 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 - `diskcache` for caching (SHA-256 key, TTL in seconds). Cache keys are prefixed `org:`/`person:` — an org name and a person's name never collide. Org keys also fold in `country` (normalized: stripped + uppercased before hashing) — same name in two countries never collides either.
 - `rapidfuzz` for fuzzy matching (WRatio scorer, threshold 90, gap 5 for review flagging).
 - ISNI format: 16-digit unspaced string (e.g. "000000040628717X"). ROR external_ids has spaces — normalized on extraction.
-- ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"), always written as `https://orcid.org/<id>` in `name_identifier`.
+- ORCID format: 16-char hyphenated string (e.g. "0000-0002-1825-0097"). Every entry (ROR, ISNI, ORCID) gets a resolvable `schema:url` via `_scheme_url` — e.g. `https://orcid.org/<id>` for the bare iD `ORCIDClient` returns. See `_identifier_entries`.
 
 ## ANTI-PATTERNS
 
@@ -173,8 +183,8 @@ validate_pids_live: true  # default — set false to keep format checks but skip
 
 ## NOTES
 
-- IANANormalizer exists but is NOT wired into the pipeline — a standalone library module.
-- CountryExtractor IS wired (unlike the note above about IANANormalizer) — into both agent prompts (`agents/base.py`) and ROR/ISNI matching (`pipeline.py` → `IdentifierEnricher.enrich(country=...)`), computed independently at each site (no shared/cached computation between them).
+- IANANormalizer is not a pipeline step. It's used by `DataCiteSchema46` (instantiated in `schemas/datacite.py`) to normalize media-file formats on the DataCite export path (`exporters/datacite.py`).
+- CountryExtractor IS wired into the pipeline, into both agent prompts (`agents/base.py`) and ROR/ISNI matching (`pipeline.py` → `IdentifierEnricher.enrich(country=...)`), computed independently at each site (no shared/cached computation between them).
 - The ISNI SRU free endpoint has undocumented rate limiting (~300ms between requests recommended).
 - ROR API v1 was sunset December 2025. Only v2 is active (`/v2/organizations`).
 - ROR rate limit: 2000/5min per IP (2000/5min with Client-Id header, dropping to 50/5min unauthenticated in Q3 2026).

@@ -42,8 +42,7 @@ MOCK_ROR_ORG_ES = {
     # directly, not assumed): "Instituto de Políticas y Bienes Públicos", a
     # research facility in Madrid, Spain -- the actual wrong-country match
     # ROR's own ?affiliation= endpoint returned for a Chilean input in a real
-    # golden fixture (docs/cdif_pivot_implementation_plan.md's Post-PR#45
-    # investigation, Open Question O-5).
+    # golden fixture (docs/codata_mcp_croissant_cdifspecs.md Appendix B O-5).
     "id": "https://ror.org/04q93ds34",
     "names": [
         {"lang": "es", "types": ["ror_display", "label"], "value": "Instituto de Políticas y Bienes Públicos"},

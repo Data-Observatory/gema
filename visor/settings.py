@@ -174,16 +174,6 @@ def required_env_vars(pipeline_config: PipelineConfig) -> list[str]:
     return sorted({by_name[name] for name in used_provider_names if name in by_name})
 
 
-def all_provider_env_vars(pipeline_config: PipelineConfig) -> list[str]:
-    """Every declared provider's api_key_env, not just the ones an agent
-    currently uses — for Settings' key-entry list. required_env_vars()
-    stays scoped to "actually needed right now" for the Run-tab gate;
-    this one is deliberately broader: switching an agent's provider in the
-    Agents tab (e.g. to opencode) must not leave no way to ever enter that
-    provider's key."""
-    return sorted({p.api_key_env for p in pipeline_config.providers})
-
-
 def agents_using_provider(pipeline_config: PipelineConfig, provider_name: str) -> list[str]:
     """Agent IDs assigned to exactly *provider_name* -- unlike
     providers_using() below, never widened to "every provider sharing this

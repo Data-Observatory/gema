@@ -131,7 +131,7 @@ def _resolve_config_path(explicit: Optional[Path], ctx_config: Optional[Path]) -
 
 
 @app.command(name="list-schemas")
-def list_schemas(ctx: typer.Context) -> None:
+def list_schemas() -> None:
     """List all registered metadata schemas."""
     registry = get_registry()
     schemas = registry.list_schemas()
@@ -203,7 +203,6 @@ def list_known_providers(
 
 @app.command()
 def validate(
-    ctx: typer.Context,
     file: Path = typer.Argument(..., help="Path to input JSON file"),
     # No config file involved in this command (unlike `process`), so there's
     # no schema_name to default from -- "cdif-discovery" is the sole
@@ -218,7 +217,7 @@ def validate(
         raise typer.Exit(1)
     registry = get_registry()
     try:
-        schema_obj = registry.get(schema)
+        registry.get(schema)  # only rejects an unknown --schema; pre-flight is schema-agnostic
     except KeyError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
@@ -228,7 +227,7 @@ def validate(
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error reading input: {e}", err=True)
         raise typer.Exit(1)
-    validator = PreFlightValidator(schema=schema_obj, registry=registry)
+    validator = PreFlightValidator()
     result = validator.validate_resource(resource)
     if result.valid:
         typer.echo(f"\u2713 {file} is valid for processing")

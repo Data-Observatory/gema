@@ -18,7 +18,7 @@ from typing import Any
 # not an enrichment-target leak, just the same live page context a real run
 # would have. Several fields (dates, media_files, related_identifiers) live
 # only on the destination page, never in a short title/description — giving
-# the model that context is fair, not cheating; see scripts/fetch_content.py.
+# the model that context is fair, not cheating; see enrichers/content_fetcher.py.
 ALLOWED_KEYS = {"url", "title", "description", "publisher", "fetched_content"}
 
 # Enrichment targets — must NEVER appear in a generated input. Not exhaustive

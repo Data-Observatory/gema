@@ -11,8 +11,8 @@
 
 # provider:model spec for the LLM-as-judge role. Deliberately kept on a
 # provider separate from whatever is being tested as a production/candidate
-# model (see docs/cdif_pivot_implementation_plan.md's 2026-09-06 model-swap
-# entry) -- run_live_eval.py and judge_models.py both used to silently
+# model (a 2026-09-06 model-swap experiment hit this) -- run_live_eval.py
+# and judge_models.py both used to silently
 # resolve the judge onto config/agents.yaml's default_provider (opencode),
 # which meant judging competed for the same account/quota as whatever
 # candidate model was being screened. zai-coding-plan is a separate account

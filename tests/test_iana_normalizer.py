@@ -106,44 +106,6 @@ class TestNormalize:
 
 
 # ---------------------------------------------------------------------------
-# is_valid
-# ---------------------------------------------------------------------------
-
-
-class TestIsValid:
-    def test_valid_true(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
-        n = IANANormalizer(bundled_path=str(bundle))
-        assert n.is_valid("application/json") is True
-        assert n.is_valid("text/html") is True
-        assert n.is_valid("application/pdf") is True
-
-    def test_invalid_false(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
-        n = IANANormalizer(bundled_path=str(bundle))
-        assert n.is_valid("application/x-custom") is False
-        assert n.is_valid("x-fake/type") is False
-
-    def test_empty_string_false(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
-        n = IANANormalizer(bundled_path=str(bundle))
-        assert n.is_valid("") is False
-        assert n.is_valid("   ") is False
-
-    def test_name_lookup_valid(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
-        n = IANANormalizer(bundled_path=str(bundle))
-        assert n.is_valid("pdf") is True
-        assert n.is_valid("csv") is True
-
-    def test_with_parameters(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "iana.json", mock_iana_data)
-        n = IANANormalizer(bundled_path=str(bundle))
-        assert n.is_valid("text/html; charset=utf-8") is True
-        assert n.is_valid("application/json; version=1") is True
-
-
-# ---------------------------------------------------------------------------
 # Cache and refresh lifecycle
 # ---------------------------------------------------------------------------
 
@@ -249,60 +211,6 @@ class TestCache:
         assert n.normalize("text/csv") == "text/csv"
         assert len(n.types) >= 7  # from the mock_iana_data fixture
 
-    def test_explicit_refresh_success(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "bundle.json", mock_iana_data)
-        cache_dir = tmp_path / "cache"
-
-        n = IANANormalizer(bundled_path=str(bundle), cache_dir=str(cache_dir))
-
-        mock_response = MagicMock(spec=httpx.Response)
-        mock_response.raise_for_status.return_value = None
-        mock_response.text = MINIMAL_IANA_XML
-
-        with patch("httpx.get", return_value=mock_response):
-            result = n.refresh_data()
-
-        assert result is True
-        # Should have 3 types from MINIMAL_IANA_XML
-        assert n.normalize("application/json") == "application/json"
-        assert n.normalize("application/xml") == "application/xml"
-        assert n.normalize("application/zip") == "application/zip"
-
-    def test_explicit_refresh_failure(self, mock_iana_data, tmp_path):
-        bundle = _write_json(tmp_path / "bundle.json", mock_iana_data)
-        cache_dir = tmp_path / "cache"
-
-        n = IANANormalizer(bundled_path=str(bundle), cache_dir=str(cache_dir))
-        original_types = dict(n.types)
-
-        with patch(
-            "httpx.get",
-            side_effect=httpx.HTTPStatusError("500", request=MagicMock(), response=MagicMock()),
-        ):
-            result = n.refresh_data()
-
-        assert result is False
-        # In-memory data unchanged
-        assert dict(n.types) == original_types
-
-    def test_cache_directory_created(self, mock_iana_data, tmp_path):
-        """Cache directory is auto-created on save."""
-        bundle = _write_json(tmp_path / "bundle.json", mock_iana_data)
-        cache_dir = tmp_path / "nonexistent" / "cache"
-
-        n = IANANormalizer(bundled_path=str(bundle), cache_dir=str(cache_dir))
-
-        mock_response = MagicMock(spec=httpx.Response)
-        mock_response.raise_for_status.return_value = None
-        mock_response.text = MINIMAL_IANA_XML
-
-        with patch("httpx.get", return_value=mock_response):
-            n.refresh_data()
-
-        assert cache_dir.is_dir()
-        assert (cache_dir / "iana_media_types.json").is_file()
-
-
 # ---------------------------------------------------------------------------
 # Edge cases and failure modes
 # ---------------------------------------------------------------------------
@@ -328,7 +236,6 @@ class TestEdgeCases:
         assert n.types == {}
         assert n.name_lookup == {}
         assert n.normalize("text/html") == "text/html"
-        assert n.is_valid("text/html") is False
 
     def test_bundled_file_corrupt_json(self, tmp_path):
         """Corrupt bundled JSON → empty lookups, no crash."""

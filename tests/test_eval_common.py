@@ -63,8 +63,7 @@ class TestStripIgnoredFields:
     """strip_ignored_fields: schema:dateModified must never affect a judge
     score -- it's a processing-time injection (today's date), not something
     any agent extracts, so comparing it just measures the wall-clock gap
-    between recording and running (Finding B-1,
-    docs/cdif_pivot_implementation_plan.md's Post-PR#45 investigation)."""
+    between recording and running (see BACKLOG.md O-1)."""
 
     def test_removes_date_modified(self) -> None:
         doc = {"schema:name": "X", "schema:dateModified": "2026-09-04"}
