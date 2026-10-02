@@ -3,62 +3,10 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
-from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
-from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescription
+from metadata_enricher.types import ResourceDescription
 from metadata_enricher.validation import PreFlightValidator, ValidationResult
-
-
-class _MockSchema:
-    """Minimal schema satisfying the Schema protocol for PreFlightValidator tests."""
-
-    @property
-    def name(self) -> str:
-        return "datacite-4.6"
-
-    @property
-    def version(self) -> str:
-        return "4.6"
-
-    @property
-    def output_model(self) -> type[BaseModel]:
-        return BaseModel
-
-    def validate_output(self, raw: dict[str, object]) -> BaseModel:
-        return BaseModel()
-
-    def normalize_field(self, field_name: str, value: object) -> object:
-        return value
-
-    def merge_agent_results(self, results: list[AgentResult]) -> MetadataDocument:
-        return MetadataDocument()
-
-    def get_field_order(self) -> list[str]:
-        return []
-
-    def get_required_fields(self) -> list[str]:
-        return []
-
-
-def make_valid_config() -> PipelineConfig:
-    """Build a valid PipelineConfig for testing."""
-    return PipelineConfig(
-        schema_name="datacite-4.6",
-        agents=[
-            AgentConfig(
-                id="a1",
-                name="Agent 1",
-                fields=["titles"],
-                prompt="test",
-                provider="p1",
-            ),
-        ],
-        providers=[
-            ProviderConfig(name="p1", base_url="http://localhost", api_key_env="KEY"),
-        ],
-        default_provider="p1",
-    )
 
 
 class TestValidationResult:
@@ -99,7 +47,7 @@ class TestPreFlightValidatorValidateResource:
             title="Test Title",
             description="A description",
         )
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is True
         assert result.errors == []
         assert result.warnings == []
@@ -107,21 +55,21 @@ class TestPreFlightValidatorValidateResource:
     def test_empty_resource_fails(self):
         """Empty resource (no url, title, or description) fails."""
         resource = ResourceDescription()
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is False
         assert any(word in result.errors[0].lower() for word in ("title", "description", "url"))
 
     def test_invalid_url_scheme_warns(self):
         """URL with non-http/https scheme emits a warning but is valid."""
         resource = ResourceDescription(url="ftp://example.com")
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is True
         assert any("scheme" in w for w in result.warnings)
 
     def test_missing_netloc_warns(self):
         """URL without network location emits a warning but is valid."""
         resource = ResourceDescription(url="not-a-url")
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is True
         assert any("network location" in w for w in result.warnings)
 
@@ -131,7 +79,7 @@ class TestPreFlightValidatorValidateResource:
             url="https://example.com",
             doi="10.1234/foo",
         )
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is True
         assert not any("DOI" in w for w in result.warnings)
 
@@ -141,6 +89,6 @@ class TestPreFlightValidatorValidateResource:
             url="https://example.com",
             doi="xyz123",
         )
-        result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
+        result = PreFlightValidator().validate_resource(resource)
         assert result.valid is True
         assert any("DOI" in w for w in result.warnings)

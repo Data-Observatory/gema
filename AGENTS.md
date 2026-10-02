@@ -56,7 +56,7 @@ No Docker, no pre-commit hooks. GitHub Actions CI exists (`.github/workflows/ci.
 ```
 Input JSON -> FilesystemInputSource -> ResourceDescription
                                              |
-                                    PreFlightValidator <- Schema Registry -> CDIFDiscoveryProfile
+                                    PreFlightValidator, Schema Registry -> CDIFDiscoveryProfile
                                              |
                 AgentRegistry <- PipelineConfig <- ProviderConfig -> LLMClient factory
                                              |

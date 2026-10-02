@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from urllib.parse import urlparse
 from pydantic import BaseModel, ConfigDict
-from metadata_enricher.schemas.base import Schema
 from metadata_enricher.types import ResourceDescription
 
 logger = logging.getLogger(__name__)
@@ -22,9 +21,6 @@ class ValidationResult(BaseModel):
 
 class PreFlightValidator:
     """Validates resources before pipeline execution."""
-
-    def __init__(self, schema: Schema) -> None:
-        self._schema = schema
 
     def validate_resource(self, resource: ResourceDescription) -> ValidationResult:
         """Check resource has minimum required fields for processing."""

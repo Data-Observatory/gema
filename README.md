@@ -202,7 +202,7 @@ For flags on every helper script (`record_golden.py`, `run_live_eval.py`,
 ```
 Input JSON -> FilesystemInputSource -> ResourceDescription
                                              |
-                                    PreFlightValidator <- Schema Registry -> CDIFDiscoveryProfile
+                                    PreFlightValidator, Schema Registry -> CDIFDiscoveryProfile
                                              |
                 AgentRegistry <- PipelineConfig -> ProviderConfig -> LLMClient factory
                                              |

@@ -158,7 +158,7 @@ class Pipeline:
         self._llm_factory = llm_factory
         self._max_workers = max_workers
         self._allow_partial = allow_partial
-        self._validator = PreFlightValidator(self._schema)
+        self._validator = PreFlightValidator()
         # Explicit injection (e.g. a fake in tests) always wins. Otherwise, build
         # the real ROR/ISNI/ORCID-backed enricher only if the config asks for it —
         # constructing it unconditionally would mean every Pipeline() call

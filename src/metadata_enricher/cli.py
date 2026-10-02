@@ -217,7 +217,7 @@ def validate(
         raise typer.Exit(1)
     registry = get_registry()
     try:
-        schema_obj = registry.get(schema)
+        registry.get(schema)  # only rejects an unknown --schema; pre-flight is schema-agnostic
     except KeyError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
@@ -227,7 +227,7 @@ def validate(
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error reading input: {e}", err=True)
         raise typer.Exit(1)
-    validator = PreFlightValidator(schema=schema_obj)
+    validator = PreFlightValidator()
     result = validator.validate_resource(resource)
     if result.valid:
         typer.echo(f"\u2713 {file} is valid for processing")
