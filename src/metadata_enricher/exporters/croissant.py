@@ -92,7 +92,6 @@ from metadata_enricher.types import (
 
 logger = logging.getLogger(__name__)
 
-CROISSANT_VERSION = "1.1"
 CROISSANT_CONFORMS_TO = "http://mlcommons.org/croissant/1.1"
 
 # Trimmed from the spec's Appendix 1 "recommended JSON-LD context" --

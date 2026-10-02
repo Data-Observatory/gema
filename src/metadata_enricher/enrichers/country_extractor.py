@@ -58,10 +58,6 @@ _RE_HTML_LANG = re.compile(
     r'<html[^>]+lang=["\']([^"\']+)["\']',
     re.IGNORECASE,
 )
-_RE_HTML_LANG_SWAPPED = re.compile(
-    r'<html[^>]+(?:xml:)?lang=["\']([^"\']+)["\']',
-    re.IGNORECASE,
-)
 
 
 def _extract_country_from_locale(locale: str) -> Optional[str]:
