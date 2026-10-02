@@ -101,9 +101,9 @@ while you flip over to Settings and back).
   a CLI display label) — keeping both in the UI implied a control that
   didn't exist, so it's gone. `visor/settings.py::required_env_vars`
   (only providers actually referenced by an agent) still gates the
-  Run tab; the broader `all_provider_env_vars` (every declared provider)
-  is what Settings displays — deliberately different scopes for
-  deliberately different jobs.
+  Run tab, while Settings lists a key row for every declared provider
+  (it iterates `pipeline_config.providers` directly) — deliberately
+  different scopes for deliberately different jobs.
 - **Agents** (`visor/pages/agents_page.py`) — each pipeline agent's
   `provider`, `model`, `temperature`, and `reasoning_effort` as visible,
   editable fields (the same four for the Dataverse export's Subject

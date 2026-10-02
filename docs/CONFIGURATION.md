@@ -131,7 +131,6 @@ Each entry in the `agents` list supports:
 | `context_fields` | `list[str]` | no | `[]` | Field names from `depends_on` ancestors' merged output to surface in this agent's prompt (under `=== DATOS YA EXTRAÍDOS EN UN PASO ANTERIOR ===`) |
 | `tools` | `list[str]` | no | `[]` | Tools this agent may call mid-reasoning before its final structured-output call. Currently only `lookup_organization` (ROR lookup, `llm/tools.py`) |
 | `extra_body` | `dict` | no | `null` | Passed straight into the OpenAI-compatible request body, e.g. `{thinking: {type: disabled}}` for DeepSeek V4 on opencode. Part of the cache key |
-| `use_chain_of_thought` | `bool` | no | `false` | Accepted but unused; it has no effect |
 
 Example, the shipped `creators_publishers` agent (prompts abbreviated):
 
@@ -201,34 +200,13 @@ OpenAI-compatible endpoint.
 | `config/dataverse_export.yaml` | `exporters/dataverse.py` (`load_dataverse_export_config`), Visor | `enabled` (default `true`; `false` skips the LLM call and defaults Subject to `["Other"]` with a warning) and `agent`, a full `AgentConfig` for the one LLM-assisted step (classifying into Dataverse's fixed Subject vocabulary). Its `provider` must exist in the loaded `agents.yaml`'s `providers:`. Never runs through the orchestrator. Visor's Agents tab can edit its provider/model/temperature/reasoning effort |
 | `config/eval.yaml` | Dev scripts only (`scripts/eval_common.py`, `run_live_eval.py`, `compare_models.py`, `judge_models.py`). Never read by `src/` | Defaults every corresponding CLI flag overrides: `judge` (LLM-as-judge `provider:model`, default `zai-coding-plan:glm-5.3`), `threshold` (`0.75`), `candidates` (model list for comparisons), `corpora` (named `do_catalog`/`golden` path presets). A missing file is treated as empty |
 | `config/overrides.yaml` | `IdentifierResolver`, via `identifier_overrides_path` | Human-curated ROR/ISNI matches, written by `scripts/curate_ror_isni.py --promote-to`. Not present until a batch is promoted |
-| `config/legacy/` | Migration and A/B diagnostic only | Pre-YAML JSON configs and the frozen pre-pivot `agents_datacite46.yaml` |
+| `config/legacy/` | A/B diagnostic provenance only | The frozen pre-pivot `agents_datacite46.yaml` (not loaded by any code) |
 
-## Migration from Legacy JSON
+## Deprecated keys
 
-Legacy JSON configuration files (`config/legacy/andrea_v3.json` and older formats) can
-be migrated to YAML using the built-in migration tool:
-
-```python
-from pathlib import Path
-from metadata_enricher.config.migrate import migrate_json_to_yaml
-
-migrate_json_to_yaml(Path("config/legacy/andrea_v3.json"))
-```
-
-This generates a `.yaml` file alongside the original JSON, preserving both.
-Providers are loaded automatically from a sibling `providers.json` file.
-
-The migration handles:
-- Renaming `output_fields` → `fields`
-- Renaming `prompt_template` → `prompt`
-- Flattening the nested `llm_config` dict into top-level `model`, `provider`,
-  `temperature`, and `max_tokens` fields
-- Mapping `api_base` → `base_url` in provider configs
-
-The output uses `schema_name: datacite-4.6` and DataCite field names, because legacy
-configs are DataCite-shaped. That schema is no longer registered, so the migrated file
-won't run until its field names are retargeted to CDIF and `schema_name` is changed to
-`cdif-discovery` by hand. The migration logs a warning saying so.
+`use_chain_of_thought` on an agent was never read by any code and has been removed. Configs
+that still carry it (e.g. older Visor "Download config" files) load fine: the key is dropped
+with a warning. Remove it from your YAML to silence the warning.
 
 ## Environment Variables
 

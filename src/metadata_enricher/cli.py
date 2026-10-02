@@ -228,7 +228,7 @@ def validate(
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error reading input: {e}", err=True)
         raise typer.Exit(1)
-    validator = PreFlightValidator(schema=schema_obj, registry=registry)
+    validator = PreFlightValidator(schema=schema_obj)
     result = validator.validate_resource(resource)
     if result.valid:
         typer.echo(f"\u2713 {file} is valid for processing")

@@ -1,12 +1,11 @@
-"""Pre-flight validation for resources and pipeline configs."""
+"""Pre-flight validation for resources."""
 
 from __future__ import annotations
 import logging
 from urllib.parse import urlparse
 from pydantic import BaseModel, ConfigDict
-from metadata_enricher.schemas.base import Schema, SchemaRegistry
+from metadata_enricher.schemas.base import Schema
 from metadata_enricher.types import ResourceDescription
-from metadata_enricher.config.models import PipelineConfig
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +21,10 @@ class ValidationResult(BaseModel):
 
 
 class PreFlightValidator:
-    """Validates resources and configs before pipeline execution."""
+    """Validates resources before pipeline execution."""
 
-    def __init__(self, schema: Schema, registry: SchemaRegistry | None = None) -> None:
+    def __init__(self, schema: Schema) -> None:
         self._schema = schema
-        self._registry = registry
 
     def validate_resource(self, resource: ResourceDescription) -> ValidationResult:
         """Check resource has minimum required fields for processing."""
@@ -66,39 +64,5 @@ class PreFlightValidator:
                 warnings.append(
                     f"DOI '{doi}' does not look like a standard DOI (expected 10.xxxx/... or https://doi.org/10.xxxx/...)"
                 )
-
-        return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
-
-    def validate_config(self, config: PipelineConfig) -> ValidationResult:
-        """Check config is valid for pipeline execution."""
-        errors: list[str] = []
-        warnings: list[str] = []
-
-        # Check schema_name exists in registry if registry provided
-        if self._registry is not None:
-            available = self._registry.list_schemas()
-            if config.schema_name not in available:
-                errors.append(
-                    f"Schema '{config.schema_name}' not found. Available: {', '.join(available) if available else '(none)'}"
-                )
-
-        # Check provider references are valid (cross-ref validation already in PipelineConfig, but double-check)
-        provider_names = {p.name for p in config.providers}
-        for agent in config.agents:
-            if agent.provider not in provider_names:
-                errors.append(f"Agent '{agent.id}' references unknown provider '{agent.provider}'")
-
-        # Check for depends_on cycle (simple check: agent can't depend on itself)
-        agent_ids = {a.id for a in config.agents}
-        for agent in config.agents:
-            for dep in agent.depends_on:
-                if dep == agent.id:
-                    errors.append(f"Agent '{agent.id}' depends on itself")
-                if dep not in agent_ids:
-                    errors.append(f"Agent '{agent.id}' depends on unknown agent '{dep}'")
-
-        # Check at least one agent exists (PipelineConfig already enforces min_length=1, but be explicit)
-        if len(config.agents) == 0:
-            errors.append("Config must define at least one agent")
 
         return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)

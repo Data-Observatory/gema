@@ -261,8 +261,6 @@ since it needs that wave's merged output:
 | `rights_funding_citations` | schema_license, schema_conditions_of_access, schema_copyright_holder, schema_funding, dcterms_bibliographic_citation |
 | `media_files` | schema_distribution, schema_variable_measured, schema_measurement_technique, dqv_quality_measurement, prov_generated_by |
 
-Legacy JSON configurations are preserved at `config/legacy/andrea_v3.json` (5 agents) and `config/legacy/agents_v2.json` (18 agents) for reference.
-
 ## Development
 
 ```bash
@@ -290,20 +288,6 @@ marked `@pytest.mark.live` (real LLM calls, real cost) -- that stays manual-only
 Visor is a separate NiceGUI-based subpackage (`visor/`) with its own test
 suite (`make test-visor`). For its architecture, UI structure, building a
 frozen installer, and CI details, see [`visor/BUILD.md`](visor/BUILD.md).
-
-## Migration from JSON
-
-If you have existing JSON configurations, use the built-in migration tool:
-
-```bash
-uv run python -c "
-from metadata_enricher.config.migrate import migrate_json_to_yaml
-from pathlib import Path
-migrate_json_to_yaml(Path('config/legacy/andrea_v3.json'))
-"
-```
-
-This generates a YAML file alongside the source JSON, preserving both.
 
 ---
 

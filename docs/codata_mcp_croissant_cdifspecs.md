@@ -630,7 +630,8 @@ the pivot.
 
 Keep `"datacite-4.6"` (migrated legacy configs are DataCite-shaped by
 definition), plus a `logger.warning` and docstring note that it is no longer a
-registered generation schema.
+registered generation schema. (Superseded: `config/migrate.py` and the legacy JSON configs
+were later retired altogether.)
 
 ### Q16 — Nested `schema:identifier` cardinality
 

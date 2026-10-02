@@ -174,6 +174,22 @@ class AgentConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_deprecated_keys(cls, data: Any) -> Any:
+        # use_chain_of_thought was never read by any code and has been removed.
+        # Configs written before that (e.g. every Visor "Download config" file,
+        # which dumps the full model) still carry it -- drop it with a warning
+        # instead of failing extra="forbid".
+        if isinstance(data, dict) and "use_chain_of_thought" in data:
+            data = {k: v for k, v in data.items() if k != "use_chain_of_thought"}
+            logger.warning(
+                "Agent %r: 'use_chain_of_thought' is deprecated and ignored -- "
+                "remove it from the config.",
+                data.get("id"),
+            )
+        return data
+
     id: str = Field(..., min_length=1)
     name: str
     description: str = ""
@@ -199,7 +215,6 @@ class AgentConfig(BaseModel):
     # ever available. See BaseAgent.run()'s upstream_fields param and
     # orchestrator.py's wave-result threading.
     context_fields: list[str] = []
-    use_chain_of_thought: bool = False
     # Passed straight through to the OpenAI-compatible request body. Needed for
     # provider/model-specific knobs standard fields don't cover — e.g. disabling
     # DeepSeek V4's "thinking mode" (extra_body={"thinking": {"type": "disabled"}}),

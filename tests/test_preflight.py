@@ -6,7 +6,6 @@ import pytest
 from pydantic import BaseModel, ValidationError
 
 from metadata_enricher.config.models import AgentConfig, PipelineConfig, ProviderConfig
-from metadata_enricher.schemas.base import SchemaRegistry
 from metadata_enricher.types import AgentResult, MetadataDocument, ResourceDescription
 from metadata_enricher.validation import PreFlightValidator, ValidationResult
 
@@ -145,95 +144,3 @@ class TestPreFlightValidatorValidateResource:
         result = PreFlightValidator(schema=_MockSchema()).validate_resource(resource)
         assert result.valid is True
         assert any("DOI" in w for w in result.warnings)
-
-
-class TestPreFlightValidatorValidateConfig:
-    """PreFlightValidator.validate_config — pipeline config checks."""
-
-    def test_valid_config_passes(self):
-        """Valid PipelineConfig passes validation."""
-        registry = SchemaRegistry()
-        registry.register(_MockSchema())
-        config = make_valid_config()
-        result = PreFlightValidator(schema=_MockSchema(), registry=registry).validate_config(config)
-        assert result.valid is True
-        assert result.errors == []
-
-    def test_config_unknown_provider_fails(self):
-        """Agent referencing a provider not in the providers list fails."""
-        config = PipelineConfig.model_construct(
-            schema_name="datacite-4.6",
-            agents=[
-                AgentConfig.model_construct(
-                    id="a1",
-                    name="A1",
-                    fields=["titles"],
-                    prompt="test",
-                    provider="unknown",
-                ),
-            ],
-            providers=[
-                ProviderConfig.model_construct(
-                    name="p1", base_url="http://localhost", api_key_env="KEY"
-                ),
-            ],
-            default_provider="p1",
-        )
-        result = PreFlightValidator(schema=_MockSchema()).validate_config(config)
-        assert result.valid is False
-        assert any("unknown" in e for e in result.errors)
-
-    def test_config_self_dependency_fails(self):
-        """Agent that depends on itself fails."""
-        config = PipelineConfig.model_construct(
-            schema_name="datacite-4.6",
-            agents=[
-                AgentConfig.model_construct(
-                    id="a1",
-                    name="A1",
-                    fields=["titles"],
-                    prompt="test",
-                    provider="p1",
-                    depends_on=["a1"],
-                ),
-            ],
-            providers=[
-                ProviderConfig.model_construct(
-                    name="p1", base_url="http://localhost", api_key_env="KEY"
-                ),
-            ],
-        )
-        result = PreFlightValidator(schema=_MockSchema()).validate_config(config)
-        assert result.valid is False
-        assert any("depends on itself" in e for e in result.errors)
-
-    def test_config_unknown_dependency_fails(self):
-        """Agent depending on a non-existent agent ID fails."""
-        config = PipelineConfig.model_construct(
-            schema_name="datacite-4.6",
-            agents=[
-                AgentConfig.model_construct(
-                    id="a1",
-                    name="A1",
-                    fields=["titles"],
-                    prompt="test",
-                    provider="p1",
-                ),
-                AgentConfig.model_construct(
-                    id="a2",
-                    name="A2",
-                    fields=["titles"],
-                    prompt="test",
-                    provider="p1",
-                    depends_on=["nonexistent"],
-                ),
-            ],
-            providers=[
-                ProviderConfig.model_construct(
-                    name="p1", base_url="http://localhost", api_key_env="KEY"
-                ),
-            ],
-        )
-        result = PreFlightValidator(schema=_MockSchema()).validate_config(config)
-        assert result.valid is False
-        assert any("nonexistent" in e for e in result.errors)

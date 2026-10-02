@@ -8,8 +8,7 @@ Pydantic config models + YAML loader + JSON→YAML migration. **Pure data + I/O 
 config/
 ├── __init__.py
 ├── models.py     # ModelOverride, ProviderConfig, AgentConfig, PipelineConfig, DataverseExportConfig (all extra="forbid")
-├── loader.py     # load_config() YAML→PipelineConfig, find_config() search
-└── migrate.py    # migrate_json_to_yaml() — legacy JSON → YAML converter
+└── loader.py     # load_config() YAML→PipelineConfig, find_config() search
 ```
 
 > ⚠ Do NOT confuse with `/config/` at repo root — that's runtime user YAML/JSON files. This dir is the **loader code**.
@@ -22,7 +21,6 @@ config/
 | Add new provider config field | `models.py:ProviderConfig` |
 | Change YAML env var expansion | `loader.py:50` (`os.path.expandvars`) |
 | Add new config search path | `loader.py:find_config()` |
-| Fix migration bug | `migrate.py:migrate_json_to_yaml()` |
 
 ## Models (`models.py`)
 
@@ -33,7 +31,7 @@ All `model_config = ConfigDict(extra="forbid")`. User-facing field reference:
 |-------|-----------------|---------------------------|
 | `ModelOverride` | `model` | `max_workers`, `api_style`, `reasoning_effort` (all `None` = inherit from provider) |
 | `ProviderConfig` | `name`, `api_key_env` | `base_url`, `default=False`, `seed`, `max_workers`, `model_overrides=[]`, `session_header`, `api_style="chat_completions"`, `reasoning_effort` |
-| `AgentConfig` | `id`, `name`, `fields` (≥1), `prompt`, `provider` | `description=""`, `system_prompt`, `model`, `temperature=0.0`, `max_tokens`, `reasoning_effort`, `depends_on=[]`, `context_fields=[]`, `use_chain_of_thought=False` (unused, no effect), `extra_body`, `tools=[]` |
+| `AgentConfig` | `id`, `name`, `fields` (≥1), `prompt`, `provider` | `description=""`, `system_prompt`, `model`, `temperature=0.0`, `max_tokens`, `reasoning_effort`, `depends_on=[]`, `context_fields=[]`, `extra_body`, `tools=[]` |
 | `PipelineConfig` | `schema_name`, `agents` (≥1), `providers` (≥1) | `default_provider`, `strategies={}` (unused by the pipeline), `max_workers=4`, `enable_identifier_enrichment=False`, `identifier_overrides_path`, `enable_content_fetch=False`, `enable_js_render_fallback=False`, `enable_doi_resolution=False`, `validate_pids=True`, `validate_pids_live=True`, `validate_shacl_conformance=False` |
 | `DataverseExportConfig` | `agent` (an `AgentConfig`) | `enabled=True`; `validate_provider_exists(names)` is called by the caller, since this model has no providers list of its own |
 
@@ -68,14 +66,11 @@ provider/model name elsewhere):
   4. `$GEMA_CONFIG` env var
 - Raises on empty YAML (line 53-55).
 
-## Migration (`migrate.py`)
+## Deprecated keys
 
-`migrate_json_to_yaml(Path("config/legacy/andrea_v3.json"))` → writes `.yaml` sibling.
-
-**Rules** (see `migrate_json_to_yaml()`'s docstring):
-- **NEVER modifies original JSON** — read-only.
-- `schema_name` hard-coded to `"datacite-4.6"` (legacy JSON configs are DataCite-shaped; emitting `cdif-discovery` over DataCite field lists would produce a guaranteed-broken config). Since the CDIF pivot, this schema name is no longer registered — `migrate.py` logs a `logger.warning` at migration time saying so.
-- `default_provider` chosen deterministically: the alphabetically first provider name referenced by the migrated agents.
+`AgentConfig._drop_deprecated_keys` (`mode="before"` validator) strips `use_chain_of_thought`
+with a `logger.warning` instead of failing `extra="forbid"` — old Visor downloads carry it.
+Follow the same pattern when retiring any other field.
 
 ## ANTI-PATTERNS
 
