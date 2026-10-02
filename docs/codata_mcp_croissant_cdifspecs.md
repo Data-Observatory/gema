@@ -169,9 +169,8 @@ shape, not built in v1.
 
 ## 4. Tech Stack & Project Structure
 
-New runtime dependencies: `pyshacl`, `rdflib`, `pyld` (for the SHACL check and
-JSON-LD framing, Appendix B Q5; `pyld` ships no type stubs and has a mypy
-`ignore_missing_imports` override). Layout as built:
+New runtime dependencies: `pyshacl`, `rdflib` (for the SHACL check, Appendix
+B Q5). Layout as built:
 
 ```
 src/metadata_enricher/
@@ -242,8 +241,8 @@ extension point.
   Not called by the live pipeline (tests only). CDIF's own SHACL rules run
   separately via `check_shacl_conformance(doc)` — wired into `pipeline.py` as an
   opt-in, non-blocking post-merge step (`validate_shacl_conformance`, default
-  `False`; findings become warnings, never errors). `frame_output(doc)` (pyld
-  framing against `frame.jsonld`) exists but has no caller yet.
+  `False`; findings become warnings, never errors). `frame.jsonld` is vendored
+  for reference only; no code frames output into it.
 - `merge_agent_results`, `get_field_order`, `get_required_fields` → same
   responsibilities as `DataCiteSchema46`'s, retargeted to CDIF's field set.
   `merge_agent_results` also does the JSON-LD serialization steps: wraps
@@ -554,7 +553,7 @@ never generate `@context`/`@id`/`@type`/`schema:dateModified`/`schema:subjectOf`
 
 ### Q5 — Execute SHACL and JSON-LD framing in v1?
 
-Yes. `pyshacl`, `rdflib`, `pyld` added as runtime deps.
+SHACL yes, framing no. `pyshacl`, `rdflib` added as runtime deps.
 `check_shacl_conformance(doc)` serializes to JSON-LD, parses with rdflib, then
 runs `pyshacl.validate(..., advanced=True)`. `advanced=True` is required
 because some vendored shapes use `sh:SPARQLTarget`. It never raises (an
@@ -562,8 +561,10 @@ infrastructure failure logs and returns `[]`) and returns one readable string
 per `sh:ValidationResult` of **any** severity (`sh:Info`/`sh:Warning` included,
 no severity label). Wired into `pipeline.py` as an opt-in, non-blocking step
 (`validate_shacl_conformance`, default `False`), because every real golden
-fixture produced findings, many outside gema's control. `frame_output()`
-exists but has no caller.
+fixture produced findings, many outside gema's control. A pyld-based
+`frame_output()` was built but never called; it was removed along with the
+`pyld` dependency (gema writes CURIE-keyed JSON-LD directly, so framing into
+CDIF's nested `frame.jsonld` layout added nothing).
 
 ### Q6 — Enrichment architecture fork
 

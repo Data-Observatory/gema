@@ -1,4 +1,4 @@
-"""Tests for CDIFDiscoveryProfile.check_shacl_conformance / frame_output.
+"""Tests for CDIFDiscoveryProfile.check_shacl_conformance.
 
 See docs/codata_mcp_croissant_cdifspecs.md Appendix B Q5 for the decision
 behind these tests (why the vendored shapes flag every real
@@ -27,7 +27,6 @@ import json
 from pathlib import Path
 
 import pytest
-from pyld import jsonld
 
 from metadata_enricher.schemas.cdif.discovery.cdif_discovery import CDIFDiscoveryProfile
 from metadata_enricher.types import MetadataDocument
@@ -183,103 +182,3 @@ class TestCheckShaclConformance:
             assert violation.strip()
             assert "shape=" in violation
 
-
-class TestFrameOutput:
-    def test_frame_output_never_raises_on_malformed_input(self, schema: CDIFDiscoveryProfile) -> None:
-        doc = MetadataDocument()
-        # A dict where a JSON-LD keyword ("@id") holds a non-string value
-        # fails pyld's expansion step outright (verified directly against
-        # pyld -- this is a real JsonLdError, not a hypothetical) rather
-        # than silently coercing it, giving a genuine failure path to
-        # exercise here instead of relying on framing happening to no-op.
-        doc.set_field("@id", ["not", "a", "string"])
-        doc.set_field("schema:name", "T")
-
-        result = schema.frame_output(doc)
-
-        assert result == doc.fields
-        assert result is not doc.fields  # a copy, not the same object
-
-    def test_frame_output_degrades_to_unchanged_copy_on_failure(
-        self, schema: CDIFDiscoveryProfile
-    ) -> None:
-        doc = MetadataDocument()
-        doc.set_field("@id", 12345)  # not a string -- fails JSON-LD expansion
-        doc.set_field("schema:name", "T")
-
-        result = schema.frame_output(doc)
-
-        assert result == doc.fields
-        assert result is not doc.fields
-
-    def test_frame_output_returns_a_dict_never_none(self, schema: CDIFDiscoveryProfile) -> None:
-        assert schema.frame_output(MetadataDocument()) is not None
-        assert isinstance(schema.frame_output(MetadataDocument()), dict)
-
-    @pytest.mark.parametrize("fixture_path", GOLDEN_FIXTURES, ids=lambda p: p.stem)
-    def test_framing_round_trips_real_fixtures_without_losing_data(
-        self, schema: CDIFDiscoveryProfile, fixture_path: Path
-    ) -> None:
-        """Framing a real, well-formed golden fixture must actually run
-        pyld's framing algorithm (not silently degrade to the pass-through
-        fallback) and must not lose the document's core identity."""
-        raw = json.loads(fixture_path.read_text(encoding="utf-8"))
-        doc = _doc_from(raw)
-
-        framed = schema.frame_output(doc)
-
-        assert isinstance(framed, dict)
-        assert "@context" in framed
-        # A real framing result is graph-shaped (the vendored frame matches
-        # more than one node per document -- the Dataset and its
-        # schema:subjectOf CatalogRecord) -- not the plain pass-through
-        # fallback (which would just be an unchanged copy of raw fields,
-        # keyed by CURIE at the top level with no "@graph").
-        assert "@graph" in framed
-        graph = framed["@graph"]
-        assert isinstance(graph, list)
-        assert len(graph) >= 1
-        ids = {node.get("@id") for node in graph if isinstance(node, dict)}
-        assert raw["@id"] in ids
-
-        # Real no-data-loss check, not just "has a @graph and the right
-        # @id" (the previous version of this test asserted only that,
-        # which is what its name claimed to check but didn't). Expand both
-        # sides through pyld -- expansion resolves every CURIE back to its
-        # full IRI, so a real absence would show up as a literal value or
-        # a real node present in the source but missing after framing;
-        # re-compacting an absolute type IRI to a CURIE (framing's only
-        # actual effect here) round-trips to the same expanded form and
-        # isn't a loss.
-        def leaf_values(expanded: object) -> set[str]:
-            values: set[str] = set()
-
-            def walk(node: object) -> None:
-                if isinstance(node, list):
-                    for item in node:
-                        walk(item)
-                elif isinstance(node, dict):
-                    if "@value" in node:
-                        values.add(str(node["@value"]))
-                    elif set(node.keys()) == {"@id"}:
-                        values.add(str(node["@id"]))
-                    else:
-                        for v in node.values():
-                            walk(v)
-
-            walk(expanded)
-            return values
-
-        raw_leaves = leaf_values(jsonld.expand(raw))
-        framed_leaves = leaf_values(jsonld.expand(framed))
-        missing = raw_leaves - framed_leaves
-        assert not missing, f"framing dropped real data: {missing}"
-
-    def test_conformant_fixture_frames_with_expected_top_level_name(
-        self, schema: CDIFDiscoveryProfile
-    ) -> None:
-        doc = _doc_from(CONFORMANT_FIELDS)
-        framed = schema.frame_output(doc)
-        graph = framed["@graph"]
-        dataset_node = next(n for n in graph if n.get("@id") == "https://example.org/dataset/1")
-        assert dataset_node["schema:name"] == "A fully conformant test dataset"

@@ -23,7 +23,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pyshacl>=0.30.0",
     "rdflib>=7.0.0",
-    "pyld>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -66,10 +65,6 @@ strict = true
 
 [[tool.mypy.overrides]]
 module = "diskcache.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "pyld.*"
 ignore_missing_imports = true
 
 [dependency-groups]

@@ -26,7 +26,7 @@ ROR/ISNI cases make real network calls even without keys (only its ORCID cases s
 | Pipeline core | `test_pipeline_integration`, `test_orchestrator`, `test_agent_registry`, `test_base_agent`, `test_merger`, `test_output`, `test_preflight`, `test_types`, `test_input_source`, `test_cli`, `test_seed_propagation` |
 | Config | `test_config_loader`, `test_config_migration`, `test_config_models` |
 | LLM stack | `test_llm_client`, `test_llm_factory`, `test_instructor_client`, `test_responses_client`, `test_retry`, `test_cache`, `test_llm_tools` |
-| Schemas | `test_schema_registry`, `test_cdif_discovery_schema`, `test_cdif_vendored_artifacts`, `test_shacl_and_framing`, `test_datacite_schema` |
+| Schemas | `test_schema_registry`, `test_cdif_discovery_schema`, `test_cdif_vendored_artifacts`, `test_shacl_conformance`, `test_datacite_schema` |
 | Enrichers | `test_content_fetcher`, `test_country_extractor`, `test_crossref_client`, `test_doi_resolver`, `test_fuzzy_matcher`, `test_iana_normalizer`, `test_identifier_enricher`, `test_identifier_overrides`, `test_identifier_resolver`, `test_identifier_types`, `test_isni_client`, `test_orcid_client`, `test_pid_validator`, `test_ror_client` |
 | Exporters | `test_datacite_export`, `test_croissant_export`, `test_dataverse_export` |
 | Scripts (`scripts/`) | `test_ab_eval_script`, `test_curate_ror_isni`, `test_do_catalog_common`, `test_eval_common`, `test_generate_ground_truth_schema`, `test_render_comparison_report`, `test_validate_ground_truth` |
