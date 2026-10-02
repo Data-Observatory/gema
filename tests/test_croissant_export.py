@@ -197,8 +197,7 @@ class TestUrl:
         assert any("no schema:url" in w for w in result.warnings)
 
     def test_doi_entry_url_preferred_over_constructing_one(self):
-        """docs/cdif_pivot_implementation_plan.md Backlog: prefer
-        schema:url on the identifier entry itself before falling back to
+        """Prefer schema:url on the identifier entry itself before falling back to
         constructing a doi.org URL from the bare value."""
         doc = make_document(
             **{
@@ -215,8 +214,8 @@ class TestUrl:
         assert result.croissant_json["url"] == "https://doi.org/10.5880/GFZ.2.4.2021.001"
 
     def test_doi_value_already_a_full_url_is_not_double_prefixed(self):
-        """DOI double-prefix guard (docs/cdif_pivot_implementation_plan.md
-        Backlog): if schema:value is already a full URL (no schema:url on
+        """DOI double-prefix guard: if schema:value is already a full URL
+        (no schema:url on
         the entry to prefer instead), _build_url must not prepend
         https://doi.org/ a second time."""
         doc = make_document(
@@ -253,9 +252,8 @@ class TestCreators:
         assert result.croissant_json["creator"][0]["url"] == "https://ror.org/0x"
 
     def test_tolerates_at_list_wrapped_shape(self):
-        """Defensive: docs/cdif_pivot_implementation_plan.md's C4 draft
-        assumed {"@list": [...]}, but the shipped schema is a bare list
-        (see module docstring) -- both must work."""
+        """The merged document wraps schema:creator as {"@list": [...]} (constraint
+        C4, docs/codata_mcp_croissant_cdifspecs.md Appendix A) -- must be read."""
         doc = make_document(**{"schema:creator": {"@list": [_org("An Org")]}})
         result = to_croissant_json(doc)
         assert result.croissant_json["creator"] == [{"@type": "sc:Organization", "name": "An Org"}]
@@ -493,7 +491,7 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
         # affiliation-match country sanity check fix -- this real
         # re-recording (2026-09-07) now resolves the actual Chilean
         # publisher (ODEPA) via ISNI instead, confirming the fix. See
-        # docs/cdif_pivot_implementation_plan.md's O-5 section.
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix B O-5.
         "creator_names": ["Oficina de Estudios y Políticas Agrarias"],
         "license": None,
     },

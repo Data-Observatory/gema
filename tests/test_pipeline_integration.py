@@ -1209,8 +1209,8 @@ class TestPipelineSchemaUrlFallback:
 
 
 class TestPipelineActorFallbacks:
-    """Phase B1 (live-eval quality gap, docs/cdif_pivot_implementation_plan.md's
-    "Post-PR#45 investigation" section): schema:publisher/schema:creator/
+    """Live-eval quality gap (docs/codata_mcp_croissant_cdifspecs.md
+    Appendix B O-4): schema:publisher/schema:creator/
     schema:copyrightHolder came back empty on a real live run despite
     resource.publisher carrying a hand-verified name -- a deterministic
     fallback cascade in pipeline.py, same class of fix as

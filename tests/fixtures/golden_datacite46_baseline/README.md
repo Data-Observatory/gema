@@ -1,8 +1,8 @@
 # DataCite 4.6 baseline snapshot (frozen)
 
 Frozen copy of `tests/fixtures/golden/{inputs,expected,cache}` taken immediately
-before the CDIF pivot's golden-fixture re-record (`docs/cdif_pivot_implementation_plan.md`
-Step 2f), paired with `config/legacy/agents_datacite46.yaml` (the pre-flip
+before the CDIF pivot's golden-fixture re-record (see
+`docs/codata_mcp_croissant_cdifspecs.md` §6.1), paired with `config/legacy/agents_datacite46.yaml` (the pre-flip
 `config/agents.yaml`, before `schema_name` became `cdif-discovery`).
 
 **Not exercised by `make test` or `make test-regression`** — this is reference

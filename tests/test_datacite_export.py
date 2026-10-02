@@ -279,8 +279,8 @@ class TestPublishersC3Reversal:
         assert _fields(result)["publishers"] == []
 
     def test_no_publisher_or_provider_warns(self):
-        """Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
-        Backlog): DataCite's own spec makes publisher mandatory, unlike
+        """Warning-discipline decision: DataCite's own spec makes publisher
+        mandatory, unlike
         subjects/categories/audiences/citations (see TestOptionalFieldsStaySilentOnMiss),
         so a missing publisher warrants a warning."""
         doc = make_document(**{"schema:name": "T"})
@@ -909,9 +909,8 @@ class TestAgainstRealGoldenFixture:
         assert data["rights"][0]["rights_identifier"] == ""
 
         # This fixture carries real, populated schema:keywords/about/
-        # audience/spatialCoverage -- tightened per Opus review (2026-09-04,
-        # docs/cdif_pivot_implementation_plan.md's Backlog) so a broken
-        # reverse mapping on any of these can't pass silently just because
+        # audience/spatialCoverage -- tightened per Opus review (2026-09-04)
+        # so a broken reverse mapping on any of these can't pass silently just because
         # titles/creators/publishers/language/identifier/rights looked fine.
         # Expected values are derived from the fixture's own raw content
         # rather than hardcoded, since _build_subjects/_build_audiences

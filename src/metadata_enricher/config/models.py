@@ -239,8 +239,8 @@ class PipelineConfig(BaseModel):
     # resolved from PATH otherwise) before giving up. Off by default: it's a
     # slower, heavier path (subprocess + real page render) than the rest of
     # this fail-soft module, and depends on an external binary the plain
-    # httpx path never needed. See docs/cdif_pivot_implementation_plan.md's
-    # "JS-render fallback" phase for the full evaluation.
+    # httpx path never needed. See docs/codata_mcp_croissant_cdifspecs.md
+    # Appendix B A0 for the evaluation.
     enable_js_render_fallback: bool = False
     enable_doi_resolution: bool = False
     validate_pids: bool = True
@@ -252,7 +252,7 @@ class PipelineConfig(BaseModel):
     # validation is a mature, already-tuned check every user benefits from;
     # this one is new and, as of this writing, every real recorded golden
     # fixture fails it (mostly for reasons outside gema's direct control --
-    # see docs/cdif_pivot_implementation_plan.md's "Step 6" notes) -- so
+    # see docs/codata_mcp_croissant_cdifspecs.md Appendix B Q5) -- so
     # defaulting it on today would flood every existing user with warnings
     # they have no way to act on yet. Opt in once you want visibility into
     # CDIF conformance gaps for your own generated documents. Only takes

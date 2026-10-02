@@ -44,7 +44,7 @@ _country_extractor = CountryExtractor()
 # from reintroducing exactly what the prompt already forbids. Deliberately
 # narrow (only the two forms observed in real fixtures) rather than a
 # general free-text cleanup -- see Open Question O-4 in
-# docs/cdif_pivot_implementation_plan.md if this needs to grow.
+# docs/codata_mcp_croissant_cdifspecs.md Appendix B if this needs to grow.
 _TRAILING_GOBIERNO_SUFFIX_RE = re.compile(r"\s*-\s*Gobierno de Chile\s*$", re.IGNORECASE)
 _TRAILING_COUNTRY_PAREN_RE = re.compile(r"\s*\(Chile\)\s*$", re.IGNORECASE)
 
@@ -359,9 +359,9 @@ class Pipeline:
         if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
             document.set_field("schema:url", url)
 
-        # Actor fallback cascade (Phase B1, live-eval quality gap — see
-        # docs/cdif_pivot_implementation_plan.md's "Post-PR#45 investigation"
-        # section): schema:publisher, schema:creator, and
+        # Actor fallback cascade (live-eval quality gap — see
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix B O-4):
+        # schema:publisher, schema:creator, and
         # schema:copyrightHolder came back empty on a real live run
         # (sample_input04) despite resource.publisher carrying a
         # hand-verified name — the shared system prompt already tells every

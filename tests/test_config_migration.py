@@ -305,7 +305,7 @@ class TestMigrateJsonToYaml:
         """As of the CDIF pivot, datacite-4.6 is no longer registered in
         schemas/__init__.py -- a migrated config will fail at Pipeline
         construction until manually retargeted. This must not be a silent
-        surprise (docs/cdif_pivot_implementation_plan.md Step 2d)."""
+        surprise (docs/codata_mcp_croissant_cdifspecs.md Appendix B Q15)."""
         json_path = self._write_json(tmp_path / "andrea_v3.json", andrea_v3_dict)
 
         with caplog.at_level(logging.WARNING):

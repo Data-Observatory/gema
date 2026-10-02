@@ -92,7 +92,7 @@ def migrate_json_to_yaml(json_path: Path) -> Path:
     - A sibling ``providers.json`` file is loaded automatically if present.
     - ``schema_name`` is hard-coded to ``"datacite-4.6"`` -- deliberately,
       not an oversight left over from the CDIF pivot (see
-      docs/cdif_pivot_implementation_plan.md Step 2d). Legacy JSON configs
+      docs/codata_mcp_croissant_cdifspecs.md Appendix B Q15). Legacy JSON configs
       (``config/legacy/andrea_v3.json``, ``agents_v2.json``) declare
       DataCite field names in their agents' ``output_fields`` -- emitting
       ``cdif-discovery`` here would produce a config whose agents request

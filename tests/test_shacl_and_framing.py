@@ -1,7 +1,7 @@
 """Tests for CDIFDiscoveryProfile.check_shacl_conformance / frame_output.
 
-See docs/cdif_pivot_implementation_plan.md's "Step 6" writeup for the real
-findings behind these tests (why the vendored shapes flag every real
+See docs/codata_mcp_croissant_cdifspecs.md Appendix B Q5 for the decision
+behind these tests (why the vendored shapes flag every real
 recorded golden fixture as non-conformant today, and why that's a genuine
 gap in what gema currently emits rather than a JSON-LD-conversion bug --
 that class of false positive was Step 5.5's bug, already fixed).
@@ -152,8 +152,8 @@ class TestCheckShaclConformance:
     ) -> None:
         """Every real recorded golden fixture is expected to fail this
         check today (see module-level docstring and
-        docs/cdif_pivot_implementation_plan.md's "Step 6"/Open Question #16
-        notes) -- this test isn't asserting conformance, it's asserting the
+        docs/codata_mcp_croissant_cdifspecs.md Appendix B Q5/Q16) -- this
+        test isn't asserting conformance, it's asserting the
         failures are *real* and *explicable* (missing @type typing on
         nested identifier/license nodes, or genuinely absent license/url/
         distribution data), never an empty violations list masking a check

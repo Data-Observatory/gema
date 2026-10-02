@@ -19,8 +19,8 @@ fallback``) retries a too-thin/failed static fetch through a real JS engine
 up -- for the real, measured case of a JS-rendered SPA whose static HTML
 carries none of the page's actual content. Same fail-soft contract: a
 missing binary, timeout, or render failure just falls back to whatever the
-static fetch already returned. See docs/cdif_pivot_implementation_plan.md's
-"JS-render fallback" phase for the evaluation this was built from.
+static fetch already returned. See docs/codata_mcp_croissant_cdifspecs.md
+Appendix B A0 for the evaluation this was built from.
 """
 
 from __future__ import annotations

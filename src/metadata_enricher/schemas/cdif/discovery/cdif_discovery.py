@@ -30,8 +30,8 @@ real LLM output turns out messier than assumed, the same way DataCite's
 did over time.
 
 SHACL conformance (``check_shacl_conformance``) and JSON-LD framing
-(``frame_output``) -- wiring decision (docs/cdif_pivot_implementation_plan.md
-"Step 6"): ``check_shacl_conformance`` **is** wired into ``pipeline.py`` as
+(``frame_output``) -- wiring decision (docs/codata_mcp_croissant_cdifspecs.md
+Appendix B Q5): ``check_shacl_conformance`` **is** wired into ``pipeline.py`` as
 a new, non-blocking post-merge step mirroring the existing PID-validation
 step, gated behind ``PipelineConfig.validate_shacl_conformance`` (default
 ``False`` -- see that field's own docstring for why: every real recorded
@@ -58,8 +58,7 @@ not a framework bug. (a) is now fixed -- see ``_inject_envelope`` below
 (Open Question #18) -- and the ``url``/``distribution`` half of (c) has a
 fallback via ``pipeline.py`` (Open Question #20); (b) and the
 ``license``/``conditionsOfAccess`` half of (c) remain open, tracked in
-docs/cdif_pivot_implementation_plan.md's Open questions log rather than
-fixed here.
+BACKLOG.md rather than fixed here.
 """
 
 from __future__ import annotations
@@ -126,7 +125,7 @@ class CDIFDiscoveryOutputModel(BaseModel):
     All fields optional except where the required-floor validator below
     enforces presence -- agents populate this progressively, same as
     DataCiteOutputModel. Field order matches this profile's Q2 mapping
-    in docs/cdif_pivot_implementation_plan.md, grouped by required floor,
+    in docs/codata_mcp_croissant_cdifspecs.md Appendix A, grouped by required floor,
     conditional OR-groups, then the rest.
     """
 
@@ -272,8 +271,8 @@ class CDIFDiscoveryOutputModel(BaseModel):
     @model_validator(mode="after")
     def _check_required_floor(self) -> CDIFDiscoveryOutputModel:
         """Enforces the vendored schema's allOf[0].required floor plus its
-        two anyOf conditional groups (see docs/cdif_pivot_implementation_plan.md
-        Q1 research findings). Only meaningful on a fully-merged document --
+        two anyOf conditional groups (see docs/codata_mcp_croissant_cdifspecs.md
+        Appendix A). Only meaningful on a fully-merged document --
         per-agent partial output never satisfies this and must not be
         validated against it (see build_output_model, which never carries
         this validator over to its per-agent subset models)."""
@@ -436,8 +435,8 @@ class CDIFDiscoveryProfile:
         Converts *doc.fields* to a real RDF graph by round-tripping it
         through JSON and rdflib's ``json-ld`` parser, which resolves
         property names strictly via the document's own ``@context`` --
-        this is exactly the mechanism Step 5.5
-        (docs/cdif_pivot_implementation_plan.md) had to fix a bug in
+        this is exactly the mechanism an earlier CURIE-key fix
+        (docs/codata_mcp_croissant_cdifspecs.md Appendix A) had to fix a bug in
         (bare, non-CURIE nested keys silently vanishing during
         expansion instead of erroring). ``advanced=True`` is required
         because several of the vendored shapes use ``sh:SPARQLTarget``,
@@ -651,7 +650,7 @@ class CDIFDiscoveryProfile:
         # schema's own field description ("Use the JSON-LD @list construct
         # to preserve author order") -- an {"@list": [...]} object, not a
         # bare array, unlike schema:contributor (constraint C4 in
-        # docs/cdif_pivot_implementation_plan.md). Agents still emit a
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix A). Agents still emit a
         # plain list (the natural Instructor/structured-output shape);
         # wrapping is a pure JSON-LD serialization concern applied once
         # here, after generation, so it never leaks into agent prompts.
