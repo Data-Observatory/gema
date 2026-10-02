@@ -8,8 +8,8 @@
 
 Automatic metadata generation for scholarly resources using LLM agents,
 producing CDIF Discovery profile (JSON-LD) records from minimal resource
-descriptions (URL, title, description, DOI). DataCite 4.6 export is planned
-but not yet built.
+descriptions (URL, title, description, DOI). The same record can also be
+exported to DataCite 4.6, MLCommons Croissant, or Dataverse native JSON.
 
 Two ways to use it:
 
@@ -46,9 +46,12 @@ VISOR_NATIVE=0 uv run python -m visor.app
 VISOR_PORT=8001 VISOR_NATIVE=0 uv run python -m visor.app
 ```
 
-It prints a URL (`http://127.0.0.1:<port>`) — open that in a browser. On
-first run it seeds a writable config at `~/.config/gema/agents.yaml`
-and defaults every agent to OpenRouter (see
+It prints a URL (`http://127.0.0.1:<port>`) — open that in a browser.
+
+From a repo checkout Visor reads `config/agents.yaml` (same search order as
+the CLI); a frozen build with no config found seeds a writable copy at
+`~/.config/gema/agents.yaml` on first run. Either way it defaults every
+agent to OpenRouter in memory (see
 [Provider defaults](#provider-defaults-opencode-vs-openrouter) below); add
 your `OPENROUTER_API_KEY` on the Settings tab and you're ready to run.
 
@@ -81,16 +84,19 @@ uv sync --extra dev
 
    ```bash
    cp .env.example .env
-   # Edit .env with your OPENROUTER_API_KEY, OPENAI_API_KEY, OPENCODE_API_KEY, or ANTHROPIC_API_KEY
+   # Edit .env with your OPENROUTER_API_KEY, OPENAI_API_KEY, OPENCODE_API_KEY, ANTHROPIC_API_KEY, or ZAI_API_KEY
    ```
 
 2. The default config is at `config/agents.yaml` (5 agents for CDIF Discovery metadata).
-   Provider connection settings are defined in `config/providers.yaml`.
+   The providers the pipeline actually uses are defined inline in that same file's
+   `providers:` block. (`config/providers.yaml` is only a pool of presets for Visor's
+   "add a provider" picker and `uv run gema list-known-providers` — the pipeline never
+   reads it.)
 
 ### Processing your own dataset
 
 This is the real workflow — not a test fixture, an actual new resource you want
-DataCite metadata for. Everything here is `uv run gema ...`; no test suite
+CDIF metadata for. Everything here is `uv run gema ...`; no test suite
 involved.
 
 **1. Describe the resource as JSON.** Minimum useful fields: `url`, `title`,
@@ -146,7 +152,7 @@ or, if something's off (a missing field, a PID that doesn't actually resolve):
 
 ```
 Warning: my_dataset.json has incomplete fields:
-  - ROR does not resolve: 'https://ror.org/badid00' (creators[0].name_identifiers[0])
+  - ROR does not resolve: 'https://ror.org/badid00' (root.schema:publisher[0].schema:identifier)
 ```
 
 That warning does NOT mean the run failed — exit code is `2` (success with
@@ -158,6 +164,16 @@ instead of a file — output then needs to be a directory too, one JSON per inpu
 
 ```bash
 uv run gema process my_datasets/ --output my_datasets_output/
+```
+
+**Need DataCite or Croissant too?** Add `--export datacite` and/or `--export croissant`
+(requires `--output`). Each writes a sibling file next to the CDIF one
+(`my_dataset_metadata.datacite.json`, `my_dataset_metadata.croissant.json`) — a pure
+crosswalk, no extra LLM call. Visor's Run tab offers the same formats (plus Dataverse)
+as download options.
+
+```bash
+uv run gema process my_dataset.json -o my_dataset_metadata.json --export datacite --export croissant
 ```
 
 **6. Want the detailed human-reviewer-style report** (is the abstract real, are
@@ -173,9 +189,9 @@ richer report. See [`scripts/README.md`](scripts/README.md#validate_real_outputp
 ---
 
 For the full CLI/config flag reference: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
-For flags on `record_golden.py`, `run_live_eval.py`, `sample_corpus.py`,
-`generate_inputs.py`, `compare_models.py`, `judge_models.py`, and
-`validate_real_output.py`: [`scripts/README.md`](scripts/README.md).
+For flags on every helper script (`record_golden.py`, `run_live_eval.py`,
+`validate_real_output.py`, `compare_models.py`, `judge_models.py`,
+`sample_corpus.py`, `generate_inputs.py`, ...): [`scripts/README.md`](scripts/README.md).
 
 ---
 
@@ -198,49 +214,16 @@ Input JSON -> FilesystemInputSource -> ResourceDescription
 ### Key Design Decisions
 
 - **Pluggable schemas**: CDIF Discovery (JSON-LD) is the sole generation target. DataCite 4.6 is deregistered, kept only as an exporter/diagnostic target (`schemas/datacite.py`, still directly importable). New schemas implement the `Schema` Protocol.
+- **Exporters, not extra generation passes**: `metadata_enricher/exporters/` turns a finished CDIF record into DataCite 4.6, Croissant, or Dataverse JSON (`gema process --export datacite|croissant`; Dataverse via Visor or the library).
 - **OpenAI-compatible LLM client**: Works with OpenAI, OpenRouter, vLLM, Ollama, ZAI, OpenCode, and any OpenAI-compatible endpoint.
 - **Agent pipeline**: Agents run in parallel waves based on dependencies (Kahn topological sort).
 - **Disk caching**: LLM responses cached with 7-day TTL to reduce costs during development.
 
 ## Configuration Reference
 
-### config/agents.yaml
-
-The main pipeline configuration file. Key fields:
-
-| Field | Description |
-|-------|-------------|
-| `schema_name` | Schema to use (default: `cdif-discovery`) |
-| `agents` | List of agent definitions |
-| `providers` | List of LLM provider connection settings |
-| `default_provider` | Provider to use when an agent doesn't specify one |
-
-### Agent Definition
-
-```yaml
-- id: core_metadata
-  name: Core Metadata Extractor
-  description: Extracts basic metadata from resources
-  fields: [schema_name, schema_description, schema_identifier, schema_in_language, schema_date_created]
-  prompt: "Your prompt template here..."
-  provider: opencode
-  model: deepseek-v4-flash
-  temperature: 0.2
-  depends_on: []
-  context_fields: []  # field names to surface from depends_on agents' output
-  use_chain_of_thought: true
-```
-
-### Provider Definition
-
-```yaml
-- name: opencode
-  api_key_env: OPENCODE_API_KEY
-  base_url: https://opencode.ai/zen/go/v1
-  default: true
-```
-
-See `config/agents.yaml` and `config/providers.yaml` for full examples.
+Every `config/agents.yaml` field (top-level, per-agent, per-provider), the other
+config files, environment variables, and a full example live in
+[`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
 
 ### Provider defaults: opencode vs. OpenRouter
 
@@ -252,8 +235,10 @@ whether it finds `config/agents.yaml` directly or seeds a fresh copy for a
 frozen build, it rewrites that in-memory (never the file on disk) to
 default every agent to OpenRouter's auto-updating DeepSeek V4 Flash alias
 instead — a fresh Visor install should never ship an already-stale pinned
-checkpoint. See `visor/bootstrap.py::apply_external_user_provider_overrides`
-for the exact rule.
+checkpoint. If your environment already holds a real `OPENCODE_API_KEY`,
+Visor undoes that swap for the session and keeps the opencode pin. See
+`visor/bootstrap.py::apply_external_user_provider_overrides` and
+`restore_testing_provider_if_key_available` for the exact rule.
 
 ## Agents (CDIF Discovery)
 
@@ -265,7 +250,7 @@ since it needs that wave's merged output:
 | Wave | Agent(s) | Depends on | Why |
 |------|----------|------------|-----|
 | 1 (parallel) | `core_metadata`, `classification`, `media_files` | — | No cross-agent data needed |
-| 2 | `creators_publishers` | `core_metadata` | Reuses `core_metadata`'s editor/maintainer/producer names (via `context_fields: [schema_name]`) instead of re-deriving them, so both agents name the same institution consistently |
+| 2 | `creators_publishers` | `core_metadata` | Gets `core_metadata`'s `schema_name` as context (via `context_fields: [schema_name]`); may call the `lookup_organization` ROR tool (`tools: [lookup_organization]`) mid-reasoning |
 | 3 | `rights_funding_citations` | `core_metadata`, `creators_publishers` | Needs `schema_publisher` (via `context_fields`) for citation formatting |
 
 | Agent | Fields (CDIF CURIEs, snake_case attrs) |
@@ -328,9 +313,9 @@ AGPL-3.0 -- see [LICENSE](LICENSE)
 
 ## Status
 
-v1 -- stable core API. The CLI, config loading, schema registry, agent pipeline, and end-to-end `process` command are all functional.
+Version 0.5.0 (`pyproject.toml`), pre-1.0. The CLI, config loading, schema registry, agent pipeline, end-to-end `process` command, and the DataCite/Croissant/Dataverse exporters are all functional.
 
 ### Known Limitations
 
-- Only CDIF Discovery schema is registered for generation. DataCite 4.6 is exporter-only (export module not yet built). Custom schemas require implementing the `Schema` Protocol.
-- Prompt optimization via DSPy teleprompters is planned but not yet implemented.
+- Only the CDIF Discovery schema is registered for generation. DataCite 4.6 is exporter-only. Custom schemas require implementing the `Schema` Protocol.
+- Croissant export ships without a `recordSet` (per-column structure) — nothing in a CDIF Discovery record describes a dataset's columns yet.
