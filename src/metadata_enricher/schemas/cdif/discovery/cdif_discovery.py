@@ -65,13 +65,47 @@ import uuid
 from copy import deepcopy
 from datetime import UTC, datetime
 from importlib import resources
-from typing import Any, ClassVar
+from typing import Any, ClassVar, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator, model_validator
 
 from metadata_enricher.types import AgentResult, MetadataDocument, jsonld_list_unwrap
 
 logger = logging.getLogger(__name__)
+
+
+def _container_type(annotation: Any) -> type | None:
+    """``list`` or ``dict`` if *annotation* is (an optional) one, else None."""
+    for candidate in (annotation, *get_args(annotation)):
+        origin = get_origin(candidate) or candidate
+        if origin is list:
+            return list
+        if origin is dict:
+            return dict
+    return None
+
+
+def _json_string_coercer(container_types: dict[str, type]) -> Any:
+    """``mode="before"`` validator for build_output_model()'s per-agent
+    models: some models (observed: opencode's deepseek-v4.1-flash on
+    creators_publishers) send a list/object tool-call argument as a
+    JSON-encoded *string*, which otherwise fails validation and costs an
+    Instructor reask round-trip. Only a string that parses to exactly the
+    container type the field expects is replaced -- anything else
+    (malformed JSON, the wrong container type, a non-string) is returned
+    untouched, so real validation errors still surface."""
+
+    def _coerce(cls: Any, value: Any, info: Any) -> Any:
+        expected = container_types.get(info.field_name)
+        if expected is None or not isinstance(value, str):
+            return value
+        try:
+            parsed = json.loads(value)
+        except ValueError:
+            return value
+        return parsed if isinstance(parsed, expected) else value
+
+    return field_validator(*container_types, mode="before")(_coerce)
 
 _PACKAGE = "metadata_enricher.schemas.cdif.discovery"
 
@@ -366,10 +400,21 @@ class CDIFDiscoveryProfile:
             f"{name}:{annotation!r}" for name, (annotation, _) in field_definitions.items()
         )
         digest = hashlib.sha1(digest_source.encode("utf-8")).hexdigest()[:12]
+        container_types = {
+            name: container
+            for name, (annotation, _) in field_definitions.items()
+            if (container := _container_type(annotation)) is not None
+        }
+        validators = (
+            {"_coerce_stringified_json": _json_string_coercer(container_types)}
+            if container_types
+            else {}
+        )
         model = create_model(
             f"CDIFDiscoveryOutputModel_{digest}",
             __base__=BaseModel,
             __config__=ConfigDict(extra="allow", populate_by_name=True),
+            __validators__=validators,
             **field_definitions,
         )
         self._agent_model_cache[key] = model
