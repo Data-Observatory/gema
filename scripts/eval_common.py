@@ -79,6 +79,7 @@ def find_provider(config: PipelineConfig, name: str) -> ProviderConfig:
 MODEL_EXTRA_BODY: dict[tuple[str, str], dict[str, Any]] = {
     ("opencode", "deepseek-v4-flash"): {"thinking": {"type": "disabled"}},
     ("opencode", "deepseek-v4-pro"): {"thinking": {"type": "disabled"}},
+    ("opencode", "deepseek-v4.1-flash"): {"thinking": {"type": "disabled"}},
     ("opencode", "qwen3.7-plus"): {"thinking": {"type": "disabled"}},
 }
 

@@ -440,6 +440,27 @@ class TestSanitizeAllAgentsExtraBody:
 
         assert pipeline_config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
 
+    async def test_fixes_stale_openrouter_extra_body_after_switching_to_opencode_deepseek(
+        self,
+    ) -> None:
+        """Every Agents-tab save path funnels through this function, so a
+        provider/model switch made mid-session (not just a page reload)
+        must also swap openrouter's reasoning-disable shape for the
+        DeepSeek-native one -- opencode ignores the former and rejects a
+        forced tool_choice with 400 "Thinking mode does not support this
+        tool_choice"."""
+        raw = _minimal_config_dict(
+            providers=[{"name": "opencode", "api_key_env": "OPENCODE_API_KEY"}],
+        )
+        raw["agents"][0]["provider"] = "opencode"
+        raw["agents"][0]["model"] = "deepseek-v4.1-flash"
+        raw["agents"][0]["extra_body"] = {"reasoning": {"enabled": False}}
+        pipeline_config = PipelineConfig(**raw)
+
+        sanitize_all_agents_extra_body(pipeline_config, None)
+
+        assert pipeline_config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
     async def test_sanitizes_the_dataverse_agent_too(self) -> None:
         """Found on Opus review: every existing test only checked
         pipeline_config.agents -- deleting the dataverse_export_config

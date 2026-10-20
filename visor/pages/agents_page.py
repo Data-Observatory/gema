@@ -76,6 +76,7 @@ from metadata_enricher.config.models import (
     find_model_override_elsewhere,
 )
 from metadata_enricher.llm.responses_client import UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES
+from visor.bootstrap import reconcile_provider_extra_body
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
 from visor.session_settings import load_session_settings, save_session_settings
@@ -275,6 +276,11 @@ def sanitize_all_agents_extra_body(
     about) still had a stale extra_body until the user's first Save click,
     so the very request that reproduced the original bug report happened
     before this module's own save-time sanitize ever ran once."""
+    # Every Agents-tab save path funnels through here, so this is also the
+    # one place a mid-session provider/model switch gets its extra_body
+    # shape reconciled (app.py only runs it at page load). Equality-gated,
+    # so a hand-customized extra_body is never touched.
+    reconcile_provider_extra_body(pipeline_config)
     agents_and_dataverse = list(pipeline_config.agents)
     if dataverse_export_config is not None:
         agents_and_dataverse.append(dataverse_export_config.agent)
