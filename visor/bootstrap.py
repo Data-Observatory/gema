@@ -63,6 +63,9 @@ DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "gema" / "agents.yaml"
 # ever touches provider/model/extra_body, and only in memory.
 _TESTING_PROVIDER = "opencode"
 _TESTING_MODEL = "deepseek-v4-flash"
+# Every opencode model sharing this prefix takes the same DeepSeek-native
+# thinking-disable param (see reconcile_provider_extra_body()).
+_TESTING_MODEL_FAMILY_PREFIX = "deepseek"
 _EXTERNAL_USER_PROVIDER = "openrouter"
 _EXTERNAL_USER_MODEL = "~deepseek/deepseek-v4-flash-latest"
 # OpenRouter's own normalized reasoning-disable param -- different shape
@@ -193,11 +196,21 @@ def reconcile_provider_extra_body(pipeline_config: PipelineConfig) -> None:
     hand-customized extra_body (e.g. via the Agents tab's JSON upload) on
     an agent that happens to already match one of these (provider, model)
     pairs is left alone.
+
+    The opencode side matches any ``deepseek-*`` model, not just the
+    pinned ``_TESTING_MODEL``: a user who picks a newer opencode DeepSeek
+    checkpoint in the Agents tab (e.g. deepseek-v4.1-flash, which is
+    listed by opencode's /models while deepseek-v4-flash is not) hits the
+    same thinking-mode/forced-tool_choice 400 unless it carries the
+    DeepSeek-native shape -- opencode ignores openrouter's ``reasoning``
+    key. Other opencode models are left alone: the native key was only
+    verified for DeepSeek.
     """
     for agent in pipeline_config.agents:
         if (
             agent.provider == _TESTING_PROVIDER
-            and agent.model == _TESTING_MODEL
+            and agent.model is not None
+            and agent.model.startswith(_TESTING_MODEL_FAMILY_PREFIX)
             and agent.extra_body == _EXTERNAL_USER_EXTRA_BODY
         ):
             agent.extra_body = dict(_TESTING_EXTRA_BODY)

@@ -397,6 +397,57 @@ class TestReconcileProviderExtraBody:
 
         assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
 
+    @staticmethod
+    def _opencode_config(model: str, extra_body: dict | None) -> PipelineConfig:
+        return PipelineConfig(
+            schema_name="cdif-discovery",
+            providers=[ProviderConfig(name="opencode", api_key_env="OPENCODE_API_KEY")],
+            agents=[
+                AgentConfig(
+                    id="a0",
+                    name="A0",
+                    fields=["schema_name"],
+                    prompt="x",
+                    provider="opencode",
+                    model=model,
+                    extra_body=extra_body,
+                ),
+            ],
+        )
+
+    @pytest.mark.parametrize(
+        "model", ["deepseek-v4-flash", "deepseek-v4.1-flash", "deepseek-v4-pro"]
+    )
+    def test_fixes_any_opencode_deepseek_model_with_leftover_openrouter_extra_body(self, model):
+        """Not tied to one exact model name: a user who picks a newer
+        opencode DeepSeek checkpoint in the Agents tab (e.g. v4.1-flash,
+        which rejects a forced tool_choice unless thinking is explicitly
+        disabled) must get the DeepSeek-native shape too. Probed live:
+        {"reasoning": {"enabled": False}} is ignored by opencode and
+        returns 400 "Thinking mode does not support this tool_choice"."""
+        config = self._opencode_config(model, {"reasoning": {"enabled": False}})
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
+    def test_leaves_non_deepseek_opencode_model_alone(self):
+        """The DeepSeek-native `thinking` key was only verified for
+        DeepSeek models -- never assumed to be accepted by others."""
+        config = self._opencode_config("glm-5.2", {"reasoning": {"enabled": False}})
+
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"reasoning": {"enabled": False}}
+
+    def test_reconcile_is_idempotent(self):
+        config = self._opencode_config("deepseek-v4.1-flash", {"reasoning": {"enabled": False}})
+
+        bootstrap.reconcile_provider_extra_body(config)
+        bootstrap.reconcile_provider_extra_body(config)
+
+        assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
+
     def test_end_to_end_restore_then_conflicting_saved_override_then_reconcile(
         self, monkeypatch
     ):
