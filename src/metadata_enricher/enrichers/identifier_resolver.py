@@ -258,8 +258,8 @@ class IdentifierResolver:
         ``chosen: True`` pick is trusted over its own ``score`` field per
         ROR's own guidance (see ``ror_client.RORClient.search_affiliation``),
         so this never re-ranks or overrides that choice. But a real, verified
-        bug (docs/cdif_pivot_implementation_plan.md's Post-PR#45
-        investigation, Open Question O-5): ROR's own affiliation service can
+        bug (docs/codata_mcp_croissant_cdifspecs.md Appendix B O-5): ROR's
+        own affiliation service can
         confidently pick a wrong-country organization when names share a
         distinctive word (e.g. "Oficina de Estudios y Políticas Agrarias",
         Chile's real agricultural-policy office, matched to "Instituto de

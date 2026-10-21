@@ -101,19 +101,24 @@ while you flip over to Settings and back).
   a CLI display label) — keeping both in the UI implied a control that
   didn't exist, so it's gone. `visor/settings.py::required_env_vars`
   (only providers actually referenced by an agent) still gates the
-  Run tab; the broader `all_provider_env_vars` (every declared provider)
-  is what Settings displays — deliberately different scopes for
-  deliberately different jobs.
+  Run tab, while Settings lists a key row for every declared provider
+  (it iterates `pipeline_config.providers` directly) — deliberately
+  different scopes for deliberately different jobs.
 - **Agents** (`visor/pages/agents_page.py`) — each pipeline agent's
-  `provider`, `model`, and `temperature` as visible, editable fields
-  (previously none of these were exposed in the UI). `provider` is a
+  `provider`, `model`, `temperature`, and `reasoning_effort` as visible,
+  editable fields (the same four for the Dataverse export's Subject
+  classifier, from `config/dataverse_export.yaml`). `provider` is a
   select populated from `pipeline_config.providers` — always a valid
-  choice by construction. `model` is a free-text input, not a dropdown —
-  there's no enumerable "known models per provider" list anywhere in this
-  project's config (`config/providers.yaml` only has connection
-  settings), so a fabricated model list would go stale and could imply
-  only listed models work. Everything else (prompt, fields, depends_on)
-  is read-only in a collapsed "Advanced" section for transparency.
+  choice by construction. `model` is a combobox: no options until
+  "Refresh models" fetches that provider's own `/models` list
+  (`visor/model_catalog.py`, using the key saved in Settings), and any
+  typed model id is always accepted — never a hardcoded/curated list,
+  which would go stale and imply only listed models work. A "switch
+  provider for all agents" card sets every agent at once. Pipeline
+  behavior checkboxes toggle `enable_content_fetch`,
+  `enable_js_render_fallback`, and `enable_doi_resolution`. Everything
+  else (prompt, fields, depends_on, and tools/extra_body when set) is
+  read-only in a collapsed "Advanced" section for transparency.
   Download/Upload buttons round-trip the *entire* `PipelineConfig` as
   JSON — Upload re-validates through the model's own cross-reference
   validators before applying anything, so a bad file never leaves a

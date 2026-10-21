@@ -20,7 +20,7 @@
 
 # Version / lock files: do not touch line endings.
 *.lock         binary
-python-version text eol=lf
+.python-version text eol=lf
 
 # Generated exports: never normalize, never diff.
 *.db   binary

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
+from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher, _identifier_entries
 from metadata_enricher.enrichers.identifier_types import IdentifierMatch
 from metadata_enricher.types import MetadataDocument
 
@@ -143,6 +143,7 @@ class TestEnrichCreators:
         resolver.resolve_person.assert_called_once_with("Jane", "Roe", None)
         assert identifier["schema:value"] == "0000-0002-1825-0097"
         assert identifier["schema:propertyID"] == "ORCID"
+        assert identifier["schema:url"] == "https://orcid.org/0000-0002-1825-0097"
 
     def test_personal_creator_passes_affiliation_to_orcid_search(self) -> None:
         resolver = _mock_resolver()
@@ -655,3 +656,22 @@ class TestStatusGatingAllPaths:
             doc.get_field("schema:publisher")["schema:identifier"]["schema:value"]
             == "https://ror.org/01h6h5x94"
         )
+
+
+class TestIdentifierEntriesUrls:
+    def test_every_scheme_gets_a_resolvable_url(self) -> None:
+        match = IdentifierMatch(
+            ror_id="https://ror.org/027nn6b17",
+            isni_id="0000000121738546",
+            orcid_id="0000-0002-1825-0097",
+            org_name="x",
+            confidence=1.0,
+            matched_via="test",
+            status="auto",
+        )
+        urls = {e["schema:propertyID"]: e["schema:url"] for e in _identifier_entries(match)}
+        assert urls == {
+            "ROR": "https://ror.org/027nn6b17",
+            "ISNI": "https://isni.org/isni/0000000121738546",
+            "ORCID": "https://orcid.org/0000-0002-1825-0097",
+        }

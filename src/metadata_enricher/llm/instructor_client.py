@@ -97,6 +97,53 @@ def _patch_instructor_reask_tools_none_crash() -> None:
 _patch_instructor_reask_tools_none_crash()
 
 
+def _patch_instructor_reask_tools_strict_name_field() -> None:
+    """Work around a 400 some strict OpenAI-compatible proxies raise on
+    instructor's TOOLS-mode retry-repair path.
+
+    When a tool call's arguments fail Pydantic validation, instructor's
+    ``reask_tools()`` (instructor.v2.providers.openai.handlers) appends a
+    ``{"role": "tool", "tool_call_id": ..., "name": ..., "content": ...}``
+    message asking the model to retry. The OpenAI ``tool`` message schema
+    has no ``name`` field (only the deprecated ``function`` role message
+    does) -- OpenAI's real API silently tolerates the extra key, but at
+    least one OpenAI-compatible proxy (observed with opencode's "Console
+    Go" backend, model omen-alpha) validates strictly and rejects the
+    whole request with ``400 ... "name" is not supported by this
+    endpoint``. Since the retry request itself is what fails, the model
+    never gets a chance to self-correct and the field is dropped entirely
+    instead of repaired.
+
+    Dropping ``name`` from these messages is a no-op for providers that
+    ignore it and a fix for providers that don't -- safe everywhere.
+    Composes with (must run after) `_patch_instructor_reask_tools_none_crash`.
+    """
+    from instructor.v2.providers.openai import handlers as _openai_handlers
+
+    _previous_reask_tools = _openai_handlers.reask_tools
+
+    def _reask_tools_no_name(
+        kwargs: dict[str, Any], response: Any, exception: Exception
+    ) -> dict[str, Any]:
+        # _previous_reask_tools is untyped (third-party, no stubs) -- cast the
+        # known-correct return shape rather than letting Any leak out.
+        patched_kwargs = cast(
+            "dict[str, Any]", _previous_reask_tools(kwargs, response, exception)
+        )
+        patched_kwargs["messages"] = [
+            {k: v for k, v in message.items() if k != "name"}
+            if isinstance(message, dict) and message.get("role") == "tool"
+            else message
+            for message in patched_kwargs["messages"]
+        ]
+        return patched_kwargs
+
+    _openai_handlers.reask_tools = _reask_tools_no_name
+
+
+_patch_instructor_reask_tools_strict_name_field()
+
+
 def _safe_execute_tool(name: str, arguments_raw: str) -> str:
     """Wrap execute_tool()'s dict-arguments call: unlike an unknown tool
     name (already handled inside execute_tool itself), malformed JSON

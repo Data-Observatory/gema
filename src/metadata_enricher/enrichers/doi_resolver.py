@@ -119,7 +119,7 @@ class DOIResolverEnricher:
                 continue
             # schema:identifier is deliberately omitted here, not written as
             # an empty placeholder ([] or {}) -- Open Question #16
-            # (docs/cdif_pivot_implementation_plan.md): the vendored schema
+            # (docs/codata_mcp_croissant_cdifspecs.md Appendix B): the vendored schema
             # models Person/Organization's schema:identifier as a singular
             # object, and an empty value has no valid representation in
             # that shape (unlike the pre-#16 list convention, where []

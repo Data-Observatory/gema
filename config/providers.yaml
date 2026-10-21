@@ -1,6 +1,7 @@
-# LLM Provider configurations
-# Each entry specifies how to connect to an LLM API endpoint.
-# Reference from agents.yaml via the provider name.
+# LLM provider presets -- NOT read by the pipeline.
+# This is the pool Visor's Settings tab autofills from ("add a provider") and
+# what `gema list-known-providers` prints. A provider only takes effect once
+# it's in config/agents.yaml's own `providers:` list.
 providers:
   - name: zai-coding-plan
     api_key_env: ZAI_API_KEY

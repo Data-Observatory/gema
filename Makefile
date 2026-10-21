@@ -7,7 +7,7 @@ install-visor:
 	uv sync --extra dev --extra visor --group visor-build
 
 test:
-	uv run pytest --cov=metadata_enricher --cov-report=term-missing
+	uv run pytest -m "not live" --cov=metadata_enricher --cov-report=term-missing
 
 test-visor:
 	uv run pytest visor/tests -p nicegui.testing.user_plugin -o asyncio_mode=auto -m "not live" -v

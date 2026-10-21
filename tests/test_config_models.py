@@ -85,11 +85,10 @@ class TestAgentConfig:
         assert a.temperature == 0.0
         assert a.max_tokens is None
         assert a.depends_on == []
-        assert a.use_chain_of_thought is False
         assert a.system_prompt is None
 
     def test_all_fields(self):
-        """All fields provided with realistic values from andrea_v3.json."""
+        """All fields provided with realistic values."""
         a = AgentConfig(
             id="creators_publishers",
             name="Creators and Publishers",
@@ -102,7 +101,6 @@ class TestAgentConfig:
             temperature=0.2,
             max_tokens=4096,
             depends_on=["core_metadata"],
-            use_chain_of_thought=True,
         )
         assert a.id == "creators_publishers"
         assert a.name == "Creators and Publishers"
@@ -115,7 +113,6 @@ class TestAgentConfig:
         assert a.temperature == 0.2
         assert a.max_tokens == 4096
         assert a.depends_on == ["core_metadata"]
-        assert a.use_chain_of_thought is True
 
     def test_rejects_unknown_fields(self):
         """extra='forbid'."""
@@ -184,10 +181,15 @@ class TestAgentConfig:
         )
         assert a.context_fields == ["resource", "publishers"]
 
-    def test_use_chain_of_thought_defaults_false(self):
-        """use_chain_of_thought defaults to False."""
-        a = AgentConfig(id="x", name="x", fields=["f"], prompt="p", provider="p")
-        assert a.use_chain_of_thought is False
+    def test_deprecated_use_chain_of_thought_is_dropped_with_warning(self, caplog):
+        """Old configs (e.g. Visor downloads) carrying use_chain_of_thought still load."""
+        with caplog.at_level("WARNING", logger="metadata_enricher.config.models"):
+            a = AgentConfig.model_validate(
+                {"id": "x", "name": "x", "fields": ["f"], "prompt": "p", "provider": "p",
+                 "use_chain_of_thought": True}
+            )
+        assert "use_chain_of_thought" not in a.model_dump()
+        assert "deprecated" in caplog.text
 
     def test_temperature_defaults_zero(self):
         """temperature defaults to 0.0."""
@@ -293,7 +295,7 @@ class TestPipelineConfig:
             )
 
     def test_full_config(self):
-        """Full pipeline matching andrea_v3-like structure."""
+        """Full multi-agent pipeline config."""
         p = PipelineConfig(
             schema_name="datacite-4.6",
             agents=[
@@ -304,7 +306,6 @@ class TestPipelineConfig:
                     prompt="Eres un agente...",
                     provider="opencode",
                     temperature=0.2,
-                    use_chain_of_thought=True,
                 ),
                 AgentConfig(
                     id="creators_publishers",
@@ -314,7 +315,6 @@ class TestPipelineConfig:
                     provider="opencode",
                     temperature=0.0,
                     depends_on=["core_metadata"],
-                    use_chain_of_thought=True,
                 ),
                 AgentConfig(
                     id="media_files",

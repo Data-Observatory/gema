@@ -2,7 +2,7 @@
 
 ``DataCiteSchema46`` (``schemas/datacite.py``) was deregistered as a
 generation target when this repo pivoted to the CDIF Discovery profile
-(``docs/cdif_pivot_implementation_plan.md`` Step 2) but is kept alive
+(``docs/codata_mcp_croissant_cdifspecs.md`` §3.5) but is kept alive
 specifically to be an *export* target -- this module is that exporter.
 
 This is emphatically NOT "run DataCiteSchema46's normalizers on the CDIF
@@ -12,8 +12,8 @@ bare strings, etc.) into DataCite's fixed shape -- they have no idea how
 to read a `schema:creator` `{"@list": [...]}` object or turn
 `schema:dateModified` into DataCite's `dates[]` + `resource.publication_year`.
 The real work here is the CDIF -> DataCite field mapping below, built by
-reading ``docs/cdif_pivot_implementation_plan.md``'s "Q2 -- Verified
-DataCite -> CDIF field mapping" table *in reverse*. ``DataCiteSchema46``'s
+reading ``docs/codata_mcp_croissant_cdifspecs.md``'s Appendix A
+(DataCite -> CDIF field mapping) table *in reverse*. ``DataCiteSchema46``'s
 normalizers are used only as the LAST step: each mapped field's raw,
 pre-normalization value (the same loosely-typed shape an agent's
 structured output would have produced) is run through
@@ -58,8 +58,8 @@ from metadata_enricher.types import (
 )
 
 # ----------------------------------------------------------------------
-# DataCiteSchema46 singleton (Open Question resolved here, see
-# docs/cdif_pivot_implementation_plan.md Step 3).
+# DataCiteSchema46 singleton (see docs/codata_mcp_croissant_cdifspecs.md
+# Appendix B Q8).
 #
 # DataCiteSchema46.__init__ eagerly parses a ~505KB bundled IANA MIME-type
 # JSON file (IANANormalizer), which can itself trigger a network refresh
@@ -127,7 +127,7 @@ def _identifier_entries(entity: dict[str, Any] | None) -> list[dict[str, Any]]:
     (which wants *every* resolved identifier, not just the preferred one).
 
     ``schema:identifier`` is singular on these entries as of Open Question
-    #16 (docs/cdif_pivot_implementation_plan.md) -- any additional resolved
+    #16 (docs/codata_mcp_croissant_cdifspecs.md Appendix B Q16) -- any additional resolved
     identifier lives in the same entry's ``schema:sameAs`` overflow.
     ``types.entity_identifiers`` reads both."""
     out: list[dict[str, Any]] = []
@@ -547,8 +547,7 @@ def _build_publishers(document: MetadataDocument, warnings: list[str]) -> list[d
         )
 
     if not publishers:
-        # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
-        # Backlog, "Warning-discipline inconsistency"): unlike
+        # Warning-discipline decision: unlike
         # subjects/categories/audiences/citations below, DataCite's own
         # spec makes publisher a mandatory top-level property (Identifier,
         # Creator, Title, Publisher, PublicationYear, ResourceType) --
@@ -565,8 +564,7 @@ def _build_publishers(document: MetadataDocument, warnings: list[str]) -> list[d
 # subjects / categories / audiences
 # ------------------------------------------------------------------
 
-# Warning-discipline decision for the three builders below (docs/
-# cdif_pivot_implementation_plan.md Backlog): subjects (keywords),
+# Warning-discipline decision for the three builders below: subjects (keywords),
 # categories (about), and audiences are all optional DataCite fields
 # (unlike publisher above) -- a resource genuinely having no keywords,
 # no subject classification, or no defined audience is a normal, non
@@ -724,7 +722,8 @@ def _build_rights(document: MetadataDocument) -> list[dict[str, Any]]:
     # schema:conditionsOfAccess shape doesn't correspond cleanly to the
     # vendored LabeledLink def (no "condition"/"date" property exists
     # there), so it's left as-is by this pass rather than force a
-    # semantic-guess CURIE. See docs/cdif_pivot_implementation_plan.md.
+    # semantic-guess CURIE. See docs/codata_mcp_croissant_cdifspecs.md
+    # Appendix A ("Nested keys are CURIEs").
     conditions = [
         str(entry.get("condition"))
         for entry in _as_list(document.get_field("schema:conditionsOfAccess"))
@@ -860,8 +859,7 @@ def _build_citations(document: MetadataDocument) -> list[Any]:
     # hand-built/synthetic fixture, or one built before that formatting
     # step ran) since DataCiteSchema46._normalize_citations already
     # handles either shape (folds a bare string into "title").
-    # Warning-discipline decision (docs/cdif_pivot_implementation_plan.md
-    # Backlog): citations are optional bibliography data -- most resources
+    # Warning-discipline decision: citations are optional bibliography data -- most resources
     # legitimately cite nothing, so an empty result here is silent by
     # design, same reasoning as subjects/categories/audiences above.
     return [
@@ -920,7 +918,7 @@ def _build_media_files(document: MetadataDocument, warnings: list[str]) -> list[
         # spdx:checksum{@type, algorithm, checksumValue} object, not a flat
         # string, and defines no term for temporal_resolution at all,
         # so a mechanical rename would be misleading. Left as-is; see
-        # docs/cdif_pivot_implementation_plan.md.
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix A.
         files.append(
             {
                 "file_uri": content_url,

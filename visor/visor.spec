@@ -52,6 +52,27 @@ for _pkg in ("uvicorn", "nicegui", "instructor", "openai"):
     binaries += _pkg_binaries
     hiddenimports += _pkg_hiddenimports
 
+# Stage the (optional) obscura headless-render binary -- powers content_
+# fetcher.py's opt-in JS-render fallback (enable_js_render_fallback). Never
+# a pip dependency, so it's fetched+sha256-verified here at build time (see
+# fetch_obscura.py's own docstring) and placed at the bundle root, where
+# content_fetcher.py's _obscura_binary_path() looks for it under sys.
+# _MEIPASS. An unsupported platform or a network error fetching the release
+# both raise ObscuraUnsupportedPlatformError, degrading to "skip bundling"
+# -- the resulting build simply can't use the fallback, same as if the flag
+# were never turned on; neither fails the whole build. A sha256 mismatch or
+# missing archive member (ObscuraVerificationError) is deliberately NOT
+# caught here -- that's a corrupted/tampered download, not a degraded
+# platform, and must fail the build loudly.
+sys.path.insert(0, str(repo_root))
+from visor.installer.fetch_obscura import ObscuraUnsupportedPlatformError, ensure_obscura  # noqa: E402
+
+try:
+    _obscura_binary = ensure_obscura(repo_root / "vendor" / "obscura")
+    binaries.append((str(_obscura_binary), "."))
+except ObscuraUnsupportedPlatformError as _exc:
+    print(f"visor.spec: skipping obscura bundling -- {_exc}")
+
 a = Analysis(  # noqa: F821 - PyInstaller injects these names at spec exec time
     [str(repo_root / "visor" / "launcher.py")],
     pathex=[str(repo_root), str(repo_root / "src")],

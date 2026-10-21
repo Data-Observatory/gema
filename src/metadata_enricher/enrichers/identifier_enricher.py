@@ -14,8 +14,8 @@ the natural Instructor/structured-output shape.
 Internal shape convention this module (and agents.yaml's prompts) commit
 to for these three fields -- CURIE-keyed at every nesting level (verified
 against the vendored schema.json's ``$defs`` -- see
-docs/cdif_pivot_implementation_plan.md's changelog entry for the pass that
-fixed this) so real JSON-LD tooling (rdflib/pyld) can actually resolve
+docs/codata_mcp_croissant_cdifspecs.md Appendix A, "Nested keys are
+CURIEs") so real JSON-LD tooling (rdflib/pyld) can actually resolve
 these properties via ``@context`` instead of silently dropping a bare key:
 
     creator/contributor/publisher/funder entry (Person or Organization)::
@@ -133,7 +133,7 @@ def _identifier_entries(match: IdentifierMatch) -> list[dict[str, Any]]:
         {
             "schema:propertyID": scheme,
             "schema:value": id_value,
-            "schema:url": id_value if scheme == "ORCID" else _scheme_url(scheme, id_value),
+            "schema:url": _scheme_url(scheme, id_value),
             "matched_via": match.matched_via,
             "confidence": match.confidence,
             "status": match.status,
@@ -308,7 +308,7 @@ class IdentifierEnricher:
             creator["schema:identifier"] = {
                 "schema:propertyID": "ORCID",
                 "schema:value": match.orcid_id,
-                "schema:url": f"https://orcid.org/{match.orcid_id}",
+                "schema:url": _scheme_url("ORCID", match.orcid_id),
                 "matched_via": match.matched_via,
                 "confidence": match.confidence,
                 "status": match.status,

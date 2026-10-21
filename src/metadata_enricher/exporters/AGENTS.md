@@ -23,6 +23,18 @@ exporters/
 └── croissant.py        # CDIF MetadataDocument -> MLCommons Croissant Dataset JSON-LD
 ```
 
+## WHERE EXPORTS ARE TRIGGERED
+
+- **CLI**: `gema process ... --output OUT --export datacite [--export croissant]`
+  (`cli.py`'s `_EXPORT_FORMATS` / `_write_export`) writes `OUT.datacite.json` /
+  `OUT.croissant.json` next to the primary CDIF file. It requires `--output`, and an export
+  failure becomes a warning (exit 2), never a blocked primary output. Dataverse has no CLI
+  flag.
+- **Visor**: the Run tab's "Export format" select + Download button
+  (`visor/pages/run_page.py`) offers CDIF, DataCite, Croissant, and Dataverse. Dataverse
+  appears only when `config/dataverse_export.yaml` loaded. Its classifier
+  provider/model/temperature/reasoning effort are editable on the Agents tab.
+
 ## SHARED SHAPE CONTRACT
 
 Every exporter follows the same contract:
@@ -45,8 +57,8 @@ def to_<x>_json(document: MetadataDocument, ...) -> <X>ExportResult:
   a bad or partial document must still produce *some* usable, structurally valid export
   plus warnings, never a crash.
 - **`token_usage` stays zero unless the exporter genuinely makes an LLM call.** Most
-  exporters are pure crosswalks (`datacite.py`, `croissant.py`: always zero — Open Question
-  #8 in the plan doc resolved DataCite export to "none, pure crosswalk"). `dataverse.py` is
+  exporters are pure crosswalks (`datacite.py`, `croissant.py`: always zero; Q8 in
+  `docs/codata_mcp_croissant_cdifspecs.md`'s Appendix B decision log resolved DataCite export to "none, pure crosswalk"). `dataverse.py` is
   the one exception — its Subject classification step is a real, optional LLM call, kept on
   the result for cost visibility. The field exists on every result type for shape parity
   even when always zero, so callers can treat all exporters uniformly.
@@ -89,15 +101,15 @@ against a heavily customized install.
 ## `datacite.py` — CDIF -> DataCite 4.6 native dict (the reverse crosswalk)
 
 `DataCiteSchema46` (`schemas/datacite.py`) was deregistered as a *generation* target when
-this repo pivoted to CDIF Discovery (`docs/cdif_pivot_implementation_plan.md` Step 2) — it is
+this repo pivoted to CDIF Discovery (`docs/codata_mcp_croissant_cdifspecs.md` §3.5) — it is
 kept alive specifically to be this *export* target.
 
 **This is real mapping logic, not delegation.** `DataCiteSchema46`'s `_normalize_*` methods
 coerce a decade of loosely-shaped legacy DataCite-agent output into DataCite's fixed shape —
 they have no idea how to read a `schema:creator` list or turn `schema:dateModified` into
 `dates[]` + `resource.publication_year`. `exporters/datacite.py` contains the actual CDIF ->
-DataCite field-by-field mapping (`docs/cdif_pivot_implementation_plan.md`'s "Q2" table, read
-in reverse — that table is DataCite -> CDIF, this module runs it backwards).
+DataCite field-by-field mapping (`docs/codata_mcp_croissant_cdifspecs.md`'s Appendix A, DataCite → CDIF field
+mapping, read in reverse; this module runs it backwards).
 `DataCiteSchema46`'s normalizers are invoked only as the *last* step: each mapped field's raw,
 pre-normalization value (the same loosely-typed shape a legacy DataCite agent's structured
 output would have produced) is run through `DataCiteSchema46.normalize_field()`, then the
@@ -125,7 +137,7 @@ re-parse the IANA file.
   (`related_identifiers`). Never merge these loops.
 - **`prov:wasDerivedFrom` is a separate special case**, not folded into the
   `schema:relatedLink` loop — it maps to DataCite's `IsDerivedFrom` relation type specifically
-  (CDIF's own explicit convention, see the Q2 table).
+  (CDIF's own explicit convention, see the spec's Appendix A mapping table).
 - **`schema:contributor` role handling**: known roles (`Producer`, `ContactPerson`, `Editor`,
   `Maintainer`) fold into DataCite's singular `resource.*` actor slots (`_RESOURCE_ROLE_MAP`).
   Any other role isn't dropped — it becomes an extra `creators` entry carrying the role in
@@ -161,9 +173,9 @@ Croissant version).
 **`recordSet` (Croissant's per-column/field structure description) ships empty/absent,
 explicitly documented as a placeholder** — blocked on a structure-fetcher enricher that
 doesn't exist yet. Never synthesize one from title/description prose; nothing on a CDIF
-Discovery document describes a dataset's column structure. See `docs/
-cdif_pivot_implementation_plan.md`'s Backlog section (Open Questions #10-12) before starting
-that work.
+Discovery document describes a dataset's column structure. See
+`docs/codata_mcp_croissant_cdifspecs.md` §7 (structure fetcher) and Appendix B Q10-Q12 before
+starting that work.
 
 ## WHERE TO LOOK
 
@@ -171,9 +183,9 @@ that work.
 |------|----------|
 | Change Dataverse's Subject classification behavior/prompt | `config/dataverse_export.yaml`, `dataverse.py::classify_subject` |
 | Add a new Dataverse controlled-vocabulary check (author identifier scheme, subject) | `dataverse.py`'s `SUBJECT_CATEGORIES` / `_AUTHOR_IDENTIFIER_SCHEMES` — both hand-verified live against a real Dataverse instance, see their comments for how/when |
-| Find/extend the CDIF -> DataCite field mapping | `datacite.py` — read `docs/cdif_pivot_implementation_plan.md`'s Q2 table in reverse first |
+| Find/extend the CDIF -> DataCite field mapping | `datacite.py`. Read `docs/codata_mcp_croissant_cdifspecs.md`'s Appendix A (DataCite → CDIF field mapping) in reverse first |
 | Change the verified Croissant top-level field list | `croissant.py`'s module docstring — cites the exact spec commit checked; update both if re-verifying against a newer Croissant version |
-| Add Croissant `recordSet` support | Blocked on a structure-fetcher enricher that doesn't exist yet — see `croissant.py`'s module docstring and `docs/cdif_pivot_implementation_plan.md`'s Backlog section (Open Questions #10-12) before starting |
+| Add Croissant `recordSet` support | Blocked on a structure-fetcher enricher that doesn't exist yet. See `croissant.py`'s module docstring, `docs/codata_mcp_croissant_cdifspecs.md` §7, and Appendix B Q10-Q12 before starting |
 | Shared Person/Organization/PropertyValue entry shape every exporter reads | `enrichers/identifier_enricher.py`'s module docstring — the actual shape gema's CDIF pipeline produces for `schema:creator`/`schema:contributor`/`schema:publisher`/`schema:funding`, not re-derived per exporter |
 
 ## CONVENTIONS
@@ -224,7 +236,7 @@ that work.
   `croissant.py` — see that module's docstring for the real blocker.
 - **NEVER read `document.get_field("schema:creator")` as a bare list** — it's a
   `{"@list": [...]}` JSON-LD construct as of `CDIFDiscoveryProfile.merge_agent_results`
-  (constraint C4 in `docs/cdif_pivot_implementation_plan.md`), unlike `schema:contributor`/
+  (the vendored schema's order-preserving shape), unlike `schema:contributor`/
   `schema:publisher` (bare array / single object). Always go through
   `types.jsonld_list_unwrap` (or an exporter's own thin wrapper around it, e.g. `datacite.py`'s
   `_creator_list` / `croissant.py`'s `_as_entry_list`) — never index into it directly.

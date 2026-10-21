@@ -44,7 +44,7 @@ _country_extractor = CountryExtractor()
 # from reintroducing exactly what the prompt already forbids. Deliberately
 # narrow (only the two forms observed in real fixtures) rather than a
 # general free-text cleanup -- see Open Question O-4 in
-# docs/cdif_pivot_implementation_plan.md if this needs to grow.
+# docs/codata_mcp_croissant_cdifspecs.md Appendix B if this needs to grow.
 _TRAILING_GOBIERNO_SUFFIX_RE = re.compile(r"\s*-\s*Gobierno de Chile\s*$", re.IGNORECASE)
 _TRAILING_COUNTRY_PAREN_RE = re.compile(r"\s*\(Chile\)\s*$", re.IGNORECASE)
 
@@ -158,7 +158,7 @@ class Pipeline:
         self._llm_factory = llm_factory
         self._max_workers = max_workers
         self._allow_partial = allow_partial
-        self._validator = PreFlightValidator(self._schema, self._registry)
+        self._validator = PreFlightValidator()
         # Explicit injection (e.g. a fake in tests) always wins. Otherwise, build
         # the real ROR/ISNI/ORCID-backed enricher only if the config asks for it —
         # constructing it unconditionally would mean every Pipeline() call
@@ -245,6 +245,11 @@ class Pipeline:
           is never overwritten; this stays a passthrough field by default.
         - ``resource.url`` is non-empty — nothing to fetch otherwise.
 
+        ``config.enable_js_render_fallback`` (also off by default, and only
+        consulted when the static fetch above is already enabled) additionally
+        retries a too-thin/failed static fetch through a real JS engine — see
+        content_fetcher.py's module docstring.
+
         A fetch failure (``fetch_page_content`` returns None on any error, by
         contract) is silently tolerated: resource processing continues with
         no ``fetched_content``, exactly as it does today. Wrapped in a
@@ -258,7 +263,9 @@ class Pipeline:
         try:
             from metadata_enricher.enrichers.content_fetcher import fetch_page_content
 
-            content = fetch_page_content(resource.url)
+            content = fetch_page_content(
+                resource.url, js_render_fallback=self._config.enable_js_render_fallback
+            )
         except Exception as exc:
             logger.warning("Content fetch failed for %s: %s", resource.url, exc)
             return resource
@@ -352,9 +359,9 @@ class Pipeline:
         if not document.get_field("schema:url") and url and url.startswith(("http://", "https://")):
             document.set_field("schema:url", url)
 
-        # Actor fallback cascade (Phase B1, live-eval quality gap — see
-        # docs/cdif_pivot_implementation_plan.md's "Post-PR#45 investigation"
-        # section): schema:publisher, schema:creator, and
+        # Actor fallback cascade (live-eval quality gap — see
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix B O-4):
+        # schema:publisher, schema:creator, and
         # schema:copyrightHolder came back empty on a real live run
         # (sample_input04) despite resource.publisher carrying a
         # hand-verified name — the shared system prompt already tells every

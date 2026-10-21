@@ -412,8 +412,7 @@ def main(argv: list[str] | None = None) -> None:
 
         # Load expected output. Stripped of fields that should never affect
         # a judge score (schema:dateModified -- see eval_common's
-        # IGNORED_SCORING_FIELDS docstring, Finding B-1 in
-        # docs/cdif_pivot_implementation_plan.md).
+        # IGNORED_SCORING_FIELDS comment).
         try:
             expected_json = strip_ignored_fields(expected_file.read_text(encoding="utf-8"))
         except Exception as exc:

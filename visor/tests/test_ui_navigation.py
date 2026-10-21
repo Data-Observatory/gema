@@ -1093,6 +1093,41 @@ async def test_agents_tab_pipeline_behavior_toggles_persist(
     assert payload["validate_shacl_conformance"] is True
 
 
+async def test_agents_tab_js_render_fallback_toggle_persists_and_is_gated_on_content_fetch(
+    user: User, monkeypatch, tmp_path
+) -> None:
+    """enable_js_render_fallback is a sub-option of enable_content_fetch: the
+    checkbox is disabled in the UI whenever content-fetch itself is off, and
+    both round-trip through Save + Download independently."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+
+    await user.open("/")
+    user.find(marker="tab-agents").click()
+    await user.should_see(marker="pipeline-enable-js-render-fallback")
+
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    js_render_checkbox = list(user.find(marker="pipeline-enable-js-render-fallback").elements)[0]
+    assert content_fetch_checkbox.value is True  # config/agents.yaml ships enable_content_fetch: true
+    assert js_render_checkbox.value is False  # PipelineConfig default
+    assert js_render_checkbox.enabled is True  # content-fetch is on, so this is reachable
+
+    js_render_checkbox.value = True
+    user.find(marker="agents-save").click()
+    user.find(marker="agents-download").click()
+
+    response = await user.download.next(timeout=5)
+    payload = json.loads(response.content)
+    assert payload["enable_js_render_fallback"] is True
+
+    # Re-find fresh after Save -- cards.refresh() is fire-and-forget (see
+    # agents_page.py's own comments), so a widget reference captured before
+    # Save can point at an already-deleted element by the time this runs.
+    content_fetch_checkbox = list(user.find(marker="pipeline-enable-content-fetch").elements)[0]
+    js_render_checkbox = list(user.find(marker="pipeline-enable-js-render-fallback").elements)[0]
+    content_fetch_checkbox.value = False
+    assert js_render_checkbox.enabled is False
+
+
 async def test_run_form_shows_fetched_content_auto_fetch_hint(
     user: User, monkeypatch, tmp_path
 ) -> None:

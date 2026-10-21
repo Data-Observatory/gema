@@ -17,7 +17,6 @@ from visor.settings import (
     VisorSettings,
     addable_providers,
     agents_using_provider,
-    all_provider_env_vars,
     apply_agent_overrides,
     apply_to_environ,
     load_settings,
@@ -155,22 +154,6 @@ class TestRequiredEnvVars:
 
     def test_optional_env_vars_are_orcid_only(self):
         assert optional_env_vars() == ["ORCID_CLIENT_ID", "ORCID_CLIENT_SECRET"]
-
-
-class TestAllProviderEnvVars:
-    def test_includes_providers_not_used_by_any_agent(self):
-        """The opposite of required_env_vars — Settings must offer a key
-        input for opencode even if no agent is assigned to it yet, so
-        switching an agent's provider later in the Agents tab doesn't leave
-        no way to ever enter that provider's key."""
-        config = make_pipeline_config(
-            ("zai", "ZAI_API_KEY"), ("opencode", "OPENCODE_API_KEY"), used_by_agents=("zai",)
-        )
-        assert all_provider_env_vars(config) == ["OPENCODE_API_KEY", "ZAI_API_KEY"]
-
-    def test_dedupes_shared_env_var(self):
-        config = make_pipeline_config(("a", "SHARED_KEY"), ("b", "SHARED_KEY"))
-        assert all_provider_env_vars(config) == ["SHARED_KEY"]
 
 
 class TestProvidersUsing:

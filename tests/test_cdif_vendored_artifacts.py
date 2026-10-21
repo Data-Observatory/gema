@@ -38,7 +38,7 @@ class TestFilesExist:
 
     def test_crosswalk_xlsx_exists_and_is_a_real_xlsx(self) -> None:
         """crosswalk.xlsx is reference material (CDIF's own DataCite<->schema.org
-        crosswalk) consumed by humans writing docs/cdif_pivot_implementation_plan.md,
+        crosswalk) consumed by humans (docs/codata_mcp_croissant_cdifspecs.md Appendix A),
         not by any code -- just check it's really an xlsx (zip magic bytes), no
         openpyxl dependency needed for that."""
         assert _read_bytes("crosswalk.xlsx").startswith(b"PK\x03\x04")

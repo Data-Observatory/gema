@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert a gema DataCite JSON output into Dataverse's native
+"""Convert a gema CDIF JSON-LD output into Dataverse's native
 dataset JSON, ready for smoke_test.sh's "create dataset" step.
 
 Run from the repo root (needs the same venv metadata_enricher lives in):
@@ -32,7 +32,7 @@ from metadata_enricher.types import MetadataDocument  # noqa: E402
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input_json", type=Path, help="A gema DataCite JSON output file")
+    parser.add_argument("input_json", type=Path, help="A gema CDIF JSON-LD output file")
     parser.add_argument("--output", type=Path, default=Path("dataset.json"))
     parser.add_argument(
         "--classify",

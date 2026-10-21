@@ -8,14 +8,14 @@ exists specifically because Dataverse's controlled vocabulary has no CDIF
 equivalent).
 
 Verified against the real MLCommons Croissant format specification
-(NOT the earlier draft in docs/cdif_pivot_implementation_plan.md's "Q9"
-section, which undercounted -- see the correction note below):
+(NOT an earlier draft, which undercounted -- see the correction note below;
+final list in docs/codata_mcp_croissant_cdifspecs.md Appendix B Q9):
 
     Source: https://github.com/mlcommons/croissant/blob/main/docs/croissant-spec-1.1.md
     Commit checked: 0e5dcb796dba285b396011638a68909c78a39664 (last commit to touch
       this file as of the fetch date below -- an earlier citation of this pin
       wrongly named a commit that only touched README.md, not the spec itself;
-      corrected 2026-09-04, see docs/cdif_pivot_implementation_plan.md)
+      corrected 2026-09-04)
     Fetched: 2026-09-04
     Croissant format version: 1.1 (conformsTo "http://mlcommons.org/croissant/1.1")
 
@@ -53,8 +53,8 @@ never synthesized. Its absence is fully spec-conformant (``recordSet`` is
 optional in Croissant 1.1, not required) -- this is not a gap being
 carried, just nothing to fill it with yet: it is blocked on a
 structure-fetcher enricher that does not exist yet (see
-docs/cdif_pivot_implementation_plan.md's Backlog section, Open Questions
-#10-12). Nothing in a CDIF-generated MetadataDocument describes a
+docs/codata_mcp_croissant_cdifspecs.md Appendix B Q10-Q12 and BACKLOG.md).
+Nothing in a CDIF-generated MetadataDocument describes a
 dataset's column/field structure, so fabricating a recordSet from title/
 description prose would be pure invention. When the structure fetcher
 ships, this module will need a real ``_build_record_set`` function wired
@@ -65,15 +65,12 @@ context, omitted below since they'd otherwise sit unused and misleading).
 Shape convention this module reads for schema:creator/publisher entries
 (Person/Organization) is documented in
 enrichers/identifier_enricher.py's module docstring -- the actual shape
-gema's CDIF pipeline produces, not something re-derived here. Note that,
-contrary to docs/cdif_pivot_implementation_plan.md's constraint C4 draft,
-the *shipped* ``CDIFDiscoveryOutputModel.schema_creator`` field
-(schemas/cdif/discovery/cdif_discovery.py) is a plain
-``list[dict[str, Any]]``, not an object wrapping ``{"@list": [...]}`` --
-confirmed against both the model definition and a real recorded golden
-fixture (tests/fixtures/golden/expected/sample_input01.json). This module
-reads the bare-list shape as primary, and also tolerates a
-``{"@list": [...]}`` wrapper defensively in case that ever changes.
+gema's CDIF pipeline produces, not something re-derived here. The per-agent
+``schema_creator`` field is a plain ``list[dict[str, Any]]``, but
+``merge_agent_results`` wraps it as ``{"@list": [...]}`` per constraint C4
+(docs/codata_mcp_croissant_cdifspecs.md Appendix A) -- that wrapped shape is
+what the merged document (and tests/fixtures/golden/expected/) carries. This
+module reads both, via the shared JSON-LD list-unwrap helper.
 """
 
 from __future__ import annotations
@@ -92,7 +89,6 @@ from metadata_enricher.types import (
 
 logger = logging.getLogger(__name__)
 
-CROISSANT_VERSION = "1.1"
 CROISSANT_CONFORMS_TO = "http://mlcommons.org/croissant/1.1"
 
 # Trimmed from the spec's Appendix 1 "recommended JSON-LD context" --
@@ -153,7 +149,7 @@ class CroissantExportResult:
 
 def _first_identifier_url(entry: dict[str, Any]) -> str | None:
     # schema:identifier is singular on a Person/Organization entry as of
-    # Open Question #16 (docs/cdif_pivot_implementation_plan.md); any
+    # Open Question #16 (docs/codata_mcp_croissant_cdifspecs.md Appendix B Q16); any
     # additional resolved identifier lives in schema:sameAs. Only the
     # preferred (first) one is needed here.
     identifiers = entity_identifiers(entry)
@@ -251,10 +247,7 @@ def _build_url(document: MetadataDocument, warnings: list[str]) -> str | None:
             continue
         # Prefer a URL already recorded on the identifier entry itself --
         # safer than constructing one from a bare value, and checked
-        # before the DOI-specific branch below regardless of propertyID
-        # (docs/cdif_pivot_implementation_plan.md Backlog: "prefer
-        # schema:url on the identifier entry ... before falling back to
-        # constructing one").
+        # before the DOI-specific branch below regardless of propertyID.
         entry_url = entry.get("schema:url")
         if entry_url:
             return str(entry_url)
@@ -336,7 +329,8 @@ def _build_distribution(document: MetadataDocument, warnings: list[str]) -> list
         # "checksum" are read bare -- neither has a vendored CDIF shape at
         # all (schema:contentSize is a plain Text value in schema.org, not
         # this nested object; checksum wants a nested spdx:checksum
-        # object). Left as-is; see docs/cdif_pivot_implementation_plan.md.
+        # object). Left as-is; see docs/codata_mcp_croissant_cdifspecs.md
+        # Appendix A ("Nested keys are CURIEs").
         # config/agents.yaml's media_files prompt emits schema:contentSize
         # as a single dict ({"size": ..., "unit": ...}) when populated, an
         # empty list when not -- both shapes are handled here (indexing a

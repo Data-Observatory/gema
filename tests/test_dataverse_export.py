@@ -515,8 +515,7 @@ GOLDEN_FIXTURE = Path(__file__).parent / "fixtures" / "golden" / "expected" / "s
 
 class TestAgainstRealGoldenFixture:
     """Not a synthetic example — the actual committed golden fixture output
-    from a real CDIF-generating pipeline run (re-recorded in
-    docs/cdif_pivot_implementation_plan.md Step 2f)."""
+    from a real CDIF-generating pipeline run)."""
 
     def test_produces_a_valid_shape_from_real_output(self):
         if not GOLDEN_FIXTURE.is_file():

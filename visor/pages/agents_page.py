@@ -31,10 +31,12 @@ providers one card at a time is what leaves an agent stranded on the old
 provider and produces a confusing multi-provider Run-tab gate.
 
 A "Pipeline behavior" card above the agent cards exposes the
-PipelineConfig-level toggles (enable_content_fetch, enable_doi_resolution,
-enable_identifier_enrichment, validate_pids, validate_pids_live,
-validate_shacl_conformance) as plain checkboxes — previously only
-reachable by hand-editing the downloaded JSON and re-uploading it.
+PipelineConfig-level toggles (enable_content_fetch, enable_js_render_
+fallback, enable_doi_resolution, enable_identifier_enrichment,
+validate_pids, validate_pids_live, validate_shacl_conformance) as plain
+checkboxes — previously only reachable by hand-editing the downloaded JSON
+and re-uploading it. enable_js_render_fallback is disabled in the UI
+whenever content_fetch itself is off, since it's a sub-option of it.
 
 Download/Upload operate on the *entire* PipelineConfig,
 not just what the cards expose — a user can download, hand-edit anything
@@ -74,6 +76,7 @@ from metadata_enricher.config.models import (
     find_model_override_elsewhere,
 )
 from metadata_enricher.llm.responses_client import UNSUPPORTED_EXTRA_BODY_KEYS_ON_RESPONSES
+from visor.bootstrap import reconcile_provider_extra_body
 from visor.i18n import t
 from visor.model_catalog import fetch_provider_models
 from visor.session_settings import load_session_settings, save_session_settings
@@ -172,6 +175,7 @@ def _persist_overrides(
             dataverse_agent_override=dataverse_override,
             pipeline_behavior={
                 "enable_content_fetch": pipeline_config.enable_content_fetch,
+                "enable_js_render_fallback": pipeline_config.enable_js_render_fallback,
                 "enable_doi_resolution": pipeline_config.enable_doi_resolution,
                 "enable_identifier_enrichment": pipeline_config.enable_identifier_enrichment,
                 "validate_pids": pipeline_config.validate_pids,
@@ -272,6 +276,11 @@ def sanitize_all_agents_extra_body(
     about) still had a stale extra_body until the user's first Save click,
     so the very request that reproduced the original bug report happened
     before this module's own save-time sanitize ever ran once."""
+    # Every Agents-tab save path funnels through here, so this is also the
+    # one place a mid-session provider/model switch gets its extra_body
+    # shape reconciled (app.py only runs it at page load). Equality-gated,
+    # so a hand-customized extra_body is never touched.
+    reconcile_provider_extra_body(pipeline_config)
     agents_and_dataverse = list(pipeline_config.agents)
     if dataverse_export_config is not None:
         agents_and_dataverse.append(dataverse_export_config.agent)
@@ -661,6 +670,15 @@ def render_agents(
                     .tooltip(t("agents.checkbox.content_fetch.tooltip"))
                     .mark("pipeline-enable-content-fetch")
                 )
+                js_render_fallback_checkbox = (
+                    ui.checkbox(
+                        t("agents.checkbox.js_render_fallback"),
+                        value=pipeline_config.enable_js_render_fallback,
+                    )
+                    .tooltip(t("agents.checkbox.js_render_fallback.tooltip"))
+                    .mark("pipeline-enable-js-render-fallback")
+                    .bind_enabled_from(content_fetch_checkbox, "value")
+                )
                 doi_resolution_checkbox = (
                     ui.checkbox(
                         t("agents.checkbox.doi_resolution"),
@@ -886,6 +904,7 @@ def render_agents(
 
             def _save() -> None:
                 pipeline_config.enable_content_fetch = content_fetch_checkbox.value
+                pipeline_config.enable_js_render_fallback = js_render_fallback_checkbox.value
                 pipeline_config.enable_doi_resolution = doi_resolution_checkbox.value
                 pipeline_config.enable_identifier_enrichment = identifier_enrichment_checkbox.value
                 pipeline_config.validate_pids = validate_pids_checkbox.value
@@ -954,6 +973,7 @@ async def _handle_upload(
     pipeline_config.max_workers = validated.max_workers
     pipeline_config.enable_identifier_enrichment = validated.enable_identifier_enrichment
     pipeline_config.enable_content_fetch = validated.enable_content_fetch
+    pipeline_config.enable_js_render_fallback = validated.enable_js_render_fallback
     pipeline_config.enable_doi_resolution = validated.enable_doi_resolution
     pipeline_config.validate_pids = validated.validate_pids
     pipeline_config.validate_pids_live = validated.validate_pids_live

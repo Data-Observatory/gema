@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """A/B diagnostic: CDIF-generation exported to DataCite vs. DataCite-direct
-generation (spec §9, ``docs/cdif_pivot_implementation_plan.md``'s "A/B
-diagnostic" section).
+generation (spec §9, ``docs/codata_mcp_croissant_cdifspecs.md``).
 
 Question this answers: did retargeting live generation from DataCite 4.6
 straight to CDIF Discovery (then crosswalking to DataCite only on export)

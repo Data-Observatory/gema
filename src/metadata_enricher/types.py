@@ -200,7 +200,7 @@ def jsonld_list_unwrap(value: Any) -> list[Any]:
     schema's own field description) are order-preserving JSON-LD lists,
     represented as an object wrapping ``@list`` rather than a bare array
     (unlike e.g. ``schema:contributor``, which stays a bare array — easy to
-    mix up, see constraint C4 in docs/cdif_pivot_implementation_plan.md).
+    mix up, see constraint C4 in docs/codata_mcp_croissant_cdifspecs.md Appendix A).
     A bare list is passed through unchanged so callers don't need to know
     which shape a given document actually carries; anything else (``None``,
     a dict without ``@list``) returns ``[]``.

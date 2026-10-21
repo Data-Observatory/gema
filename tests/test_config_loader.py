@@ -69,7 +69,6 @@ class TestLoadConfig:
                     "provider": "opencode",
                     "model": "deepseek-v4-flash",
                     "temperature": 0.2,
-                    "use_chain_of_thought": True,
                 },
                 {
                     "id": "creators_publishers",

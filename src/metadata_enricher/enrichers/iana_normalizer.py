@@ -122,62 +122,6 @@ class IANANormalizer:
         )
         return mime_part
 
-    def is_valid(self, format_value: str) -> bool:
-        """Check whether *format_value* resolves to a known IANA type.
-
-        Normalization steps 1-4 from ``normalize()`` are applied before the
-        lookup.
-
-        Args:
-            format_value: Raw format string to validate.
-
-        Returns:
-            ``True`` if the normalized value is found in ``self.types``.
-        """
-        trimmed = format_value.strip().rstrip(";")
-        if not trimmed:
-            return False
-
-        mime_part = trimmed.split(";", 1)[0].strip()
-        key = mime_part.lower()
-
-        if key in self.types:
-            return True
-
-        if key in self.name_lookup:
-            canonical = self.name_lookup[key]
-            return canonical in self.types
-
-        return False
-
-    def refresh_data(self) -> bool:
-        """Fetch current IANA media types XML and rebuild in-memory lookups.
-
-        Downloads from ``https://www.iana.org/assignments/media-types/media-types.xml``,
-        parses the XML (stdlib only), saves a fresh JSON snapshot to the
-        cache directory, and updates ``self.types`` / ``self.name_lookup``.
-
-        Returns:
-            ``True`` on success, ``False`` if the fetch or parse failed
-            (in-memory data is left unchanged on failure).
-        """
-        try:
-            xml_text = self._fetch_iana_xml()
-            data = self._parse_iana_xml(xml_text)
-            self._cache_dir.mkdir(parents=True, exist_ok=True)
-            with open(self._cache_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            self._apply_data(data)
-            logger.info(
-                "IANA data refreshed — %d types, %d name lookups cached",
-                data["_metadata"]["count"],
-                len(data["name_lookup"]),
-            )
-            return True
-        except Exception:
-            logger.exception("Failed to refresh IANA media types data")
-            return False
-
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

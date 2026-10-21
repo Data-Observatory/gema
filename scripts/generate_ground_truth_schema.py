@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dump DataCiteOutputModel's pydantic v2 JSON Schema to a file, for editor
 autocomplete/inline validation while hand-editing ground-truth JSON or
-metadata_template.json -- no custom form UI needed for that.
+tests/fixtures/do_catalog/metadata_template.json -- no custom form UI needed for that.
 
 Usage:
     uv run python scripts/generate_ground_truth_schema.py

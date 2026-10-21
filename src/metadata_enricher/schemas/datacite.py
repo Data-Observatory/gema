@@ -30,9 +30,7 @@ class DataCiteOutputModel(BaseModel):
     # tool-calling) produces this field's tokens before the data fields --
     # the model reasons in prose here before committing to values. No agent
     # config lists "reasoning" in its `fields`, so BaseAgent.run() never
-    # reads it back out; it's dropped after generation, same as
-    # `use_chain_of_thought` (now unused) was meant to enable but couldn't,
-    # since it was never wired to anything before this field existed.
+    # reads it back out; it's dropped after generation.
     reasoning: str = Field(default="")
     resource: dict[str, Any] = Field(default_factory=dict)
     alternate_identifiers: list[dict[str, Any]] = Field(default_factory=list)

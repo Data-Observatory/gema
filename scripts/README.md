@@ -238,6 +238,168 @@ uv run python scripts/curate_ror_isni.py \
 | `--promote-from` | promote | The reviewed review file |
 | `--promote-to` | promote | `config/overrides.yaml` to write/update |
 
+## `ab_eval_cdif_vs_datacite.py`
+
+A/B diagnostic (spec §9 of `docs/codata_mcp_croissant_cdifspecs.md`). It checks whether
+generating CDIF and then crosswalking to DataCite lost data compared with the old
+DataCite-direct generation. Side A cache-replays the current pipeline over
+`tests/fixtures/golden/inputs/` (dummy LLM keys, so zero LLM cost) and exports each result
+through `exporters/datacite.py`. Side B is the frozen
+`tests/fixtures/golden_datacite46_baseline/expected/`, which isn't re-run. Scores each
+resource and field with `json_semantic_diff`. It still makes a few real ROR/ISNI/ORCID/doi.org
+requests (identifier enrichment and DOI resolution aren't cached).
+
+```bash
+make ab-eval
+uv run python scripts/ab_eval_cdif_vs_datacite.py --threshold 0.90 -v
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--threshold` | `0.85` | Similarity below which a resource is flagged |
+| `-v`, `--verbose` | off | DEBUG logging |
+
+**Exit codes:** 0 = every resource at/above threshold, 1 = at least one below. Treat this
+as informational. The baseline predates several intentional CDIF shape changes, so low
+overall scores are expected. Use the per-field breakdown to spot a field that went empty.
+
+## `compare_models.py`
+
+Structural (Jaccard-vs-ground-truth) comparison across `provider:model` specs, using the
+`do_catalog` ground-truth adapter (`do_catalog_common.adapt_ground_truth`). Runs the real
+pipeline once per model per input, which costs real API calls unless you pass
+`--rescore-only`.
+
+```bash
+uv run python scripts/compare_models.py \
+    --output-root reports/do_catalog/pilot \
+    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4-flash
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--ground-truth-dir` | `config/eval.yaml` `corpora.do_catalog.ground_truth_dir` | Ground-truth JSON directory |
+| `--inputs-dir` | `config/eval.yaml` `corpora.do_catalog.inputs_dir` | Matching inputs directory |
+| `--output-root` | required | Where outputs (`outputs/<label>/*.json`), `comparison_data.json`, and `structural_comparison.md` go |
+| `--models` | `config/eval.yaml` `candidates` | Comma-separated `provider:model` specs |
+| `--limit` | all | Cap number of inputs (smoke test) |
+| `--enrich` | off | Force identifier enrichment on (already on via the shipped config) |
+| `--rescore-only` | off | Re-score already-saved outputs instead of re-running the pipeline, at zero API cost |
+
+## `judge_models.py`
+
+LLM-as-judge scoring over `compare_models.py`'s **already-saved** outputs (no pipeline
+re-run). It builds one judge client, fixed across all candidates, and records a per-input
+error rather than silently substituting the fallback scorer when DeepEval's `GEval` fails.
+
+```bash
+uv run python scripts/judge_models.py --output-root reports/do_catalog/pilot \
+    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4-flash
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--ground-truth-dir` / `--inputs-dir` | `config/eval.yaml` `corpora.do_catalog` | Same as `compare_models.py` |
+| `--output-root` | required | The same `--output-root` passed to `compare_models.py` |
+| `--models` | `config/eval.yaml` `candidates` | Comma-separated `provider:model` specs |
+| `--judge` | `config/eval.yaml` `judge` (`zai-coding-plan:glm-5.3`) | `provider:model` for the judge. Needs that provider's key (`ZAI_API_KEY` by default) |
+
+## `render_comparison_report.py`
+
+Renders a static, self-contained HTML truth-vs-output diff report from a
+`compare_models.py` run. Each row is one (item, metric) with the truth value, actual value,
+and score, worst items first. Stdlib only, no API calls.
+
+```bash
+uv run python scripts/render_comparison_report.py \
+    --output-root reports/do_catalog/pilot \
+    --ground-truth-dir tests/fixtures/do_catalog/ground_truth
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output-root` | required | A `compare_models.py` output root |
+| `--ground-truth-dir` | required | Ground truth used for that run |
+| `--report` | `<output-root>/comparison_report.html` | Output HTML path |
+
+## `sample_corpus.py`
+
+Samples a working subset from the `do-catalog-resources` S3 corpus into
+`tests/fixtures/do_catalog/` (`--source-prefix main`, stratified by month, with a pilot
+subset that is a strict subset of the full draw) or `tests/fixtures/do_catalog_orcid/`
+(`--source-prefix orcid`, a DataCite-sourced slice rich in personal creators for the ORCID
+path). Uses the AWS CLI via subprocess with profile `catalogo-admin`, and needs access to
+that bucket.
+
+```bash
+uv run python scripts/sample_corpus.py --source-prefix main --target 100 --pilot-size 18 --seed 42
+uv run python scripts/sample_corpus.py --source-prefix orcid --target 20 --seed 42
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--source-prefix` | required | `main` or `orcid` preset |
+| `--target` | `100` | Total files to sample |
+| `--pilot-size` | `18` | `main` only: pilot subset size |
+| `--seed` | `42` | Random seed |
+| `-v`, `--verbose` | off | Verbose logging |
+
+## `generate_inputs.py`
+
+Derives minimal `{url, title, description, publisher}` inputs from a directory of
+ground-truth records, using `reverse_input.py`'s leak-proof extractor. `--self-check`
+validates an existing inputs directory instead, asserting that no enrichment-target key
+leaked in.
+
+```bash
+uv run python scripts/generate_inputs.py \
+    --ground-truth-dir tests/fixtures/do_catalog/ground_truth \
+    --inputs-dir tests/fixtures/do_catalog/inputs --fetch
+
+uv run python scripts/generate_inputs.py --self-check \
+    --inputs-dir tests/fixtures/do_catalog/inputs \
+    --ground-truth-dir tests/fixtures/do_catalog/ground_truth
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--ground-truth-dir` | — | Ground-truth `*.json` directory (required to generate) |
+| `--inputs-dir` | required | Where inputs are written (or read, with `--self-check`) |
+| `--self-check` | off | Validate instead of generate |
+| `--fetch` | off | Live-fetch each URL into `fetched_content` (best-effort, real network calls) |
+| `--fetch-delay` | `0.5` | Seconds between fetches |
+
+## `validate_ground_truth.py`
+
+Structural validator for `do_catalog` ground-truth records. It catches mis-shaped identifier
+entries (e.g. an organization name in `name_identifier` with the real ID buried in
+`scheme_uri`). It checks shape only, not correctness. No API calls.
+
+```bash
+make validate-gt
+uv run python scripts/validate_ground_truth.py tests/fixtures/do_catalog/ground_truth
+```
+
+## `generate_ground_truth_schema.py`
+
+Dumps `DataCiteOutputModel`'s JSON Schema to `tests/fixtures/do_catalog/ground_truth.schema.json`,
+for editor autocomplete while hand-editing ground truth or `do_catalog/metadata_template.json`. No
+arguments.
+
+```bash
+uv run python scripts/generate_ground_truth_schema.py
+```
+
+## Library modules (not standalone scripts)
+
+- **`do_catalog_common.py`**: `do_catalog`-specific ground-truth adaptation (top-level
+  `roles` → `creators`, scheme-aware identifier matching) used by `compare_models.py` /
+  `judge_models.py`.
+- **`reverse_input.py`**: corpus-agnostic reverse-input extraction. Its `ALLOWED_KEYS`
+  defines exactly which fields a generated input may carry, so an eval never leaks a field
+  the pipeline is supposed to produce.
+- **`eval_common.py`**: see below.
+
 ## `eval_common.py`
 
 Not a standalone script — shared, corpus-agnostic evaluation infrastructure imported

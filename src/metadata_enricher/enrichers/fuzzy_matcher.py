@@ -223,7 +223,7 @@ def match_organization(
         adjusted.sort(key=lambda r: r[1], reverse=True)
         results = adjusted[:2]
 
-    best_match_str, best_score, best_idx = results[0]
+    _, best_score, best_idx = results[0]
 
     if best_score < threshold:
         return None, best_score, "nomatch"

@@ -481,3 +481,85 @@ class TestOutputModelIdentity:
     ) -> None:
         built = schema.build_output_model(["schema_name"])
         assert built.__name__ != schema.output_model.__name__
+
+
+class TestBuildOutputModelCoercesStringifiedJson:
+    """Some models (observed: opencode's deepseek-v4.1-flash on the
+    creators_publishers agent) emit a list/object tool-call argument as a
+    JSON-encoded *string*. The per-agent model from build_output_model()
+    doesn't inherit CDIFDiscoveryOutputModel's own validators, so that
+    used to fail validation and cost an Instructor reask round-trip."""
+
+    CREATOR = '[{"@type": ["schema:Organization"], "schema:name": "Org"}]'
+    PUBLISHER = '{"@type": ["schema:Organization"], "schema:name": "Org"}'
+
+    def test_stringified_list_and_object_are_parsed(self, schema: CDIFDiscoveryProfile) -> None:
+        model = schema.build_output_model(
+            ["schema_creator", "schema_contributor", "schema_publisher"]
+        )
+
+        result = model.model_validate(
+            {
+                "schema_creator": self.CREATOR,
+                "schema_contributor": "[]",
+                "schema_publisher": self.PUBLISHER,
+            }
+        )
+
+        assert result.schema_creator == [{"@type": ["schema:Organization"], "schema:name": "Org"}]
+        assert result.schema_contributor == []
+        assert result.schema_publisher == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Org",
+        }
+
+    def test_real_lists_and_objects_pass_through_unchanged(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        model = schema.build_output_model(["schema_creator", "schema_publisher"])
+
+        result = model.model_validate(
+            {"schema_creator": [{"schema:name": "Org"}], "schema_publisher": {"schema:name": "Org"}}
+        )
+
+        assert result.schema_creator == [{"schema:name": "Org"}]
+        assert result.schema_publisher == {"schema:name": "Org"}
+
+    def test_malformed_json_string_still_fails_validation(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        model = schema.build_output_model(["schema_creator"])
+
+        with pytest.raises(ValidationError):
+            model.model_validate({"schema_creator": '[{"schema:name": "Org"'})
+
+    def test_json_of_the_wrong_container_type_still_fails_validation(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        """A string holding a JSON *object* for a list field (or vice
+        versa) is not silently reshaped -- only an exact type match is
+        coerced."""
+        model = schema.build_output_model(["schema_creator", "schema_publisher"])
+
+        with pytest.raises(ValidationError):
+            model.model_validate({"schema_creator": self.PUBLISHER})
+        with pytest.raises(ValidationError):
+            model.model_validate({"schema_publisher": self.CREATOR})
+
+    def test_plain_string_fields_are_never_parsed(self, schema: CDIFDiscoveryProfile) -> None:
+        model = schema.build_output_model(["schema_name"])
+
+        result = model.model_validate({"schema_name": "[1, 2, 3]"})
+
+        assert result.schema_name == "[1, 2, 3]"
+
+    def test_model_name_digest_is_unchanged_by_the_validator(
+        self, schema: CDIFDiscoveryProfile
+    ) -> None:
+        """The digest in the model's name feeds the LLM cache key and the
+        golden fixtures' replay -- coercion must not alter it."""
+        model = schema.build_output_model(
+            ["schema_creator", "schema_contributor", "schema_publisher"]
+        )
+
+        assert model.__name__ == "CDIFDiscoveryOutputModel_6ea013d7ceef"

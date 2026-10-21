@@ -18,13 +18,6 @@ logger = logging.getLogger(__name__)
 _country_extractor = CountryExtractor()
 
 
-class SafeDict(dict[str, str]):
-    """Dict subclass returning '' for missing keys — safe str.format_map()."""
-
-    def __missing__(self, key: str) -> str:
-        return ""
-
-
 class BaseAgent:
     """Agent that processes a resource through LLM and extracts structured fields."""
 

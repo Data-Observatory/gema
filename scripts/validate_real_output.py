@@ -103,7 +103,7 @@ def _is_placeholder(text: str) -> bool:
 def check_structure(output: dict[str, Any]) -> list[Check]:
     """CDIF-shaped checks (post-pivot) -- ``output`` is the live pipeline's
     real CDIF Discovery JSON-LD, keyed by CURIE, per
-    ``docs/cdif_pivot_implementation_plan.md``'s Q2 field mapping. Not the
+    ``docs/codata_mcp_croissant_cdifspecs.md`` Appendix A. Not the
     DataCite shape -- there is no crosswalk here, this validates the actual
     generation target as it will really ship."""
     checks: list[Check] = []
