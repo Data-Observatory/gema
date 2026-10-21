@@ -297,7 +297,7 @@ AGPL-3.0 -- see [LICENSE](LICENSE)
 
 ## Status
 
-Version 0.5.0 (`pyproject.toml`), pre-1.0. The CLI, config loading, schema registry, agent pipeline, end-to-end `process` command, and the DataCite/Croissant/Dataverse exporters are all functional.
+Version 0.5.1 (`pyproject.toml`), pre-1.0. The CLI, config loading, schema registry, agent pipeline, end-to-end `process` command, and the DataCite/Croissant/Dataverse exporters are all functional.
 
 ### Known Limitations
 
