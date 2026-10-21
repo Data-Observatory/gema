@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import io
+import os
 import tarfile
 import zipfile
 from pathlib import Path
@@ -143,7 +144,8 @@ class TestEnsureObscura:
             result = ensure_obscura(tmp_path)
         assert result == tmp_path / OBSCURA_VERSION / "obscura"
         assert result.read_bytes() == content
-        assert result.stat().st_mode & 0o111  # executable bit set
+        if os.name != "nt":  # POSIX permission bits don't apply on Windows
+            assert result.stat().st_mode & 0o111  # executable bit set
 
     def test_successful_zip_fetch_verifies_and_extracts(self, tmp_path: Path) -> None:
         content = b"fake windows exe bytes"
