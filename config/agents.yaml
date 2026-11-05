@@ -435,6 +435,10 @@ agents:
           {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"},
           {"schema:name": "Ciencias de la educación", "schema:inDefinedTermSet": "Ciencias Sociales"}
         ]
+      - NOTA SOBRE PATRIMONIO: Para clasificar recursos sobre patrimonio, distingue claramente entre "Patrimonio natural" (parques, reservas, monumentos naturales) y "Patrimonio cultural", el cual a su vez se divide en "Patrimonio cultural material" (edificios, monumentos, obras de arte, documentos, colecciones) y "Patrimonio cultural inmaterial" (tradiciones, fiestas, artes del espectáculo, saberes). No uses "Arqueología" como sinónimo de patrimonio; úsala solo si el recurso trata sobre la disciplina de investigación del pasado mediante restos materiales.
+
+
+
       - Si no hay categoría clara → schema_about = []
 
     PASO 3 — EXTRAE PALABRAS CLAVE (schema_keywords)
@@ -452,11 +456,12 @@ agents:
       Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados.
 
       TABLA DE REFERENCIA (categoría → audiencias típicas, no exhaustiva ni obligatoria):
-      - Ciencias Sociales → Investigadores, Tomadores de decisiones, Ciudadanos, Periodistas
-      - Ciencias Naturales y Exactas / Ingeniería y Tecnología → Investigadores, Científicos de datos, Desarrolladores, Profesionales
-      - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Docentes, Público general
-      - Ciencias Agrícolas → Investigadores, Profesionales, Administradores
-      - Humanidades → Investigadores, Estudiantes, Docentes, Público general
+       - Ciencias Naturales y Exactas → Investigadores, Estudiantes, Docentes, Público general, Profesionales, Comunicadores científicos
+       - Ingeniería y Tecnología → Investigadores, Profesionales, Estudiantes, Tomadores de decisiones, Gerentes, Empresas y sector privado
+       - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Estudiantes, Docentes, Público general, Funcionarios públicos
+       - Ciencias Agrícolas → Investigadores, Profesionales, Administradores, Estudiantes, Tomadores de decisiones, Funcionarios públicos, Empresas y sector privado
+       - Ciencias Sociales → Investigadores, Estudiantes, Docentes, Ciudadanos, Tomadores de decisiones, Periodistas, Funcionarios públicos, Comunidades locales
+       - Humanidades → Investigadores, Estudiantes, Docentes, Público general, Ciudadanos, Bibliotecarios y archivistas, Comunidades locales
 
       Si no hay contexto suficiente (PASO 1) → schema_audience = []
 
@@ -482,7 +487,7 @@ agents:
     Ciencias Médicas y de la Salud: Medicina básica | Medicina clínica | Ciencias de la salud | Biotecnología de la salud | Otras ciencias médicas
     Ciencias Agrícolas: Agricultura, silvicultura y pesca | Ciencia animal y lechería | Ciencias veterinarias | Biotecnología agropecuaria | Otras ciencias agrícolas
     Ciencias Sociales: Psicología | Economía y negocios | Ciencias de la educación | Sociología | Derecho | Ciencias políticas | Geografía económica y social | Comunicación y medios | Otras ciencias sociales
-    Humanidades: Historia y arqueología | Idiomas y literatura | Filosofía, ética y religión | Arte, música y diseño | Otras humanidades
+    Humanidades: Historia | Arqueología | Patrimonio natural | Patrimonio cultural material | Patrimonio cultural inmaterial | Idiomas y literatura | Lingüística y filología | Filosofía | Ética y religión | Arte e historia del arte | Música y musicología | Artes escénicas y teatro | Estudios culturales y regionales | Traducción e interpretación | Otras humanidades
 
     === VALORES VÁLIDOS DE AUDIENCIA (EN ESPAÑOL) ===
     audience: Investigadores | Estudiantes | Administradores | Público general | Profesionales | Docentes | Tomadores de decisiones | Científicos de datos | Desarrolladores | Gerentes | Ciudadanos | Periodistas | Trabajadores de ONG | Consultores
