@@ -106,7 +106,7 @@ class TestApplyExternalUserProviderOverrides:
                     {
                         "id": "a0",
                         "provider": "opencode",
-                        "model": "deepseek-v4-flash",
+                        "model": "deepseek-v4.1-flash",
                         "extra_body": {"thinking": {"type": "disabled"}},
                     },
                     {"id": "a1", "provider": "openai", "model": "gpt-x"},
@@ -146,7 +146,7 @@ class TestApplyExternalUserProviderOverrides:
             {
                 "providers": [{"name": "opencode", "api_key_env": "OPENCODE_API_KEY"}],
                 "default_provider": "opencode",
-                "agents": [{"id": "a0", "provider": "opencode", "model": "deepseek-v4-flash"}],
+                "agents": [{"id": "a0", "provider": "opencode", "model": "deepseek-v4.1-flash"}],
             }
         )
         assert bootstrap.apply_external_user_provider_overrides(raw) == raw
@@ -213,7 +213,7 @@ class TestRestoreTestingProviderIfKeyAvailable:
         bootstrap.restore_testing_provider_if_key_available(config)
 
         assert config.agents[0].provider == "opencode"
-        assert config.agents[0].model == "deepseek-v4-flash"
+        assert config.agents[0].model == "deepseek-v4.1-flash"
         assert config.agents[0].extra_body == {"thinking": {"type": "disabled"}}
         assert config.default_provider == "opencode"
         by_name = {p.name: p for p in config.providers}
@@ -322,7 +322,7 @@ class TestReconcileProviderExtraBody:
                     fields=["schema_name"],
                     prompt="x",
                     provider="opencode",
-                    model="deepseek-v4-flash",
+                    model="deepseek-v4.1-flash",
                     extra_body={"reasoning": {"enabled": False}},
                 ),
             ],
@@ -366,7 +366,7 @@ class TestReconcileProviderExtraBody:
                     fields=["schema_name"],
                     prompt="x",
                     provider="opencode",
-                    model="deepseek-v4-flash",
+                    model="deepseek-v4.1-flash",
                     extra_body={"thinking": {"type": "enabled"}},
                 ),
             ],
@@ -387,7 +387,7 @@ class TestReconcileProviderExtraBody:
                     fields=["schema_name"],
                     prompt="x",
                     provider="opencode",
-                    model="deepseek-v4-flash",
+                    model="deepseek-v4.1-flash",
                     extra_body={"thinking": {"type": "disabled"}},
                 ),
             ],
@@ -552,7 +552,7 @@ default_provider: p
                             "fields": ["schema_name"],
                             "prompt": "x",
                             "provider": "opencode",
-                            "model": "deepseek-v4-flash",
+                            "model": "deepseek-v4.1-flash",
                             "extra_body": {"thinking": {"type": "disabled"}},
                         }
                     ],

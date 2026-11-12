@@ -20,6 +20,8 @@ enrichers/
 ├── identifier_resolver.py       # resolve() merges ROR+ISNI; resolve_person() for ORCID
 ├── identifier_enricher.py       # Post-merge document enrichment (creators, publishers, funding) + match provenance
 ├── crossref_client.py            # Crossref public Works API client (GET /works/{doi})
+├── source_fields.py             # Post-merge: fill/override schema:name + schema:description from input title/description (always on)
+├── grounding.py                 # Post-merge advisory check: flags extracted actors/awards/years not found in the source (never drops or edits)
 ├── doi_resolver.py               # Post-merge DOI backfill (schema:name, creators, publisher, schema:datePublished)
 └── pid_validator.py             # Format + live-resolution checks for DOI/ROR/ISNI/ORCID (shared by Pipeline + scripts/validate_real_output.py)
 ```
@@ -32,6 +34,9 @@ enrichers/
 | Enable JS-render fallback for a too-thin/JS-rendered fetch (needs `enable_content_fetch` too) | `PipelineConfig.enable_js_render_fallback = True` (config/models.py); `content_fetcher.py:_fetch_via_obscura` — requires the `obscura` binary (bundled into Visor, else a separate PATH install) |
 | Enable identifier enrichment | `PipelineConfig.enable_identifier_enrichment = True` (config/models.py) |
 | Add/edit a human-curated ROR/ISNI override | `config/overrides.yaml` — see `identifier_overrides.py`; path set via `PipelineConfig.identifier_overrides_path` |
+| Turn off source-field enforcement (`schema:name`/`schema:description` from input) | `PipelineConfig.enforce_source_fields = False` (default True); logic in `source_fields.py:enforce_source_fields` |
+| Turn off the grounding check, or tune its leniency | `PipelineConfig.validate_grounding = False` (default True); thresholds/matchers in `grounding.py` |
+| Log guardrail events for false-positive measurement | `PipelineConfig.guardrail_log_path` (JSONL, one line per event; default null); events also on `PipelineResult.guardrail_events`, never on `warnings` |
 | Enable DOI resolution (Crossref backfill) | `PipelineConfig.enable_doi_resolution = True` (config/models.py) |
 | Change what DOI resolution backfills | `DOIResolverEnricher._backfill_*()` (doi_resolver.py): currently `schema:name`, `schema:creator`, `schema:publisher`, `schema:datePublished` |
 | Enable/disable automatic PID validation | `PipelineConfig.validate_pids` / `.validate_pids_live` (config/models.py) — on by default |
@@ -115,8 +120,18 @@ Pipeline._process_resource():
   4b. Actor fallback cascade (deterministic, fills empty slots only):
         resource.publisher (input extra key) → schema:publisher
         schema:publisher → schema:creator ({"@list": [deep copy]})
-        schema:publisher name → schema:copyrightHolder
         "Datos Abiertos del Estado de Chile" license → copyrightHolder "Estado de Chile"
+                                                      ← tried BEFORE the publisher fallback; fills an
+                                                        empty slot AND overrides a holder that merely
+                                                        equals the publisher name (accent/case folded);
+                                                        a distinct model holder is kept. Emits a
+                                                        `copyright_holder` GuardrailEvent (filled/overridden)
+        schema:publisher name → schema:copyrightHolder     ← only if still empty
+  4c. Guardrails (source_fields.py, then grounding.py) ← on by default; events (plus the 4b copyright_holder
+                                                           ones) -> guardrail_events,
+                                                           NOT warnings (a warning makes the CLI exit 2).
+                                                           Runs before 5/6 so Crossref/ROR-added values
+                                                           are not flagged as ungrounded.
   5. DOIResolverEnricher.enrich(document) → backfilled document ← only if enable_doi_resolution;
                                                                      acts only when schema:identifier
                                                                      carries a DOI-typed PropertyValue
