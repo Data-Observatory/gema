@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -38,6 +38,26 @@ class ResourceDescription(BaseModel):
     description: str | None = None
     doi: str | None = None
     fetched_content: str | None = None
+
+
+class GuardrailEvent(BaseModel):
+    """One deterministic guardrail firing on one field of one resource.
+
+    Kept apart from ``PipelineResult.warnings`` on purpose: a warning makes the
+    CLI exit 2, and a guardrail flag is advisory (it can be a false positive,
+    e.g. a translated institution name), so it must never change an exit code.
+    The point of recording these is to measure, per guardrail and per field,
+    how often each one fires -- see ``Pipeline._record_guardrail_events``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    guardrail: str = Field(..., min_length=1)
+    action: Literal["flagged", "filled", "overridden"]
+    field: str = Field(..., min_length=1)
+    location: str = ""
+    value: str = ""
+    detail: str = ""
 
 
 class AgentResult(BaseModel):
