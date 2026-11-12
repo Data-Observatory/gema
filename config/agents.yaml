@@ -88,6 +88,7 @@ agents:
       - schema_conditions_of_access: crea una entrada {"condition": "embargo", "date": "<fecha>"} SOLO si el texto declara explícitamente una fecha de embargo o disponibilidad futura.
       - Usa la precisión real disponible: "AAAA" si solo conoces el año, "AAAA-MM" con año y mes, "AAAA-MM-DD" SOLO si el día aparece explícitamente en el texto. NUNCA inventes un día o mes que no esté en la fuente.
       - Para un rango de años (ej. "2019-2021", período de levantamiento de una encuesta), usa el intervalo ISO 8601 "2019/2021" en schema_date_created si no hay otra fecha de creación más precisa — no descartes el año final quedándote solo con el de inicio.
+      - Si el contenido muestra el período o año de levantamiento/elaboración de ESTE mismo recurso — por ejemplo los resultados de la propia encuesta rotulados "Años 2021-2022", o una cita del propio recurso del tipo "El mapa se debe citar como: Autor (2017)" —, úsalo en schema_date_created ("2021/2022", "2017") aunque aparezca entre menús o indicadores del portal. Cuando el recurso ES esa encuesta o conjunto de datos (según title/description), una etiqueta de período ("Años 2021-2022") junto a los resultados o indicadores de ese mismo recurso es el período de los datos de ESTE recurso, no un dato ajeno del portal: úsala. Ignora solo los años que claramente pertenecen a otra cosa: el copyright o el plan estratégico del sitio, otras encuestas u otros trabajos citados como referencia.
       - NUNCA inventar fechas que no aparezcan en el contenido, título o descripción.
 
     === REGLAS CRÍTICAS ===
@@ -210,7 +211,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -398,7 +399,7 @@ agents:
   - schema_name
   tools:
   - lookup_organization
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -563,7 +564,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -742,7 +743,7 @@ agents:
   - creators_publishers
   context_fields:
   - schema_publisher
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -875,7 +876,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -895,7 +896,7 @@ providers:
   default: true
   # No tight account rate limit observed (confirmed empirically: 5
   # concurrent agent calls against opencode:deepseek-v4-flash produced
-  # zero 429s). zai-coding-plan has no override -- it inherits the global
+  # zero 429s; production model is now deepseek-v4.1-flash). zai-coding-plan has no override -- it inherits the global
   # max_workers default below, tuned down for its tighter limit.
   max_workers: 5
   # OpenCode notice (2026-09-03): requests missing this header may start
@@ -904,8 +905,8 @@ providers:
   # so this names the header only; the value is generated fresh per LLM
   # call in llm/instructor_client.py's _build_extra_headers.
   session_header: x-opencode-session
-  # None of the 5 production agents use this model -- deepseek-v4-flash
-  # stays the default per explicit prior instruction. This override exists
+  # None of the 5 production agents use this model -- deepseek-v4.1-flash
+  # (previously v4-flash) is the production default per explicit instruction. This override exists
   # purely so muse-spark-1.3-contributor is a usable, config-recognized
   # model on this provider (e.g. via scripts/compare_models.py's in-place
   # model-swap mechanism), config-driven rather than special-cased in
@@ -946,7 +947,7 @@ max_workers: 1
 enable_identifier_enrichment: true
 # Fetches each resource's URL and feeds page text to agents as extra context.
 # Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
-# deepseek-v4-flash, max_workers 5) showed 40/40 succeeded with zero stalls/
+# deepseek-v4-flash, now deepseek-v4.1-flash; max_workers 5) showed 40/40 succeeded with zero stalls/
 # timeouts and a net +0.022 structural quality gain. Known gap: page text is
 # taken from <main>/<article> when present, but a page without them still
 # feeds nav/boilerplate through, so a rare page can dilute rather than help
