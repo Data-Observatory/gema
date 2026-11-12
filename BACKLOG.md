@@ -145,6 +145,72 @@ are listed here.
   hit retried 400s on `rights_funding_citations`). Only matters if either
   model is reconsidered (see Appendix B B2: staying on `deepseek-v4-flash`).
 
+## Agent guardrails (deferred)
+
+Context: `enrichers/source_fields.py` (code-enforced `schema:name`/`schema:description`)
+and `enrichers/grounding.py` (advisory, flag-only grounding check) run as pipeline
+step 4c; events land on `PipelineResult.guardrail_events` and, optionally, a JSONL
+file (`PipelineConfig.guardrail_log_path`). Everything below was considered and
+deliberately left out of that first cut.
+
+- **Drop `schema_name`/`schema_description` from `core_metadata`.** Now that code
+  enforces them, removing them from `core_metadata`'s `fields:` and prompt saves
+  tokens. Blocked on: it needs `make record-golden`; `creators_publishers` has
+  `context_fields: [schema_name]`, which is fed from agent results, so the
+  deterministic value would have to be injected into `upstream_fields`; and the
+  prompt currently lets a bilingual title be split, with the alternate form going
+  to `schema_same_as`.
+- **Cross-field consistency of one institution's name** across
+  creator/publisher/copyrightHolder. LOW priority and doubtful: different
+  institutions per field are normal, and the prompt only asks that the SAME entity
+  use one spelling. Detecting "same entity" in code risks merging distinct
+  near-names (e.g. a university and one of its faculties).
+- **Pydantic validators / `Literal` enums on controlled vocabularies** (categories,
+  audiences, languages, ISO dates, BCP47, URLs) so Instructor retries on a
+  violation. Cost: extra retries (tokens and latency).
+- **Prompt-injection hardening.** Wrap `fetched_content` in explicit delimiters
+  plus a rule that its text is data, never instructions.
+- **Contrastive few-shot examples** built from curator-found errors, or those
+  errors kept as regression fixtures.
+- **Evidence quotes.** Ask for a verbatim quote per risky field (creator, funding,
+  license) and verify it is a substring of the source.
+- **Per-domain hint file** (domain -> `context_hints`/publisher/license) that a
+  curator maintains without code or prompt changes. Would address the nav-chrome
+  pages such as do_catalog item 92 (spensiones.cl).
+- **Risk-ranked review queue in Visor** driven by the guardrail events.
+- **Optional wave-4 verifier agent** (config only, cheaper model) for fields with
+  no deterministic check (about, keywords, summary text).
+- **Cost caps:** per-agent `max_tokens`, a cap on `lookup_organization` tool-call
+  rounds, and a per-resource token budget.
+- **Measure before ever blanking a flagged value.** Once `guardrail_log_path` data
+  exists, compute the false-positive rate per field. Translated institution names
+  (e.g. an English name for a Spanish source) are known to be flagged today, so the
+  check stays advisory until that rate is known.
+- **`core_metadata` PASO 6 date rule is still probabilistic on `deepseek-v4.1-flash`.**
+  opencode runs are unseeded, so the same input flips between a date and an empty
+  `schema:dateCreated` run to run (do_catalog goldens 03/04: dateCreated was kept in
+  1/6 uncached runs before the rule, 4/6 after; input 04 stayed at 2/3 after a
+  second wording tweak). Re-measure with a few uncached runs
+  after the next prompt change.
+- **Data Observatory `publisher` short form.** The catalog's input `publisher` for
+  Data Observatory resources is "Data Observatory", while the official/ROR name is
+  "Data Observatory Foundation". Decide whether to fix it at the catalog source or via
+  an override (the golden input for sample_input02 was hand-edited to the official name).
+- **Inferred parent ministries are flagged by the grounding check.** The
+  `creators_publishers` prompt (PASO 5) derives the parent ministry as an affiliation
+  from the Chilean hierarchy even when the source never states it, so
+  `grounding` flags e.g. "Ministerio de Agricultura". Known and advisory, not a bug.
+- **`lookup_organization` is no longer called by `deepseek-v4.1-flash`** where
+  `deepseek-v4-flash` did, so ROR-canonical names now come only from post-hoc
+  identifier enrichment (the model keeps the input `publisher` as given).
+
+- **Real-fixture croissant tests pin exact LLM-produced creator names.** For
+  sample_input03 the department ("Departamento de Geografía Universidad de Chile")
+  appears as a creator only on some runs, and the author names flip between
+  "Sarricolea, P." and "Sarricolea, Pablo" run to run, so every `make record-golden`
+  can break `test_croissant_export.py::TestAgainstRealGoldenFixtures`. Consider
+  asserting structure/count or a stable subset instead of exact strings.
+
 ## Settled outcomes (kept so they aren't re-proposed)
 
 - **Splitting `core_metadata` into two agents: evaluated, not recommended.**

@@ -343,7 +343,7 @@ class TestRealConfigRegressionGuard:
 
         # Pinned literal -- see class docstring.
         assert list(_client_cache.keys()) == [
-            'opencode|deepseek-v4-flash|t=0.0|seed=None|mt=None|c=True|r=True'
+            'opencode|deepseek-v4.1-flash|t=0.0|seed=None|mt=None|c=True|r=True'
             '|eb={"thinking": {"type": "disabled"}}'
         ]
 

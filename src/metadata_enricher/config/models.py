@@ -275,6 +275,23 @@ class PipelineConfig(BaseModel):
     # check_shacl_conformance (CDIFDiscoveryProfile does; a hypothetical
     # future schema that doesn't is silently skipped, not an error).
     validate_shacl_conformance: bool = False
+    # Deterministic guardrails run right after the merge (no network, no LLM,
+    # never block). Both only ever *record* GuardrailEvents on the
+    # PipelineResult -- they do not add to ``warnings``, so they cannot change
+    # the CLI exit code.
+    #
+    # enforce_source_fields: schema:name / schema:description are copies of the
+    # input title/description (see enrichers/source_fields.py). Fills an empty
+    # one and overrides a model paraphrase; leaves a contained sub-form alone.
+    enforce_source_fields: bool = True
+    # validate_grounding: flags (never drops) an extracted actor name, award
+    # number or year that cannot be found in the source text, under a lenient
+    # matcher (see enrichers/grounding.py).
+    validate_grounding: bool = True
+    # Optional JSONL file: one line per guardrail event, appended across runs, so
+    # how often each guardrail fires on which field can be measured over time.
+    # Relative paths resolve against the working directory. None disables it.
+    guardrail_log_path: str | None = None
 
     def effective_max_workers(
         self, provider_name: str | None = None, model_name: str | None = None

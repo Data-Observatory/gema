@@ -188,7 +188,7 @@ async def test_stale_extra_body_from_a_saved_model_switch_is_sanitized_on_next_l
     """Found on Opus review of the extra_body sanitize fix (agents_page.py's
     sanitize_all_agents_extra_body): config/agents.yaml's core_metadata
     agent statically declares extra_body: {thinking: {type: disabled}} for
-    its default opencode/deepseek-v4-flash pairing. Saving a model switch
+    its default opencode/deepseek-v4.1-flash pairing. Saving a model switch
     to a Responses-API model (muse-spark-1.3-contributor, same provider)
     only ever persists provider/model/temperature/reasoning_effort to
     settings.json -- never extra_body. So a fresh connection rebuilds

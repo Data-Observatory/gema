@@ -42,18 +42,20 @@ agents:
     - Todos los actores (creadores, publicador, contribuyentes) los produce el agente creators_publishers — usa el MISMO nombre de institución en todos los campos donde aparezca la misma entidad, no inventes variantes distintas del mismo nombre.
 
     Nota sobre esta migración: los campos de salida ahora usan nombres CDIF (schema:*, dqv:*, prov:*) en vez de los nombres DataCite usados hasta 2026-09. La estructura de análisis y las reglas de dominio (jerarquía institucional chilena, licencias, financiamiento, formatos de archivo) se mantienen sin cambios — solo cambia el nombre y la forma de los campos de salida.
-  prompt: |
     Tu tarea: extraer la metadata fundamental del recurso — identificador, nombre, descripción, idioma, identificadores alternativos y relacionados, versión, cobertura espacial y fechas.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
-
+  
+  prompt: |
     PASO 1 — IDENTIFICADOR Y TIPO
-      - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
-      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Ejemplos reales (usa el tipo que mejor describa el recurso, esta lista NO es cerrada):
-        - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Encuesta"
-        - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Capa geoespacial"
-        - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Serie de tiempo"
-      - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
+    - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
+    - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Debe ser UNA de las siguientes categorías oficiales de DataCite (en inglés, respetando mayúsculas y formato exacto): Audiovisual, Award, Book, BookChapter, Collection, ComputationalNotebook, ConferencePaper, ConferenceProceeding, DataPaper, Dataset, Dissertation, Event, Image, InteractiveResource, Instrument, Journal, JournalArticle, Model, OutputManagementPlan, PeerReview, PhysicalObject, Preprint, Project, Report, Service, Software, Sound, Standard, StudyRegistration, Text, Workflow, Other.
+    Ejemplos de interpretación (el texto está en español, pero el valor asignado debe ser la categoría DataCite en inglés):
+      - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Other" (o "Dataset" si el foco es el conjunto de datos resultante; usar "Other" si el recurso es la encuesta como instrumento)
+      - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Image" (o "Other" si no encaja como imagen; "Dataset" si se describe como conjunto de datos geoespaciales)
+      - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Dataset" (serie de tiempo suele modelarse como Dataset; usar "Collection" si agrupa múltiples recursos)
+      - Título "Candelaria", tipo "Video", descripción física "1:04 min.", fragmento de una película dirigida por Silvio Caiozzi → schema_additional_type: "Audiovisual"
+      - schema_version: si el texto la menciona (ej. "v2.1", "1.0").
 
     PASO 2 — NOMBRE Y DESCRIPCIÓN
       - schema_name: SIEMPRE usa el texto de "title" de RECURSO A PROCESAR. Es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido. schema_name es UN SOLO string (no una lista) — si el título tiene una forma alternativa o bilingüe, la forma principal va aquí y la(s) otra(s) en schema_same_as como referencia (ver PASO 3).
@@ -86,6 +88,7 @@ agents:
       - schema_conditions_of_access: crea una entrada {"condition": "embargo", "date": "<fecha>"} SOLO si el texto declara explícitamente una fecha de embargo o disponibilidad futura.
       - Usa la precisión real disponible: "AAAA" si solo conoces el año, "AAAA-MM" con año y mes, "AAAA-MM-DD" SOLO si el día aparece explícitamente en el texto. NUNCA inventes un día o mes que no esté en la fuente.
       - Para un rango de años (ej. "2019-2021", período de levantamiento de una encuesta), usa el intervalo ISO 8601 "2019/2021" en schema_date_created si no hay otra fecha de creación más precisa — no descartes el año final quedándote solo con el de inicio.
+      - Si el contenido muestra el período o año de levantamiento/elaboración de ESTE mismo recurso — por ejemplo los resultados de la propia encuesta rotulados "Años 2021-2022", o una cita del propio recurso del tipo "El mapa se debe citar como: Autor (2017)" —, úsalo en schema_date_created ("2021/2022", "2017") aunque aparezca entre menús o indicadores del portal. Cuando el recurso ES esa encuesta o conjunto de datos (según title/description), una etiqueta de período ("Años 2021-2022") junto a los resultados o indicadores de ese mismo recurso es el período de los datos de ESTE recurso, no un dato ajeno del portal: úsala. Ignora solo los años que claramente pertenecen a otra cosa: el copyright o el plan estratégico del sitio, otras encuestas u otros trabajos citados como referencia.
       - NUNCA inventar fechas que no aparezcan en el contenido, título o descripción.
 
     === REGLAS CRÍTICAS ===
@@ -208,7 +211,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -396,7 +399,7 @@ agents:
   - schema_name
   tools:
   - lookup_organization
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -435,6 +438,10 @@ agents:
           {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"},
           {"schema:name": "Ciencias de la educación", "schema:inDefinedTermSet": "Ciencias Sociales"}
         ]
+      - NOTA SOBRE PATRIMONIO: Para clasificar recursos sobre patrimonio, distingue claramente entre "Patrimonio natural" (parques, reservas, monumentos naturales) y "Patrimonio cultural", el cual a su vez se divide en "Patrimonio cultural material" (edificios, monumentos, obras de arte, documentos, colecciones) y "Patrimonio cultural inmaterial" (tradiciones, fiestas, artes del espectáculo, saberes). No uses "Arqueología" como sinónimo de patrimonio; úsala solo si el recurso trata sobre la disciplina de investigación del pasado mediante restos materiales.
+
+
+
       - Si no hay categoría clara → schema_about = []
 
     PASO 3 — EXTRAE PALABRAS CLAVE (schema_keywords)
@@ -452,11 +459,12 @@ agents:
       Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados.
 
       TABLA DE REFERENCIA (categoría → audiencias típicas, no exhaustiva ni obligatoria):
-      - Ciencias Sociales → Investigadores, Tomadores de decisiones, Ciudadanos, Periodistas
-      - Ciencias Naturales y Exactas / Ingeniería y Tecnología → Investigadores, Científicos de datos, Desarrolladores, Profesionales
-      - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Docentes, Público general
-      - Ciencias Agrícolas → Investigadores, Profesionales, Administradores
-      - Humanidades → Investigadores, Estudiantes, Docentes, Público general
+       - Ciencias Naturales y Exactas → Investigadores, Estudiantes, Docentes, Público general, Profesionales, Comunicadores científicos
+       - Ingeniería y Tecnología → Investigadores, Profesionales, Estudiantes, Tomadores de decisiones, Gerentes, Empresas y sector privado
+       - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Estudiantes, Docentes, Público general, Funcionarios públicos
+       - Ciencias Agrícolas → Investigadores, Profesionales, Administradores, Estudiantes, Tomadores de decisiones, Funcionarios públicos, Empresas y sector privado
+       - Ciencias Sociales → Investigadores, Estudiantes, Docentes, Ciudadanos, Tomadores de decisiones, Periodistas, Funcionarios públicos, Comunidades locales
+       - Humanidades → Investigadores, Estudiantes, Docentes, Público general, Ciudadanos, Bibliotecarios y archivistas, Comunidades locales
 
       Si no hay contexto suficiente (PASO 1) → schema_audience = []
 
@@ -482,7 +490,7 @@ agents:
     Ciencias Médicas y de la Salud: Medicina básica | Medicina clínica | Ciencias de la salud | Biotecnología de la salud | Otras ciencias médicas
     Ciencias Agrícolas: Agricultura, silvicultura y pesca | Ciencia animal y lechería | Ciencias veterinarias | Biotecnología agropecuaria | Otras ciencias agrícolas
     Ciencias Sociales: Psicología | Economía y negocios | Ciencias de la educación | Sociología | Derecho | Ciencias políticas | Geografía económica y social | Comunicación y medios | Otras ciencias sociales
-    Humanidades: Historia y arqueología | Idiomas y literatura | Filosofía, ética y religión | Arte, música y diseño | Otras humanidades
+    Humanidades: Historia | Arqueología | Patrimonio natural | Patrimonio cultural material | Patrimonio cultural inmaterial | Idiomas y literatura | Lingüística y filología | Filosofía | Ética y religión | Arte e historia del arte | Música y musicología | Artes escénicas y teatro | Estudios culturales y regionales | Traducción e interpretación | Otras humanidades
 
     === VALORES VÁLIDOS DE AUDIENCIA (EN ESPAÑOL) ===
     audience: Investigadores | Estudiantes | Administradores | Público general | Profesionales | Docentes | Tomadores de decisiones | Científicos de datos | Desarrolladores | Gerentes | Ciudadanos | Periodistas | Trabajadores de ONG | Consultores
@@ -556,7 +564,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -735,7 +743,7 @@ agents:
   - creators_publishers
   context_fields:
   - schema_publisher
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -868,7 +876,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -888,7 +896,7 @@ providers:
   default: true
   # No tight account rate limit observed (confirmed empirically: 5
   # concurrent agent calls against opencode:deepseek-v4-flash produced
-  # zero 429s). zai-coding-plan has no override -- it inherits the global
+  # zero 429s; production model is now deepseek-v4.1-flash). zai-coding-plan has no override -- it inherits the global
   # max_workers default below, tuned down for its tighter limit.
   max_workers: 5
   # OpenCode notice (2026-09-03): requests missing this header may start
@@ -897,8 +905,8 @@ providers:
   # so this names the header only; the value is generated fresh per LLM
   # call in llm/instructor_client.py's _build_extra_headers.
   session_header: x-opencode-session
-  # None of the 5 production agents use this model -- deepseek-v4-flash
-  # stays the default per explicit prior instruction. This override exists
+  # None of the 5 production agents use this model -- deepseek-v4.1-flash
+  # (previously v4-flash) is the production default per explicit instruction. This override exists
   # purely so muse-spark-1.3-contributor is a usable, config-recognized
   # model on this provider (e.g. via scripts/compare_models.py's in-place
   # model-swap mechanism), config-driven rather than special-cased in
@@ -939,7 +947,7 @@ max_workers: 1
 enable_identifier_enrichment: true
 # Fetches each resource's URL and feeds page text to agents as extra context.
 # Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
-# deepseek-v4-flash, max_workers 5) showed 40/40 succeeded with zero stalls/
+# deepseek-v4-flash, now deepseek-v4.1-flash; max_workers 5) showed 40/40 succeeded with zero stalls/
 # timeouts and a net +0.022 structural quality gain. Known gap: page text is
 # taken from <main>/<article> when present, but a page without them still
 # feeds nav/boilerplate through, so a rare page can dilute rather than help

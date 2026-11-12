@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-09-07",
+  "schema:dateModified": "2026-11-12",
   "schema:subjectOf": {
     "@id": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto#metadata",
     "@type": [
@@ -48,21 +48,26 @@
   "schema:url": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto",
   "schema:distribution": [],
   "schema:description": "Datos abiertos sobre gastos municipales del presupuesto público, incluyendo información sobre corporaciones municipales y presas. Esta serie contiene información detallada de los egresos ejecutados por los municipios en el territorio nacional.",
-  "schema:additionalType": "Serie de tiempo",
+  "schema:additionalType": "Dataset",
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "",
-  "schema:datePublished": "2026-03-15",
+  "schema:datePublished": "",
   "schema:copyrightYear": "",
   "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "schema:name": "Gastos municipales -- Presupuesto público -- Chile",
+      "schema:name": "Gastos municipales -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Presupuesto abierto -- Chile",
+      "schema:name": "Presupuesto público -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Egresos ejecutados -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
@@ -72,7 +77,12 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Egresos ejecutados -- Municipios -- Chile",
+      "schema:name": "Municipios -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Sector público local -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -81,14 +91,24 @@
     {
       "schema:name": "Economía y negocios",
       "schema:inDefinedTermSet": "Ciencias Sociales"
+    },
+    {
+      "schema:name": "Geografía económica y social",
+      "schema:inDefinedTermSet": "Ciencias Sociales"
     }
   ],
   "schema:audience": [
     {
-      "audience": "Tomadores de decisiones",
+      "audience": "Administradores",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Análisis"
+    },
+    {
+      "audience": "Tomadores de decisiones",
+      "mediator": "Analista",
+      "education_level": "Profesional",
+      "instructional_method": "Consultoría"
     },
     {
       "audience": "Investigadores",
@@ -97,16 +117,10 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Ciudadanos",
+      "audience": "Periodistas",
       "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
-      "instructional_method": "Autoaprendizaje"
-    },
-    {
-      "audience": "Administradores",
-      "mediator": "Gerente",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "schema:creator": {
@@ -115,7 +129,30 @@
         "@type": [
           "schema:Organization"
         ],
-        "schema:name": "Ministerio de Hacienda"
+        "schema:name": "Ministerio de Hacienda",
+        "schema:givenName": "",
+        "schema:familyName": "",
+        "schema:affiliation": [
+          {
+            "@type": [
+              "schema:Organization"
+            ],
+            "schema:name": "Gobierno de Chile",
+            "schema:identifier": {
+              "schema:propertyID": "ROR",
+              "schema:value": "https://ror.org/02sevrz47",
+              "schema:url": "https://ror.org/02sevrz47",
+              "matched_via": "ror_affiliation",
+              "confidence": 1.0,
+              "status": "auto"
+            },
+            "schema:sameAs": [
+              {
+                "@id": "https://isni.org/isni/000000011234970X"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -132,7 +169,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Cobertura nacional, territorio chileno continental",
+      "schema:description": "Territorio nacional: egresos ejecutados por los municipios del país",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }
