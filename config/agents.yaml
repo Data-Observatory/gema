@@ -42,18 +42,20 @@ agents:
     - Todos los actores (creadores, publicador, contribuyentes) los produce el agente creators_publishers — usa el MISMO nombre de institución en todos los campos donde aparezca la misma entidad, no inventes variantes distintas del mismo nombre.
 
     Nota sobre esta migración: los campos de salida ahora usan nombres CDIF (schema:*, dqv:*, prov:*) en vez de los nombres DataCite usados hasta 2026-09. La estructura de análisis y las reglas de dominio (jerarquía institucional chilena, licencias, financiamiento, formatos de archivo) se mantienen sin cambios — solo cambia el nombre y la forma de los campos de salida.
-  prompt: |
     Tu tarea: extraer la metadata fundamental del recurso — identificador, nombre, descripción, idioma, identificadores alternativos y relacionados, versión, cobertura espacial y fechas.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
-
+  
+  prompt: |
     PASO 1 — IDENTIFICADOR Y TIPO
-      - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
-      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Ejemplos reales (usa el tipo que mejor describa el recurso, esta lista NO es cerrada):
-        - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Encuesta"
-        - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Capa geoespacial"
-        - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Serie de tiempo"
-      - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
+    - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
+    - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Debe ser UNA de las siguientes categorías oficiales de DataCite (en inglés, respetando mayúsculas y formato exacto): Audiovisual, Award, Book, BookChapter, Collection, ComputationalNotebook, ConferencePaper, ConferenceProceeding, DataPaper, Dataset, Dissertation, Event, Image, InteractiveResource, Instrument, Journal, JournalArticle, Model, OutputManagementPlan, PeerReview, PhysicalObject, Preprint, Project, Report, Service, Software, Sound, Standard, StudyRegistration, Text, Workflow, Other.
+    Ejemplos de interpretación (el texto está en español, pero el valor asignado debe ser la categoría DataCite en inglés):
+      - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Other" (o "Dataset" si el foco es el conjunto de datos resultante; usar "Other" si el recurso es la encuesta como instrumento)
+      - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Image" (o "Other" si no encaja como imagen; "Dataset" si se describe como conjunto de datos geoespaciales)
+      - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Dataset" (serie de tiempo suele modelarse como Dataset; usar "Collection" si agrupa múltiples recursos)
+      - Título "Candelaria", tipo "Video", descripción física "1:04 min.", fragmento de una película dirigida por Silvio Caiozzi → schema_additional_type: "Audiovisual"
+      - schema_version: si el texto la menciona (ej. "v2.1", "1.0").
 
     PASO 2 — NOMBRE Y DESCRIPCIÓN
       - schema_name: SIEMPRE usa el texto de "title" de RECURSO A PROCESAR. Es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido. schema_name es UN SOLO string (no una lista) — si el título tiene una forma alternativa o bilingüe, la forma principal va aquí y la(s) otra(s) en schema_same_as como referencia (ver PASO 3).
