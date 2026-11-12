@@ -120,7 +120,7 @@ class TestApplyExternalUserProviderOverrides:
         )
         opencode_agent = next(a for a in result["agents"] if a["id"] == "a0")
         assert opencode_agent["provider"] == "openrouter"
-        assert opencode_agent["model"] == "~deepseek/deepseek-v4-flash-latest"
+        assert opencode_agent["model"] == "deepseek/deepseek-v4.1-flash"
         assert opencode_agent["extra_body"] == {"reasoning": {"enabled": False}}
 
     def test_leaves_agents_on_other_providers_untouched(self):
@@ -166,7 +166,7 @@ class TestApplyExternalUserProviderOverrides:
         assert config.default_provider == "openrouter"
         for agent in config.agents:
             assert agent.provider == "openrouter"
-            assert agent.model == "~deepseek/deepseek-v4-flash-latest"
+            assert agent.model == "deepseek/deepseek-v4.1-flash"
             assert agent.extra_body == {"reasoning": {"enabled": False}}
 
 
@@ -200,7 +200,7 @@ class TestRestoreTestingProviderIfKeyAvailable:
                     fields=["schema_name"],
                     prompt="x",
                     provider="openrouter",
-                    model="~deepseek/deepseek-v4-flash-latest",
+                    model="deepseek/deepseek-v4.1-flash",
                     extra_body={"reasoning": {"enabled": False}},
                 ),
             ],
@@ -227,7 +227,7 @@ class TestRestoreTestingProviderIfKeyAvailable:
         bootstrap.restore_testing_provider_if_key_available(config)
 
         assert config.agents[0].provider == "openrouter"
-        assert config.agents[0].model == "~deepseek/deepseek-v4-flash-latest"
+        assert config.agents[0].model == "deepseek/deepseek-v4.1-flash"
         assert config.default_provider == "openrouter"
 
     def test_leaves_openrouter_swap_when_key_present_but_empty(self, monkeypatch):
@@ -343,7 +343,7 @@ class TestReconcileProviderExtraBody:
                     fields=["schema_name"],
                     prompt="x",
                     provider="openrouter",
-                    model="~deepseek/deepseek-v4-flash-latest",
+                    model="deepseek/deepseek-v4.1-flash",
                     extra_body={"thinking": {"type": "disabled"}},
                 ),
             ],
@@ -472,14 +472,14 @@ class TestReconcileProviderExtraBody:
                     fields=["schema_name"],
                     prompt="x",
                     provider="openrouter",
-                    model="~deepseek/deepseek-v4-flash-latest",
+                    model="deepseek/deepseek-v4.1-flash",
                     extra_body={"reasoning": {"enabled": False}},
                 ),
             ],
         )
         session_settings = _VisorSettings(
             agent_overrides={
-                "a0": {"provider": "openrouter", "model": "~deepseek/deepseek-v4-flash-latest"}
+                "a0": {"provider": "openrouter", "model": "deepseek/deepseek-v4.1-flash"}
             }
         )
 
@@ -568,7 +568,7 @@ default_provider: p
         assert config is not None
         assert config.default_provider == "openrouter"
         assert config.agents[0].provider == "openrouter"
-        assert config.agents[0].model == "~deepseek/deepseek-v4-flash-latest"
+        assert config.agents[0].model == "deepseek/deepseek-v4.1-flash"
         assert config.agents[0].extra_body == {"reasoning": {"enabled": False}}
         # The file on disk is untouched -- only load_pipeline_config()'s
         # in-memory result differs.

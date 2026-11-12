@@ -181,7 +181,8 @@ directly against the real committed `tests/fixtures/golden/cache/cache.db`.
 `TokenUsage.model` carries the provider's own resolved model id for that
 call (`completion.model` from the OpenAI-compatible response) — needed
 because a configured model can be an auto-updating alias (e.g.
-OpenRouter's `~deepseek/deepseek-v4-flash-latest`, see
+OpenRouter's `~deepseek/deepseek-v4-flash-latest`; Visor's own default
+is the un-dated `deepseek/deepseek-v4.1-flash`, see
 `bootstrap.py::apply_external_user_provider_overrides`), and the alias
 name alone doesn't tell you which concrete checkpoint actually served the
 request. `pipeline.py::_build_models_used` maps agent id -> resolved model
