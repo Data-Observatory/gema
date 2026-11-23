@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-11-12",
+  "schema:dateModified": "2026-11-23",
   "schema:subjectOf": {
     "@id": "https://www.rasgos.cl/#metadata",
     "@type": [
@@ -57,7 +57,12 @@
   "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "schema:name": "Rasgos funcionales -- Biodiversidad de plantas -- Chile",
+      "schema:name": "Rasgos funcionales -- Plantas -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Biodiversidad de plantas -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
@@ -68,11 +73,6 @@
     },
     {
       "schema:name": "Características ecológicas de especies -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Biodiversidad de plantas -- Escala regional y nacional -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -108,9 +108,9 @@
     },
     {
       "audience": "Profesionales",
-      "mediator": "Analista",
+      "mediator": "Autodirigido",
       "education_level": "Profesional",
-      "instructional_method": "Consultoría"
+      "instructional_method": "Autoaprendizaje"
     }
   ],
   "schema:creator": {
@@ -152,7 +152,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Cobertura a escala regional y nacional de la biodiversidad de plantas en Chile",
+      "schema:description": "Cobertura de la biodiversidad de plantas en Chile, a escala regional y nacional",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }

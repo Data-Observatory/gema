@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-11-12",
+  "schema:dateModified": "2026-11-23",
   "schema:subjectOf": {
     "@id": "https://doi.org/10.5880/GFZ.4.1.2020.012#metadata",
     "@type": [
@@ -47,28 +47,20 @@
   "schema:dateCreated": "",
   "schema:datePublished": "2020",
   "schema:copyrightYear": "",
-  "schema:relatedLink": [
-    {
-      "schema:linkRelationship": "References",
-      "schema:target": {
-        "schema:url": "https://www.usgs.gov/natural-hazards/earthquake-hazards/faults?qt-science_support_page_related_con=4#qt-science_support_page_related_con",
-        "schema:name": "Quaternary fault and fold database of the United States"
-      }
-    }
-  ],
+  "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "schema:name": "Active faults -- Atacama Fault System -- Chile",
+      "schema:name": "Active faults -- Atacama Fault System -- N-Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Atacama Fault System -- Chile",
+      "schema:name": "Atacama Fault System -- N-Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "GIS -- Chile",
+      "schema:name": "GIS -- N-Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
@@ -197,8 +189,8 @@
   "dcterms:bibliographicCitation": [],
   "schema:spatialCoverage": [
     {
-      "schema:name": "Cordillera de la Costa, norte de Chile",
-      "schema:description": "Segmento norte del Atacama Fault System (AFS), entre 19°12’S y 25°12’S, incluyendo el segmento Salar Grande"
+      "schema:name": "Norte de Chile - Cordillera de la Costa",
+      "schema:description": "Segmento norte del Atacama Fault System (AFS) en la Cordillera de la Costa del norte de Chile, entre 19°12'S y 25°12'S"
     }
   ],
   "schema:measurementTechnique": [],

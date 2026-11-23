@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-11-12",
+  "schema:dateModified": "2026-11-23",
   "schema:subjectOf": {
     "@id": "https://datos.gob.cl/dataset/gastos-municipales-presas-corporaciones-municipales-presupuesto-abierto#metadata",
     "@type": [
@@ -80,20 +80,11 @@
       "schema:name": "Municipios -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
-    },
-    {
-      "schema:name": "Sector público local -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
     }
   ],
   "schema:about": [
     {
       "schema:name": "Economía y negocios",
-      "schema:inDefinedTermSet": "Ciencias Sociales"
-    },
-    {
-      "schema:name": "Geografía económica y social",
       "schema:inDefinedTermSet": "Ciencias Sociales"
     }
   ],
@@ -117,9 +108,9 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Periodistas",
+      "audience": "Ciudadanos",
       "mediator": "Autodirigido",
-      "education_level": "Profesional",
+      "education_level": "Aprendizaje permanente",
       "instructional_method": "Autoaprendizaje"
     }
   ],
@@ -169,7 +160,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Territorio nacional: egresos ejecutados por los municipios del país",
+      "schema:description": "Territorio nacional; egresos ejecutados por los municipios de Chile",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }

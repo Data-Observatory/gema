@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-11-12",
+  "schema:dateModified": "2026-11-23",
   "schema:subjectOf": {
     "@id": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000#metadata",
     "@type": [
@@ -38,7 +38,11 @@
     "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000"
   },
   "schema:license": [],
-  "schema:conditionsOfAccess": [],
+  "schema:conditionsOfAccess": [
+    {
+      "condition": "Se solicita citar a la institución proveedora de la información geoespacial al utilizar los datos publicados en las plataformas de la IDE Chile"
+    }
+  ],
   "schema:url": "https://geoportal.cl/geoportal/catalog/35414/Zonas%20clim%C3%A1ticas%20de%20Chile%20seg%C3%BAn%20K%C3%B6ppen-Geiger%20escala%201:1.500.000",
   "schema:distribution": [
     {
@@ -57,13 +61,7 @@
     }
   ],
   "schema:description": "Mapa que representa los 25 tipos de clima que posee Chile segun Sarricolea et al (2017) usando la clasificacion climatica de Köppen-Geiger, en formato shapefile, y realizado sobre cubiertas de temperatura y precipitacion mensual de 1 km2 de resolucion. Posee la abreviatura y el tipo de clima en español. La precipitacion (pp) representa el promedio de precipitacion por el tipo en toda su distribucion espacial, al igual que la temperatura. La altitud (min y max) son los extremos altitudinales en que se situa el tipo climatico. Zona geografica: Chile continental Oeste: -77.1975 Este: -63.547 Norte: -16.7587 Sur: -57.1275 Sistema de referencia: WGS84 - Coordenadas Geograficas Formato: Shapefile Fuentes de los datos (las coberturas climaticas de resolucion 1km2) de: Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014). Effects of alternative sets of climatic predictors on species distribution models and associated estimates of extinction risk: A test with plants in an arid environment. Ecological Modelling, 288, 166-177. El mapa se debe citar como: Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz. (2017). Climatic regionalization of continental Chile. Journal of Maps 13(2)66-73.",
-  "schema:additionalType": "Dataset",
-  "schema:sameAs": [
-    {
-      "schema:value": "{FC85D54E-34B7-416D-ABC3-E0E3FAC45A31}",
-      "schema:name": "Identificador del metadato en Geoportal de Chile"
-    }
-  ],
+  "schema:additionalType": "Image",
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "2017",
@@ -71,7 +69,7 @@
   "schema:copyrightYear": "",
   "schema:relatedLink": [
     {
-      "schema:linkRelationship": "IsDescribedBy",
+      "schema:linkRelationship": "HasPart",
       "schema:target": {
         "schema:url": "https://geoportal.cl/geoserver/Zonas_climaticas_Chile_Koppen_Geiger_escala_1_1500000/wms?request=GetCapabilities",
         "schema:name": "Servicio de mapas WMS"
@@ -97,11 +95,6 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Tipos de clima -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
       "schema:name": "Temperatura -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
@@ -112,17 +105,12 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Altitud -- Chile",
+      "schema:name": "Clima y atmósfera -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
       "schema:name": "Shapefile -- Chile",
-      "schema:inDefinedTermSet": "",
-      "schema:identifier": ""
-    },
-    {
-      "schema:name": "Chile continental",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -151,33 +139,55 @@
       "instructional_method": "Estudio de caso"
     },
     {
+      "audience": "Docentes",
+      "mediator": "Docente",
+      "education_level": "Educación continua",
+      "instructional_method": "Clase guiada"
+    },
+    {
       "audience": "Profesionales",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Análisis"
-    },
-    {
-      "audience": "Tomadores de decisiones",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Consultoría"
     }
   ],
   "schema:creator": {
     "@list": [
       {
         "@type": [
+          "schema:Organization"
+        ],
+        "schema:name": "Departamento de Geografía Universidad de Chile",
+        "schema:givenName": "",
+        "schema:familyName": "",
+        "schema:identifier": {
+          "schema:propertyID": "ROR",
+          "schema:value": "https://ror.org/047gc3g35",
+          "schema:url": "https://ror.org/047gc3g35",
+          "matched_via": "ror_affiliation",
+          "confidence": 1.0,
+          "status": "auto"
+        },
+        "schema:affiliation": [],
+        "schema:sameAs": [
+          {
+            "@id": "https://isni.org/isni/0000000403854466"
+          }
+        ]
+      },
+      {
+        "@type": [
           "schema:Person"
         ],
-        "schema:name": "Sarricolea, Pablo",
-        "schema:givenName": "Pablo",
+        "schema:name": "Sarricolea, P.",
+        "schema:givenName": "P.",
         "schema:familyName": "Sarricolea",
         "schema:affiliation": [
           {
             "@type": [
               "schema:Organization"
             ],
-            "schema:name": "Departamento de Geografía, Universidad de Chile",
+            "schema:name": "Departamento de Geografía Universidad de Chile",
             "schema:identifier": {
               "schema:propertyID": "ROR",
               "schema:value": "https://ror.org/047gc3g35",
@@ -198,15 +208,15 @@
         "@type": [
           "schema:Person"
         ],
-        "schema:name": "Herrera, M. J.",
-        "schema:givenName": "M. J.",
+        "schema:name": "Herrera, MJ.",
+        "schema:givenName": "MJ.",
         "schema:familyName": "Herrera",
         "schema:affiliation": [
           {
             "@type": [
               "schema:Organization"
             ],
-            "schema:name": "Departamento de Geografía, Universidad de Chile",
+            "schema:name": "Departamento de Geografía Universidad de Chile",
             "schema:identifier": {
               "schema:propertyID": "ROR",
               "schema:value": "https://ror.org/047gc3g35",
@@ -235,7 +245,7 @@
             "@type": [
               "schema:Organization"
             ],
-            "schema:name": "Departamento de Geografía, Universidad de Chile",
+            "schema:name": "Departamento de Geografía Universidad de Chile",
             "schema:identifier": {
               "schema:propertyID": "ROR",
               "schema:value": "https://ror.org/047gc3g35",
@@ -264,7 +274,7 @@
         "@type": [
           "schema:Organization"
         ],
-        "schema:name": "Departamento de Geografía Universidad de Chile (Teléfono: 56 229783126; Dirección: Portugal 84, piso 3, Santiago, Región Metropolitana de Santiago; https://uchile.cl/carreras/4933/geografia)",
+        "schema:name": "Departamento de Geografía Universidad de Chile - Teléfono: 56 229783126 - Dirección: Portugal 84, piso 3, Santiago, Región Metropolitana de Santiago - https://uchile.cl/carreras/4933/geografia",
         "schema:email": "psarricolea@uchilefau.cl"
       }
     }
@@ -273,7 +283,7 @@
     "@type": [
       "schema:Organization"
     ],
-    "schema:name": "Departamento de Geografia Universidad de Chile",
+    "schema:name": "Departamento de Geografía Universidad de Chile",
     "schema:identifier": {
       "schema:propertyID": "ROR",
       "schema:value": "https://ror.org/047gc3g35",
@@ -288,25 +298,24 @@
       }
     ]
   },
-  "schema:copyrightHolder": "Departamento de Geografia Universidad de Chile",
+  "schema:copyrightHolder": "Departamento de Geografía Universidad de Chile",
   "schema:funding": [],
-  "dcterms:bibliographicCitation": [],
+  "dcterms:bibliographicCitation": [
+    "Climatic regionalization of continental Chile. Journal of Maps, 13(2), 66-73."
+  ],
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile continental",
-      "schema:description": "Zona geográfica: Chile continental. Oeste: -77.1975, Este: -63.547, Norte: -16.7587, Sur: -57.1275 (WGS84, coordenadas geográficas)",
+      "schema:description": "Zona geográfica: Chile continental. Oeste: -77.1975, Este: -63.547, Norte: -16.7587, Sur: -57.1275",
       "schema:geo": {
         "schema:box": "-77.1975,-57.1275,-63.547,-16.7587"
       }
     }
   ],
   "schema:measurementTechnique": [
-    "Clasificación climática de Köppen-Geiger aplicada sobre cubiertas de temperatura y precipitación mensual de 1 km2 de resolución"
+    "Clasificación climática de Köppen-Geiger aplicada sobre cubiertas de temperatura y precipitación mensual de 1 km² de resolución"
   ],
   "schema:variableMeasured": [
-    {
-      "schema:name": "Tipo de clima según clasificación de Köppen-Geiger"
-    },
     {
       "schema:name": "Temperatura mensual"
     },
@@ -315,10 +324,13 @@
     },
     {
       "schema:name": "Altitud mínima y máxima del tipo climático"
+    },
+    {
+      "schema:name": "Tipo de clima según clasificación de Köppen-Geiger"
     }
   ],
   "dqv:hasQualityMeasurement": [],
   "prov:wasGeneratedBy": {
-    "schema:description": "Elaborado a partir de las coberturas climáticas de resolución 1 km2 de Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014), Ecological Modelling 288, 166-177; el mapa corresponde a la regionalización climática de Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz (2017), Climatic regionalization of continental Chile, Journal of Maps 13(2) 66-73."
+    "schema:description": "Mapa elaborado según Sarricolea P., MJ. Herrera, O. Meseguer-Ruiz (2017), Climatic regionalization of continental Chile, Journal of Maps 13(2)66-73, a partir de coberturas climáticas de resolución 1 km² de Pliscoff, P., Luebert, F., Hilger, H. H., & Guisan, A. (2014), Ecological Modelling 288, 166-177."
   }
 }
