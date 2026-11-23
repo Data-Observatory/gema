@@ -1,5 +1,7 @@
 # GEMA!
 
+**G**eneración y **E**nriquecimiento de **M**etadatos **A**sistidos
+
 [![CI](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/ci.yml)
 [![Visor Build](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml/badge.svg)](https://github.com/Data-Observatory/gema/actions/workflows/visor-build.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
