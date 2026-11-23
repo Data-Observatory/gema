@@ -235,6 +235,9 @@ services:
 networks:
   dataverse:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 10.213.77.0/24
 
 volumes:
   dv_app_data:
