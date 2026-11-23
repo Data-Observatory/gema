@@ -273,7 +273,7 @@ pipeline once per model per input, which costs real API calls unless you pass
 ```bash
 uv run python scripts/compare_models.py \
     --output-root reports/do_catalog/pilot \
-    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4-flash
+    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4.1-flash
 ```
 
 | Flag | Default | Description |
@@ -294,7 +294,7 @@ error rather than silently substituting the fallback scorer when DeepEval's `GEv
 
 ```bash
 uv run python scripts/judge_models.py --output-root reports/do_catalog/pilot \
-    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4-flash
+    --models zai-coding-plan:glm-5.3,opencode:deepseek-v4.1-flash
 ```
 
 | Flag | Default | Description |

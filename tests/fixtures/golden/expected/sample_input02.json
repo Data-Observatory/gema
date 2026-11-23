@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-09-07",
+  "schema:dateModified": "2026-11-12",
   "schema:subjectOf": {
     "@id": "https://www.rasgos.cl/#metadata",
     "@type": [
@@ -42,7 +42,13 @@
   "schema:url": "https://www.rasgos.cl/",
   "schema:distribution": [],
   "schema:description": "Datos sobre los rasgos funcionales de la biodiversidad de plantas en Chile. Esta plataforma contiene información recopilada de fuentes científicas, permitiendo conocer características ecológicas de especies a nivel nacional.",
-  "schema:additionalType": "",
+  "schema:additionalType": "Dataset",
+  "schema:sameAs": [
+    {
+      "schema:value": "Rasgos-CL",
+      "schema:name": "Rasgos-CL"
+    }
+  ],
   "schema:version": "",
   "schema:inLanguage": "es",
   "schema:dateCreated": "",
@@ -51,17 +57,22 @@
   "schema:relatedLink": [],
   "schema:keywords": [
     {
-      "schema:name": "Rasgos funcionales -- Plantas -- Chile",
+      "schema:name": "Rasgos funcionales -- Biodiversidad de plantas -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Biodiversidad de plantas -- Chile",
+      "schema:name": "Papel ecológico de las especies -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Características ecológicas -- Especies -- Chile",
+      "schema:name": "Características ecológicas de especies -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Biodiversidad de plantas -- Escala regional y nacional -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     }
@@ -69,6 +80,10 @@
   "schema:about": [
     {
       "schema:name": "Ciencias biológicas",
+      "schema:inDefinedTermSet": "Ciencias Naturales y Exactas"
+    },
+    {
+      "schema:name": "Ciencias medioambientales",
       "schema:inDefinedTermSet": "Ciencias Naturales y Exactas"
     }
   ],
@@ -80,16 +95,22 @@
       "instructional_method": "Análisis"
     },
     {
-      "audience": "Científicos de datos",
-      "mediator": "Analista",
-      "education_level": "Profesional",
-      "instructional_method": "Análisis"
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
+      "instructional_method": "Estudio de caso"
+    },
+    {
+      "audience": "Docentes",
+      "mediator": "Docente",
+      "education_level": "Educación continua",
+      "instructional_method": "Clase guiada"
     },
     {
       "audience": "Profesionales",
-      "mediator": "Autodirigido",
+      "mediator": "Analista",
       "education_level": "Profesional",
-      "instructional_method": "Autoaprendizaje"
+      "instructional_method": "Consultoría"
     }
   ],
   "schema:creator": {
@@ -131,7 +152,7 @@
   "schema:spatialCoverage": [
     {
       "schema:name": "Chile",
-      "schema:description": "Cobertura nacional de la biodiversidad de plantas en Chile",
+      "schema:description": "Cobertura a escala regional y nacional de la biodiversidad de plantas en Chile",
       "schema:geo": {
         "schema:box": "-75.956,-57.987,-65.084,-16.309"
       }

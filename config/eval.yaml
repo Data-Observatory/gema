@@ -27,7 +27,7 @@ threshold: 0.75
 # when not passed explicitly. Just the current production baseline -- add
 # real candidates on the command line for an actual comparison run.
 candidates:
-  - opencode:deepseek-v4-flash
+  - opencode:deepseek-v4.1-flash
 
 # Named corpus path presets, so --ground-truth-dir/--inputs-dir/--expected
 # don't need to be retyped for the two corpora these scripts actually use

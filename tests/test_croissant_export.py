@@ -476,7 +476,7 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
     },
     "sample_input03": {
         "name": "Zonas climaticas de Chile segun Köppen-Geiger escala 1:1.500.000",
-        "creator_names": ["Sarricolea, P.", "Herrera, MJ.", "Meseguer-Ruiz, O."],
+        "creator_names": ["Sarricolea, Pablo", "Herrera, M. J.", "Meseguer-Ruiz, O."],
         "license": None,
     },
     "sample_input04": {

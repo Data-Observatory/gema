@@ -28,16 +28,15 @@ agent:
   fields:
     - subject
   provider: openrouter
-  # ~deepseek/deepseek-v4-flash-latest is OpenRouter's own auto-updating
-  # alias for the DeepSeek V4 Flash family (confirmed via OpenRouter's
-  # public /models endpoint 2026-08-16, id includes the leading "~" —
-  # that's part of the slug, not a typo) — always resolves to whatever
-  # DeepSeek ships as the newest V4 Flash checkpoint, so this never needs
-  # bumping by hand the way the eval scripts' pinned "glm-5.x" references
-  # do. A fast/cheap tier is enough for a 14-way classification call.
-  # Not verified live this session (no OPENROUTER_API_KEY available) —
-  # confirm it resolves before relying on this in a live demo.
-  model: ~deepseek/deepseek-v4-flash-latest
+  # deepseek/deepseek-v4.1-flash is OpenRouter's un-dated id for the DeepSeek
+  # V4.1 Flash family -- the same model as the production agents
+  # (config/agents.yaml, opencode:deepseek-v4.1-flash). OpenRouter publishes no
+  # auto-updating "~...-latest" alias for v4.1 yet (confirmed via its public
+  # /models endpoint 2026-11-12), so this needs a manual bump when a newer
+  # family ships. A fast/cheap tier is enough for a 14-way classification call.
+  # Not verified live this session (no paid call made) -- confirm it resolves
+  # before relying on this in a live demo.
+  model: deepseek/deepseek-v4.1-flash
   # DeepSeek V4 models default to "thinking" (reasoning) mode on, which
   # collided with Instructor's forced tool_choice for every structured-
   # output call and broke the exact same way on opencode's deepseek-v4-

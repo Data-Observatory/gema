@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import copy
+import json
 import logging
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from metadata_enricher.agents.registry import AgentRegistry, LLMClientFactory
 from metadata_enricher.config.models import PipelineConfig
 from metadata_enricher.enrichers.country_extractor import CountryExtractor
+from metadata_enricher.enrichers.grounding import check_grounding, normalize_text
+from metadata_enricher.enrichers.source_fields import enforce_source_fields
 from metadata_enricher.input_sources.base import InputSource
 from metadata_enricher.merger import MetadataMerger
 from metadata_enricher.orchestrator import Orchestrator
@@ -18,6 +21,7 @@ from metadata_enricher.schemas import get_registry
 from metadata_enricher.schemas.base import Schema, SchemaRegistry
 from metadata_enricher.types import (
     AgentResult,
+    GuardrailEvent,
     MetadataDocument,
     ResourceDescription,
     TokenUsage,
@@ -30,6 +34,10 @@ if TYPE_CHECKING:
     from metadata_enricher.enrichers.identifier_enricher import IdentifierEnricher
 
 logger = logging.getLogger(__name__)
+
+# See the copyrightHolder cascade in Pipeline._process_resource (step 3).
+_DATOS_ABIERTOS_LICENSE = "Datos Abiertos del Estado de Chile"
+_STATE_COPYRIGHT_HOLDER = "Estado de Chile"
 
 # Same instance/behavior as agents/base.py's — reused here so identifier
 # enrichment sees the same country hint the agents' own prompts were given.
@@ -67,6 +75,7 @@ class PipelineResult:
         warnings: list[str] | None = None,
         token_usage: TokenUsage | None = None,
         models_used: dict[str, str] | None = None,
+        guardrail_events: list[GuardrailEvent] | None = None,
     ) -> None:
         self.resource = resource
         self.document = document
@@ -75,6 +84,8 @@ class PipelineResult:
         self.warnings = warnings or []
         self.token_usage = token_usage if token_usage is not None else TokenUsage()
         self.models_used = models_used or {}
+        # Advisory, never part of `warnings` (which drives the CLI exit code).
+        self.guardrail_events = guardrail_events or []
 
     @property
     def success(self) -> bool:
@@ -396,23 +407,50 @@ class Pipeline:
             if not jsonld_list_unwrap(document.get_field("schema:creator")):
                 document.set_field("schema:creator", {"@list": [copy.deepcopy(publisher)]})
 
-            # 3. schema:publisher -> schema:copyrightHolder, when empty.
-            # schema:copyrightHolder is a plain string field, not a dict.
-            if not document.get_field("schema:copyrightHolder"):
-                document.set_field("schema:copyrightHolder", publisher_display_name)
-
-        # 4. "Datos Abiertos del Estado de Chile" license -> deterministic
-        # copyrightHolder, mirroring rights_funding_citations's own prompt
-        # rule (config/agents.yaml PRIORIDAD 3) made code so it still fires
-        # when a live model forgets to apply its own instruction. Only
-        # checked if steps 1-3 left copyrightHolder empty.
-        if not document.get_field("schema:copyrightHolder"):
-            licenses = document.get_field("schema:license")
-            if isinstance(licenses, list) and any(
-                isinstance(entry, dict) and entry.get("schema:name") == "Datos Abiertos del Estado de Chile"
-                for entry in licenses
+        # 3. "Datos Abiertos del Estado de Chile" license -> deterministic
+        # copyrightHolder "Estado de Chile", mirroring rights_funding_citations's
+        # PRIORIDAD 3 (config/agents.yaml), made code so it holds when a live
+        # model forgets or contradicts its own instruction. It is the specific
+        # rule (the license itself names the holder), so it beats the generic
+        # "holder = publisher" fallback (step 4 below, also Paso 2b of that
+        # prompt) -- in both forms: when the slot is empty, and when the model
+        # filled it with just the publisher's name (accent/case/whitespace
+        # folded). A distinct model-produced holder is never overridden.
+        # Recorded as a GuardrailEvent so the override rate is measurable.
+        cascade_events: list[GuardrailEvent] = []
+        licenses = document.get_field("schema:license")
+        if isinstance(licenses, list) and any(
+            isinstance(entry, dict) and entry.get("schema:name") == _DATOS_ABIERTOS_LICENSE
+            for entry in licenses
+        ):
+            holder = document.get_field("schema:copyrightHolder")
+            holder_action: Literal["filled", "overridden"] | None = None
+            if not holder:
+                holder_action = "filled"
+            elif (
+                isinstance(holder, str)
+                and publisher_display_name
+                and normalize_text(holder) == normalize_text(str(publisher_display_name))
+                and holder != _STATE_COPYRIGHT_HOLDER
             ):
-                document.set_field("schema:copyrightHolder", "Estado de Chile")
+                holder_action = "overridden"
+            if holder_action is not None:
+                document.set_field("schema:copyrightHolder", _STATE_COPYRIGHT_HOLDER)
+                cascade_events.append(
+                    GuardrailEvent(
+                        guardrail="copyright_holder",
+                        action=holder_action,
+                        field="schema:copyrightHolder",
+                        location="schema:copyrightHolder",
+                        value=holder[:200] if isinstance(holder, str) else "",
+                        detail=f"license {_DATOS_ABIERTOS_LICENSE!r} -> {_STATE_COPYRIGHT_HOLDER!r}",
+                    )
+                )
+
+        # 4. schema:publisher -> schema:copyrightHolder, when still empty.
+        # schema:copyrightHolder is a plain string field, not a dict.
+        if publisher_display_name and not document.get_field("schema:copyrightHolder"):
+            document.set_field("schema:copyrightHolder", publisher_display_name)
 
         if not document.fields:
             logger.error("No fields extracted for resource — refusing to report success")
@@ -444,6 +482,24 @@ class Pipeline:
                 )
             warnings = [f"field '{r.field_name}' failed: {r.error}" for r in failed]
             logger.warning("Resource has incomplete fields (allow_partial): %s", summary)
+
+        # 4c. Deterministic guardrails. Must run BEFORE the DOI backfill and
+        # identifier enrichment below: those legitimately add values (Crossref
+        # creators, ROR/ISNI ids) that are not in the source text and would
+        # otherwise all be flagged as ungrounded. Advisory only -- see
+        # enrichers/source_fields.py and enrichers/grounding.py.
+        guardrail_events: list[GuardrailEvent] = list(cascade_events)
+        if self._config.enforce_source_fields:
+            try:
+                guardrail_events += enforce_source_fields(document, resource)
+            except Exception as exc:
+                logger.warning("Source-field enforcement failed: %s", exc)
+        if self._config.validate_grounding:
+            try:
+                guardrail_events += check_grounding(document.fields, resource)
+            except Exception as exc:
+                logger.warning("Grounding check failed: %s", exc)
+        self._record_guardrail_events(resource, guardrail_events)
 
         # 5. Post-merge DOI resolution (Crossref) -- runs before identifier
         # enrichment so backfilled creators/publishers still get a chance at
@@ -497,4 +553,34 @@ class Pipeline:
             warnings=warnings,
             token_usage=token_usage,
             models_used=models_used,
+            guardrail_events=guardrail_events,
         )
+
+    def _record_guardrail_events(
+        self, resource: ResourceDescription, events: list[GuardrailEvent]
+    ) -> None:
+        """Log each event and, if ``guardrail_log_path`` is set, append it as JSONL.
+
+        Never raises: a log that cannot be written must not fail a resource.
+        """
+        for event in events:
+            logger.info(
+                "guardrail %s/%s on %s: %r (%s)",
+                event.guardrail,
+                event.action,
+                event.location or event.field,
+                event.value,
+                event.detail,
+            )
+        log_path = self._config.guardrail_log_path
+        if not events or not log_path:
+            return
+        try:
+            path = Path(log_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as fh:
+                for event in events:
+                    row = {"resource": resource.url or resource.title or "", **event.model_dump()}
+                    fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+        except OSError as exc:
+            logger.warning("Could not write guardrail log %s: %s", log_path, exc)
