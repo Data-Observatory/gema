@@ -48,6 +48,28 @@ jobs:
       - name: Build PyInstaller bundle
         run: uv run pyinstaller visor/visor.spec --noconfirm
 
+      # Launch the built exe once in --self-check mode (see visor/launcher.py's
+      # run_self_check): catches bundling gaps -- missing package data, missing
+      # hidden imports/plugins -- that a build-only job never would.
+      - name: Smoke-test frozen build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Windowed exe: Start-Process -Wait is required, a bare call returns immediately.
+          $p = Start-Process -FilePath dist/GemaVisor-portable.exe -ArgumentList '--self-check','selfcheck.txt' -Wait -PassThru
+          Get-Content selfcheck.txt
+          if ($p.ExitCode -ne 0) { exit 1 }
+
+      - name: Smoke-test frozen build (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set +e
+          dist/GemaVisor-portable --self-check selfcheck.txt
+          status=$?
+          cat selfcheck.txt
+          exit $status
+
       - name: Compile Windows installer (Inno Setup)
         if: runner.os == 'Windows'
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.9

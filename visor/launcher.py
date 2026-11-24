@@ -40,6 +40,7 @@ import socket
 import subprocess
 import sys
 import time
+import traceback
 import urllib.error
 import urllib.request
 import webbrowser
@@ -284,7 +285,78 @@ def run_launcher_ui() -> None:
     )
 
 
+SELF_CHECK_FLAG = "--self-check"
+_CDIF_DISCOVERY_PACKAGE = "metadata_enricher.schemas.cdif.discovery"
+_SELF_CHECK_JSONLD = (
+    '{"@context": {"s": "https://schema.org/"}, "@id": "urn:x", "s:name": "x"}'
+)
+
+
+def _write_self_check_result(result_path: Path | None, content: str) -> None:
+    if result_path is not None:
+        result_path.write_text(content, encoding="utf-8")
+
+
+def run_self_check(result_path: Path | None) -> int:
+    """Frozen-build smoke test, run by CI against the built executable via
+    ``GemaVisor-portable --self-check <result-file>``.
+
+    Exercises what a PyInstaller bundle can silently get wrong: package data
+    read through importlib.resources (the vendored CDIF Discovery files, the
+    IANA media-type cache), the import-time schema/config load behind
+    ``visor.app``, and rdflib/pyshacl's plugin-based parsers. The frozen exe
+    is windowed, so an escaping exception would pop a modal dialog and hang
+    CI -- every failure is caught and reported as exit code 1 plus a
+    traceback in *result_path* (and on stderr) instead.
+    """
+    try:
+        from importlib import resources
+
+        import visor.app
+
+        # visor.app captures a config-load failure instead of raising (so the
+        # UI can show it) -- surface it here, it means the bundled default
+        # config or the schema registry is broken.
+        if visor.app._config_error is not None:
+            raise RuntimeError(f"visor config failed to load: {visor.app._config_error}")
+
+        cdif = resources.files(_CDIF_DISCOVERY_PACKAGE)
+        sha = (cdif / "VENDORED_SHA.txt").read_text(encoding="utf-8")
+        if not sha.strip():
+            raise RuntimeError("VENDORED_SHA.txt is empty")
+        shacl_text = (cdif / "shacl.ttl").read_text(encoding="utf-8")
+
+        import pyshacl  # noqa: F401 - must be importable in the frozen build
+        from rdflib import Graph
+
+        if len(Graph().parse(data=shacl_text, format="turtle")) == 0:
+            raise RuntimeError("shacl.ttl parsed to an empty graph")
+        if len(Graph().parse(data=_SELF_CHECK_JSONLD, format="json-ld")) == 0:
+            raise RuntimeError("JSON-LD probe parsed to an empty graph")
+
+        iana = resources.files("metadata_enricher") / "data" / "iana_media_types.json"
+        if not iana.read_text(encoding="utf-8").strip():
+            raise RuntimeError("iana_media_types.json is empty")
+    except Exception:
+        details = traceback.format_exc()
+        with contextlib.suppress(Exception):
+            sys.stderr.write(details)
+        with contextlib.suppress(Exception):
+            _write_self_check_result(result_path, details)
+        return 1
+    try:
+        _write_self_check_result(result_path, "ok\n")
+    except Exception:
+        with contextlib.suppress(Exception):
+            sys.stderr.write(traceback.format_exc())
+        return 1
+    return 0
+
+
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == SELF_CHECK_FLAG:
+        result_path = Path(sys.argv[2]) if len(sys.argv) > 2 else None
+        sys.exit(run_self_check(result_path))
     if os.environ.get("VISOR_SUBPROCESS") == "1":
         os.environ["VISOR_NATIVE"] = "0"
         from visor.app import run as run_hosted_app

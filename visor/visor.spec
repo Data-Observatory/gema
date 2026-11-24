@@ -28,20 +28,33 @@ build on that OS — PyInstaller does not cross-compile.
 import sys
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_all, collect_data_files
 
 # PyInstaller execs this file without __file__ in scope — it injects
 # SPECPATH (the directory containing this .spec) into the namespace instead.
 repo_root = Path(SPECPATH).resolve().parent  # noqa: F821
 
 datas = [
-    (str(repo_root / "src" / "metadata_enricher" / "data" / "iana_media_types.json"), "metadata_enricher/data"),
     (str(repo_root / "config" / "agents.yaml"), "visor_default_config"),
     (str(repo_root / "config" / "dataverse_export.yaml"), "visor_default_config"),
     (str(repo_root / "config" / "providers.yaml"), "visor_default_config"),
 ]
 binaries = []
 hiddenimports = []
+
+# metadata_enricher reads its package data at runtime via importlib.resources
+# (the IANA media-type cache, and the vendored CDIF Discovery files --
+# VENDORED_SHA.txt at import time, shacl.ttl for SHACL checks, etc.), so every
+# such file must land at its package-relative path inside the bundle. Collect
+# them by extension instead of hand-listing: the earlier hand-list only named
+# iana_media_types.json and silently missed the CDIF vendored files, which
+# crashed the frozen app at startup (FileNotFoundError on VENDORED_SHA.txt).
+# pathex below puts src/ on sys.path so the package resolves at spec time.
+sys.path.insert(0, str(repo_root / "src"))
+datas += collect_data_files(
+    "metadata_enricher",
+    includes=["**/*.json", "**/*.jsonld", "**/*.txt", "**/*.ttl", "**/*.xlsx"],
+)
 
 # instructor/openai do conditional/lazy per-provider imports PyInstaller's
 # static analysis misses; nicegui/uvicorn ship static assets and conditional
