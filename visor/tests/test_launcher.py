@@ -1,16 +1,19 @@
 """Tests for visor.launcher — the port-free check and the frozen-vs-dev
 subprocess-argument-building logic, in isolation.
 
-Deliberately does not spawn a real subprocess or open a real window (see the
+Deliberately does not start the hosted server or open a real window (see the
 module's own docstring on why full lifecycle testing is out of scope here) —
-only what's realistically unit-testable without either.
+only what's realistically unit-testable without either. The one exception is
+the ``--self-check`` success path, run in a short-lived fresh interpreter.
 """
 
 from __future__ import annotations
 
 import os
 import socket
+import subprocess
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -110,14 +113,39 @@ class TestServerControllerNoSubprocess:
         assert controller.is_running is False
 
 
+def _run_self_check_in_fresh_interpreter(*extra_args: str) -> subprocess.CompletedProcess[str]:
+    """Run ``python -m visor.launcher --self-check ...`` in a clean process.
+
+    In-process is not an option for the success path: the self-check does the
+    first-ever ``import rdflib`` of the test session, and rdflib's package
+    ``__init__`` runs ``import __main__``. Under pytest's Windows ``pytest.exe``
+    launcher that re-executes the launcher inside the test and dies with
+    ``SystemExit: 1`` (seen on the windows-latest CI runner). A fresh
+    interpreter is also the more faithful check of the real ``main()`` path.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    env = {**os.environ, "PYTHONPATH": str(repo_root)}
+    return subprocess.run(  # noqa: S603 - fixed argv built from sys.executable, no shell
+        [sys.executable, "-m", "visor.launcher", "--self-check", *extra_args],
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        check=False,
+    )
+
+
 class TestRunSelfCheck:
     def test_source_tree_passes_and_writes_ok(self, tmp_path) -> None:
         result = tmp_path / "selfcheck.txt"
-        assert launcher.run_self_check(result) == 0
+        completed = _run_self_check_in_fresh_interpreter(str(result))
+        assert completed.returncode == 0, completed.stderr
         assert result.read_text(encoding="utf-8").strip() == "ok"
 
     def test_no_result_path_still_returns_exit_code(self) -> None:
-        assert launcher.run_self_check(None) == 0
+        completed = _run_self_check_in_fresh_interpreter()
+        assert completed.returncode == 0, completed.stderr
 
     def test_missing_package_data_returns_1_with_traceback(self, tmp_path) -> None:
         result = tmp_path / "selfcheck.txt"
