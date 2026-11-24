@@ -39,6 +39,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "app.language.label": "Idioma",
         "app.config_error.title": "Problema de configuración",
         "app.config_error.unknown": "Error de configuración desconocido",
+        "app.config_reset.notice": (
+            "Tu configuración guardada no se pudo cargar (probablemente era de una versión "
+            "anterior); se restauró la predeterminada (copia de seguridad en {backup})"
+        ),
         # -- settings_page.py --
         "settings.title": "Configuración",
         "settings.intro": (
@@ -298,6 +302,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "app.language.label": "Language",
         "app.config_error.title": "Configuration problem",
         "app.config_error.unknown": "Unknown configuration error",
+        "app.config_reset.notice": (
+            "Your saved configuration could not be loaded (likely from an older version); "
+            "the default was restored (backup at {backup})"
+        ),
         "settings.title": "Settings",
         "settings.intro": (
             "API keys are saved only on this computer and used only to talk "

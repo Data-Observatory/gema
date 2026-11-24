@@ -37,6 +37,7 @@ import logging
 import os
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -265,6 +266,62 @@ def resolve_config_path(user_config_path: Path | None = None) -> Path:
         return target
 
 
+# Backup path of the last stale seeded user config load_pipeline_config()
+# replaced, until the UI reads it once via consume_config_reset_backup().
+_config_reset_backup: Path | None = None
+
+
+def consume_config_reset_backup() -> Path | None:
+    """Where load_pipeline_config() moved a stale seeded user config before
+    re-seeding it from the bundled default, or None if no reset happened.
+    Cleared on read, so the UI shows the notice once."""
+    global _config_reset_backup
+    backup, _config_reset_backup = _config_reset_backup, None
+    return backup
+
+
+def _load_and_validate(config_path: Path) -> tuple[PipelineConfig, Schema]:
+    transformed = apply_external_user_provider_overrides(config_path.read_text(encoding="utf-8"))
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    ) as tmp:
+        tmp.write(transformed)
+        tmp_path = Path(tmp.name)
+    try:
+        config = load_config(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+    return config, get_registry().get(config.schema_name)
+
+
+def _backup_path_for(config_path: Path) -> Path:
+    """agents.yaml.bak, or a timestamped sibling if that already exists --
+    an earlier backup is never overwritten."""
+    backup = config_path.with_name(config_path.name + ".bak")
+    if not backup.exists():
+        return backup
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    backup = config_path.with_name(f"{config_path.name}.bak-{stamp}")
+    counter = 1
+    while backup.exists():
+        backup = config_path.with_name(f"{config_path.name}.bak-{stamp}-{counter}")
+        counter += 1
+    return backup
+
+
+def _reset_seeded_config(config_path: Path, bundled: Path) -> Path:
+    """Move a stale seeded copy aside and re-seed it from the bundled default."""
+    backup = _backup_path_for(config_path)
+    config_path.rename(backup)
+    config_path.write_text(bundled.read_text(encoding="utf-8"), encoding="utf-8")
+    logger.warning(
+        "Seeded user config %s failed to load; moved it to %s and re-seeded from bundled default",
+        config_path,
+        backup,
+    )
+    return backup
+
+
 def load_pipeline_config(
     user_config_path: Path | None = None,
 ) -> tuple[PipelineConfig | None, Schema | None, str | None]:
@@ -279,25 +336,33 @@ def load_pipeline_config(
     and handed to load_config() so ${VAR} expansion and validation stay
     byte-for-byte the same codepath every other caller of load_config()
     uses -- no parsing logic duplicated here.
+
+    A seeded user copy is never refreshed by an upgrade (find_config()
+    finds it first on every later run), so one seeded by an older release
+    can go stale -- e.g. v0.4.0's ``schema_name: datacite-4.6``, no longer a
+    registered schema. If loading fails and the file used is exactly that
+    seeded copy (and this is a frozen build with a bundled default), it is
+    moved to a ``.bak`` backup, re-seeded, and loaded once more; see
+    consume_config_reset_backup(). Any other config (./config/agents.yaml,
+    $GEMA_CONFIG, running from source) just returns its error, unchanged.
     """
+    global _config_reset_backup
+    seeded_path = user_config_path if user_config_path is not None else DEFAULT_USER_CONFIG_PATH
+    config_path: Path | None = None
     try:
         config_path = resolve_config_path(user_config_path)
-        transformed = apply_external_user_provider_overrides(
-            config_path.read_text(encoding="utf-8")
-        )
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
-        ) as tmp:
-            tmp.write(transformed)
-            tmp_path = Path(tmp.name)
-        try:
-            config = load_config(tmp_path)
-        finally:
-            tmp_path.unlink(missing_ok=True)
-        schema = get_registry().get(config.schema_name)
+        config, schema = _load_and_validate(config_path)
     except Exception as exc:  # noqa: BLE001 - surfaced to every page load, not hidden
         logger.exception("Failed to load pipeline configuration")
-        return None, None, str(exc)
+        bundled = bundled_config_path()
+        if config_path is None or bundled is None or config_path.resolve() != seeded_path.resolve():
+            return None, None, str(exc)
+        try:
+            _config_reset_backup = _reset_seeded_config(config_path, bundled)
+            config, schema = _load_and_validate(config_path)
+        except Exception as retry_exc:  # noqa: BLE001 - same as above
+            logger.exception("Failed to load re-seeded pipeline configuration")
+            return None, None, str(retry_exc)
     return config, schema, None
 
 

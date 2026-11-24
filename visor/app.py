@@ -18,6 +18,7 @@ import os
 from nicegui import events, ui
 
 from visor.bootstrap import (
+    consume_config_reset_backup,
     load_dataverse_export_config_safe,
     load_pipeline_config,
     load_providers_pool_safe,
@@ -45,6 +46,15 @@ _known_providers = load_providers_pool_safe()
 
 @ui.page("/")
 def main_page() -> None:
+    reset_backup = consume_config_reset_backup()
+    if reset_backup is not None:
+        ui.notify(
+            t("app.config_reset.notice", backup=reset_backup),
+            type="warning",
+            timeout=0,
+            close_button=True,
+        )
+
     if _pipeline_config is None or _schema is None:
         ui.label(t("app.config_error.title")).classes("text-h5 text-negative")
         ui.label(_config_error or t("app.config_error.unknown"))
