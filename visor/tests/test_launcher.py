@@ -11,6 +11,9 @@ from __future__ import annotations
 import os
 import socket
 import sys
+from unittest.mock import patch
+
+import pytest
 
 import visor.launcher as launcher
 
@@ -105,3 +108,41 @@ class TestServerControllerNoSubprocess:
         assert error is not None
         assert "already in use" in error
         assert controller.is_running is False
+
+
+class TestRunSelfCheck:
+    def test_source_tree_passes_and_writes_ok(self, tmp_path) -> None:
+        result = tmp_path / "selfcheck.txt"
+        assert launcher.run_self_check(result) == 0
+        assert result.read_text(encoding="utf-8").strip() == "ok"
+
+    def test_no_result_path_still_returns_exit_code(self) -> None:
+        assert launcher.run_self_check(None) == 0
+
+    def test_missing_package_data_returns_1_with_traceback(self, tmp_path) -> None:
+        result = tmp_path / "selfcheck.txt"
+        with patch(
+            "importlib.resources.files",
+            side_effect=FileNotFoundError("VENDORED_SHA.txt"),
+        ):
+            assert launcher.run_self_check(result) == 1
+        content = result.read_text(encoding="utf-8")
+        assert content.startswith("Traceback")
+        assert "FileNotFoundError" in content
+        assert "VENDORED_SHA.txt" in content
+
+
+class TestMainSelfCheckFlag:
+    def test_flag_short_circuits_before_launcher_ui(self, monkeypatch, tmp_path) -> None:
+        result = tmp_path / "out.txt"
+        monkeypatch.setattr(sys, "argv", ["GemaVisor", "--self-check", str(result)])
+        monkeypatch.setenv("VISOR_SUBPROCESS", "1")
+        with (
+            patch.object(launcher, "run_self_check", return_value=1) as check,
+            patch.object(launcher, "run_launcher_ui") as ui_mock,
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            launcher.main()
+        assert exc_info.value.code == 1
+        check.assert_called_once_with(result)
+        ui_mock.assert_not_called()

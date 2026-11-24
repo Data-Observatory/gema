@@ -327,6 +327,15 @@ feature/* branches --PR--> dev --PR--> main
   branch, since a real multi-OS PyInstaller + installer build is slow and
   not worth running on work that hasn't passed the cheap tier yet.
 
+  Right after the PyInstaller step, the job smoke-tests the built portable
+  exe by launching it as `GemaVisor-portable --self-check selfcheck.txt`
+  (`visor/launcher.py:run_self_check`): it imports `visor.app`, reads the
+  vendored CDIF files and the IANA cache via `importlib.resources`, and
+  parses Turtle/JSON-LD with rdflib, writing `ok` or a traceback to the
+  file and exiting 0/1 without opening any window. This exists because a
+  build-only job let a release ship with the CDIF data files missing from the
+  bundle (crash at startup); run it locally against any frozen build too.
+
 `main` is branch-protected: PRs required, direct pushes blocked, and both
 workflows' checks must pass before a merge is allowed. `dev` is
 intentionally lighter (no protection rule) — it's the fast-moving
