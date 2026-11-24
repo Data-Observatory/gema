@@ -591,6 +591,145 @@ default_provider: p
         assert "no configuration file found" in error
 
 
+_HEALTHY_CONFIG = """
+schema_name: cdif-discovery
+agents:
+  - id: a
+    name: A
+    fields: [schema_name]
+    prompt: x
+    provider: p
+providers:
+  - name: p
+    base_url: http://localhost
+    api_key_env: SOME_KEY
+default_provider: p
+"""
+_STALE_CONFIG = _HEALTHY_CONFIG.replace("cdif-discovery", "datacite-4.6")
+
+
+class TestStaleSeededConfigReset:
+    """A seeded user copy from an older release (e.g. v0.4.0's
+    ``schema_name: datacite-4.6``) is never refreshed by an upgrade --
+    load_pipeline_config() backs it up and re-seeds it, but only that file
+    and only in a frozen build."""
+
+    @pytest.fixture(autouse=True)
+    def _clear_notice(self):
+        bootstrap.consume_config_reset_backup()
+        yield
+        bootstrap.consume_config_reset_backup()
+
+    def _setup(self, monkeypatch, tmp_path, *, seeded_text, bundled_text=_HEALTHY_CONFIG):
+        seeded = tmp_path / "user_config" / "agents.yaml"
+        seeded.parent.mkdir()
+        seeded.write_text(seeded_text, encoding="utf-8")
+        bundled = tmp_path / "bundled_agents.yaml"
+        bundled.write_text(bundled_text, encoding="utf-8")
+        monkeypatch.setattr(bootstrap, "find_config", lambda: seeded)
+        monkeypatch.setattr(bootstrap, "bundled_config_path", lambda: bundled)
+        return seeded, bundled
+
+    def test_stale_seeded_copy_is_backed_up_and_reseeded(self, monkeypatch, tmp_path):
+        seeded, _ = self._setup(monkeypatch, tmp_path, seeded_text=_STALE_CONFIG)
+
+        config, schema, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert error is None
+        assert config is not None
+        assert schema is not None
+        assert schema.name == "cdif-discovery"
+        backup = seeded.with_name("agents.yaml.bak")
+        assert backup.read_text(encoding="utf-8") == _STALE_CONFIG
+        assert seeded.read_text(encoding="utf-8") == _HEALTHY_CONFIG
+        assert bootstrap.consume_config_reset_backup() == backup
+        assert bootstrap.consume_config_reset_backup() is None
+
+    def test_existing_backup_is_never_overwritten(self, monkeypatch, tmp_path):
+        seeded, _ = self._setup(monkeypatch, tmp_path, seeded_text=_STALE_CONFIG)
+        old_backup = seeded.with_name("agents.yaml.bak")
+        old_backup.write_text("older backup", encoding="utf-8")
+
+        config, _, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert error is None
+        assert config is not None
+        assert old_backup.read_text(encoding="utf-8") == "older backup"
+        new_backup = bootstrap.consume_config_reset_backup()
+        assert new_backup is not None
+        assert new_backup != old_backup
+        assert new_backup.name.startswith("agents.yaml.bak-")
+        assert new_backup.read_text(encoding="utf-8") == _STALE_CONFIG
+
+    def test_failing_config_elsewhere_is_left_alone(self, monkeypatch, tmp_path):
+        """e.g. ./config/agents.yaml in the CWD or $GEMA_CONFIG."""
+        seeded, _ = self._setup(monkeypatch, tmp_path, seeded_text=_HEALTHY_CONFIG)
+        other = tmp_path / "elsewhere" / "agents.yaml"
+        other.parent.mkdir()
+        other.write_text(_STALE_CONFIG, encoding="utf-8")
+        monkeypatch.setattr(bootstrap, "find_config", lambda: other)
+
+        config, schema, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert config is None
+        assert schema is None
+        assert error is not None
+        assert "datacite-4.6" in error
+        assert other.read_text(encoding="utf-8") == _STALE_CONFIG
+        assert not other.with_name("agents.yaml.bak").exists()
+        assert seeded.read_text(encoding="utf-8") == _HEALTHY_CONFIG
+        assert bootstrap.consume_config_reset_backup() is None
+
+    def test_no_reset_when_not_frozen(self, monkeypatch, tmp_path):
+        seeded, _ = self._setup(monkeypatch, tmp_path, seeded_text=_STALE_CONFIG)
+        monkeypatch.setattr(bootstrap, "bundled_config_path", lambda: None)
+
+        config, _, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert config is None
+        assert error is not None
+        assert "datacite-4.6" in error
+        assert seeded.read_text(encoding="utf-8") == _STALE_CONFIG
+        assert not seeded.with_name("agents.yaml.bak").exists()
+        assert bootstrap.consume_config_reset_backup() is None
+
+    def test_retry_failure_returns_error_without_looping(self, monkeypatch, tmp_path):
+        seeded, _ = self._setup(
+            monkeypatch, tmp_path, seeded_text=_STALE_CONFIG, bundled_text="schema_name: [bad"
+        )
+        reset_calls: list[Path] = []
+        real_reset = bootstrap._reset_seeded_config
+
+        def _counting_reset(config_path: Path, bundled: Path) -> Path:
+            reset_calls.append(config_path)
+            return real_reset(config_path, bundled)
+
+        monkeypatch.setattr(bootstrap, "_reset_seeded_config", _counting_reset)
+
+        config, schema, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert config is None
+        assert schema is None
+        assert error is not None
+        assert len(reset_calls) == 1
+        backup = seeded.with_name("agents.yaml.bak")
+        assert backup.read_text(encoding="utf-8") == _STALE_CONFIG
+        assert bootstrap.consume_config_reset_backup() == backup
+
+    def test_healthy_seeded_copy_is_untouched(self, monkeypatch, tmp_path):
+        seeded, _ = self._setup(
+            monkeypatch, tmp_path, seeded_text=_HEALTHY_CONFIG, bundled_text="schema_name: x"
+        )
+
+        config, _, error = bootstrap.load_pipeline_config(user_config_path=seeded)
+
+        assert error is None
+        assert config is not None
+        assert seeded.read_text(encoding="utf-8") == _HEALTHY_CONFIG
+        assert list(seeded.parent.iterdir()) == [seeded]
+        assert bootstrap.consume_config_reset_backup() is None
+
+
 class TestDataverseExportBundledPath:
     def test_none_when_not_frozen(self, monkeypatch):
         monkeypatch.delattr("sys.frozen", raising=False)

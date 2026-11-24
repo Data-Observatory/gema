@@ -265,6 +265,16 @@ Produces **two** targets from one spec, in one PyInstaller run:
   as the onedir build) — not yet verified as a real double-click on
   Windows/macOS.
 
+Both builds seed `~/.config/gema/agents.yaml` from the bundled default only
+once, and `find_config()` keeps finding that copy afterwards, so an upgrade
+never refreshes it. If that seeded copy no longer loads (e.g. v0.4.0's
+`schema_name: datacite-4.6`, now exporter-only), `load_pipeline_config()`
+moves it to `agents.yaml.bak` next to it (or `agents.yaml.bak-YYYYmmddHHMMSS`
+if a `.bak` already exists — never overwritten), re-seeds from the bundled
+default, retries once, and shows a one-time warning with the backup path.
+A config found anywhere else (`./config/agents.yaml`, `$GEMA_CONFIG`) or
+when running from source is never reset — its error is shown as before.
+
 Always run PyInstaller through `uv run`, never a globally pip-installed
 one, so frozen deps match `uv.lock`.
 
