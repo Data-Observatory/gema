@@ -10,7 +10,7 @@
     "prov": "http://www.w3.org/ns/prov#",
     "dqv": "http://www.w3.org/ns/dqv#"
   },
-  "schema:dateModified": "2026-09-07",
+  "schema:dateModified": "2026-11-23",
   "schema:subjectOf": {
     "@id": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares#metadata",
     "@type": [
@@ -42,16 +42,10 @@
   "schema:url": "https://www.ine.gob.cl/estadisticas/sociales/ingresos-y-gastos/encuesta-de-presupuestos-familiares",
   "schema:distribution": [],
   "schema:description": "Conjunto de datos del Instituto Nacional de Estadísticas (INE) de Chile que reúne las bases de datos de la Encuesta de Presupuestos Familiares (EPF), proporcionando información sobre los ingresos y gastos de los hogares chilenos. El recurso incluye datos sobre estructura de gastos, patrones de consumo, ingresos familiares y otros aspectos relevantes del presupuesto familiar, permitiendo analizar el comportamiento económico de los hogares chilenos.",
-  "schema:additionalType": "Encuesta",
-  "schema:sameAs": [
-    {
-      "schema:value": "EPF",
-      "schema:name": "EPF"
-    }
-  ],
+  "schema:additionalType": "",
   "schema:version": "",
-  "schema:inLanguage": "es",
-  "schema:dateCreated": "2021/2022",
+  "schema:inLanguage": "",
+  "schema:dateCreated": "",
   "schema:datePublished": "",
   "schema:copyrightYear": "",
   "schema:relatedLink": [],
@@ -62,17 +56,22 @@
       "schema:identifier": ""
     },
     {
-      "schema:name": "Ingresos de los hogares -- Chile",
+      "schema:name": "Ingresos y gastos de los hogares -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
-      "schema:name": "Gastos de los hogares -- Chile",
+      "schema:name": "Estructura de gastos -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
     {
       "schema:name": "Patrones de consumo -- Chile",
+      "schema:inDefinedTermSet": "",
+      "schema:identifier": ""
+    },
+    {
+      "schema:name": "Ingresos familiares -- Chile",
       "schema:inDefinedTermSet": "",
       "schema:identifier": ""
     },
@@ -86,6 +85,10 @@
     {
       "schema:name": "Economía y negocios",
       "schema:inDefinedTermSet": "Ciencias Sociales"
+    },
+    {
+      "schema:name": "Sociología",
+      "schema:inDefinedTermSet": "Ciencias Sociales"
     }
   ],
   "schema:audience": [
@@ -96,15 +99,21 @@
       "instructional_method": "Análisis"
     },
     {
+      "audience": "Estudiantes",
+      "mediator": "Docente",
+      "education_level": "Pregrado",
+      "instructional_method": "Estudio de caso"
+    },
+    {
       "audience": "Tomadores de decisiones",
       "mediator": "Analista",
       "education_level": "Profesional",
       "instructional_method": "Consultoría"
     },
     {
-      "audience": "Ciudadanos",
+      "audience": "Profesionales",
       "mediator": "Autodirigido",
-      "education_level": "Aprendizaje permanente",
+      "education_level": "Educación continua",
       "instructional_method": "Autoaprendizaje"
     }
   ],
@@ -117,14 +126,6 @@
         "schema:name": "Instituto Nacional de Estadísticas",
         "schema:givenName": "",
         "schema:familyName": "",
-        "schema:identifier": {
-          "schema:propertyID": "ROR",
-          "schema:value": "https://ror.org/03ftrk873",
-          "schema:url": "https://ror.org/03ftrk873",
-          "matched_via": "ror_affiliation",
-          "confidence": 1.0,
-          "status": "auto"
-        },
         "schema:affiliation": [
           {
             "@type": [
@@ -140,11 +141,6 @@
               "status": "auto"
             }
           }
-        ],
-        "schema:sameAs": [
-          {
-            "@id": "https://isni.org/isni/0000000122544402"
-          }
         ]
       }
     ]
@@ -154,35 +150,32 @@
     "@type": [
       "schema:Organization"
     ],
-    "schema:name": "Instituto Nacional de Estadísticas",
-    "schema:identifier": {
-      "schema:propertyID": "ROR",
-      "schema:value": "https://ror.org/03ftrk873",
-      "schema:url": "https://ror.org/03ftrk873",
-      "matched_via": "ror_affiliation",
-      "confidence": 1.0,
-      "status": "auto"
-    },
-    "schema:sameAs": [
-      {
-        "@id": "https://isni.org/isni/0000000122544402"
-      }
-    ]
+    "schema:name": "Instituto Nacional de Estadísticas"
   },
   "schema:copyrightHolder": "Instituto Nacional de Estadísticas",
   "schema:funding": [],
   "dcterms:bibliographicCitation": [],
-  "schema:spatialCoverage": [
+  "schema:spatialCoverage": [],
+  "schema:measurementTechnique": [
+    "Encuesta a hogares (Encuesta de Presupuestos Familiares)"
+  ],
+  "schema:variableMeasured": [
     {
-      "schema:name": "Chile",
-      "schema:description": "Cobertura nacional, hogares de Chile incluyendo capitales regionales",
-      "schema:geo": {
-        "schema:box": "-75.956,-57.987,-65.084,-16.309"
-      }
+      "schema:name": "Gasto per cápita promedio mensual de los hogares"
+    },
+    {
+      "schema:name": "Ingreso disponible per cápita promedio mensual por hogar"
+    },
+    {
+      "schema:name": "Estructura de gastos de los hogares"
+    },
+    {
+      "schema:name": "Patrones de consumo de los hogares"
+    },
+    {
+      "schema:name": "Ingresos familiares"
     }
   ],
-  "schema:measurementTechnique": [],
-  "schema:variableMeasured": [],
   "dqv:hasQualityMeasurement": [],
   "prov:wasGeneratedBy": {}
 }

@@ -42,24 +42,61 @@ agents:
     - Todos los actores (creadores, publicador, contribuyentes) los produce el agente creators_publishers — usa el MISMO nombre de institución en todos los campos donde aparezca la misma entidad, no inventes variantes distintas del mismo nombre.
 
     Nota sobre esta migración: los campos de salida ahora usan nombres CDIF (schema:*, dqv:*, prov:*) en vez de los nombres DataCite usados hasta 2026-09. La estructura de análisis y las reglas de dominio (jerarquía institucional chilena, licencias, financiamiento, formatos de archivo) se mantienen sin cambios — solo cambia el nombre y la forma de los campos de salida.
-  prompt: |
     Tu tarea: extraer la metadata fundamental del recurso — identificador, nombre, descripción, idioma, identificadores alternativos y relacionados, versión, cobertura espacial y fechas.
 
     === PASOS DE ANÁLISIS (resume tu razonamiento en "reasoning" antes de responder) ===
+  
+  prompt: |
+     PASO 1 — IDENTIFICADOR Y TIPO
+     - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
+     - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Debe ser UNA de las siguientes categorías oficiales de DataCite (en inglés, respetando mayúsculas y formato exacto): Audiovisual, Award, Book, BookChapter, Collection, ComputationalNotebook, ConferencePaper, ConferenceProceeding, DataPaper, Dataset, Dissertation, Event, Image, InteractiveResource, Instrument, Journal, JournalArticle, Model, OutputManagementPlan, PeerReview, PhysicalObject, Preprint, Project, Report, Service, Software, Sound, Standard, StudyRegistration, Text, Workflow, Other.
+     - schema_version: si el texto la menciona (ej. "v2.1", "1.0").
 
-    PASO 1 — IDENTIFICADOR Y TIPO
-      - schema_identifier: UNA entrada {"schema:propertyID": "URL"|"DOI", "schema:value": "<el valor>", "schema:url": "<url resolvable si aplica>"} usando "url" (o "doi" si el recurso lo trae, en cuyo caso schema:propertyID = "DOI") de la sección RECURSO A PROCESAR. NUNCA lo dejes vacío si esa sección trae un valor.
-      - schema_additional_type: el tipo de recurso si el texto lo distingue de "Dataset" genérico; vacío si no hay evidencia clara. Ejemplos reales (usa el tipo que mejor describa el recurso, esta lista NO es cerrada):
-        - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Encuesta"
-        - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Capa geoespacial"
-        - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Serie de tiempo"
-      - schema_version: si el texto la menciona (ej. "v2.1", "1.0")
+     Ejemplos de interpretación (el texto está en español, pero el valor asignado debe ser la categoría DataCite en inglés):
+      - Título "Encuesta de Presupuestos Familiares", descripción menciona una encuesta aplicada a hogares mediante cuestionario → schema_additional_type: "Other" (o "Dataset" si el foco es el conjunto de datos resultante; usar "Other" si el recurso es la encuesta como instrumento)
+      - Descripción "Mapa que representa ... en formato shapefile" de un portal geoespacial/SIG (capas vectoriales o ráster) → schema_additional_type: "Image" (o "Other" si no encaja como imagen; "Dataset" si se describe como conjunto de datos geoespaciales)
+      - Descripción "Esta serie contiene información detallada de los egresos ejecutados ..." (valores publicados periódicamente en el tiempo, ej. gasto mensual/trimestral) → schema_additional_type: "Dataset" (serie de tiempo suele modelarse como Dataset; usar "Collection" si agrupa múltiples recursos)
 
-    PASO 2 — NOMBRE Y DESCRIPCIÓN
+     REGLA PARA CLASIFICAR COMO "Audiovisual":
+     Asignar "Audiovisual" si la descripción cumple AL MENOS UNA de estas condiciones:
+
+     A. Menciona un término de género/soporte audiovisual:
+       video, película, cortometraje, largometraje, documental, ficción,
+       animación, comerciales, spot, noticiario, grabación audiovisual,
+       registro fílmico, fragmento de video, programa de televisión.
+
+     B. Indica duración en formato audiovisual:
+       MM:SS, HH:MM:SS, "X min.", "X h Y min."
+
+     C. Enumera créditos de producción audiovisual:
+       dirección, guion, montaje, fotografía, sonido, cámara,
+       intérpretes, productora, narración, musicalización.
+
+     D. Describe una sinopsis narrativa (personajes, trama) acompañada
+       de duración, categoría declarada o créditos.
+      
+     E. El subject o la categoría menciona cine, fílmico, televisión,
+       animación, documental o ficción, y el publisher es un archivo
+       fílmico o audiovisual.
+
+     PRIORIDAD DE EXCLUSIONES (evaluar ANTES de las condiciones A-E):
+     - Si solo hay audio (menciona "solo audio", "sin imagen", MP3, WAV, podcast)
+      → schema_additional_type: "Sound" (NO Audiovisual).
+     - Si solo hay imagen fija (menciona "imagen fija", afiche, fotografía,
+      JPG, PNG, TIFF)
+      → schema_additional_type: "Image" (NO Audiovisual).
+     - Si es base de datos, encuesta, CSV, XLSX o serie de valores
+      → schema_additional_type: "Dataset" (NO Audiovisual).
+     - Si es texto escrito, guion literario, libreto, PDF, documento escrito
+      → schema_additional_type: "Text" (NO Audiovisual).
+     - Si no cumple ninguna condición A-E y no cae en exclusiones
+      → schema_additional_type: "Dataset" (valor por defecto).
+
+     PASO 2 — NOMBRE Y DESCRIPCIÓN
       - schema_name: SIEMPRE usa el texto de "title" de RECURSO A PROCESAR. Es el ÚNICO campo obligatorio de todo el esquema — NUNCA debe quedar vacío si "title" trae contenido. schema_name es UN SOLO string (no una lista) — si el título tiene una forma alternativa o bilingüe, la forma principal va aquí y la(s) otra(s) en schema_same_as como referencia (ver PASO 3).
       - schema_description: SIEMPRE usa el texto de "description" si trae contenido. También es un string único, no una lista.
 
-    PASO 3 — IDENTIFICADORES ALTERNATIVOS Y RELACIONADOS
+     PASO 3 — IDENTIFICADORES ALTERNATIVOS Y RELACIONADOS
       a) schema_same_as (identidad — el MISMO recurso bajo otro identificador o nombre):
         - Códigos internos, IDs locales, abreviaciones o títulos alternativos DEL MISMO RECURSO.
         - {"schema:value": "<código o URL>", "schema:name": "<abreviatura o título alternativo, si aplica>"}
@@ -70,15 +107,15 @@ agents:
         - schema:linkRelationship: uno de: IsPartOf, HasPart, IsDescribedBy, Describes, IsReferencedBy, References, IsSupplementTo, IsSupplementedBy, IsVersionOf, HasVersion, IsCitedBy, Cites, IsDocumentedBy, Documents
         Ejemplo: {"schema:linkRelationship": "IsDescribedBy", "schema:target": {"schema:url": "https://api.datos.gob.cl/v1/gastos", "schema:name": ""}}
 
-    PASO 4 — COBERTURA ESPACIAL (schema_spatial_coverage)
+     PASO 4 — COBERTURA ESPACIAL (schema_spatial_coverage)
       Crea un objeto SOLO si el texto menciona un lugar o cobertura geográfica concreta:
       - {"schema:name": "<lugar>", "schema:description": "<descripción del área>", "schema:geo": {"schema:box": "<oeste,sur,este,norte>"}}
       - "schema:geo.schema:box": SOLO si (a) la cobertura es Chile continental, usando la caja canónica "-75.956,-57.987,-65.084,-16.309" (nota: esta caja es Chile CONTINENTAL, excluye Isla de Pascua y el territorio antártico), o (b) las coordenadas aparecen literalmente en el texto. En cualquier otro caso omite "schema:geo" — un campo ausente es mejor que una caja inventada.
 
-    PASO 5 — IDIOMA
+     PASO 5 — IDIOMA
       - schema_in_language: código ISO 639-1 de dos letras ("es", "en", "pt") del idioma PRINCIPAL del recurso. Es un string único (no una lista) — si el recurso es bilingüe o multilingüe, usa el idioma predominante del título/descripción.
 
-    PASO 6 — FECHAS
+     PASO 6 — FECHAS
       Busca en el texto, título y descripción:
       - schema_date_created: fecha en que los datos originales fueron generados.
       - schema_date_published: fecha en que el recurso fue publicado oficialmente. Si no hay fecha explícita de publicación pero SÍ hay un año identificable en la URL o el título, úsalo aquí.
@@ -86,15 +123,16 @@ agents:
       - schema_conditions_of_access: crea una entrada {"condition": "embargo", "date": "<fecha>"} SOLO si el texto declara explícitamente una fecha de embargo o disponibilidad futura.
       - Usa la precisión real disponible: "AAAA" si solo conoces el año, "AAAA-MM" con año y mes, "AAAA-MM-DD" SOLO si el día aparece explícitamente en el texto. NUNCA inventes un día o mes que no esté en la fuente.
       - Para un rango de años (ej. "2019-2021", período de levantamiento de una encuesta), usa el intervalo ISO 8601 "2019/2021" en schema_date_created si no hay otra fecha de creación más precisa — no descartes el año final quedándote solo con el de inicio.
+      - Si el contenido muestra el período o año de levantamiento/elaboración de ESTE mismo recurso — por ejemplo los resultados de la propia encuesta rotulados "Años 2021-2022", o una cita del propio recurso del tipo "El mapa se debe citar como: Autor (2017)" —, úsalo en schema_date_created ("2021/2022", "2017") aunque aparezca entre menús o indicadores del portal. Cuando el recurso ES esa encuesta o conjunto de datos (según title/description), una etiqueta de período ("Años 2021-2022") junto a los resultados o indicadores de ese mismo recurso es el período de los datos de ESTE recurso, no un dato ajeno del portal: úsala. Ignora solo los años que claramente pertenecen a otra cosa: el copyright o el plan estratégico del sitio, otras encuestas u otros trabajos citados como referencia.
       - NUNCA inventar fechas que no aparezcan en el contenido, título o descripción.
 
-    === REGLAS CRÍTICAS ===
-    - NUNCA inventar URLs, DOIs, fechas, lugares o cajas geográficas
-    - schema_name NUNCA vacío si hay un "title" en RECURSO A PROCESAR
-    - schema_spatial_coverage: nunca con una caja geográfica inventada
+     === REGLAS CRÍTICAS ===
+     - NUNCA inventar URLs, DOIs, fechas, lugares o cajas geográficas
+     - schema_name NUNCA vacío si hay un "title" en RECURSO A PROCESAR
+     - schema_spatial_coverage: nunca con una caja geográfica inventada
 
-    === ESTRUCTURA DE SALIDA JSON ===
-    {
+     === ESTRUCTURA DE SALIDA JSON ===
+     {
       "reasoning": "",
       "schema_name": "",
       "schema_description": "",
@@ -111,18 +149,18 @@ agents:
       "schema_copyright_year": "",
       "schema_conditions_of_access": [],
       "schema_spatial_coverage": []
-    }
+     }
 
-    === EJEMPLOS ===
+     === EJEMPLOS ===
 
-    --- EJEMPLO 1: Recurso con fecha e idioma simple ---
-    RECURSO A PROCESAR:
-    - url: https://datos.gob.cl/dataset/gastos-municipales-2024
-    - title: Dataset de gastos municipales 2024
-    - description: Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.
+     --- EJEMPLO 1: Recurso con fecha e idioma simple ---
+     RECURSO A PROCESAR:
+     - url: https://datos.gob.cl/dataset/gastos-municipales-2024
+     - title: Dataset de gastos municipales 2024
+     - description: Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.
 
-    Salida:
-    {
+     Salida:
+     {
       "reasoning": "Encontré url y title explícitos → los usé para schema_identifier (propertyID URL) y schema_name. La descripción trae dos fechas con día exacto (creación y publicación). No hay evidencia de otro idioma, lugar, ni relación con otro recurso.",
       "schema_name": "Dataset de gastos municipales 2024",
       "schema_description": "Dataset de gastos municipales. Publicado el 2024-03-15. Los datos fueron creados el 2024-01-10.",
@@ -139,17 +177,17 @@ agents:
       "schema_copyright_year": "",
       "schema_conditions_of_access": [],
       "schema_spatial_coverage": []
-    }
+     }
 
-    --- EJEMPLO 2: Recurso con cobertura nacional y API relacionada ---
-    RECURSO A PROCESAR:
-    - url: https://datos.gob.cl/dataset/gastos-municipales
-    - title: Gastos e ingresos municipales de Chile
-    - description: Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.
-    - detected_country: Chile
+     --- EJEMPLO 2: Recurso con cobertura nacional y API relacionada ---
+     RECURSO A PROCESAR:
+     - url: https://datos.gob.cl/dataset/gastos-municipales
+     - title: Gastos e ingresos municipales de Chile
+     - description: Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.
+     - detected_country: Chile
 
-    Salida:
-    {
+     Salida:
+     {
       "reasoning": "Cobertura nacional de Chile confirmada por detected_country → uso la caja canónica de Chile continental. Hay una API relacionada explícita → schema_related_link con IsDescribedBy. No hay fecha de publicación explícita.",
       "schema_name": "Gastos e ingresos municipales de Chile",
       "schema_description": "Dataset de gastos municipales, cobertura nacional. API disponible en https://api.datos.gob.cl/v1/gastos.",
@@ -170,17 +208,17 @@ agents:
       "schema_spatial_coverage": [
         {"schema:name": "Chile", "schema:description": "Cobertura nacional, todas las municipalidades de Chile continental", "schema:geo": {"schema:box": "-75.956,-57.987,-65.084,-16.309"}}
       ]
-    }
+     }
 
-    --- EJEMPLO 3: Recurso en inglés con DOI, sin cobertura geográfica evidenciada ---
-    RECURSO A PROCESAR:
-    - url: https://gfz-potsdam.de/dataset/seismic-catalog
-    - doi: 10.5880/GFZ.2.4.2021.001
-    - title: Global Seismic Event Catalog 2021
-    - description: A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.
+     --- EJEMPLO 3: Recurso en inglés con DOI, sin cobertura geográfica evidenciada ---
+     RECURSO A PROCESAR:
+     - url: https://gfz-potsdam.de/dataset/seismic-catalog
+     - doi: 10.5880/GFZ.2.4.2021.001
+     - title: Global Seismic Event Catalog 2021
+     - description: A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.
 
-    Salida:
-    {
+     Salida:
+     {
       "reasoning": "El recurso trae un doi explícito → propertyID DOI. Contenido en inglés. El catálogo es GLOBAL, no de un país o región específica identificable con una caja real — no invento schema_spatial_coverage.",
       "schema_name": "Global Seismic Event Catalog 2021",
       "schema_description": "A global catalog of seismic events recorded in 2021, compiled by GFZ Potsdam.",
@@ -197,18 +235,11 @@ agents:
       "schema_copyright_year": "",
       "schema_conditions_of_access": [],
       "schema_spatial_coverage": []
-    }
+     }
 
-    === ERRORES COMUNES A EVITAR ===
-    ❌ MAL: asignar la caja de Chile continental a un recurso que no es de cobertura nacional chilena, solo porque el recurso es de una institución chilena.
-    ✅ BIEN: si la cobertura no es Chile continental y no hay coordenadas literales en el texto, omitir "schema:geo".
-
-    ❌ MAL: {"schema_date_created": "2021-01-01", ...} cuando el texto solo dice "datos de 2021" (inventa un día que no existe en la fuente).
-    ✅ BIEN: {"schema_date_created": "2021", ...} — usa la precisión real disponible.
-
-    Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
+     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -396,7 +427,7 @@ agents:
   - schema_name
   tools:
   - lookup_organization
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -435,6 +466,10 @@ agents:
           {"schema:name": "Economía y negocios", "schema:inDefinedTermSet": "Ciencias Sociales"},
           {"schema:name": "Ciencias de la educación", "schema:inDefinedTermSet": "Ciencias Sociales"}
         ]
+      - NOTA SOBRE PATRIMONIO: Para clasificar recursos sobre patrimonio, distingue claramente entre "Patrimonio natural" (parques, reservas, monumentos naturales) y "Patrimonio cultural", el cual a su vez se divide en "Patrimonio cultural material" (edificios, monumentos, obras de arte, documentos, colecciones) y "Patrimonio cultural inmaterial" (tradiciones, fiestas, artes del espectáculo, saberes). No uses "Arqueología" como sinónimo de patrimonio; úsala solo si el recurso trata sobre la disciplina de investigación del pasado mediante restos materiales.
+
+
+
       - Si no hay categoría clara → schema_about = []
 
     PASO 3 — EXTRAE PALABRAS CLAVE (schema_keywords)
@@ -452,11 +487,12 @@ agents:
       Elige audiencias plausibles según la categoría principal (tabla de referencia abajo), y para cada una asigna mediator, education_level e instructional_method usando SOLO los valores validados.
 
       TABLA DE REFERENCIA (categoría → audiencias típicas, no exhaustiva ni obligatoria):
-      - Ciencias Sociales → Investigadores, Tomadores de decisiones, Ciudadanos, Periodistas
-      - Ciencias Naturales y Exactas / Ingeniería y Tecnología → Investigadores, Científicos de datos, Desarrolladores, Profesionales
-      - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Docentes, Público general
-      - Ciencias Agrícolas → Investigadores, Profesionales, Administradores
-      - Humanidades → Investigadores, Estudiantes, Docentes, Público general
+       - Ciencias Naturales y Exactas → Investigadores, Estudiantes, Docentes, Público general, Profesionales, Comunicadores científicos
+       - Ingeniería y Tecnología → Investigadores, Profesionales, Estudiantes, Tomadores de decisiones, Gerentes, Empresas y sector privado
+       - Ciencias Médicas y de la Salud → Investigadores, Profesionales, Estudiantes, Docentes, Público general, Funcionarios públicos
+       - Ciencias Agrícolas → Investigadores, Profesionales, Administradores, Estudiantes, Tomadores de decisiones, Funcionarios públicos, Empresas y sector privado
+       - Ciencias Sociales → Investigadores, Estudiantes, Docentes, Ciudadanos, Tomadores de decisiones, Periodistas, Funcionarios públicos, Comunidades locales
+       - Humanidades → Investigadores, Estudiantes, Docentes, Público general, Ciudadanos, Bibliotecarios y archivistas, Comunidades locales
 
       Si no hay contexto suficiente (PASO 1) → schema_audience = []
 
@@ -482,7 +518,7 @@ agents:
     Ciencias Médicas y de la Salud: Medicina básica | Medicina clínica | Ciencias de la salud | Biotecnología de la salud | Otras ciencias médicas
     Ciencias Agrícolas: Agricultura, silvicultura y pesca | Ciencia animal y lechería | Ciencias veterinarias | Biotecnología agropecuaria | Otras ciencias agrícolas
     Ciencias Sociales: Psicología | Economía y negocios | Ciencias de la educación | Sociología | Derecho | Ciencias políticas | Geografía económica y social | Comunicación y medios | Otras ciencias sociales
-    Humanidades: Historia y arqueología | Idiomas y literatura | Filosofía, ética y religión | Arte, música y diseño | Otras humanidades
+    Humanidades: Historia | Arqueología | Patrimonio natural | Patrimonio cultural material | Patrimonio cultural inmaterial | Idiomas y literatura | Lingüística y filología | Filosofía | Ética y religión | Arte e historia del arte | Música y musicología | Artes escénicas y teatro | Estudios culturales y regionales | Traducción e interpretación | Otras humanidades
 
     === VALORES VÁLIDOS DE AUDIENCIA (EN ESPAÑOL) ===
     audience: Investigadores | Estudiantes | Administradores | Público general | Profesionales | Docentes | Tomadores de decisiones | Científicos de datos | Desarrolladores | Gerentes | Ciudadanos | Periodistas | Trabajadores de ONG | Consultores
@@ -556,7 +592,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -735,7 +771,7 @@ agents:
   - creators_publishers
   context_fields:
   - schema_publisher
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -868,7 +904,7 @@ agents:
 
     Devuelve ÚNICAMENTE el JSON, sin texto adicional ni explicaciones.
   depends_on: []
-  model: deepseek-v4-flash
+  model: deepseek-v4.1-flash
   provider: opencode
   temperature: 0.0
   max_tokens: null
@@ -888,7 +924,7 @@ providers:
   default: true
   # No tight account rate limit observed (confirmed empirically: 5
   # concurrent agent calls against opencode:deepseek-v4-flash produced
-  # zero 429s). zai-coding-plan has no override -- it inherits the global
+  # zero 429s; production model is now deepseek-v4.1-flash). zai-coding-plan has no override -- it inherits the global
   # max_workers default below, tuned down for its tighter limit.
   max_workers: 5
   # OpenCode notice (2026-09-03): requests missing this header may start
@@ -897,8 +933,8 @@ providers:
   # so this names the header only; the value is generated fresh per LLM
   # call in llm/instructor_client.py's _build_extra_headers.
   session_header: x-opencode-session
-  # None of the 5 production agents use this model -- deepseek-v4-flash
-  # stays the default per explicit prior instruction. This override exists
+  # None of the 5 production agents use this model -- deepseek-v4.1-flash
+  # (previously v4-flash) is the production default per explicit instruction. This override exists
   # purely so muse-spark-1.3-contributor is a usable, config-recognized
   # model on this provider (e.g. via scripts/compare_models.py's in-place
   # model-swap mechanism), config-driven rather than special-cased in
@@ -939,7 +975,7 @@ max_workers: 1
 enable_identifier_enrichment: true
 # Fetches each resource's URL and feeds page text to agents as extra context.
 # Enabled 2026-08-15 after a 20-item scale eval on current prod (opencode/
-# deepseek-v4-flash, max_workers 5) showed 40/40 succeeded with zero stalls/
+# deepseek-v4-flash, now deepseek-v4.1-flash; max_workers 5) showed 40/40 succeeded with zero stalls/
 # timeouts and a net +0.022 structural quality gain. Known gap: page text is
 # taken from <main>/<article> when present, but a page without them still
 # feeds nav/boilerplate through, so a rare page can dilute rather than help

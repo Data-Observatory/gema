@@ -13,7 +13,7 @@ validating it — visor's own default provider is openrouter every time it
 boots, whether it found config/agents.yaml directly (running from an
 editable repo checkout) or a frozen build's seeded copy. Only the
 underlying files (config/agents.yaml, and any seeded user copy of it) stay
-pinned to opencode/deepseek-v4-flash on disk — that's what CI, the test
+pinned to opencode/deepseek-v4.1-flash on disk — that's what CI, the test
 suite, and `gema process` from the CLI actually run against.
 
 That openrouter default is meant for someone with no opencode access at
@@ -54,20 +54,21 @@ DEFAULT_USER_CONFIG_PATH = Path.home() / ".config" / "gema" / "agents.yaml"
 
 # Provider/model swap applied by load_pipeline_config() to every config
 # visor loads, regardless of where it came from. config/agents.yaml (and
-# any file seeded from it) stays pinned to opencode/deepseek-v4-flash on
+# any file seeded from it) stays pinned to opencode/deepseek-v4.1-flash on
 # disk -- the combination CI/tests/the CLI actually run against, i.e.
 # "working on this library". Visor is everywhere else: its own default
-# is always OpenRouter's auto-updating "latest" alias, so a fresh install
-# never ships an already-stale pinned checkpoint. One source of truth for
+# is OpenRouter's un-dated ``deepseek/deepseek-v4.1-flash`` id (the same
+# model family as the testing pin; OpenRouter publishes no ``~...-latest``
+# alias for v4.1 yet -- switch back to one when it does). One source of truth for
 # every agent's prompt/fields/tools/depends_on either way -- this only
 # ever touches provider/model/extra_body, and only in memory.
 _TESTING_PROVIDER = "opencode"
-_TESTING_MODEL = "deepseek-v4-flash"
+_TESTING_MODEL = "deepseek-v4.1-flash"
 # Every opencode model sharing this prefix takes the same DeepSeek-native
 # thinking-disable param (see reconcile_provider_extra_body()).
 _TESTING_MODEL_FAMILY_PREFIX = "deepseek"
 _EXTERNAL_USER_PROVIDER = "openrouter"
-_EXTERNAL_USER_MODEL = "~deepseek/deepseek-v4-flash-latest"
+_EXTERNAL_USER_MODEL = "deepseek/deepseek-v4.1-flash"
 # OpenRouter's own normalized reasoning-disable param -- different shape
 # than DeepSeek's native `thinking: {type: disabled}` passthrough
 # config/agents.yaml uses for opencode (see that file's own comment).

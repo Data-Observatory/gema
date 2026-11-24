@@ -476,7 +476,12 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
     },
     "sample_input03": {
         "name": "Zonas climaticas de Chile segun Köppen-Geiger escala 1:1.500.000",
-        "creator_names": ["Sarricolea, P.", "Herrera, MJ.", "Meseguer-Ruiz, O."],
+        "creator_names": [
+            "Departamento de Geografía Universidad de Chile",
+            "Sarricolea, P.",
+            "Herrera, MJ.",
+            "Meseguer-Ruiz, O.",
+        ],
         "license": None,
     },
     "sample_input04": {
@@ -486,13 +491,13 @@ GOLDEN_EXPECTATIONS: dict[str, dict] = {
     },
     "sample_input05": {
         "name": "Censo Agropecuario 2007 Ganado bovino Isla de Pascua",
-        # Was "Instituto de Políticas y Bienes Públicos" (a Madrid research
+        # History: "Instituto de Políticas y Bienes Públicos" (a Madrid research
         # facility, wrong country/institution) before the O-5 ROR
-        # affiliation-match country sanity check fix -- this real
-        # re-recording (2026-09-07) now resolves the actual Chilean
-        # publisher (ODEPA) via ISNI instead, confirming the fix. See
-        # docs/codata_mcp_croissant_cdifspecs.md Appendix B O-5.
-        "creator_names": ["Oficina de Estudios y Políticas Agrarias"],
+        # affiliation-match country sanity check fix; then ODEPA via ISNI
+        # (re-recording 2026-09-07, confirming the fix; see
+        # docs/codata_mcp_croissant_cdifspecs.md Appendix B O-5); now INE after
+        # the 2026-11-23 re-recording against the revised agent prompts.
+        "creator_names": ["Instituto Nacional de Estadísticas"],
         "license": None,
     },
     "sample_input06": {

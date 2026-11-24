@@ -137,6 +137,28 @@ def make_license_config() -> PipelineConfig:
     )
 
 
+def make_license_holder_config() -> PipelineConfig:
+    """One agent producing schema_license + schema_copyright_holder, for the
+    copyright_holder guardrail (Datos Abiertos license vs publisher) tests."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="license-holder-agent",
+                name="License Holder Agent",
+                fields=["schema_license", "schema_copyright_holder"],
+                prompt="Extract license from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+    )
+
+
 def make_url_config() -> PipelineConfig:
     """Config whose one agent produces schema_url, for the #20 fallback's
     'don't clobber an agent-produced value' test."""
@@ -1380,6 +1402,77 @@ class TestPipelineActorFallbacks:
         assert result.document is not None
         assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
 
+    def test_datos_abiertos_license_wins_over_publisher_for_copyright_holder(
+        self, tmp_path
+    ) -> None:
+        """The license rule runs before the publisher fallback, so with both a
+        resource publisher and the Datos Abiertos license, copyrightHolder is
+        'Estado de Chile' (not the publisher); publisher/creator still cascade."""
+        factory = lambda provider, **kw: FakeLLMClient(  # noqa: E731
+            {"fields": {"schema_license": [{"schema:name": "Datos Abiertos del Estado de Chile"}]}}
+        )
+        make_input_file(
+            tmp_path,
+            {
+                "url": "https://example.com/x",
+                "title": "T",
+                "description": "D",
+                "publisher": "Ministerio de Hacienda",
+            },
+        )
+        pipeline = Pipeline(config=make_license_config(), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+
+        result = results[0]
+        assert result.document is not None
+        assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
+        assert result.document.get_field("schema:publisher") == {
+            "@type": ["schema:Organization"],
+            "schema:name": "Ministerio de Hacienda",
+        }
+
+    @staticmethod
+    def _run_license_holder(tmp_path, *, holder, licensed=True, publisher="Ministerio de Hacienda - Gobierno de Chile"):
+        fields: dict = {"schema_copyright_holder": holder}
+        fields["schema_license"] = (
+            [{"schema:name": "Datos Abiertos del Estado de Chile"}] if licensed else []
+        )
+        factory = lambda provider, **kw: FakeLLMClient({"fields": fields})  # noqa: E731
+        make_input_file(
+            tmp_path,
+            {"url": "https://example.com/x", "title": "T", "description": "D", "publisher": publisher},
+        )
+        pipeline = Pipeline(config=make_license_holder_config(), llm_factory=factory)
+        result = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))[0]
+        assert result.document is not None
+        return result
+
+    def test_copyright_holder_equal_to_publisher_is_overridden_by_datos_abiertos(
+        self, tmp_path
+    ) -> None:
+        # Accent/case/whitespace folded comparison with the publisher's display name.
+        result = self._run_license_holder(tmp_path, holder="  ministerio de HACIENDA ")
+        assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
+        events = [e for e in result.guardrail_events if e.guardrail == "copyright_holder"]
+        assert [(e.action, e.field) for e in events] == [("overridden", "schema:copyrightHolder")]
+        assert events[0].value.strip() == "ministerio de HACIENDA"
+
+    def test_empty_copyright_holder_is_filled_by_datos_abiertos(self, tmp_path) -> None:
+        result = self._run_license_holder(tmp_path, holder="")
+        assert result.document.get_field("schema:copyrightHolder") == "Estado de Chile"
+        events = [e for e in result.guardrail_events if e.guardrail == "copyright_holder"]
+        assert [e.action for e in events] == ["filled"]
+
+    def test_distinct_copyright_holder_is_untouched_by_datos_abiertos(self, tmp_path) -> None:
+        result = self._run_license_holder(tmp_path, holder="Universidad de Chile")
+        assert result.document.get_field("schema:copyrightHolder") == "Universidad de Chile"
+        assert not [e for e in result.guardrail_events if e.guardrail == "copyright_holder"]
+
+    def test_copyright_holder_untouched_without_datos_abiertos_license(self, tmp_path) -> None:
+        result = self._run_license_holder(tmp_path, holder="Ministerio de Hacienda", licensed=False)
+        assert result.document.get_field("schema:copyrightHolder") == "Ministerio de Hacienda"
+        assert not [e for e in result.guardrail_events if e.guardrail == "copyright_holder"]
+
     def test_no_fallback_when_no_resource_publisher_and_no_matching_license(
         self, tmp_path, llm_factory
     ) -> None:
@@ -1395,3 +1488,98 @@ class TestPipelineActorFallbacks:
         # wrap only fires when get_field returns an actual list).
         assert result.document.get_field("schema:creator") is None
         assert not result.document.get_field("schema:copyrightHolder")
+
+
+def make_guardrail_config(**flags: object) -> PipelineConfig:
+    """One agent producing schema_name + schema_creator, for guardrail tests."""
+    return PipelineConfig(
+        schema_name="cdif-discovery",
+        agents=[
+            AgentConfig(
+                id="guardrail-agent",
+                name="Guardrail Agent",
+                fields=["schema_name", "schema_creator"],
+                prompt="Extract from {url} {title} {description}",
+                provider="mock",
+                model="mock-model",
+            ),
+        ],
+        providers=[
+            ProviderConfig(name="mock", base_url="http://localhost", api_key_env="MOCK_KEY"),
+        ],
+        default_provider="mock",
+        **flags,
+    )
+
+
+class TestGuardrailsInPipeline:
+    """Step 4b: deterministic source-field enforcement + advisory grounding check."""
+
+    _INPUT = {
+        "url": "https://example.com/humedales",
+        "title": "Catastro de Humedales de Chile",
+        "description": "Inventario nacional de humedales elaborado por el Ministerio.",
+    }
+    _FIELDS = {
+        "schema_name": "Wetland Cadastre of Chile",  # paraphrase/translation of the title
+        "schema_creator": [{"@type": ["schema:Person"], "schema:name": "Zorblax Quuxington"}],
+    }
+
+    def _run(self, tmp_path, **flags):
+        make_input_file(tmp_path, self._INPUT)
+        factory = lambda provider, **kw: FakeLLMClient({"fields": self._FIELDS})  # noqa: E731
+        pipeline = Pipeline(config=make_guardrail_config(**flags), llm_factory=factory)
+        results = pipeline.run(FilesystemInputSource(), pattern=str(tmp_path / "*.json"))
+        assert len(results) == 1
+        assert results[0].document is not None
+        return results[0]
+
+    def test_paraphrased_title_is_overridden_with_input_title(self, tmp_path) -> None:
+        result = self._run(tmp_path)
+        assert result.document.get_field("schema:name") == self._INPUT["title"]
+        assert any(
+            e.guardrail == "source_fields"
+            and e.action == "overridden"
+            and e.field == "schema:name"
+            and e.value == "Wetland Cadastre of Chile"
+            for e in result.guardrail_events
+        )
+
+    def test_ungrounded_creator_is_flagged_but_kept(self, tmp_path) -> None:
+        result = self._run(tmp_path)
+        assert any(
+            e.guardrail == "grounding"
+            and e.action == "flagged"
+            and "Zorblax Quuxington" in e.value
+            for e in result.guardrail_events
+        )
+        assert "Zorblax Quuxington" in json.dumps(result.document.get_field("schema:creator"))
+
+    def test_guardrail_events_are_not_warnings(self, tmp_path) -> None:
+        result = self._run(tmp_path)
+        assert result.guardrail_events
+        assert not any(
+            "grounding" in w or "source_fields" in w or "Zorblax" in w for w in result.warnings
+        )
+
+    def test_guardrails_can_be_disabled(self, tmp_path) -> None:
+        result = self._run(tmp_path, enforce_source_fields=False, validate_grounding=False)
+        assert result.guardrail_events == []
+        # Paraphrase left as the model wrote it.
+        assert result.document.get_field("schema:name") == "Wetland Cadastre of Chile"
+
+    def test_each_guardrail_toggles_independently(self, tmp_path) -> None:
+        only_grounding = self._run(tmp_path, enforce_source_fields=False)
+        assert {e.guardrail for e in only_grounding.guardrail_events} == {"grounding"}
+        only_source = self._run(tmp_path, validate_grounding=False)
+        assert {e.guardrail for e in only_source.guardrail_events} == {"source_fields"}
+
+    def test_guardrail_log_path_writes_one_json_line_per_event(self, tmp_path) -> None:
+        log = tmp_path / "logs" / "guardrails.jsonl"
+        result = self._run(tmp_path, guardrail_log_path=str(log))
+        lines = log.read_text(encoding="utf-8").splitlines()
+        assert len(lines) == len(result.guardrail_events) >= 2
+        rows = [json.loads(line) for line in lines]
+        assert {r["guardrail"] for r in rows} == {"source_fields", "grounding"}
+        assert all(r["resource"] == self._INPUT["url"] for r in rows)
+        assert all({"action", "field", "location", "value", "detail"} <= r.keys() for r in rows)
