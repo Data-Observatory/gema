@@ -43,7 +43,8 @@ VISOR_NATIVE=0 VISOR_PORT=8001 VISOR_ROOT_PATH=/meta uv run python -m visor.app
 
 Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
 
-- **http://localhost:8000/** — Dataverse UI (`dataverseAdmin` / `admin1`)
+- **http://localhost:8000/** — Dataverse UI (`dataverseAdmin` / `admin1` on a fresh stack —
+  change it before sharing, see "Change the admin password" below)
 - **http://localhost:8000/up/** — upload form for attendees
 - **http://localhost:8000/meta/** — visor
 - **http://localhost:8000/intake/** — workshop intake page (admin: `/intake/admin/`, see
@@ -171,6 +172,7 @@ published**. Create and publish a `workshop` collection with the admin API token
 
 ```bash
 TOKEN=$(./scripts/get_admin_token.sh)   # or the UI: dataverseAdmin -> API Token -> Create Token
+[ -n "$TOKEN" ] || echo "no token: see the note below"
 curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverses/root/actions/:publish
 sed 's/"alias": "[^"]*"/"alias": "workshop"/; s/"name": "[^"]*"/"name": "GEMA! workshop"/' \
   scripts/example_collection.json > /tmp/workshop-collection.json
@@ -178,6 +180,13 @@ curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverse
   --upload-file /tmp/workshop-collection.json
 curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverses/workshop/actions/:publish
 ```
+
+`get_admin_token.sh` only finds the token on a **fresh** stack: it reads it from the
+`bootstrap` container's first-boot log, and any later `docker compose up` re-runs bootstrap,
+which then only logs "bootstrapped already". If it prints nothing, reuse the token already in
+`.env` (`TOKEN=$(grep ^DATAVERSE_API_TOKEN= .env | cut -d= -f2)`) or create one in the UI.
+A wrong/empty token makes every call below answer `"Bad API key"` or `"User with token null
+not found"`.
 
 Each call should answer `"status":"OK"`. Publishing `root` a second time returns an error
 saying it is already published, which is harmless. If you ran `scripts/smoke_test.sh`, its
@@ -309,6 +318,11 @@ them from the Dataverse UI if needed.
 
 ### Troubleshooting
 
+- **Dataverse is unreachable after a reboot** (`docker ps` shows `dataverse` restarting,
+  `docker logs dataverse` loops on `lookup postgres ... server misbehaving`): `postgres` and
+  `smtp` stayed stopped, because their `restart: on-failure` policy does not bring them back
+  after a clean shutdown. Run `docker compose up -d postgres smtp` (or `docker compose up -d`)
+  and wait a couple of minutes for `curl http://localhost:8080/api/info/version`.
 - **`intake` keeps restarting** (`docker ps` shows `Restarting`): run `docker logs intake`.
   `intake: configuration error: INTAKE_ADMIN_TOKEN is not set` (or `OPENCODE_API_KEY`) means
   you should set the key in `.env` and run `docker compose up -d intake`.
@@ -461,9 +475,14 @@ live.
    `dataverseAdmin` / `admin1` is Dataverse's own publicly-documented demo
    password — anyone on your tailnet who's read the same docs you did gets
    full superuser access (create, delete, publish anything) the moment
-   they can reach the instance. Change it via the UI (account menu →
-   password), or scope your Tailscale ACLs to only the specific attendees'
-   devices, or both. Attendees uploading a dataset don't need admin at all
+   they can reach the instance. Dataverse has no API for this; change it in
+   the UI (log in, account menu → Account Information → Change Password), or
+   use *Forgot password?* on the login page: the reset e-mail lands in the
+   stack's mail catcher at http://localhost:1080 (the admin's address is
+   `dataverse@mailinator.com`). Keep the new one in `.env` as
+   `DATAVERSE_ADMIN_PASSWORD` (no container reads it; nothing in the stack
+   uses the password after bootstrap, everything uses API tokens). Also
+   scope your Tailscale ACLs to only the specific attendees' devices. Attendees uploading a dataset don't need admin at all
    — the API-token workflow in the smoke test above, or a plain non-admin
    account you create for them, is enough.
 
@@ -471,6 +490,13 @@ live.
    before the live event: `curl http://<tailscale-address>:8080/api/info/version`
    should return the real version JSON, same as the localhost check earlier
    in this README.
+
+**Other default credentials and open ports** (not changed by the steps above): the
+Postgres password is `secret` (hardcoded in `compose.yml`, and Postgres is published on
+`0.0.0.0:5432`), and Payara admin (4848), JDWP debug (9009), JMX (8686), Solr (8983) and
+the mail catcher (25/1080) are published on all interfaces too. Funnel only exposes the Caddy
+port, but anyone on the same LAN (e.g. the venue Wi-Fi) can reach these directly: firewall
+them, or prefix those `ports:` entries with `127.0.0.1:` and recreate the containers.
 
 ### Tailscale Funnel (public internet, not just your tailnet)
 
