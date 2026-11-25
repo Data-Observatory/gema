@@ -219,6 +219,7 @@ is not affected.
 ```bash
 docker compose up -d --build intake caddy
 docker logs intake          # expect "intake ready: collection=workshop workers=4 ..."
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/intake/   # expect 200 (your CADDY_PORT)
 ```
 
 The image is built from the **repo root**: it installs the `gema` library from `src/` and
@@ -233,8 +234,9 @@ recreates the container with the new values). After pulling code changes, keep `
 
 Port 8000 is `CADDY_PORT`. Funnel setup is in "Tailscale Funnel" below:
 `tailscale funnel --bg <CADDY_PORT>`. **Admin login**: open the admin URL and paste
-`INTAKE_ADMIN_TOKEN`. The session lasts 12 h (cookie for `/intake/admin/` only). **Log out**
-ends it.
+`INTAKE_ADMIN_TOKEN`, locally or over the Funnel's HTTPS, never over plain HTTP on the venue
+LAN (see Security notes). The session lasts 12 h (cookie for `/intake/admin/` only). **Log
+out** ends it in that browser.
 
 ### 4. Dry run (do this the day before)
 
@@ -257,7 +259,8 @@ ends it.
 open"), DB empty. Share the `/intake/` URL.
 
 **During**: attendees open `/intake/` and add a *URL* (required, http/https), optional
-*hints* (≤1000 characters) and a *pseudonym* (≤50). The list refreshes every 10 s. A
+*hints* (≤1000 characters) and a *pseudonym* (≤50, no line breaks). The URL must be the
+resource's web page (HTML), not a direct file download. The list refreshes every 10 s. A
 duplicate URL (case of the host, trailing `/` and `#fragment` ignored) is refused, naming who
 submitted it first.
 - The pseudonym only becomes the Dataverse keyword `group:<pseudonym>`. It never becomes an
@@ -340,6 +343,10 @@ them from the Dataverse UI if needed.
   `docker compose up -d intake`.
 - **"URL returned HTTP 403"**, or other 4xx, means the site refuses automated requests or the
   page is gone. Ask the attendee for another URL, delete the row, and let them resubmit.
+- **"URL is not a web page (content type: application/pdf)"** (or zip, csv...), **"page is
+  too large"** or **"page takes too long to download"**: the URL is a file, not a landing
+  page (GEMA! only reads HTML pages, and would describe a file from its URL alone). Ask for
+  the dataset's landing page instead, delete the row, and let them resubmit.
 - **Many `timed out after 300s` or provider 429 errors**: too many concurrent LLM calls.
   Lower `INTAKE_WORKERS` (e.g. `2`), recreate the container, and **Retry failed**. Successful
   LLM answers are cached, so retries are faster. A timed-out record keeps running in the
@@ -380,8 +387,24 @@ uv run --with fastapi --with python-multipart --with jinja2 pytest dataverse-dem
 
 The server fetches attendee-submitted URLs, so non-public addresses (IP literals,
 `localhost`, single-label and `.local`-style names) are refused at submit time, and DNS and
-every redirect hop are checked again before the fetch. Treat `INTAKE_ADMIN_TOKEN` like the
-Dataverse token: anyone holding it can publish to the instance.
+every redirect hop are checked again when the row is processed. That check is the only
+fetch of the page: it accepts HTML/text only, at most 10 MB, downloaded within 30 s, and
+hands the text to GEMA! (whose own, unguarded page fetch is switched off). Treat
+`INTAKE_ADMIN_TOKEN` like the Dataverse token: anyone holding it can publish to the instance.
+
+**Where to log in as admin**: at `http://localhost:<CADDY_PORT>/intake/admin/` on this
+machine, or at the Funnel URL (HTTPS; the session cookie is then marked `Secure`
+automatically). Never through `http://<lan-ip>:<CADDY_PORT>` on the venue Wi-Fi: that is
+plain HTTP, so the token and the session cookie cross the room's network in clear. The
+cookie is derived from the token and stays valid until the token changes, so if you think
+it leaked, change `INTAKE_ADMIN_TOKEN` and run `docker compose up -d intake`.
+
+**Junk submissions**: the page is public (through Funnel, to the whole internet), and
+`INTAKE_RATE_LIMIT=40` with the default `INTAKE_MAX_RECORDS=40` lets a single address fill
+the list in a minute. Share the URL only with the room, and if it happens: **Close intake**,
+delete the junk rows (one click each), or raise `INTAKE_MAX_RECORDS` and run
+`docker compose up -d intake` (not mid-batch: recreating the container puts running rows
+back to `pending`). Junk is never processed unless you click **Process pending**.
 
 **Which client IP the rate limit sees** (checked live on the local stack, 2026-11-25):
 Caddy overwrites `X-Real-IP` with its `{client_ip}`, and trusts `X-Forwarded-For` only
@@ -411,7 +434,8 @@ repo root of this folder) fans out one port to path-based routes:
 
 - **`/intake`** → the workshop intake page (see above). Caddy sets `X-Real-IP` from its
   own `{client_ip}` (global `trusted_proxies` = the docker gateway only), which the intake's
-  per-IP rate limit uses. See "Which client IP the rate limit sees" under Security notes.
+  per-IP rate limit uses, and caps request bodies at 64 KB (Caddy answers 413 above that).
+  See "Which client IP the rate limit sees" under Security notes.
 - **`/up`** → the uploader form. Works fully — confirmed live, including a
   real dataset upload through the proxy.
 - **`/meta`** → visor's own hosted mode, running on your host machine (not
@@ -545,7 +569,17 @@ at all. Check state with `tailscale funnel status`; turn it off with
 
 **Prerequisite**: Funnel isn't on by default — enable it once for this node
 in the Tailscale admin console (or grant the `funnel` node attribute via
-your tailnet's ACL).
+your tailnet's ACL). It also needs MagicDNS and HTTPS certificates enabled for the tailnet
+(admin console → DNS). If anything is missing, `tailscale funnel` prints a link to the page
+that enables it. The first HTTPS request after enabling can take a few seconds while the
+certificate is issued, so open the URL once yourself before sharing it.
+
+Funnel publishes **every** Caddy route to the internet, not just `/intake/`: `/up/` (the
+uploader creates datasets with `DATAVERSE_API_TOKEN` for whoever posts to it) and `/meta/`
+(Visor, if you have it running) included. For an intake-only workshop, stop the uploader
+(`docker compose stop uploader`; `/up/` then answers 502; repeat it after any
+`docker compose up -d ... caddy`, which starts it again as a dependency) and don't run
+Visor.
 
 **This is meaningfully different from the tailnet-only sharing above: it's
 the public internet, not just your tailnet.** Anyone with the URL reaches
@@ -574,8 +608,9 @@ Funnel `Host` header):
   change are fine.
 - Payara does not honour `X-Forwarded-Proto`, so the few absolute links Payara builds from
   the request itself (not from `siteUrl`) say `http://<funnel-host>/...`, and Funnel only
-  answers on HTTPS. Attendees viewing a dataset do not hit these. Log in as admin locally,
-  not through the Funnel URL.
+  answers on HTTPS. Attendees viewing a dataset do not hit these. Log in to *Dataverse* as
+  admin locally, not through the Funnel URL. (The intake's own admin page is fine over the
+  Funnel URL; see the intake Security notes.)
 
 ## Resetting
 

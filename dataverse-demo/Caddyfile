@@ -35,8 +35,13 @@
 
 	# Workshop intake page + admin (a FastAPI container). Its templates use relative links
 	# for the same reason as /up. X-Real-IP / X-Forwarded-Prefix are set here, so they are
-	# overwritten even if a client sends its own.
+	# overwritten even if a client sends its own. Its forms are tiny (URL, 1000-char hints,
+	# pseudonym); the body cap keeps an anonymous Funnel visitor from streaming a huge POST
+	# into the app's form parser.
 	handle_path /intake/* {
+		request_body {
+			max_size 64KB
+		}
 		reverse_proxy intake:8095 {
 			header_up X-Real-IP {client_ip}
 			header_up X-Forwarded-Prefix /intake
