@@ -193,6 +193,14 @@ def test_per_ip_rate_limit_honours_forwarded_ip(tmp_path: Path) -> None:
     assert r.status_code == 429
 
 
+def test_invalid_submissions_do_not_consume_the_rate_limit(tmp_path: Path) -> None:
+    env = Env(tmp_path, rate_limit=1)
+    ip = {"X-Real-IP": "9.9.9.9"}
+    assert submit(env, "https://ok.org/x", pseudonym="", **ip).status_code == 400
+    assert submit(env, "ftp://ok.org/x", **ip).status_code == 400
+    assert submit(env, "https://ok.org/x", **ip).status_code == 303
+
+
 def test_public_list_shows_dataverse_link_only_when_done(env: Env) -> None:
     done = add(env.store, "https://ok.org/done", "Ana")
     add(env.store, "https://ok.org/pending", "Bob")

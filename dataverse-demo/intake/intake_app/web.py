@@ -174,8 +174,6 @@ def create_app(
 
         if not store.is_open():
             return reject("Submissions closed.", 403)
-        if not submit_limiter.allow(client_ip(request)):
-            return reject("Too many submissions from your address; please wait a minute.", 429)
         if not form["pseudonym"]:
             return reject("Pseudonym is required.", 400)
         if len(form["pseudonym"]) > MAX_PSEUDONYM:
@@ -188,6 +186,10 @@ def create_app(
             return reject(str(exc), 400)
         if not settings.allow_private_urls and is_forbidden_literal(url_norm):
             return reject("That address is not publicly reachable.", 400)
+        # Counted only once the form is valid: at a workshop many attendees share one venue
+        # IP (NAT), so a typo or a blank field must not eat the room's submission budget.
+        if not submit_limiter.allow(client_ip(request)):
+            return reject("Too many submissions from your address; please wait a minute.", 429)
         try:
             store.add(
                 url=form["url"],
