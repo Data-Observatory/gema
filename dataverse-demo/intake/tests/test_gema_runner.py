@@ -61,10 +61,11 @@ class FakePipeline:
     """Captures the resource handed to Pipeline.run and returns a canned result."""
 
     seen: list[Any] = []
+    configs: list[Any] = []
     result: Any = None
 
     def __init__(self, config: Any, max_workers: int = 4) -> None:
-        pass
+        FakePipeline.configs.append(config)
 
     def run(self, source: Any) -> list[Any]:
         resource = source.fetch(source.list_sources("*")[0])
@@ -81,6 +82,7 @@ def ok_result() -> Any:
 @pytest.fixture
 def fake_pipeline(monkeypatch: pytest.MonkeyPatch) -> type[FakePipeline]:
     FakePipeline.seen = []
+    FakePipeline.configs = []
     FakePipeline.result = ok_result()
     monkeypatch.setattr(gema_runner, "Pipeline", FakePipeline)
     monkeypatch.setattr(
@@ -159,7 +161,24 @@ def stub_stream(
 
 def test_reachable_url_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     stub_stream(monkeypatch, {"https://ok.org/x": (200, None)})
-    check_url_reachable("https://ok.org/x", allow_private=False)
+    assert check_url_reachable("https://ok.org/x", allow_private=False) == "<html></html>"
+
+
+def test_checked_page_is_handed_to_gema_which_does_not_fetch_again(
+    monkeypatch: pytest.MonkeyPatch, fake_pipeline: type[FakePipeline]
+) -> None:
+    # GEMA!'s own fetch would follow redirects unguarded (the server could send the checker
+    # to a public page and GEMA! to an internal one), so it must be off and get our text.
+    monkeypatch.setenv("OPENCODE_API_KEY", "test-key")
+    runner = GemaRunner.from_files(AGENTS, EXPORT, preflight=True)
+    assert runner._config.enable_content_fetch  # noqa: SLF001 - the repo config has it on
+    page = "<html><body><main><p>Ocean temperature records 1990-2020.</p></main></body></html>"
+    stub_stream(monkeypatch, {"https://ok.org/x": (200, None)}, chunks=iter([page.encode()]))
+    runner.build_payload("https://ok.org/x", "")
+    assert fake_pipeline.configs[0].enable_content_fetch is False
+    assert "Ocean temperature records" in fake_pipeline.seen[0].fetched_content
+    assert "<p>" not in fake_pipeline.seen[0].fetched_content
+    assert runner._config.enable_content_fetch  # noqa: SLF001 - shared config untouched
 
 
 @pytest.mark.parametrize("content_type", ["application/zip", "application/pdf", ""])

@@ -21,6 +21,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 from metadata_enricher.config.loader import load_config
 from metadata_enricher.config.models import DataverseExportConfig, PipelineConfig, ProviderConfig
+from metadata_enricher.enrichers.content_fetcher import clean_html_to_text
 from metadata_enricher.exporters.dataverse import load_dataverse_export_config, to_dataverse_json
 from metadata_enricher.pipeline import Pipeline
 from metadata_enricher.types import ResourceDescription
@@ -67,8 +68,8 @@ class _OneShotSource:
         return self._resource
 
 
-def _check_page_body(resp: Any, *, body_deadline: float) -> None:
-    """Reject a 2xx answer GEMA! could not use, or that would hurt the intake to fetch.
+def _read_page_body(resp: Any, *, body_deadline: float) -> str:
+    """Read a 2xx answer, bounded; reject one GEMA! could not use. Returns the page text.
 
     GEMA!'s page fetch reads the *whole* body into memory with no size cap and no total
     time limit (httpx's timeout is per read), and only then drops anything that is not
@@ -86,24 +87,36 @@ def _check_page_body(resp: Any, *, body_deadline: float) -> None:
     if declared.isdigit() and int(declared) > MAX_PAGE_BYTES:
         raise PermanentError(f"page is too large (over {MAX_PAGE_BYTES // 1_000_000} MB)")
     received = 0
+    chunks: list[bytes] = []
     for chunk in resp.iter_bytes():
         received += len(chunk)
         if received > MAX_PAGE_BYTES:
             raise PermanentError(f"page is too large (over {MAX_PAGE_BYTES // 1_000_000} MB)")
         if time.monotonic() > body_deadline:
             raise PermanentError("page takes too long to download")
+        chunks.append(chunk)
+    raw = b"".join(chunks)
+    try:
+        return raw.decode(getattr(resp, "encoding", None) or "utf-8", errors="replace")
+    except LookupError:  # unknown charset label
+        return raw.decode("utf-8", errors="replace")
 
 
 def check_url_reachable(
     url: str, *, allow_private: bool, timeout: float = 15.0, body_timeout: float = 30.0
-) -> None:
-    """Fail fast, with a readable reason, on a dead/forbidden/unusable URL.
+) -> str:
+    """Fail fast, with a readable reason, on a dead/forbidden/unusable URL; return the page.
 
     GEMA!'s own page fetch is best-effort by design (a dead URL silently yields no page
     text and the model would then describe a page it never saw), so the intake checks
     reachability itself. Each redirect hop is re-checked against the private-address guard,
     and the final page must be HTML/text, at most ``MAX_PAGE_BYTES``, downloaded within
-    *body_timeout* seconds (see ``_check_page_body``).
+    *body_timeout* seconds (see ``_read_page_body``).
+
+    The returned text is what GEMA! is given as the page content (``fetched_content``), so
+    GEMA! does not fetch the URL a second time: that second fetch would follow redirects
+    with no private-address guard (a server can redirect the checker to a public page and
+    GEMA! to an internal one) and with no size/time bound.
     """
     body_deadline = time.monotonic() + body_timeout
     current = url
@@ -126,8 +139,7 @@ def check_url_reachable(
             ) as resp:
                 status = resp.status_code
                 location = resp.headers.get("location")
-                if 200 <= status < 300:
-                    _check_page_body(resp, body_deadline=body_deadline)
+                body = _read_page_body(resp, body_deadline=body_deadline) if status < 300 else ""
         except httpx.InvalidURL:
             raise PermanentError("invalid URL") from None
         except httpx.TimeoutException as exc:
@@ -141,7 +153,7 @@ def check_url_reachable(
             raise TransientError(f"URL returned HTTP {status}")
         if status >= 400:
             raise PermanentError(f"URL returned HTTP {status}")
-        return
+        return body
     raise PermanentError("URL redirects too many times")
 
 
@@ -212,18 +224,24 @@ class GemaRunner:
         )
 
     def build_payload(self, url: str, hints: str) -> BuiltPayload:
-        if self._preflight:
-            check_url_reachable(url, allow_private=self._allow_private)
-
         # `context_hints` is the repo's existing mechanism for externally supplied facts:
         # ResourceDescription allows extra fields, agents/base.py forwards them to the
         # prompt, and the shared system prompt tells every agent how to treat them.
         extra: dict[str, str] = {"context_hints": hints} if hints.strip() else {}
+        config = self._config
+        if self._preflight:
+            page = check_url_reachable(url, allow_private=self._allow_private)
+            # Same cleaning (and 8000-character cap) as GEMA!'s own fetch, which is switched
+            # off: the URL is fetched once, by the guarded checker above.
+            content = clean_html_to_text(page) if page else ""
+            if content:
+                extra["fetched_content"] = content
+            config = config.model_copy(update={"enable_content_fetch": False})
         resource = ResourceDescription(url=url, **extra)
 
         model = self._export.agent.model
-        workers = self._config.effective_max_workers(PROVIDER, model)
-        pipeline = Pipeline(self._config, max_workers=workers)
+        workers = config.effective_max_workers(PROVIDER, model)
+        pipeline = Pipeline(config, max_workers=workers)
         results = pipeline.run(_OneShotSource(resource))
         if not results:
             raise PermanentError("GEMA! returned no result")
