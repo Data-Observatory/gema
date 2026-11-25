@@ -134,12 +134,23 @@ def test_pipeline_errors_are_classified(
 # -- URL reachability pre-check -------------------------------------------------------------
 
 
-def stub_stream(monkeypatch: pytest.MonkeyPatch, script: dict[str, tuple[int, str | None]]) -> None:
+def stub_stream(
+    monkeypatch: pytest.MonkeyPatch,
+    script: dict[str, tuple[int, str | None]],
+    *,
+    headers: dict[str, str] | None = None,
+    chunks: Iterator[bytes] | None = None,
+) -> None:
     @contextmanager
     def stream(method: str, url: str, **kwargs: Any) -> Iterator[Any]:
         status, location = script[url]
+        hdrs = {"content-type": "text/html; charset=utf-8", **(headers or {})}
+        if location:
+            hdrs["location"] = location
         yield SimpleNamespace(
-            status_code=status, headers={"location": location} if location else {}
+            status_code=status,
+            headers=hdrs,
+            iter_bytes=lambda: chunks if chunks is not None else iter([b"<html></html>"]),
         )
 
     monkeypatch.setattr(httpx, "stream", stream)
@@ -149,6 +160,52 @@ def stub_stream(monkeypatch: pytest.MonkeyPatch, script: dict[str, tuple[int, st
 def test_reachable_url_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     stub_stream(monkeypatch, {"https://ok.org/x": (200, None)})
     check_url_reachable("https://ok.org/x", allow_private=False)
+
+
+@pytest.mark.parametrize("content_type", ["application/zip", "application/pdf", ""])
+def test_non_html_target_is_rejected_before_gema_downloads_it(
+    monkeypatch: pytest.MonkeyPatch, content_type: str
+) -> None:
+    # GEMA!'s fetch would read the whole file into memory, then ignore it anyway.
+    stub_stream(
+        monkeypatch,
+        {"https://ok.org/data.zip": (200, None)},
+        headers={"content-type": content_type},
+        chunks=iter([]),
+    )
+    with pytest.raises(PermanentError, match="not a web page"):
+        check_url_reachable("https://ok.org/data.zip", allow_private=False)
+
+
+def test_declared_huge_page_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    stub_stream(
+        monkeypatch,
+        {"https://ok.org/x": (200, None)},
+        headers={"content-length": str(gema_runner.MAX_PAGE_BYTES + 1)},
+        chunks=iter([]),
+    )
+    with pytest.raises(PermanentError, match="too large"):
+        check_url_reachable("https://ok.org/x", allow_private=False)
+
+
+def test_endless_page_is_cut_off_by_size(monkeypatch: pytest.MonkeyPatch) -> None:
+    def forever() -> Iterator[bytes]:
+        while True:
+            yield b"x" * 1_000_000
+
+    stub_stream(monkeypatch, {"https://ok.org/x": (200, None)}, chunks=forever())
+    with pytest.raises(PermanentError, match="too large"):
+        check_url_reachable("https://ok.org/x", allow_private=False)
+
+
+def test_slow_drip_page_is_cut_off_by_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    def drip() -> Iterator[bytes]:
+        while True:
+            yield b"x"
+
+    stub_stream(monkeypatch, {"https://ok.org/x": (200, None)}, chunks=drip())
+    with pytest.raises(PermanentError, match="too long"):
+        check_url_reachable("https://ok.org/x", allow_private=False, body_timeout=0.05)
 
 
 def test_404_fails_with_a_readable_reason(monkeypatch: pytest.MonkeyPatch) -> None:

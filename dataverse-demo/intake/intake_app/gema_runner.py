@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -32,6 +33,7 @@ logger = logging.getLogger(__name__)
 PROVIDER = "opencode"
 USER_AGENT = "Mozilla/5.0 (compatible; gema-intake/1.0)"
 _MAX_REDIRECTS = 5
+MAX_PAGE_BYTES = 10_000_000
 
 # Pipeline errors are plain strings (PipelineResult.error); these mark the ones that are
 # worth a retry (provider/network hiccups) as opposed to e.g. a validation failure.
@@ -65,13 +67,45 @@ class _OneShotSource:
         return self._resource
 
 
-def check_url_reachable(url: str, *, allow_private: bool, timeout: float = 15.0) -> None:
-    """Fail fast, with a readable reason, on a dead/forbidden URL.
+def _check_page_body(resp: Any, *, body_deadline: float) -> None:
+    """Reject a 2xx answer GEMA! could not use, or that would hurt the intake to fetch.
+
+    GEMA!'s page fetch reads the *whole* body into memory with no size cap and no total
+    time limit (httpx's timeout is per read), and only then drops anything that is not
+    HTML/text. So a link straight to a multi-GB data file, or a page that streams forever,
+    would exhaust the container's memory or pin a worker. Not HTML/text means GEMA! sees
+    no page at all and the model would describe it from the URL alone.
+    """
+    content_type = str(resp.headers.get("content-type", "")).lower()
+    if "html" not in content_type and "text" not in content_type:
+        shown = content_type.split(";")[0].strip() or "none"
+        raise PermanentError(
+            f"URL is not a web page (content type: {shown}); submit its landing page instead"
+        )
+    declared = str(resp.headers.get("content-length", "")).strip()
+    if declared.isdigit() and int(declared) > MAX_PAGE_BYTES:
+        raise PermanentError(f"page is too large (over {MAX_PAGE_BYTES // 1_000_000} MB)")
+    received = 0
+    for chunk in resp.iter_bytes():
+        received += len(chunk)
+        if received > MAX_PAGE_BYTES:
+            raise PermanentError(f"page is too large (over {MAX_PAGE_BYTES // 1_000_000} MB)")
+        if time.monotonic() > body_deadline:
+            raise PermanentError("page takes too long to download")
+
+
+def check_url_reachable(
+    url: str, *, allow_private: bool, timeout: float = 15.0, body_timeout: float = 30.0
+) -> None:
+    """Fail fast, with a readable reason, on a dead/forbidden/unusable URL.
 
     GEMA!'s own page fetch is best-effort by design (a dead URL silently yields no page
     text and the model would then describe a page it never saw), so the intake checks
-    reachability itself. Each redirect hop is re-checked against the private-address guard.
+    reachability itself. Each redirect hop is re-checked against the private-address guard,
+    and the final page must be HTML/text, at most ``MAX_PAGE_BYTES``, downloaded within
+    *body_timeout* seconds (see ``_check_page_body``).
     """
+    body_deadline = time.monotonic() + body_timeout
     current = url
     for _ in range(_MAX_REDIRECTS + 1):
         host = urlsplit(current).hostname or ""
@@ -92,6 +126,8 @@ def check_url_reachable(url: str, *, allow_private: bool, timeout: float = 15.0)
             ) as resp:
                 status = resp.status_code
                 location = resp.headers.get("location")
+                if 200 <= status < 300:
+                    _check_page_body(resp, body_deadline=body_deadline)
         except httpx.InvalidURL:
             raise PermanentError("invalid URL") from None
         except httpx.TimeoutException as exc:
