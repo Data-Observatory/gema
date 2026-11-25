@@ -239,7 +239,9 @@ def test_admin_posts_need_cookie_and_csrf(env: Env) -> None:
     csrf = env.login()
     # session but missing/wrong csrf
     assert env.client.post(f"/admin/delete/{rid}", data={}).status_code == 303
-    assert env.client.post(f"/admin/delete/{rid}", data={"csrf": "nope"}).status_code == 303
+    r = env.client.post(f"/admin/delete/{rid}", data={"csrf": "nope"})
+    # Refused, and sent back to /admin/ ("../" from /admin/delete/<id>), not /admin/delete/.
+    assert r.status_code == 303 and r.headers["location"] == "../"
     assert env.store.get(rid) is not None
     env.client.post(f"/admin/delete/{rid}", data={"csrf": csrf})
     assert env.store.get(rid) is None

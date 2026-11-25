@@ -213,8 +213,10 @@ def create_app(
     def csrf_ok(request: Request, token: str) -> bool:
         return is_admin(request) and _safe_equal(token, csrf_value)
 
-    def denied() -> RedirectResponse:
-        return RedirectResponse("./", status_code=303)
+    def denied(target: str = "./") -> RedirectResponse:
+        # *target* is relative to the POST URL: "./" from /admin/<action>, "../" from
+        # /admin/delete/<id> (where "./" would land on the non-existent /admin/delete/).
+        return RedirectResponse(target, status_code=303)
 
     @app.get("/admin")
     def admin_no_slash() -> RedirectResponse:
@@ -265,7 +267,7 @@ def create_app(
     @app.post("/admin/delete/{rid}")
     def admin_delete(request: Request, rid: int, csrf: str = Form(default="")) -> Response:
         if not csrf_ok(request, csrf):
-            return denied()
+            return denied("../")
         deleted = store.delete(rid)
         logger.info("admin delete %s: %s", rid, "ok" if deleted else "refused")
         # POST /admin/delete/<id>: ".." resolves to /admin/ (relative, prefix-safe).
