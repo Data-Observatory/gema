@@ -47,7 +47,8 @@ Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
 - **http://localhost:8000/up/** — upload form for attendees
 - **http://localhost:8000/meta/** — visor
 - **http://localhost:8000/intake/** — workshop intake page (admin: `/intake/admin/`, see
-  "Intake page" below)
+  "Intake page" below; it needs its own keys in `.env` and keeps restarting until they
+  are set, without affecting the rest)
 
 (Or hit each service directly without Caddy: 8080 / 8090 / 8001 / 8095.)
 
@@ -159,61 +160,207 @@ don't want attendees' traffic able to do anything an admin token can do.
 attendees submit a URL, the admin curates the list, and **one click** runs GEMA! on every
 pending resource (library call, no GUI) and publishes each result to this Dataverse.
 
-### Setup
+Everything below runs from the `dataverse-demo/` folder, with the base stack already up and
+bootstrapped (see "Quick start").
 
-1. In `.env` (see `.env.example`) set at least:
+### 1. Prepare the Dataverse collection (once per fresh stack)
 
-   | Key | Purpose |
-   |---|---|
-   | `INTAKE_ADMIN_TOKEN` | admin login for `/intake/admin/` (`openssl rand -hex 24`); the container refuses to start without it |
-   | `OPENCODE_API_KEY` | GEMA! runs on the `opencode` provider (production model from `config/agents.yaml`, `deepseek-v4.1-flash`); the container refuses to start without it |
-   | `DATAVERSE_API_TOKEN` | same token the uploader uses (`./scripts/get_admin_token.sh`); without it the pages work but **Process** is disabled |
-   | `DATAVERSE_COLLECTION_ALIAS` | collection the datasets are created in; it must already be *published* (`root` always is) |
-   | `INTAKE_DEFAULT_CONTACT_EMAIL` / `_NAME` | Dataverse requires a contact; used when the page exposes none |
-   | `INTAKE_WORKERS` (4), `INTAKE_RECORD_TIMEOUT` (300 s), `INTAKE_MAX_RECORDS` (40), `INTAKE_RATE_LIMIT` (5 submissions/IP/min) | knobs, all optional |
+The datasets need a collection to live in, and Dataverse refuses to publish a dataset whose
+collection, or any parent of it, is still unpublished. On a fresh stack **not even `root` is
+published**. Create and publish a `workshop` collection with the admin API token:
 
-2. `docker compose up -d --build intake caddy` (the image is built from the **repo root**,
-   it installs the `gema` library from `src/` and reuses `config/`). Data (SQLite file and
-   `intake.log`) lives on the `intake_data` volume at `/data`.
-3. Open `http://localhost:8000/intake/` (or the Tailscale Funnel URL + `/intake/`).
-   For local debugging the container is also on `http://127.0.0.1:8095/`.
+```bash
+TOKEN=$(./scripts/get_admin_token.sh)   # or the UI: dataverseAdmin -> API Token -> Create Token
+curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverses/root/actions/:publish
+sed 's/"alias": "[^"]*"/"alias": "workshop"/; s/"name": "[^"]*"/"name": "GEMA! workshop"/' \
+  scripts/example_collection.json > /tmp/workshop-collection.json
+curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverses/root \
+  --upload-file /tmp/workshop-collection.json
+curl -sS -H "X-Dataverse-key:$TOKEN" -X POST http://localhost:8080/api/dataverses/workshop/actions/:publish
+```
 
-Running outside Docker: from the repo root,
-`INTAKE_ADMIN_TOKEN=... OPENCODE_API_KEY=... INTAKE_DATA_DIR=./intake-data
-INTAKE_GEMA_CONFIG=config/agents.yaml INTAKE_EXPORT_CONFIG=config/dataverse_export.yaml
-PYTHONPATH=dataverse-demo/intake uv run --with fastapi --with python-multipart --with jinja2
---with uvicorn uvicorn --factory intake_app.main:build_app --port 8095`.
+Each call should answer `"status":"OK"`. Publishing `root` a second time returns an error
+saying it is already published, which is harmless. If you ran `scripts/smoke_test.sh`, its
+`gema-demo` collection is already published and you can use that alias instead. The alias is
+what goes into `DATAVERSE_COLLECTION_ALIAS` (the uploader uses the same collection).
 
-### Workshop flow
+### 2. Fill in `.env`
 
-1. **Before**: stack up, token and keys in `.env`, try one submission end to end.
-2. **During**: attendees open `/intake/`, add *URL* + optional *hints* + a *pseudonym*. The
-   list refreshes every 10 s; a duplicate URL is refused naming who submitted it first. The
-   pseudonym is stored only as the Dataverse keyword `group:<pseudonym>`, never as author or
-   publisher. *Hints* are passed to GEMA! as `context_hints`, the library's existing
-   mechanism for externally supplied facts (the agents treat it as trusted context).
-3. **Admin** (`/intake/admin/`, token login): delete junk rows (only `pending`/`failed`),
-   **Close intake** when submissions should stop, then **Process pending**. Records run in
-   parallel (`INTAKE_WORKERS`); each is checked for reachability, run through GEMA!,
-   converted with `metadata_enricher.exporters.dataverse`, created in the collection and
-   published, and its PID is stored as soon as the dataset exists. A dead URL or any error
-   marks only that record `failed` with a short reason (shown to the admin, not on the public
-   page); one automatic retry covers network errors, HTTP 5xx and rate limits. **Retry
-   failed** re-runs only failed rows (an already-created dataset is only published, never
-   duplicated); `done` rows are never touched again. **Export results CSV** gives the table.
-4. Attendees' rows turn `done` with a *View in Dataverse* link.
+| Key | Required? | Default | What it is |
+|---|---|---|---|
+| `INTAKE_ADMIN_TOKEN` | **yes** | none | Password for `/intake/admin/`. Make a long random one: `openssl rand -hex 24`. |
+| `OPENCODE_API_KEY` | **yes** | none | GEMA! always runs on the `opencode` provider (production model `deepseek-v4.1-flash` from `config/agents.yaml`). Every record makes several paid LLM calls. |
+| `DATAVERSE_API_TOKEN` | for **Process** | empty | The `$TOKEN` from step 1. Without it the pages work, but **Process pending** / **Retry failed** answer "DATAVERSE_API_TOKEN is not configured". |
+| `DATAVERSE_COLLECTION_ALIAS` | for **Process** | `root` | The published collection from step 1, e.g. `workshop`. |
+| `INTAKE_DATAVERSE_PUBLIC_URL` | for Funnel | `http://${MACHINE_IP:-localhost}:8080` | Base of the *View in Dataverse* links attendees click. Through Funnel, set it to `https://<machine>.<tailnet>.ts.net` (Dataverse is at the root of the Caddy URL). Set it **before** processing: each link is stored when its dataset is created. |
+| `INTAKE_DEFAULT_CONTACT_EMAIL` / `INTAKE_DEFAULT_CONTACT_NAME` | no | `workshop@example.org` / `GEMA! workshop` | Dataverse requires a dataset contact. These are used when GEMA! finds no contact e-mail on the page. Use a real address you read. |
+| `INTAKE_RATE_LIMIT` / `INTAKE_RATE_WINDOW` | no | `5` per `60` s | Accepted submissions per client IP per window. In a room, everyone on the venue Wi-Fi shares one public IP, so set `INTAKE_RATE_LIMIT=40` for the workshop. |
+| `INTAKE_MAX_RECORDS` | no | `40` | Total records the page accepts. After that, submissions are refused. |
+| `INTAKE_WORKERS` | no | `4` | Records processed in parallel. Each record runs up to 3 LLM calls at once (GEMA!'s first agent wave), so 4 workers means up to ~12 concurrent calls on your opencode key. |
+| `INTAKE_RECORD_TIMEOUT` | no | `300` | Seconds before a record is given up and marked `failed`. |
 
-Restarting the container mid-batch is safe: rows left `processing` go back to `pending`.
-Run tests (no network, no LLM, no Dataverse), from the repo root:
+The intake container exits at startup when `INTAKE_ADMIN_TOKEN` or `OPENCODE_API_KEY` is
+empty, and keeps restarting until they are set (see Troubleshooting below). The rest of the stack
+is not affected.
+
+### 3. Start it
+
+```bash
+docker compose up -d --build intake caddy
+docker logs intake          # expect "intake ready: collection=workshop workers=4 ..."
+```
+
+The image is built from the **repo root**: it installs the `gema` library from `src/` and
+copies `config/`. After any change to `.env`, run the same `up -d` command again (Compose
+recreates the container with the new values). After pulling code changes, keep `--build`.
+
+| Page | Local | Through Tailscale Funnel |
+|---|---|---|
+| Attendee page | http://localhost:8000/intake/ | `https://<machine>.<tailnet>.ts.net/intake/` |
+| Admin | http://localhost:8000/intake/admin/ | `https://<machine>.<tailnet>.ts.net/intake/admin/` |
+| Direct, no Caddy (debugging only, this machine only) | http://127.0.0.1:8095/ | n/a |
+
+Port 8000 is `CADDY_PORT`. Funnel setup is in "Tailscale Funnel" below:
+`tailscale funnel --bg <CADDY_PORT>`. **Admin login**: open the admin URL and paste
+`INTAKE_ADMIN_TOKEN`. The session lasts 12 h (cookie for `/intake/admin/` only). **Log out**
+ends it.
+
+### 4. Dry run (do this the day before)
+
+1. Do steps 1–3 and check `docker logs intake` says `intake ready`.
+2. From a **phone on mobile data** (not your Wi-Fi), open the Funnel `/intake/` URL and submit
+   2–3 real URLs: a normal dataset landing page, one with hints, and one dead URL such as
+   `https://example.org/does-not-exist`.
+3. Submit one of them again. It must be refused with "already submitted by …".
+4. Admin: **Close intake**, check the attendee page says "Submissions closed", then
+   **Process pending**. The good URLs should turn `done` within a few minutes and the dead
+   one `failed` with "URL returned HTTP 404".
+5. Click *View in Dataverse* on the phone. It must open the published dataset. If it points
+   at `localhost`, set `INTAKE_DATAVERSE_PUBLIC_URL` (step 2).
+6. **Export results CSV**, then wipe the test data (see "Reset between runs" below), and
+   delete the test datasets in Dataverse if you don't want them listed.
+
+### 5. Workshop flow
+
+**Before**: stack up, Funnel on, intake **open** (the default; the admin page shows "Intake is
+open"), DB empty. Share the `/intake/` URL.
+
+**During**: attendees open `/intake/` and add a *URL* (required, http/https), optional
+*hints* (≤1000 characters) and a *pseudonym* (≤50). The list refreshes every 10 s. A
+duplicate URL (case of the host, trailing `/` and `#fragment` ignored) is refused, naming who
+submitted it first.
+- The pseudonym only becomes the Dataverse keyword `group:<pseudonym>`. It never becomes an
+  author or publisher.
+- Hints go to GEMA! as `context_hints`, which the agents treat as **trusted** facts about the
+  resource. Hints are not checked, so an attendee can steer the metadata through them.
+
+**Admin**, at `/intake/admin/`:
+1. **Delete** junk or off-topic rows. Only `pending` and `failed` rows can be deleted.
+2. **Close intake** when submissions should stop. Rows submitted after you click **Process**
+   are not in that batch; click it again for them.
+3. **Process pending** runs every pending row in the background (`INTAKE_WORKERS` at a time).
+   Each row's URL is checked for reachability, then the row goes through GEMA!, then
+   `metadata_enricher.exporters.dataverse` converts it, and the dataset is created in the
+   collection and published. Expect very roughly 1–3 minutes per row, so 40 rows on 4 workers take
+   about 15–30 minutes. The admin list refreshes every 10 s. Clicking again while a batch runs
+   only shows "A batch is already running".
+4. **Retry failed** re-runs only `failed` rows. A row whose dataset was already created is
+   only published, never created twice.
+5. **Export results CSV** downloads every row (pseudonym, URL, hints, status, error, PID,
+   link).
+
+Statuses:
+
+| Status | Meaning |
+|---|---|
+| `pending` | Submitted, waiting for **Process pending**. |
+| `processing` | Running now. |
+| `done` | Published. The row shows a *View in Dataverse* link. Never re-run or re-uploaded. |
+| `failed` | Stopped with a short reason. The reason is shown on the admin page and in the CSV, not on the public page. One automatic retry already covered network errors, HTTP 5xx and rate limits. |
+
+**After**: export the CSV, then reset (below) before the next workshop.
+
+### Logs
+
+`intake.log` sits on the `intake_data` volume (`/data/intake.log` inside the container,
+rotated at 2 MB, 3 backups). It holds every submission, admin action, record start, failure
+reason and batch summary, plus GEMA!'s own log lines.
+
+```bash
+docker exec intake tail -f /data/intake.log        # or: docker logs -f intake (same lines)
+docker exec intake grep -E "failed|batch" /data/intake.log
+```
+
+### Reset between runs
+
+The records live in `/data/intake.db` on the `intake_data` volume. This wipes the list and
+the log and leaves Dataverse alone:
+
+```bash
+docker compose rm -sf intake
+docker volume rm dataverse-demo_intake_data
+docker compose up -d intake
+```
+
+The volume name is `<compose project>_intake_data`. The project defaults to the folder name;
+check with `docker volume ls | grep intake`. `docker compose down -v` also wipes it, but
+wipes Dataverse along with it. Datasets already published in Dataverse stay there. Delete
+them from the Dataverse UI if needed.
+
+### Troubleshooting
+
+- **`intake` keeps restarting** (`docker ps` shows `Restarting`): run `docker logs intake`.
+  `intake: configuration error: INTAKE_ADMIN_TOKEN is not set` (or `OPENCODE_API_KEY`) means
+  you should set the key in `.env` and run `docker compose up -d intake`.
+- **Process says "DATAVERSE_API_TOKEN is not configured"**: set it (step 2) and run
+  `docker compose up -d intake`.
+- **Every record fails at "publish dataset: Dataverse HTTP …"** with a message about an
+  unpublished collection or dataverse: the collection, or `root`, is not published. Do
+  step 1, then **Retry failed** (the drafts already created are only published).
+- **"create dataset: Dataverse HTTP 404"** means the alias in `DATAVERSE_COLLECTION_ALIAS`
+  does not exist. **HTTP 401** means the token is wrong or expired.
+- **Attendees see "Too many submissions from your address"**: they share an IP (venue NAT,
+  or Funnel not passing the client IP through). Raise `INTAKE_RATE_LIMIT` and run
+  `docker compose up -d intake`.
+- **"URL returned HTTP 403"**, or other 4xx, means the site refuses automated requests or the
+  page is gone. Ask the attendee for another URL, delete the row, and let them resubmit.
+- **Many `timed out after 300s` or provider 429 errors**: too many concurrent LLM calls.
+  Lower `INTAKE_WORKERS` (e.g. `2`), recreate the container, and **Retry failed**. Successful
+  LLM answers are cached, so retries are faster. A timed-out record keeps running in the
+  background until GEMA! returns, but it writes nothing more.
+- **Deleting a `failed` row whose admin entry shows a PID** leaves that dataset as an
+  unpublished *draft* in Dataverse. Delete the draft in the Dataverse UI (log in as admin,
+  open the collection, filter on drafts), or use **Retry failed** instead.
+- **Restarted the container mid-batch**: rows left `processing` go back to `pending`, marked
+  "Interrupted by a restart". Click **Process pending** again. A row whose dataset already
+  exists is only published.
+
+### Running outside Docker / tests
+
+From the repo root (Dataverse reached on the host port):
+
+```bash
+INTAKE_ADMIN_TOKEN=... OPENCODE_API_KEY=... DATAVERSE_API_TOKEN=... \
+DATAVERSE_URL=http://localhost:8080 DATAVERSE_COLLECTION_ALIAS=workshop \
+INTAKE_DATA_DIR=./intake-data INTAKE_GEMA_CONFIG=config/agents.yaml \
+INTAKE_EXPORT_CONFIG=config/dataverse_export.yaml PYTHONPATH=dataverse-demo/intake \
+uv run --with fastapi --with python-multipart --with jinja2 --with uvicorn \
+  uvicorn --factory intake_app.main:build_app --port 8095
+```
+
+Tests (no network, no LLM, no Dataverse):
 
 ```bash
 uv run --with fastapi --with python-multipart --with jinja2 pytest dataverse-demo/intake/tests
 ```
 
-The page fetches attendee-submitted URLs from the server, so it refuses non-public
-addresses (IP literals, `localhost`, single-label names) at submit time and re-checks DNS
-and every redirect hop right before fetching. Treat the admin token like the Dataverse
-token: anyone holding it can publish to the instance.
+### Security notes
+
+The server fetches attendee-submitted URLs, so non-public addresses (IP literals,
+`localhost`, single-label and `.local`-style names) are refused at submit time, and DNS and
+every redirect hop are checked again before the fetch. Treat `INTAKE_ADMIN_TOKEN` like the
+Dataverse token: anyone holding it can publish to the instance. Caddy overwrites `X-Real-IP`
+with the real client address, which is what the rate limit uses.
 
 ## Caddy (single entrypoint for Tailscale)
 
@@ -337,7 +484,7 @@ tailscale funnel --bg 8123   # use your actual CADDY_PORT
 ```
 
 This publishes `https://<your-machine>.<tailnet>.ts.net` (port 443) →
-`http://127.0.0.1:8123` on this machine — root/`/up`/`/meta` all become
+`http://127.0.0.1:8123` on this machine — root/`/up`/`/meta`/`/intake` all become
 reachable at that one HTTPS URL, no port number for attendees to remember
 at all. Check state with `tailscale funnel status`; turn it off with
 `tailscale funnel reset`.
