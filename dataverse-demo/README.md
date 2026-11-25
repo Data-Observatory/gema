@@ -335,7 +335,7 @@ them from the Dataverse UI if needed.
 - **"create dataset: Dataverse HTTP 404"** means the alias in `DATAVERSE_COLLECTION_ALIAS`
   does not exist. **HTTP 401** means the token is wrong or expired.
 - **Attendees see "Too many submissions from your address"**: they share an IP (venue NAT,
-  or Funnel not passing the client IP through). Raise `INTAKE_RATE_LIMIT` and run
+  or Funnel not passing the client IP through; see Security notes). Raise `INTAKE_RATE_LIMIT` and run
   `docker compose up -d intake`.
 - **"URL returned HTTP 403"**, or other 4xx, means the site refuses automated requests or the
   page is gone. Ask the attendee for another URL, delete the row, and let them resubmit.
@@ -380,8 +380,27 @@ uv run --with fastapi --with python-multipart --with jinja2 pytest dataverse-dem
 The server fetches attendee-submitted URLs, so non-public addresses (IP literals,
 `localhost`, single-label and `.local`-style names) are refused at submit time, and DNS and
 every redirect hop are checked again before the fetch. Treat `INTAKE_ADMIN_TOKEN` like the
-Dataverse token: anyone holding it can publish to the instance. Caddy overwrites `X-Real-IP`
-with the real client address, which is what the rate limit uses.
+Dataverse token: anyone holding it can publish to the instance.
+
+**Which client IP the rate limit sees** (checked live on the local stack, 2026-11-25):
+Caddy overwrites `X-Real-IP` with its `{client_ip}`, and trusts `X-Forwarded-For` only
+from the docker network gateway `10.213.77.1` (`trusted_proxies` in `Caddyfile`).
+- **LAN / venue Wi-Fi clients hitting `http://<lan-ip>:<CADDY_PORT>` directly** keep their
+  own source address, so their IP is what counts and a forged `X-Forwarded-For` is ignored.
+  (Before this was narrowed from "all private ranges", a LAN client could forge any IP and
+  dodge the limit.) Tailnet clients on `100.x` addresses behave the same way.
+- **Everything connecting from this host's loopback** (`127.0.0.1:<CADDY_PORT>`) reaches
+  Caddy from the gateway address, so `X-Forwarded-For` is trusted: the rightmost entry that
+  is not the gateway wins. **Tailscale Funnel goes this way**: `tailscaled` terminates TLS
+  and proxies to `http://127.0.0.1:<CADDY_PORT>`, and its proxy is expected to set
+  `X-Forwarded-For` to the address it received the request from. Whether that is the
+  visitor's real public IP for Funnel traffic was **not verified live** (Funnel
+  was off when this was checked). Check it on the dry run: submit from a phone on mobile
+  data and look at `docker exec intake grep "submitted by" /data/intake.log`. If every
+  Funnel visitor shows the same address (e.g. `10.213.77.1` or a `100.x` relay address), the
+  limit is effectively global; raise `INTAKE_RATE_LIMIT` accordingly.
+- Local processes on this host can set any `X-Forwarded-For`; that is accepted.
+- If you change the subnet in `compose.yml`, change `trusted_proxies` to its `.1` gateway.
 
 ## Caddy (single entrypoint for Tailscale)
 
@@ -390,8 +409,8 @@ three separate ports, `caddy` (service in `compose.yml`, `Caddyfile` at the
 repo root of this folder) fans out one port to path-based routes:
 
 - **`/intake`** → the workshop intake page (see above). Caddy sets `X-Real-IP` from its
-  own `{client_ip}` (global `trusted_proxies` = private ranges only), which the intake's
-  per-IP rate limit uses. Not verified live behind Tailscale Funnel.
+  own `{client_ip}` (global `trusted_proxies` = the docker gateway only), which the intake's
+  per-IP rate limit uses. See "Which client IP the rate limit sees" under Security notes.
 - **`/up`** → the uploader form. Works fully — confirmed live, including a
   real dataset upload through the proxy.
 - **`/meta`** → visor's own hosted mode, running on your host machine (not

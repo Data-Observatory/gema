@@ -13,12 +13,16 @@
 # visor's own asset/websocket URLs come back unprefixed and this route
 # breaks the same way a Dataverse subpath would.
 
-# Trust X-Forwarded-For only from private ranges (the docker gateway / Tailscale Funnel's
-# local hop), so {client_ip} below is the real visitor and not something a client typed.
-# The intake's per-IP rate limit depends on it.
+# Trust X-Forwarded-For only from the docker network's gateway (10.213.77.1, fixed by the
+# subnet in compose.yml). Everything that reaches the published port from THIS host's
+# loopback arrives from that address -- including Tailscale Funnel, whose tailscaled proxy
+# connects to 127.0.0.1:<CADDY_PORT> and sets X-Forwarded-For to the visitor's address.
+# Clients on the LAN / venue Wi-Fi keep their own source address, so a header they type is
+# ignored. (Trusting all private ranges let a LAN client spoof any IP and dodge the
+# intake's per-IP rate limit, which depends on {client_ip}.)
 {
 	servers {
-		trusted_proxies static private_ranges
+		trusted_proxies static 10.213.77.1/32
 		trusted_proxies_strict
 	}
 }
