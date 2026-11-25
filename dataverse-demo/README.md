@@ -164,40 +164,46 @@ pending resource (library call, no GUI) and publishes each result to this Datave
 Everything below runs from the `dataverse-demo/` folder, with the base stack already up and
 bootstrapped (see "Quick start").
 
-### Quickstart for the day of the workshop (everything already configured)
+### Quick launch (already configured: `.env` filled, `workshop` collection exists)
 
-`.env` is filled in, the `workshop` collection exists and was tested. Run from `dataverse-demo/`:
+Foreground commands for three tmux panes, so you can watch each one and stop it with Ctrl-C.
+Run from `dataverse-demo/`. Nothing here needs the "wire the uploader's token" commands of the
+first Quick start (`get_admin_token.sh`, `--force-recreate uploader caddy`): `DATAVERSE_API_TOKEN`
+is already in `.env`, and recreating `uploader` would start the public `/up` route.
 
 ```bash
-# 1. Everything up, wait for Dataverse
-docker compose up -d --build --no-deps postgres smtp solr dataverse intake caddy
-until curl -sf http://localhost:8080/api/info/version; do sleep 10; done; echo
+# PANE 1: the stack, attached (all logs here; Ctrl-C stops every container, intake gets 20 s
+# to put running records back to pending). --no-deps keeps the uploader (/up) from starting.
+docker compose stop uploader 2>/dev/null
+docker compose up --build --no-deps postgres smtp solr dataverse intake caddy
 
-# 2. Funnel publishes every Caddy route: stop the uploader (/up) again after each caddy start
-docker compose stop uploader
-
-# 3. Check intake locally (the port is CADDY_PORT from .env, 8123 here, NOT 8000)
+# PANE 2: wait until Dataverse answers, check intake, then Funnel in the foreground
+# (Ctrl-C = Funnel off, the public URL stops answering)
+until curl -sf http://localhost:8080/api/info/version >/dev/null; do sleep 5; done
 CADDY_PORT=$(grep ^CADDY_PORT= .env | cut -d= -f2); CADDY_PORT=${CADDY_PORT:-8000}
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:$CADDY_PORT/intake/     # expect 200
-echo "attendees: http://localhost:$CADDY_PORT/intake/   admin: http://localhost:$CADDY_PORT/intake/admin/"
-grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2                                        # admin password
+curl -s -o /dev/null -w 'intake local: %{http_code}\n' http://localhost:$CADDY_PORT/intake/   # 200
+tailscale funnel $CADDY_PORT
+# (if it prints a link, open it to enable Funnel for this machine, then run it again)
 
-# 4. Funnel on, then check from the public URL (open it once yourself before sharing)
-tailscale funnel --bg $CADDY_PORT
-FUNNEL_URL=$(grep ^DATAVERSE_SITE_URL= .env | cut -d= -f2)
-curl -s -o /dev/null -w '%{http_code}\n' $FUNNEL_URL/intake/                      # expect 200
-
-# 5. During the workshop
-docker logs -f intake                                  # live log
-# Admin page: Process pending (runs all), Retry failed, Close intake, Export results CSV
-
-# 6. After: export the CSV in the admin page first, then
-tailscale funnel reset
-docker compose rm -sf intake && docker volume rm dataverse-demo_intake_data
+# PANE 3: intake log only, and the admin password to paste in /intake/admin/
+docker logs -f intake
+grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2     # run this one before the logs
 ```
 
-`http://localhost:8095/` (direct to the app, no Caddy) serves the page at `/`, not `/intake/`.
-If `tailscale funnel` prints a link, open it to enable Funnel for this machine, then re-run.
+Then: attendees `https://<machine>.<tailnet>.ts.net/intake/` (this setup:
+`https://lenovo-do-alvaro.siren-armadillo.ts.net/intake/`), admin at `/intake/admin/`, local
+`http://localhost:<CADDY_PORT>/intake/` (8123 here, not 8000). Open the public URL yourself once
+before sharing it (the first HTTPS request can take a few seconds).
+
+**After the workshop**: export the CSV in the admin page, Ctrl-C panes 2 and 1, then
+`docker volume rm dataverse-demo_intake_data` to empty the list for next time (skip it to keep
+the records).
+
+**Shutting down and turning it on again**: it works, with one catch. Dataverse, the intake DB
+and `.env` live in Docker volumes / files and survive a power-off. But after a reboot Docker does
+**not** restart `postgres`/`smtp` (their `restart: on-failure` policy ignores clean stops), and a
+foreground Funnel is gone with its pane. So just run the three panes again; nothing else. Records
+that were `processing` when it stopped go back to `pending` and run again on **Process pending**.
 
 ### Quickstart from scratch (commands only, in order)
 
