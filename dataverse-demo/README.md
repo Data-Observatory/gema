@@ -186,8 +186,8 @@ tailscale funnel $CADDY_PORT
 # (if it prints a link, open it to enable Funnel for this machine, then run it again)
 
 # PANE 3: intake log only, and the admin password to paste in /intake/admin/
+grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2
 docker logs -f intake
-grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2     # run this one before the logs
 ```
 
 Then: attendees `https://<machine>.<tailnet>.ts.net/intake/` (this setup:
