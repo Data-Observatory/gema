@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}GEMA! intake{% endblock %}</title>
+<style>
+  body { font-family: system-ui, sans-serif; line-height: 1.4; max-width: 46rem; margin: 0 auto; padding: 0 1rem 3rem; }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+  label { display: block; margin-top: .8rem; font-weight: 600; }
+  input[type=text], input[type=url], input[type=password], textarea { width: 100%; box-sizing: border-box; font: inherit; padding: .5rem; }
+  button { font: inherit; padding: .5rem .9rem; margin: .3rem .3rem .3rem 0; }
+  .msg { padding: .6rem .8rem; border: 1px solid #888; margin: 1rem 0; }
+  .err { border-color: #b00; color: #b00; }
+  .ok { border-color: #070; color: #070; }
+  ul.items { list-style: none; padding: 0; }
+  ul.items li { border-top: 1px solid #ccc; padding: .6rem 0; overflow-wrap: anywhere; }
+  .meta { color: #555; font-size: .9rem; }
+  .st { font-weight: 600; }
+  .st-failed { color: #b00; } .st-done { color: #070; } .st-processing { color: #a60; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+  form.inline { display: inline; }
+  a { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>

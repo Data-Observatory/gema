@@ -214,6 +214,38 @@ services:
     depends_on:
       - dataverse
 
+  # Workshop intake page (attendees submit resources, admin curates and runs GEMA! in batch,
+  # each result is published to this Dataverse). Build context is the repo root because the
+  # image installs the gema library from src/ and reuses config/. See README "Intake page".
+  intake:
+    container_name: "intake"
+    build:
+      context: ..
+      dockerfile: dataverse-demo/intake/Dockerfile
+    restart: on-failure
+    environment:
+      - INTAKE_ADMIN_TOKEN=${INTAKE_ADMIN_TOKEN:-}
+      - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
+      - DATAVERSE_URL=http://dataverse:8080
+      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
+      - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
+      - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
+      - INTAKE_DEFAULT_CONTACT_EMAIL=${INTAKE_DEFAULT_CONTACT_EMAIL:-}
+      - INTAKE_DEFAULT_CONTACT_NAME=${INTAKE_DEFAULT_CONTACT_NAME:-}
+      - INTAKE_WORKERS=${INTAKE_WORKERS:-4}
+      - INTAKE_RECORD_TIMEOUT=${INTAKE_RECORD_TIMEOUT:-300}
+      - INTAKE_MAX_RECORDS=${INTAKE_MAX_RECORDS:-40}
+      - INTAKE_RATE_LIMIT=${INTAKE_RATE_LIMIT:-5}
+    volumes:
+      - intake_data:/data
+    ports:
+      # Loopback only: attendees go through caddy's /intake/ route. Handy for local debugging.
+      - "127.0.0.1:8095:8095"
+    networks:
+      - dataverse
+    depends_on:
+      - dataverse
+
   caddy:
     container_name: "caddy"
     image: caddy:2.9-alpine
@@ -245,3 +277,4 @@ volumes:
   dv_postgres_data:
   dv_solr_data:
   dv_solr_conf:
+  intake_data:

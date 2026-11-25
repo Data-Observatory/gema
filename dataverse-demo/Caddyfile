@@ -13,9 +13,31 @@
 # visor's own asset/websocket URLs come back unprefixed and this route
 # breaks the same way a Dataverse subpath would.
 
+# Trust X-Forwarded-For only from private ranges (the docker gateway / Tailscale Funnel's
+# local hop), so {client_ip} below is the real visitor and not something a client typed.
+# The intake's per-IP rate limit depends on it.
+{
+	servers {
+		trusted_proxies static private_ranges
+		trusted_proxies_strict
+	}
+}
+
 :80 {
 	redir /up /up/ permanent
 	redir /meta /meta/ permanent
+	redir /intake /intake/ permanent
+	redir /intake/admin /intake/admin/ permanent
+
+	# Workshop intake page + admin (a FastAPI container). Its templates use relative links
+	# for the same reason as /up. X-Real-IP / X-Forwarded-Prefix are set here, so they are
+	# overwritten even if a client sends its own.
+	handle_path /intake/* {
+		reverse_proxy intake:8095 {
+			header_up X-Real-IP {client_ip}
+			header_up X-Forwarded-Prefix /intake
+		}
+	}
 
 	# uploader's own templates use relative links (upload.html's form posts
 	# to "upload", not "/upload") specifically so this works correctly.

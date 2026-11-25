@@ -46,8 +46,10 @@ Everything through Caddy on one port (default 8000, `CADDY_PORT` in `.env`):
 - **http://localhost:8000/** — Dataverse UI (`dataverseAdmin` / `admin1`)
 - **http://localhost:8000/up/** — upload form for attendees
 - **http://localhost:8000/meta/** — visor
+- **http://localhost:8000/intake/** — workshop intake page (admin: `/intake/admin/`, see
+  "Intake page" below)
 
-(Or hit each service directly without Caddy: 8080 / 8090 / 8001.)
+(Or hit each service directly without Caddy: 8080 / 8090 / 8001 / 8095.)
 
 Sharing this beyond localhost (Tailscale, Funnel), resetting between runs,
 and the CDIF → Dataverse translator are all covered in detail below.
@@ -150,12 +152,78 @@ using the token baked into the container's environment. Scope Tailscale
 ACLs the same way, and use a token scoped to a non-admin account if you
 don't want attendees' traffic able to do anything an admin token can do.
 
+## Intake page (live workshop flow)
+
+`intake/` is a small server-rendered FastAPI app (service `intake` in `compose.yml`, route
+`/intake/` in Caddy) for running the workshop without Visor or any attendee tooling:
+attendees submit a URL, the admin curates the list, and **one click** runs GEMA! on every
+pending resource (library call, no GUI) and publishes each result to this Dataverse.
+
+### Setup
+
+1. In `.env` (see `.env.example`) set at least:
+
+   | Key | Purpose |
+   |---|---|
+   | `INTAKE_ADMIN_TOKEN` | admin login for `/intake/admin/` (`openssl rand -hex 24`); the container refuses to start without it |
+   | `OPENCODE_API_KEY` | GEMA! runs on the `opencode` provider (production model from `config/agents.yaml`, `deepseek-v4.1-flash`); the container refuses to start without it |
+   | `DATAVERSE_API_TOKEN` | same token the uploader uses (`./scripts/get_admin_token.sh`); without it the pages work but **Process** is disabled |
+   | `DATAVERSE_COLLECTION_ALIAS` | collection the datasets are created in; it must already be *published* (`root` always is) |
+   | `INTAKE_DEFAULT_CONTACT_EMAIL` / `_NAME` | Dataverse requires a contact; used when the page exposes none |
+   | `INTAKE_WORKERS` (4), `INTAKE_RECORD_TIMEOUT` (300 s), `INTAKE_MAX_RECORDS` (40), `INTAKE_RATE_LIMIT` (5 submissions/IP/min) | knobs, all optional |
+
+2. `docker compose up -d --build intake caddy` (the image is built from the **repo root**,
+   it installs the `gema` library from `src/` and reuses `config/`). Data (SQLite file and
+   `intake.log`) lives on the `intake_data` volume at `/data`.
+3. Open `http://localhost:8000/intake/` (or the Tailscale Funnel URL + `/intake/`).
+   For local debugging the container is also on `http://127.0.0.1:8095/`.
+
+Running outside Docker: from the repo root,
+`INTAKE_ADMIN_TOKEN=... OPENCODE_API_KEY=... INTAKE_DATA_DIR=./intake-data
+INTAKE_GEMA_CONFIG=config/agents.yaml INTAKE_EXPORT_CONFIG=config/dataverse_export.yaml
+PYTHONPATH=dataverse-demo/intake uv run --with fastapi --with python-multipart --with jinja2
+--with uvicorn uvicorn --factory intake_app.main:build_app --port 8095`.
+
+### Workshop flow
+
+1. **Before**: stack up, token and keys in `.env`, try one submission end to end.
+2. **During**: attendees open `/intake/`, add *URL* + optional *hints* + a *pseudonym*. The
+   list refreshes every 10 s; a duplicate URL is refused naming who submitted it first. The
+   pseudonym is stored only as the Dataverse keyword `group:<pseudonym>`, never as author or
+   publisher. *Hints* are passed to GEMA! as `context_hints`, the library's existing
+   mechanism for externally supplied facts (the agents treat it as trusted context).
+3. **Admin** (`/intake/admin/`, token login): delete junk rows (only `pending`/`failed`),
+   **Close intake** when submissions should stop, then **Process pending**. Records run in
+   parallel (`INTAKE_WORKERS`); each is checked for reachability, run through GEMA!,
+   converted with `metadata_enricher.exporters.dataverse`, created in the collection and
+   published, and its PID is stored as soon as the dataset exists. A dead URL or any error
+   marks only that record `failed` with a short reason (shown to the admin, not on the public
+   page); one automatic retry covers network errors, HTTP 5xx and rate limits. **Retry
+   failed** re-runs only failed rows (an already-created dataset is only published, never
+   duplicated); `done` rows are never touched again. **Export results CSV** gives the table.
+4. Attendees' rows turn `done` with a *View in Dataverse* link.
+
+Restarting the container mid-batch is safe: rows left `processing` go back to `pending`.
+Run tests (no network, no LLM, no Dataverse), from the repo root:
+
+```bash
+uv run --with fastapi --with python-multipart --with jinja2 pytest dataverse-demo/intake/tests
+```
+
+The page fetches attendee-submitted URLs from the server, so it refuses non-public
+addresses (IP literals, `localhost`, single-label names) at submit time and re-checks DNS
+and every redirect hop right before fetching. Treat the admin token like the Dataverse
+token: anyone holding it can publish to the instance.
+
 ## Caddy (single entrypoint for Tailscale)
 
 If you're sharing this over Tailscale (below) and don't want to open/remember
 three separate ports, `caddy` (service in `compose.yml`, `Caddyfile` at the
 repo root of this folder) fans out one port to path-based routes:
 
+- **`/intake`** → the workshop intake page (see above). Caddy sets `X-Real-IP` from its
+  own `{client_ip}` (global `trusted_proxies` = private ranges only), which the intake's
+  per-IP rate limit uses. Not verified live behind Tailscale Funnel.
 - **`/up`** → the uploader form. Works fully — confirmed live, including a
   real dataset upload through the proxy.
 - **`/meta`** → visor's own hosted mode, running on your host machine (not
