@@ -34,7 +34,10 @@ services:
     restart: on-failure
     user: payara
     environment:
-      DATAVERSE_SITEURL: "http://${MACHINE_IP:-localhost}:8080"
+      # Public base URL Dataverse writes into absolute links (persistent URL / citation,
+      # metadata export and file download links). For Tailscale Funnel set DATAVERSE_SITE_URL
+      # in .env to the Funnel URL (Dataverse is at the root of Caddy). See README.
+      DATAVERSE_SITEURL: "${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
@@ -204,11 +207,54 @@ services:
     restart: on-failure
     environment:
       - DATAVERSE_URL=http://dataverse:8080
-      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
+      - DATAVERSE_PUBLIC_URL=${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}
       - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
       - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
     ports:
       - "8090:8090"
+    networks:
+      - dataverse
+    depends_on:
+      - dataverse
+
+  # Workshop intake page (attendees submit resources, admin curates and runs GEMA! in batch,
+  # each result is published to this Dataverse). Build context is the repo root because the
+  # image installs the gema library from src/ and reuses config/. See README "Intake page".
+  intake:
+    container_name: "intake"
+    build:
+      context: ..
+      dockerfile: dataverse-demo/intake/Dockerfile
+    restart: on-failure
+    environment:
+      - INTAKE_ADMIN_TOKEN=${INTAKE_ADMIN_TOKEN:-}
+      - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
+      - DATAVERSE_URL=http://dataverse:8080
+      # Base of the "View in Dataverse" links attendees click: the Funnel URL
+      # (https://<machine>.<tailnet>.ts.net, Dataverse at Caddy's root) when they come in
+      # that way. Falls back to DATAVERSE_SITE_URL, then to the local address.
+      - DATAVERSE_PUBLIC_URL=${INTAKE_DATAVERSE_PUBLIC_URL:-${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}}
+      - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
+      - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
+      - INTAKE_DEFAULT_CONTACT_EMAIL=${INTAKE_DEFAULT_CONTACT_EMAIL:-}
+      - INTAKE_DEFAULT_CONTACT_NAME=${INTAKE_DEFAULT_CONTACT_NAME:-}
+      - INTAKE_WORKERS=${INTAKE_WORKERS:-4}
+      - INTAKE_RECORD_TIMEOUT=${INTAKE_RECORD_TIMEOUT:-300}
+      - INTAKE_MAX_RECORDS=${INTAKE_MAX_RECORDS:-40}
+      - INTAKE_RATE_LIMIT=${INTAKE_RATE_LIMIT:-5}
+      - INTAKE_RATE_WINDOW=${INTAKE_RATE_WINDOW:-60}
+      # Seconds in-flight records get to finish on SIGTERM before they are put back to
+      # pending. Keep it well under stop_grace_period below.
+      - INTAKE_SHUTDOWN_GRACE=${INTAKE_SHUTDOWN_GRACE:-20}
+    # uvicorn is PID 1 (exec-form CMD) and handles SIGTERM itself: it stops serving, then the
+    # app stops the batch (see processor.shutdown). Docker's default 10 s would SIGKILL it
+    # before the grace period ends.
+    stop_grace_period: 35s
+    volumes:
+      - intake_data:/data
+    ports:
+      # Loopback only: attendees go through caddy's /intake/ route. Handy for local debugging.
+      - "127.0.0.1:8095:8095"
     networks:
       - dataverse
     depends_on:
@@ -245,3 +291,4 @@ volumes:
   dv_postgres_data:
   dv_solr_data:
   dv_solr_conf:
+  intake_data:

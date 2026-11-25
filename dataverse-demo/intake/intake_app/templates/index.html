@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>GEMA! workshop: add a resource</h1>
+
+{% if flash %}<p class="msg ok">{{ flash }}</p>{% endif %}
+{% if error %}<p class="msg err" role="alert">{{ error }}</p>{% endif %}
+
+{% if intake_open %}
+<form method="post" action="submit">
+  <label for="url">Resource URL (required)</label>
+  <input id="url" name="url" type="url" required maxlength="2000" placeholder="https://..." value="{{ form.url }}">
+
+  <label for="hints">Hints (optional, max {{ hints_max }} characters)</label>
+  <textarea id="hints" name="hints" rows="4" maxlength="{{ hints_max }}">{{ form.hints }}</textarea>
+
+  <label for="pseudonym">Your pseudonym (required, max {{ pseudonym_max }} characters)</label>
+  <input id="pseudonym" name="pseudonym" type="text" required maxlength="{{ pseudonym_max }}" value="{{ form.pseudonym }}">
+
+  <button type="submit">Add resource</button>
+</form>
+{% else %}
+<p class="msg"><strong>Submissions closed.</strong></p>
+<form><fieldset disabled>
+  <label>Resource URL</label><input type="text">
+  <label>Hints</label><textarea rows="2"></textarea>
+  <label>Your pseudonym</label><input type="text">
+  <button type="button">Add resource</button>
+</fieldset></form>
+{% endif %}
+
+<h2>Submitted resources</h2>
+<div id="live" data-src="list">
+{% include "_public_list.html" %}
+</div>
+<script src="refresh.js"></script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}GEMA! intake admin{% endblock %}
+{% block body %}
+<h1>Intake admin</h1>
+{% if flash %}<p class="msg err" role="alert">{{ flash }}</p>{% endif %}
+<form method="post" action="login">
+  <label for="token">Admin token</label>
+  <input id="token" name="token" type="password" required autocomplete="current-password">
+  <button type="submit">Log in</button>
+</form>
+{% endblock %}

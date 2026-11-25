@@ -1,0 +1,16 @@
+<p class="meta">{{ records|length }} resource(s) &middot; done {{ counts.done }}, failed {{ counts.failed }}, pending {{ counts.pending }}, processing {{ counts.processing }} &middot; refreshes every 10 s</p>
+{% if records %}
+<ul class="items">
+{% for r in records %}
+  <li>
+    <span class="st st-{{ r.status }}">{{ r.status }}</span>
+    &middot; <strong>{{ r.pseudonym }}</strong><br>
+    <a href="{{ r.url }}" rel="noopener noreferrer nofollow" target="_blank">{{ r.url }}</a>
+    {% if r.hints %}<br><span class="meta">{{ r.hints }}</span>{% endif %}
+    {% if r.status == 'done' and r.dataverse_url %}<br><a href="{{ r.dataverse_url }}">View in Dataverse</a>{% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No resources yet.</p>
+{% endif %}

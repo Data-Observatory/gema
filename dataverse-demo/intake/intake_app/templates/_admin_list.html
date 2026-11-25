@@ -1,0 +1,32 @@
+<p>
+  Intake is <strong>{% if intake_open %}open{% else %}closed{% endif %}</strong>
+  &middot; {{ records|length }} / {{ max_records }} records
+  &middot; <strong>done {{ counts.done }}</strong>,
+  <strong>failed {{ counts.failed }}</strong>,
+  pending {{ counts.pending }},
+  processing {{ counts.processing }}
+  {% if running %}&middot; <strong>batch running</strong>{% endif %}
+</p>
+{% if records %}
+<ul class="items">
+{% for r in records %}
+  <li>
+    <span class="st st-{{ r.status }}">{{ r.status }}</span>
+    &middot; #{{ r.id }} &middot; <strong>{{ r.pseudonym }}</strong><br>
+    <a href="{{ r.url }}" rel="noopener noreferrer nofollow" target="_blank">{{ r.url }}</a>
+    {% if r.hints %}<br><span class="meta">hints: {{ r.hints }}</span>{% endif %}
+    {% if r.error %}<br><span class="st-failed">{{ r.error }}</span>{% endif %}
+    {% if r.dataverse_pid %}<br><span class="meta">{{ r.dataverse_pid }}</span>
+      {% if r.dataverse_url %} &middot; <a href="{{ r.dataverse_url }}">Dataverse</a>{% endif %}{% endif %}
+    {% if r.status in ('pending', 'failed') %}
+    <form class="inline" method="post" action="delete/{{ r.id }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit">Delete</button>
+    </form>
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No resources yet.</p>
+{% endif %}

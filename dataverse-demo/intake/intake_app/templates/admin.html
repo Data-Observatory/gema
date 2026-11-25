@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}GEMA! intake admin{% endblock %}
+{% block body %}
+<h1>Intake admin</h1>
+{% if flash %}<p class="msg ok">{{ flash }}</p>{% endif %}
+
+<div class="bar">
+  <form class="inline" method="post" action="toggle">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit">{% if intake_open %}Close intake{% else %}Open intake{% endif %}</button>
+  </form>
+  <form class="inline" method="post" action="process">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit">Process pending</button>
+  </form>
+  <form class="inline" method="post" action="retry">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit">Retry failed</button>
+  </form>
+  <a href="export.csv">Export results CSV</a>
+  <form class="inline" method="post" action="logout">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit">Log out</button>
+  </form>
+</div>
+<p class="meta"><a href="../">Public page</a></p>
+
+<div id="live" data-src="list">
+{% include "_admin_list.html" %}
+</div>
+<script src="../refresh.js"></script>
+{% endblock %}

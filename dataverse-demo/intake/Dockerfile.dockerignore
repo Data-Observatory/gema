@@ -1,0 +1,11 @@
+# Used by BuildKit for dataverse-demo/intake/Dockerfile (build context = repo root).
+# Allowlist: everything is excluded unless re-included below.
+*
+!pyproject.toml
+!README.md
+!src
+!config
+!dataverse-demo/intake/requirements.txt
+!dataverse-demo/intake/intake_app
+**/__pycache__
+**/*.pyc

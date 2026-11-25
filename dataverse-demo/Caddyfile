@@ -13,9 +13,40 @@
 # visor's own asset/websocket URLs come back unprefixed and this route
 # breaks the same way a Dataverse subpath would.
 
+# Trust X-Forwarded-For only from the docker network's gateway (10.213.77.1, fixed by the
+# subnet in compose.yml). Everything that reaches the published port from THIS host's
+# loopback arrives from that address -- including Tailscale Funnel, whose tailscaled proxy
+# connects to 127.0.0.1:<CADDY_PORT> and sets X-Forwarded-For to the visitor's address.
+# Clients on the LAN / venue Wi-Fi keep their own source address, so a header they type is
+# ignored. (Trusting all private ranges let a LAN client spoof any IP and dodge the
+# intake's per-IP rate limit, which depends on {client_ip}.)
+{
+	servers {
+		trusted_proxies static 10.213.77.1/32
+		trusted_proxies_strict
+	}
+}
+
 :80 {
 	redir /up /up/ permanent
 	redir /meta /meta/ permanent
+	redir /intake /intake/ permanent
+	redir /intake/admin /intake/admin/ permanent
+
+	# Workshop intake page + admin (a FastAPI container). Its templates use relative links
+	# for the same reason as /up. X-Real-IP / X-Forwarded-Prefix are set here, so they are
+	# overwritten even if a client sends its own. Its forms are tiny (URL, 1000-char hints,
+	# pseudonym); the body cap keeps an anonymous Funnel visitor from streaming a huge POST
+	# into the app's form parser.
+	handle_path /intake/* {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy intake:8095 {
+			header_up X-Real-IP {client_ip}
+			header_up X-Forwarded-Prefix /intake
+		}
+	}
 
 	# uploader's own templates use relative links (upload.html's form posts
 	# to "upload", not "/upload") specifically so this works correctly.
