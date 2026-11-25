@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import io
 import logging
+import re
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -31,6 +32,9 @@ logger = logging.getLogger(__name__)
 MAX_HINTS = 1000
 MAX_PSEUDONYM = 50
 COOKIE = "intake_admin"
+# Control characters (newlines would forge lines in intake.log, where the processor logs the
+# pseudonym) and bidi overrides (would visually reorder the admin/public lists).
+_PSEUDONYM_BAD_RE = re.compile(r"[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]")
 
 _REFRESH_JS = """\
 (function () {
@@ -188,6 +192,8 @@ def create_app(
             return reject("Pseudonym is required.", 400)
         if len(form["pseudonym"]) > MAX_PSEUDONYM:
             return reject(f"Pseudonym is too long (max {MAX_PSEUDONYM} characters).", 400)
+        if _PSEUDONYM_BAD_RE.search(form["pseudonym"]):
+            return reject("Pseudonym must not contain line breaks or control characters.", 400)
         if len(form["hints"]) > MAX_HINTS:
             return reject(f"Hints are too long (max {MAX_HINTS} characters).", 400)
         try:

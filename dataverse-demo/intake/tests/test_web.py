@@ -118,6 +118,8 @@ def test_duplicate_is_rejected_naming_the_first_pseudonym(env: Env) -> None:
         ({"url": "ftp://x.org/a", "pseudonym": "a"}, "http"),
         ({"url": "https://ok.org/x", "pseudonym": ""}, "Pseudonym is required"),
         ({"url": "https://ok.org/x", "pseudonym": "p" * 51}, "Pseudonym is too long"),
+        ({"url": "https://ok.org/x", "pseudonym": "a\nERROR forged"}, "control characters"),
+        ({"url": "https://ok.org/x", "pseudonym": "a\u202eb"}, "control characters"),
         ({"url": "https://ok.org/x", "pseudonym": "a", "hints": "h" * 1001}, "too long"),
         ({"url": "http://localhost:8080/", "pseudonym": "a"}, "not publicly reachable"),
         ({"url": "http://169.254.169.254/", "pseudonym": "a"}, "not publicly reachable"),
@@ -127,6 +129,11 @@ def test_validation_rejections(env: Env, data: dict[str, str], needle: str) -> N
     r = env.client.post("/submit", data=data)
     assert r.status_code == 400 and needle in r.text
     assert env.store.all_records() == []
+
+
+def test_unicode_and_emoji_pseudonyms_are_fine(env: Env) -> None:
+    r = submit(env, pseudonym="Ana \U0001f469\u200d\U0001f52c \u0645\u0631\u064a\u0645")
+    assert r.status_code == 303
 
 
 def test_limits_accept_exact_maximums(env: Env) -> None:
