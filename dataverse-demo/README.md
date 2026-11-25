@@ -164,7 +164,42 @@ pending resource (library call, no GUI) and publishes each result to this Datave
 Everything below runs from the `dataverse-demo/` folder, with the base stack already up and
 bootstrapped (see "Quick start").
 
-### Quickstart (commands only, in order)
+### Quickstart for the day of the workshop (everything already configured)
+
+`.env` is filled in, the `workshop` collection exists and was tested. Run from `dataverse-demo/`:
+
+```bash
+# 1. Everything up, wait for Dataverse
+docker compose up -d --build --no-deps postgres smtp solr dataverse intake caddy
+until curl -sf http://localhost:8080/api/info/version; do sleep 10; done; echo
+
+# 2. Funnel publishes every Caddy route: stop the uploader (/up) again after each caddy start
+docker compose stop uploader
+
+# 3. Check intake locally (the port is CADDY_PORT from .env, 8123 here, NOT 8000)
+CADDY_PORT=$(grep ^CADDY_PORT= .env | cut -d= -f2); CADDY_PORT=${CADDY_PORT:-8000}
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:$CADDY_PORT/intake/     # expect 200
+echo "attendees: http://localhost:$CADDY_PORT/intake/   admin: http://localhost:$CADDY_PORT/intake/admin/"
+grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2                                        # admin password
+
+# 4. Funnel on, then check from the public URL (open it once yourself before sharing)
+tailscale funnel --bg $CADDY_PORT
+FUNNEL_URL=$(grep ^DATAVERSE_SITE_URL= .env | cut -d= -f2)
+curl -s -o /dev/null -w '%{http_code}\n' $FUNNEL_URL/intake/                      # expect 200
+
+# 5. During the workshop
+docker logs -f intake                                  # live log
+# Admin page: Process pending (runs all), Retry failed, Close intake, Export results CSV
+
+# 6. After: export the CSV in the admin page first, then
+tailscale funnel reset
+docker compose rm -sf intake && docker volume rm dataverse-demo_intake_data
+```
+
+`http://localhost:8095/` (direct to the app, no Caddy) serves the page at `/`, not `/intake/`.
+If `tailscale funnel` prints a link, open it to enable Funnel for this machine, then re-run.
+
+### Quickstart from scratch (commands only, in order)
 
 Assumes the collection from step 1 already exists and `.env` is filled in (step 2). The full
 explanation of each command is in the numbered sections after this one. Run from
