@@ -164,6 +164,126 @@ pending resource (library call, no GUI) and publishes each result to this Datave
 Everything below runs from the `dataverse-demo/` folder, with the base stack already up and
 bootstrapped (see "Quick start").
 
+### Quick launch (already configured: `.env` filled, `workshop` collection exists)
+
+Foreground commands for three tmux panes, so you can watch each one and stop it with Ctrl-C.
+Run from `dataverse-demo/`. Nothing here needs the "wire the uploader's token" commands of the
+first Quick start (`get_admin_token.sh`, `--force-recreate uploader caddy`): `DATAVERSE_API_TOKEN`
+is already in `.env`, and recreating `uploader` would start the public `/up` route.
+
+```bash
+# PANE 1: the stack, attached (all logs here; Ctrl-C stops every container, intake gets 20 s
+# to put running records back to pending). --no-deps keeps the uploader (/up) from starting.
+docker compose stop uploader 2>/dev/null
+docker compose up --build --no-deps postgres smtp solr dataverse intake caddy
+
+# PANE 2: wait until Dataverse answers, check intake, then Funnel in the foreground
+# (Ctrl-C = Funnel off, the public URL stops answering)
+until curl -sf http://localhost:8080/api/info/version >/dev/null; do sleep 5; done
+CADDY_PORT=$(grep ^CADDY_PORT= .env | cut -d= -f2); CADDY_PORT=${CADDY_PORT:-8000}
+curl -s -o /dev/null -w 'intake local: %{http_code}\n' http://localhost:$CADDY_PORT/intake/   # 200
+tailscale funnel $CADDY_PORT
+# (if it prints a link, open it to enable Funnel for this machine, then run it again)
+
+# PANE 3: intake log only, and the admin password to paste in /intake/admin/
+grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2
+docker logs -f intake
+```
+
+**Check that the Dataverse token in `.env` works** (prints only the HTTP status; `200` = good,
+`401` = wrong/expired token):
+
+```bash
+TOKEN=$(grep ^DATAVERSE_API_TOKEN= .env | cut -d= -f2)
+curl -s -o /dev/null -w '%{http_code}\n' -H "X-Dataverse-key:$TOKEN" http://localhost:8080/api/users/:me
+```
+
+`./scripts/get_admin_token.sh` only reads the first-boot token from the `bootstrap` container's
+log. It changes nothing, but on an already-running stack it prints nothing, or an old token
+that is no longer valid. **Never paste its output over the working `DATAVERSE_API_TOKEN`** in `.env`;
+if the check above gives `401`, create a new token in the Dataverse UI (log in as
+`dataverseAdmin` locally, your name -> API Token -> Create Token) and put that in `.env`.
+
+Then: attendees `https://<machine>.<tailnet>.ts.net/intake/` (this setup:
+`https://lenovo-do-alvaro.siren-armadillo.ts.net/intake/`), admin at `/intake/admin/`, local
+`http://localhost:<CADDY_PORT>/intake/` (8123 here, not 8000). Open the public URL yourself once
+before sharing it (the first HTTPS request can take a few seconds).
+
+**After the workshop**: export the CSV in the admin page, Ctrl-C panes 2 and 1, then
+`docker volume rm dataverse-demo_intake_data` to empty the list for next time (skip it to keep
+the records).
+
+**Shutting down and turning it on again**: it works, with one catch. Dataverse, the intake DB
+and `.env` live in Docker volumes / files and survive a power-off. But after a reboot Docker does
+**not** restart `postgres`/`smtp` (their `restart: on-failure` policy ignores clean stops), and a
+foreground Funnel is gone with its pane. So just run the three panes again; nothing else. Records
+that were `processing` when it stopped go back to `pending` and run again on **Process pending**.
+
+### Quickstart from scratch (commands only, in order)
+
+Assumes the collection from step 1 already exists and `.env` is filled in (step 2). The full
+explanation of each command is in the numbered sections after this one. Run from
+`dataverse-demo/`.
+
+```bash
+# 0. Check that the required .env keys are set (prints key NAMES only, never values)
+grep -E '^(INTAKE_ADMIN_TOKEN|OPENCODE_API_KEY|DATAVERSE_API_TOKEN|DATAVERSE_COLLECTION_ALIAS|DATAVERSE_SITE_URL|INTAKE_DATAVERSE_PUBLIC_URL)=.+' .env | cut -d= -f1
+
+# 1. Base stack up (postgres/smtp stay stopped after a reboot) and wait for Dataverse
+docker compose up -d --no-deps postgres smtp solr dataverse
+until curl -sf http://localhost:8080/api/info/version; do sleep 10; done; echo
+
+# 2. Start intake + Caddy, then check it is up
+docker compose up -d --build --no-deps intake caddy
+docker logs intake 2>&1 | grep "intake ready"
+CADDY_PORT=$(grep ^CADDY_PORT= .env | cut -d= -f2); CADDY_PORT=${CADDY_PORT:-8000}
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:$CADDY_PORT/intake/    # expect 200
+
+# 3. Funnel exposes every Caddy route: stop the uploader (/up) first
+docker compose stop uploader
+
+# 4. Turn Funnel on and check it from the outside URL
+tailscale funnel --bg $CADDY_PORT
+tailscale funnel status
+FUNNEL_URL=$(grep ^DATAVERSE_SITE_URL= .env | cut -d= -f2)
+curl -s -o /dev/null -w '%{http_code}\n' $FUNNEL_URL/intake/                     # expect 200
+
+# 5. Dry run: submit 3 test URLs (the 3rd is dead), then the 1st again (expect a refusal)
+for u in https://www.rasgos.cl https://www.starm.cl https://example.org/does-not-exist; do
+  curl -s -o /dev/null -w '%{http_code}\n' -d "url=$u" -d "pseudonym=dryrun" $FUNNEL_URL/intake/submit
+done
+curl -s -d "url=https://www.rasgos.cl/" -d "pseudonym=dryrun2" $FUNNEL_URL/intake/submit | grep -i "already submitted"
+# In the browser: $FUNNEL_URL/intake/admin/  ->  paste INTAKE_ADMIN_TOKEN  ->  Close intake,
+# Process pending, wait for done/failed, Export results CSV, open "View in Dataverse" on a phone.
+grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2        # the admin password to paste
+docker exec intake tail -n 30 /data/intake.log      # what happened
+
+# 6. Clean up after the dry run: destroy the test datasets, wipe the intake DB
+TOKEN=$(grep ^DATAVERSE_API_TOKEN= .env | cut -d= -f2)
+curl -s -H "X-Dataverse-key:$TOKEN" http://localhost:8080/api/dataverses/workshop/contents \
+  | jq -r '.data[] | select(.type=="dataset") | "\(.protocol):\(.authority)/\(.identifier)"' \
+  | while read -r pid; do
+      curl -s -X DELETE -H "X-Dataverse-key:$TOKEN" \
+        "http://localhost:8080/api/datasets/:persistentId/destroy?persistentId=$pid"; echo
+    done   # destroys EVERY dataset in `workshop`: only run this before the real workshop
+docker compose rm -sf intake
+docker volume rm dataverse-demo_intake_data
+docker compose up -d --no-deps intake
+
+# 7. During the workshop: watch it, check status
+docker logs -f intake
+docker exec intake grep -E "failed|batch" /data/intake.log
+
+# 8. After the workshop: export the CSV in the admin page first, then Funnel off + reset
+tailscale funnel reset
+docker compose rm -sf intake
+docker volume rm dataverse-demo_intake_data
+```
+
+After any change to `.env`, run step 2's `docker compose up -d --build --no-deps intake caddy`
+again. Changing `DATAVERSE_SITE_URL` also needs `docker compose up -d dataverse` (about 2
+minutes of downtime).
+
 ### 1. Prepare the Dataverse collection (once per fresh stack)
 
 The datasets need a collection to live in, and Dataverse refuses to publish a dataset whose
