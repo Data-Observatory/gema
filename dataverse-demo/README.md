@@ -190,6 +190,20 @@ grep ^INTAKE_ADMIN_TOKEN= .env | cut -d= -f2
 docker logs -f intake
 ```
 
+**Check that the Dataverse token in `.env` works** (prints only the HTTP status; `200` = good,
+`401` = wrong/expired token):
+
+```bash
+TOKEN=$(grep ^DATAVERSE_API_TOKEN= .env | cut -d= -f2)
+curl -s -o /dev/null -w '%{http_code}\n' -H "X-Dataverse-key:$TOKEN" http://localhost:8080/api/users/:me
+```
+
+`./scripts/get_admin_token.sh` only reads the first-boot token from the `bootstrap` container's
+log. It changes nothing, but on an already-running stack it prints nothing, or an old token
+that is no longer valid. **Never paste its output over the working `DATAVERSE_API_TOKEN`** in `.env`;
+if the check above gives `401`, create a new token in the Dataverse UI (log in as
+`dataverseAdmin` locally, your name -> API Token -> Create Token) and put that in `.env`.
+
 Then: attendees `https://<machine>.<tailnet>.ts.net/intake/` (this setup:
 `https://lenovo-do-alvaro.siren-armadillo.ts.net/intake/`), admin at `/intake/admin/`, local
 `http://localhost:<CADDY_PORT>/intake/` (8123 here, not 8000). Open the public URL yourself once
