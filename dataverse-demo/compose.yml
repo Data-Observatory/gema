@@ -34,7 +34,10 @@ services:
     restart: on-failure
     user: payara
     environment:
-      DATAVERSE_SITEURL: "http://${MACHINE_IP:-localhost}:8080"
+      # Public base URL Dataverse writes into absolute links (persistent URL / citation,
+      # metadata export and file download links). For Tailscale Funnel set DATAVERSE_SITE_URL
+      # in .env to the Funnel URL (Dataverse is at the root of Caddy). See README.
+      DATAVERSE_SITEURL: "${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}"
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
@@ -204,7 +207,7 @@ services:
     restart: on-failure
     environment:
       - DATAVERSE_URL=http://dataverse:8080
-      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
+      - DATAVERSE_PUBLIC_URL=${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}
       - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
       - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
     ports:
@@ -227,9 +230,10 @@ services:
       - INTAKE_ADMIN_TOKEN=${INTAKE_ADMIN_TOKEN:-}
       - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
       - DATAVERSE_URL=http://dataverse:8080
-      # Base of the "View in Dataverse" links attendees click: set INTAKE_DATAVERSE_PUBLIC_URL
-      # to the Funnel URL (https://<machine>.<tailnet>.ts.net) when they come in that way.
-      - DATAVERSE_PUBLIC_URL=${INTAKE_DATAVERSE_PUBLIC_URL:-http://${MACHINE_IP:-localhost}:8080}
+      # Base of the "View in Dataverse" links attendees click: the Funnel URL
+      # (https://<machine>.<tailnet>.ts.net, Dataverse at Caddy's root) when they come in
+      # that way. Falls back to DATAVERSE_SITE_URL, then to the local address.
+      - DATAVERSE_PUBLIC_URL=${INTAKE_DATAVERSE_PUBLIC_URL:-${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}}
       - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
       - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
       - INTAKE_DEFAULT_CONTACT_EMAIL=${INTAKE_DEFAULT_CONTACT_EMAIL:-}

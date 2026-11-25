@@ -201,7 +201,8 @@ what goes into `DATAVERSE_COLLECTION_ALIAS` (the uploader uses the same collecti
 | `OPENCODE_API_KEY` | **yes** | none | GEMA! always runs on the `opencode` provider (production model `deepseek-v4.1-flash` from `config/agents.yaml`). Every record makes several paid LLM calls. |
 | `DATAVERSE_API_TOKEN` | for **Process** | empty | The `$TOKEN` from step 1. Without it the pages work, but **Process pending** / **Retry failed** answer "DATAVERSE_API_TOKEN is not configured". |
 | `DATAVERSE_COLLECTION_ALIAS` | for **Process** | `root` | The published collection from step 1, e.g. `workshop`. |
-| `INTAKE_DATAVERSE_PUBLIC_URL` | for Funnel | `http://${MACHINE_IP:-localhost}:8080` | Base of the *View in Dataverse* links attendees click. Through Funnel, set it to `https://<machine>.<tailnet>.ts.net` (Dataverse is at the root of the Caddy URL). Set it **before** processing: each link is stored when its dataset is created. |
+| `INTAKE_DATAVERSE_PUBLIC_URL` | for Funnel | `DATAVERSE_SITE_URL`, else `http://${MACHINE_IP:-localhost}:8080` | Base of the *View in Dataverse* links attendees click. Through Funnel, set it to the bare Funnel URL `https://<machine>.<tailnet>.ts.net` (no path, no port: Caddy serves Dataverse at its root, so links look like `https://<machine>.<tailnet>.ts.net/dataset.xhtml?persistentId=perma:DV/...`). Set it **before** processing: each link is stored when its dataset is created. |
+| `DATAVERSE_SITE_URL` | for Funnel | `http://${MACHINE_IP:-localhost}:8080` | Dataverse's own `siteUrl` (compose passes it as `DATAVERSE_SITEURL`). Dataverse writes it into the dataset page's absolute links: persistent URL / citation, metadata export and file download links. Set it to the same Funnel URL, then recreate Dataverse: `docker compose up -d dataverse` (about 2 minutes of downtime). See "Dataverse behind the Funnel URL" below. |
 | `INTAKE_DEFAULT_CONTACT_EMAIL` / `INTAKE_DEFAULT_CONTACT_NAME` | no | `workshop@example.org` / `GEMA! workshop` | Dataverse requires a dataset contact. These are used when GEMA! finds no contact e-mail on the page. Use a real address you read. |
 | `INTAKE_RATE_LIMIT` / `INTAKE_RATE_WINDOW` | no | `5` per `60` s | Accepted submissions per client IP per window. In a room, everyone on the venue Wi-Fi shares one public IP, so set `INTAKE_RATE_LIMIT=40` for the workshop. |
 | `INTAKE_MAX_RECORDS` | no | `40` | Total records the page accepts. After that, submissions are refused. |
@@ -477,10 +478,11 @@ live.
    or use your MagicDNS name (`tailscale status`, or the Tailscale admin
    console) if you have it enabled — e.g. `mymachine.tailnet-name.ts.net`.
 
-2. **Set `MACHINE_IP` in `.env` to that address.** This is the part that
+2. **Set `MACHINE_IP` in `.env` to that address** (through Funnel, set `DATAVERSE_SITE_URL`
+   to the Funnel URL instead; it takes precedence). This is the part that
    actually matters — it's not just about whether the port is reachable.
    `compose.yml` bakes `MACHINE_IP` into `DATAVERSE_SITEURL`
-   (`http://${MACHINE_IP:-localhost}:8080`), which Dataverse embeds into
+   (`${DATAVERSE_SITE_URL:-http://${MACHINE_IP:-localhost}:8080}`), which Dataverse embeds into
    generated links, redirects, and API response fields like
    `persistentUrl`. Leave it as `localhost` and attendees get links that
    mean nothing on their own machines.
@@ -551,6 +553,29 @@ it — there's no ACL scoping "only these attendees' devices" the way there
 is with plain Tailscale. Step 5 above (change the default admin password
 before opening this up) applies much harder here, since there's no
 network-level restriction backing it up at all.
+
+### Dataverse behind the Funnel URL
+
+Checked on the local stack (Funnel itself was off, so this was done by calling Caddy with the
+Funnel `Host` header):
+- Caddy serves Dataverse at the root of the Funnel URL. Dataset pages, collection pages and
+  the login page render: their links are root-relative and work under any host name.
+- What does **not** follow the request host is everything Dataverse builds from
+  `siteUrl`: the persistent URL / citation link, the metadata export links, file download
+  links and the schema.org / Croissant JSON-LD embedded in the page. With the default
+  (`http://localhost:8080`) those point at `localhost` for an attendee on the internet. Set
+  `DATAVERSE_SITE_URL=https://<machine>.<tailnet>.ts.net` in `.env` and recreate Dataverse
+  (`docker compose up -d dataverse`).
+- Local use keeps working after that change: `http://localhost:8080` and
+  `http://localhost:<CADDY_PORT>` still serve every page. Only those absolute links point at
+  the Funnel host, so they only open while Funnel is on.
+- Metadata exports cached before the change (the JSON-LD, the BibTeX in the page) keep the
+  old `localhost` URL until the dataset is published again. Datasets created after the
+  change are fine.
+- Payara does not honour `X-Forwarded-Proto`, so the few absolute links Payara builds from
+  the request itself (not from `siteUrl`) say `http://<funnel-host>/...`, and Funnel only
+  answers on HTTPS. Attendees viewing a dataset do not hit these. Log in as admin locally,
+  not through the Funnel URL.
 
 ## Resetting
 
