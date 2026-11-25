@@ -227,7 +227,9 @@ services:
       - INTAKE_ADMIN_TOKEN=${INTAKE_ADMIN_TOKEN:-}
       - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
       - DATAVERSE_URL=http://dataverse:8080
-      - DATAVERSE_PUBLIC_URL=http://${MACHINE_IP:-localhost}:8080
+      # Base of the "View in Dataverse" links attendees click: set INTAKE_DATAVERSE_PUBLIC_URL
+      # to the Funnel URL (https://<machine>.<tailnet>.ts.net) when they come in that way.
+      - DATAVERSE_PUBLIC_URL=${INTAKE_DATAVERSE_PUBLIC_URL:-http://${MACHINE_IP:-localhost}:8080}
       - DATAVERSE_API_TOKEN=${DATAVERSE_API_TOKEN:-}
       - DATAVERSE_COLLECTION_ALIAS=${DATAVERSE_COLLECTION_ALIAS:-root}
       - INTAKE_DEFAULT_CONTACT_EMAIL=${INTAKE_DEFAULT_CONTACT_EMAIL:-}
@@ -236,6 +238,7 @@ services:
       - INTAKE_RECORD_TIMEOUT=${INTAKE_RECORD_TIMEOUT:-300}
       - INTAKE_MAX_RECORDS=${INTAKE_MAX_RECORDS:-40}
       - INTAKE_RATE_LIMIT=${INTAKE_RATE_LIMIT:-5}
+      - INTAKE_RATE_WINDOW=${INTAKE_RATE_WINDOW:-60}
     volumes:
       - intake_data:/data
     ports:
