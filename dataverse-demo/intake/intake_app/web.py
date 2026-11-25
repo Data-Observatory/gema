@@ -6,12 +6,14 @@ action, fetch and redirect here is *relative* and works under any prefix -- or n
 
 from __future__ import annotations
 
+import asyncio
 import csv
 import hashlib
 import hmac
 import io
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Form, Request
@@ -96,7 +98,15 @@ def client_ip(request: Request) -> str:
 def create_app(
     settings: Settings, store: Store, processor: BatchProcessor, *, can_publish: bool = True
 ) -> FastAPI:
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        yield
+        # uvicorn runs this on SIGTERM/SIGINT (docker stop / compose restart): stop claiming,
+        # give in-flight records a grace period, put interrupted ones back to pending.
+        await asyncio.to_thread(processor.shutdown, settings.shutdown_grace)
+
     app = FastAPI(
+        lifespan=lifespan,
         title="GEMA! workshop intake",
         docs_url=None,
         redoc_url=None,

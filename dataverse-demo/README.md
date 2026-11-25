@@ -207,6 +207,7 @@ what goes into `DATAVERSE_COLLECTION_ALIAS` (the uploader uses the same collecti
 | `INTAKE_MAX_RECORDS` | no | `40` | Total records the page accepts. After that, submissions are refused. |
 | `INTAKE_WORKERS` | no | `4` | Records processed in parallel. Each record runs up to 3 LLM calls at once (GEMA!'s first agent wave), so 4 workers means up to ~12 concurrent calls on your opencode key. |
 | `INTAKE_RECORD_TIMEOUT` | no | `300` | Seconds before a record is given up and marked `failed`. |
+| `INTAKE_SHUTDOWN_GRACE` | no | `20` | On `docker compose stop/restart`, seconds running records get to finish before they are put back to `pending`. Keep it below the service's `stop_grace_period` (35 s). |
 
 The intake container exits at startup when `INTAKE_ADMIN_TOKEN` or `OPENCODE_API_KEY` is
 empty, and keeps restarting until they are set (see Troubleshooting below). The rest of the stack
@@ -345,9 +346,15 @@ them from the Dataverse UI if needed.
 - **Deleting a `failed` row whose admin entry shows a PID** leaves that dataset as an
   unpublished *draft* in Dataverse. Delete the draft in the Dataverse UI (log in as admin,
   open the collection, filter on drafts), or use **Retry failed** instead.
-- **Restarted the container mid-batch**: rows left `processing` go back to `pending`, marked
-  "Interrupted by a restart". Click **Process pending** again. A row whose dataset already
-  exists is only published.
+- **Stopped or restarted the container mid-batch** (`docker compose stop/restart intake`,
+  `up -d` recreating it, a reboot): on SIGTERM the batch stops claiming rows, rows already
+  running get `INTAKE_SHUTDOWN_GRACE` seconds (default 20) to finish, and anything still
+  running after that goes back to `pending`, marked "Interrupted by a shutdown". Rows that
+  had not started yet are left `pending`, untouched. Compose waits 35 s
+  (`stop_grace_period`) before killing the container. After a hard kill (`docker kill`, power
+  loss), rows left `processing` are put back to `pending` at the next start, marked
+  "Interrupted by a restart". Either way, click **Process pending** again. A row whose
+  dataset already exists is only published, never created twice.
 
 ### Running outside Docker / tests
 

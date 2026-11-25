@@ -58,6 +58,7 @@ class Settings:
     preflight_url: bool = True
     allow_private_urls: bool = False
     retry_delay: float = 3.0
+    shutdown_grace: int = 20  # seconds in-flight records get on SIGTERM; < stop_grace_period
 
     @property
     def db_path(self) -> Path:
@@ -98,4 +99,5 @@ class Settings:
             rate_window=_int(e, "INTAKE_RATE_WINDOW", 60, 1),
             preflight_url=_bool(e, "INTAKE_PREFLIGHT_URL", True),
             allow_private_urls=_bool(e, "INTAKE_ALLOW_PRIVATE_URLS", False),
+            shutdown_grace=_int(e, "INTAKE_SHUTDOWN_GRACE", 20, 0),
         )

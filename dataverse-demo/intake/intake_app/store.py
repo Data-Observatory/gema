@@ -206,6 +206,17 @@ class Store:
             )
             return cur.rowcount == 1
 
+    def release(self, rid: int, note: str) -> bool:
+        """``processing`` -> ``pending`` (shutdown interrupted it). The PID, if any, is kept,
+        so the next run only publishes. True if the record was put back."""
+        with self._conn() as conn:
+            cur = conn.execute(
+                "UPDATE resources SET status = 'pending', error = ?, updated_at = ? "
+                "WHERE id = ? AND status = 'processing'",
+                (note, _now(), rid),
+            )
+            return cur.rowcount == 1
+
     def recover_stale(self) -> int:
         """Crash recovery at startup: nothing can legitimately be ``processing`` while the
         process is just starting. They go back to ``pending`` (a stored PID keeps the retry
